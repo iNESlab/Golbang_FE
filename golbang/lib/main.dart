@@ -454,7 +454,7 @@ class EventsScreenState extends State<EventsScreen> {
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.cyan,
-                                minimumSize: const Size(50, 30), // 크기 조정
+                                minimumSize: const Size(50, 30),
                               ),
                               child: const Text('참석',
                                   style: TextStyle(fontSize: 12)),
@@ -466,7 +466,7 @@ class EventsScreenState extends State<EventsScreen> {
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.grey,
-                                minimumSize: const Size(50, 30), // 크기 조정
+                                minimumSize: const Size(50, 30),
                               ),
                               child: const Text('미정',
                                   style: TextStyle(fontSize: 12)),
@@ -478,7 +478,7 @@ class EventsScreenState extends State<EventsScreen> {
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.red,
-                                minimumSize: const Size(50, 30), // 크기 조정
+                                minimumSize: const Size(50, 30),
                               ),
                               child: const Text('불참',
                                   style: TextStyle(fontSize: 12)),
@@ -498,7 +498,7 @@ class EventsScreenState extends State<EventsScreen> {
                                   // 세부 정보 보기 로직
                                 },
                                 style: TextButton.styleFrom(
-                                  foregroundColor: Colors.green, // 텍스트 색상 변경
+                                  foregroundColor: Colors.green,
                                 ),
                                 child: const Text('세부 정보 보기'),
                               ),
@@ -507,7 +507,7 @@ class EventsScreenState extends State<EventsScreen> {
                                   // 게임 시작 로직
                                 },
                                 style: TextButton.styleFrom(
-                                  foregroundColor: Colors.green, // 텍스트 색상 변경
+                                  foregroundColor: Colors.green,
                                 ),
                                 child: const Text('게임 시작',
                                     style:
@@ -752,11 +752,10 @@ class Event {
     this.dinnerStatus,
   );
 
-  // Add missing getters
-  int get attending => numberOfPeople; // Placeholder for actual logic
-  int get pending => 0; // Placeholder for actual logic
-  List<String> get groupMembers => groupFormation.split(','); // Example logic
-  String get startPoint => location; // Example logic
+  int get attending => numberOfPeople;
+  int get pending => 0;
+  List<String> get groupMembers => groupFormation.split(',');
+  String get startPoint => location;
 
   @override
   String toString() => eventName;
