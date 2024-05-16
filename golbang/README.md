@@ -1,6 +1,6 @@
-# golbang
+# Gol(f)bang
 
-A new Flutter project.
+Flutter project
 
 ## Getting Started
 
