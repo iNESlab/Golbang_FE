@@ -19,10 +19,11 @@ class UpcomingEvents extends StatelessWidget {
             final event = events[index];
             return Container(
               margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+              padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
               decoration: BoxDecoration(
                 color: Colors.white,
-                border: Border.all(color: _getBorderColor(event), width: 1.5),
+                border: Border.all(
+                    color: _getBorderColor(event.dinnerStatus), width: 1.5),
                 borderRadius: BorderRadius.circular(15.0),
                 boxShadow: [
                   BoxShadow(
@@ -45,66 +46,23 @@ class UpcomingEvents extends StatelessWidget {
                                 const TextStyle(fontWeight: FontWeight.bold)),
                         if (event.isAdmin)
                           const Icon(Icons.admin_panel_settings,
-                              color: Colors.green),
+                              color: Colors.green, size: 25),
                       ],
                     ),
+                    Text('일정 날짜와 시간 ${index + 1}',
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    Text('장소: ${event.location}'),
                     Row(
                       children: [
-                        Column(
-                          children: [
-                            Container(
-                              width: 12,
-                              height: 12,
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                    color: _getBorderColor(event), width: 2.0),
-                                shape: BoxShape.circle,
-                              ),
-                            ),
-                            Container(
-                              width: 2,
-                              height: 50,
-                              color: _getBorderColor(event),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(width: 4),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '이벤트 날짜와 시간 ${index + 1}',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold),
-                              ),
-                              Text('장소: 장소 ${index + 1}'),
-                              Row(
-                                children: [
-                                  const Text('회비 납부 '),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 5, vertical: 1),
-                                    decoration: BoxDecoration(
-                                      color: _getBorderColor(event),
-                                      borderRadius: BorderRadius.circular(8.0),
-                                    ),
-                                    child: Text(
-                                      event.paymentStatus,
-                                      style:
-                                          const TextStyle(color: Colors.white),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
+                        const Text('참석 여부: '),
+                        _buildStatusButton(event.dinnerStatus),
+                        const SizedBox(width: 8.0),
+                        const Text('회비: '),
+                        _buildPaymentButton(event.paymentStatus),
                       ],
                     ),
                   ],
                 ),
-                trailing: const Icon(Icons.arrow_forward_ios),
               ),
             );
           },
@@ -113,13 +71,75 @@ class UpcomingEvents extends StatelessWidget {
     );
   }
 
-  Color _getBorderColor(Event event) {
-    if (event.paymentStatus == '완료') {
-      return Colors.cyan;
-    } else if (event.paymentStatus == '미납') {
-      return Colors.red;
-    } else {
-      return Colors.black;
+  Widget _buildStatusButton(String status) {
+    Color color;
+    switch (status) {
+      case '참석':
+        color = Colors.cyan;
+        break;
+      case '불참':
+        color = Colors.red;
+        break;
+      case '미정':
+        color = Colors.grey;
+        break;
+      default:
+        color = Colors.grey;
+    }
+    return ElevatedButton(
+      onPressed: () {},
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        minimumSize: const Size(40, 30),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+      ),
+      child: Text(
+        status,
+        style: const TextStyle(fontSize: 12, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _buildPaymentButton(String paymentStatus) {
+    Color color;
+    switch (paymentStatus) {
+      case '완료':
+        color = Colors.deepPurple;
+        break;
+      case '미납':
+        color = Colors.red;
+        break;
+      default:
+        color = Colors.grey;
+    }
+    return ElevatedButton(
+      onPressed: () {},
+      style: ElevatedButton.styleFrom(
+        backgroundColor: color,
+        minimumSize: const Size(40, 30),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
+      ),
+      child: Text(
+        paymentStatus,
+        style: const TextStyle(fontSize: 12, color: Colors.white),
+      ),
+    );
+  }
+
+  Color _getBorderColor(String status) {
+    switch (status) {
+      case '참석':
+        return Colors.cyan;
+      case '불참':
+        return Colors.red;
+      case '미정':
+        return Colors.grey;
+      default:
+        return Colors.black;
     }
   }
 }

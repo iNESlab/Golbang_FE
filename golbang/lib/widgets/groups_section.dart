@@ -37,7 +37,7 @@ class GroupsSection extends StatelessWidget {
                 ],
               ),
               child: const CircleAvatar(
-                radius: 40,
+                radius: 35,
                 backgroundColor: Colors.grey,
                 backgroundImage: AssetImage('assets/images/dragon.jpeg'),
               ),

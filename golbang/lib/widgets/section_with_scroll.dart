@@ -42,7 +42,7 @@ class SectionWithScroll extends StatelessWidget {
               RichText(
                 text: TextSpan(
                   style: const TextStyle(
-                      fontSize: 25,
+                      fontSize: 22,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
                   children: spans,
