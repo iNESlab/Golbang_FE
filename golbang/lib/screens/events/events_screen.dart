@@ -22,11 +22,15 @@ class EventsScreenState extends State<EventsScreen> {
   )..addAll({
       DateTime(2024, 5, 14): [
         Event('Event 1', 'Group 1', '12:00 PM', 'Location 1', 10, 'Group A',
-            '100', '완료', true)
+            '100', '참석', true)
       ],
       DateTime(2024, 5, 15): [
         Event('Event 2', 'Group 2', '2:00 PM', 'Location 2', 20, 'Group B',
-            '200', '미납', false)
+            '200', '불참', false)
+      ],
+      DateTime(2024, 5, 24): [
+        Event('Event 3', 'Group 3', '4:00 PM', 'Location 3', 30, 'Group C',
+            '300', '참석·회식', true)
       ],
     });
 
@@ -35,6 +39,9 @@ class EventsScreenState extends State<EventsScreen> {
     super.initState();
     _selectedDay = _focusedDay;
     _selectedEvents = ValueNotifier(_getUpcomingEvents());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _showMostRecentEvent();
+    });
   }
 
   List<Event> _getEventsForDay(DateTime day) {
@@ -48,6 +55,17 @@ class EventsScreenState extends State<EventsScreen> {
         .expand((entry) => entry.value)
         .toList()
       ..sort((a, b) => a.date.compareTo(b.date));
+  }
+
+  void _showMostRecentEvent() {
+    DateTime now = DateTime.now();
+    DateTime mostRecentDay = _events.keys
+        .where((date) => date.isAfter(now) || isSameDay(date, now))
+        .reduce((a, b) => a.isBefore(b) ? a : b);
+    _selectedDay = mostRecentDay;
+    _focusedDay = mostRecentDay;
+    _selectedEvents.value = _getEventsForDay(mostRecentDay);
+    setState(() {});
   }
 
   @override
@@ -106,6 +124,26 @@ class EventsScreenState extends State<EventsScreen> {
                   style: const TextStyle(color: Colors.white),
                 ),
               ),
+              headerTitleBuilder: (context, date) {
+                return Center(
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        _focusedDay = DateTime.now();
+                        _selectedDay = DateTime.now();
+                        _selectedEvents.value = _getEventsForDay(_selectedDay!);
+                      });
+                    },
+                    child: Text(
+                      '${date.year}년 ${date.month}월',
+                      style: const TextStyle(
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                );
+              },
               markerBuilder: (context, date, events) {
                 if (events.isNotEmpty) {
                   Color markerColor;
@@ -115,6 +153,9 @@ class EventsScreenState extends State<EventsScreen> {
                       break;
                     case '불참':
                       markerColor = Colors.red;
+                      break;
+                    case '참석·회식':
+                      markerColor = Colors.deepPurple;
                       break;
                     default:
                       markerColor = Colors.black;
@@ -146,7 +187,7 @@ class EventsScreenState extends State<EventsScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  '다가오는 이벤트',
+                  '오늘의 일정',
                   style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
                 ),
                 ElevatedButton(
@@ -154,10 +195,14 @@ class EventsScreenState extends State<EventsScreen> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                    minimumSize: const Size(50, 30),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.0),
+                    ),
                   ),
                   child: const Text(
-                    '이벤트 추가',
+                    '일정 추가',
                     style: TextStyle(color: Colors.white, fontSize: 14),
                   ),
                 ),
@@ -168,16 +213,41 @@ class EventsScreenState extends State<EventsScreen> {
             child: ValueListenableBuilder<List<Event>>(
               valueListenable: _selectedEvents,
               builder: (context, value, _) {
+                if (value.isEmpty) {
+                  return const Center(child: Text('일정이 없습니다.'));
+                }
                 return ListView.builder(
                   itemCount: value.length,
                   itemBuilder: (context, index) {
+                    Color borderColor;
+                    Color attendColor = Colors.grey;
+                    Color attendDinnerColor = Colors.grey;
+                    Color absentColor = Colors.grey;
+
+                    switch (value[index].dinnerStatus) {
+                      case '참석':
+                        borderColor = Colors.cyan;
+                        attendColor = Colors.cyan;
+                        break;
+                      case '불참':
+                        borderColor = Colors.red;
+                        absentColor = Colors.red;
+                        break;
+                      case '참석·회식':
+                        borderColor = Colors.deepPurple;
+                        attendDinnerColor = Colors.deepPurple;
+                        break;
+                      default:
+                        borderColor = Colors.grey;
+                    }
+
                     return Container(
                       margin: const EdgeInsets.symmetric(
                           horizontal: 12.0, vertical: 2.0),
                       padding: const EdgeInsets.all(8.0),
                       decoration: BoxDecoration(
-                        border: Border.all(),
-                        borderRadius: BorderRadius.circular(12.0),
+                        border: Border.all(color: borderColor, width: 2.0),
+                        borderRadius: BorderRadius.circular(15.0),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -201,35 +271,59 @@ class EventsScreenState extends State<EventsScreen> {
                           Text('야드: ${value[index].yardage}'),
                           Row(
                             children: [
-                              const Text('참여 여부: '),
+                              const Text('참석 여부: '),
                               ElevatedButton(
                                 onPressed: () {},
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.cyan,
+                                  backgroundColor: attendColor,
                                   minimumSize: const Size(50, 30),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
                                 ),
-                                child: const Text('참석',
-                                    style: TextStyle(fontSize: 12)),
+                                child: const Text(
+                                  '참석',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
                               const SizedBox(width: 8.0),
                               ElevatedButton(
                                 onPressed: () {},
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.grey,
+                                  backgroundColor: attendDinnerColor,
                                   minimumSize: const Size(50, 30),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
                                 ),
-                                child: const Text('미정',
-                                    style: TextStyle(fontSize: 12)),
+                                child: const Text(
+                                  '참석·회식',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
                               const SizedBox(width: 8.0),
                               ElevatedButton(
                                 onPressed: () {},
                                 style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.red,
+                                  backgroundColor: absentColor,
                                   minimumSize: const Size(50, 30),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                  ),
                                 ),
-                                child: const Text('불참',
-                                    style: TextStyle(fontSize: 12)),
+                                child: const Text(
+                                  '불참',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
                             ],
                           ),
@@ -247,16 +341,22 @@ class EventsScreenState extends State<EventsScreen> {
                                   style: TextButton.styleFrom(
                                     foregroundColor: Colors.green,
                                   ),
-                                  child: const Text('세부 정보 보기'),
+                                  child: const Text(
+                                    '세부 정보 보기',
+                                    style: TextStyle(color: Colors.black),
+                                  ),
                                 ),
                                 TextButton(
                                   onPressed: () {},
                                   style: TextButton.styleFrom(
                                     foregroundColor: Colors.green,
                                   ),
-                                  child: const Text('게임 시작',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold)),
+                                  child: const Text(
+                                    '게임 시작',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black),
+                                  ),
                                 ),
                               ],
                             ),
@@ -270,17 +370,6 @@ class EventsScreenState extends State<EventsScreen> {
             ),
           ),
         ],
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            _focusedDay = DateTime.now();
-            _selectedDay = DateTime.now();
-            _selectedEvents.value = _getEventsForDay(_selectedDay!);
-          });
-        },
-        backgroundColor: Colors.green,
-        child: const Icon(Icons.calendar_today),
       ),
     );
   }
