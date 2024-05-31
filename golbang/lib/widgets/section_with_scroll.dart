@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class SectionWithScroll extends StatelessWidget {
   final String title;
   final Widget child;
+  final double titleFontSize;
 
   const SectionWithScroll({
     super.key,
     required this.title,
     required this.child,
+    this.titleFontSize = 22.0,
   });
 
   @override
@@ -41,8 +43,8 @@ class SectionWithScroll extends StatelessWidget {
             children: [
               RichText(
                 text: TextSpan(
-                  style: const TextStyle(
-                      fontSize: 22,
+                  style: TextStyle(
+                      fontSize: titleFontSize,
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
                   children: spans,
