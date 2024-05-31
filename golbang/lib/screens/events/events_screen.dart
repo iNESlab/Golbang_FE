@@ -188,7 +188,7 @@ class EventsScreenState extends State<EventsScreen> {
               children: [
                 const Text(
                   '오늘의 일정',
-                  style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 ElevatedButton(
                   onPressed: () {},
