@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import "package:http/http.dart" as http;
 import 'dart:convert';
-import 'signup.dart';
 import 'forget_password.dart';
+import 'hi_screen.dart';
 
 class LoginPage extends StatefulWidget {
   @override
@@ -241,7 +241,7 @@ class _LoginPageState extends State<LoginPage> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => Signup()),
+                        MaterialPageRoute(builder: (context) => HiScreen()),
                       );
                     },
                     child: Text(
