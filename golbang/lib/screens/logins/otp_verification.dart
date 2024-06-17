@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class OTPVerificationPage extends StatefulWidget {
   final String email;
 
-  OTPVerificationPage({required this.email});
+  const OTPVerificationPage({super.key, required this.email});
 
   @override
   _OTPVerificationPageState createState() => _OTPVerificationPageState();
@@ -26,38 +26,38 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
   }
 
   void _verifyOTP() {
-    print('Verify button pressed');
+    // print('Verify button pressed');
     if (_formKey.currentState!.validate()) {
       String enteredOTP = _otpController1.text +
           _otpController2.text +
           _otpController3.text +
           _otpController4.text;
 
-      print('Entered OTP: $enteredOTP');
+      // print('Entered OTP: $enteredOTP');
 
       if (enteredOTP == '1234') {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('OTP Verified Successfully!')),
+          const SnackBar(content: Text('OTP Verified Successfully!')),
         );
-        print('OTP Verified Successfully!');
+        // print('OTP Verified Successfully!');
 
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => SuccessPage()),
+          MaterialPageRoute(builder: (context) => const SuccessPage()),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Invalid OTP, please try again.')),
+          const SnackBar(content: Text('Invalid OTP, please try again.')),
         );
-        print('Invalid OTP, please try again.');
+        // print('Invalid OTP, please try again.');
       }
     } else {
-      print('Form validation failed');
+      // print('Form validation failed');
     }
   }
 
   Widget _buildOTPField(TextEditingController controller) {
-    return Container(
+    return SizedBox(
       width: 50,
       child: TextFormField(
         controller: controller,
@@ -73,7 +73,7 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
             borderSide: BorderSide.none,
           ),
         ),
-        style: TextStyle(color: Colors.white, fontSize: 24),
+        style: const TextStyle(color: Colors.white, fontSize: 24),
         validator: (value) {
           if (value == null || value.isEmpty) {
             return 'Input required';
@@ -92,7 +92,7 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -105,7 +105,7 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'OTP Verification',
                 style: TextStyle(
                   fontSize: 32,
@@ -113,7 +113,7 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
                   color: Colors.white,
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 "Enter the verification code we just sent on your email address.",
                 style: TextStyle(
@@ -121,7 +121,7 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
                   color: Colors.grey[400],
                 ),
               ),
-              SizedBox(height: 32),
+              const SizedBox(height: 32),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -131,17 +131,17 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
                   _buildOTPField(_otpController4),
                 ],
               ),
-              SizedBox(height: 32),
+              const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _verifyOTP,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal,
-                  minimumSize: Size(double.infinity, 50),
+                  minimumSize: const Size(double.infinity, 50),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30.0),
                   ),
                 ),
-                child: Text(
+                child: const Text(
                   'Verify',
                   style: TextStyle(
                     color: Colors.white,
@@ -155,7 +155,7 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
                   onTap: () {
                     // Implement OTP resend functionality here.
                   },
-                  child: Text(
+                  child: const Text(
                     "Didn't receive code? Resend",
                     style: TextStyle(
                       color: Colors.blueAccent,
@@ -173,6 +173,8 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
 }
 
 class SuccessPage extends StatelessWidget {
+  const SuccessPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -181,13 +183,13 @@ class SuccessPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
       ),
-      body: Center(
+      body: const Center(
         child: Text(
           'OTP Verified Successfully!',
           style: TextStyle(color: Colors.white, fontSize: 24),
