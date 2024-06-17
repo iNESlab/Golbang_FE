@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'otp_verification.dart';
+
 class ForgotPasswordPage extends StatefulWidget {
+  const ForgotPasswordPage({super.key});
+
   @override
   _ForgotPasswordPageState createState() => _ForgotPasswordPageState();
 }
@@ -14,7 +16,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       // 이메일이 유효한 경우 OTP 화면으로 이동
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => OTPVerificationPage(email: _emailController.text)),
+        MaterialPageRoute(
+            builder: (context) =>
+                OTPVerificationPage(email: _emailController.text)),
       );
     }
   }
@@ -27,7 +31,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -40,7 +44,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
+              const Text(
                 'Forgot Password?',
                 style: TextStyle(
                   fontSize: 32,
@@ -48,7 +52,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   color: Colors.white,
                 ),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
                 "Don't worry! It occurs. Please enter the email address linked with your account.",
                 style: TextStyle(
@@ -56,7 +60,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   color: Colors.grey[400],
                 ),
               ),
-              SizedBox(height: 32),
+              const SizedBox(height: 32),
               TextFormField(
                 controller: _emailController,
                 decoration: InputDecoration(
@@ -69,7 +73,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     borderSide: BorderSide.none,
                   ),
                 ),
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
                 validator: (value) {
                   if (value!.isEmpty) {
                     return 'Enter your email';
@@ -79,17 +83,17 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   return null;
                 },
               ),
-              SizedBox(height: 32),
+              const SizedBox(height: 32),
               ElevatedButton(
                 onPressed: _sendCode,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal, // 배경색
-                  minimumSize: Size(double.infinity, 50), // 전체 너비 버튼
+                  minimumSize: const Size(double.infinity, 50), // 전체 너비 버튼
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30.0),
                   ),
                 ),
-                child: Text(
+                child: const Text(
                   'Send Code',
                   style: TextStyle(
                     color: Colors.white,
@@ -103,7 +107,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   onTap: () {
                     Navigator.pop(context);
                   },
-                  child: Text(
+                  child: const Text(
                     'Remember Password? Login',
                     style: TextStyle(
                       color: Colors.blueAccent,
@@ -123,7 +127,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 class OTPVerificationPage extends StatelessWidget {
   final String email;
 
-  OTPVerificationPage({required this.email});
+  const OTPVerificationPage({super.key, required this.email});
 
   @override
   Widget build(BuildContext context) {
@@ -133,7 +137,7 @@ class OTPVerificationPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.white),
+          icon: const Icon(Icons.arrow_back, color: Colors.white),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -144,7 +148,7 @@ class OTPVerificationPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'OTP Verification',
               style: TextStyle(
                 fontSize: 32,
@@ -152,7 +156,7 @@ class OTPVerificationPage extends StatelessWidget {
                 color: Colors.white,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
               "Enter the verification code we just sent on your email address.",
               style: TextStyle(
@@ -160,7 +164,7 @@ class OTPVerificationPage extends StatelessWidget {
                 color: Colors.grey[400],
               ),
             ),
-            SizedBox(height: 32),
+            const SizedBox(height: 32),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -170,19 +174,19 @@ class OTPVerificationPage extends StatelessWidget {
                 _buildOTPField(context),
               ],
             ),
-            SizedBox(height: 32),
+            const SizedBox(height: 32),
             ElevatedButton(
               onPressed: () {
                 // OTP 확인 기능을 여기에 구현합니다.
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.teal, // 배경색
-                minimumSize: Size(double.infinity, 50), // 전체 너비 버튼
+                minimumSize: const Size(double.infinity, 50), // 전체 너비 버튼
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30.0),
                 ),
               ),
-              child: Text(
+              child: const Text(
                 'Verify',
                 style: TextStyle(
                   color: Colors.white,
@@ -196,7 +200,7 @@ class OTPVerificationPage extends StatelessWidget {
                 onTap: () {
                   // OTP 재전송 기능을 여기에 구현합니다.
                 },
-                child: Text(
+                child: const Text(
                   "Didn't receive code? Resend",
                   style: TextStyle(
                     color: Colors.blueAccent,
@@ -212,7 +216,7 @@ class OTPVerificationPage extends StatelessWidget {
   }
 
   Widget _buildOTPField(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: MediaQuery.of(context).size.width * 0.2,
       child: TextField(
         keyboardType: TextInputType.number,
@@ -229,7 +233,7 @@ class OTPVerificationPage extends StatelessWidget {
             borderSide: BorderSide.none,
           ),
         ),
-        style: TextStyle(color: Colors.white, fontSize: 24),
+        style: const TextStyle(color: Colors.white, fontSize: 24),
       ),
     );
   }
