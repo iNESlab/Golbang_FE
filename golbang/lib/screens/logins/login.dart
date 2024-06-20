@@ -3,6 +3,7 @@ import "package:http/http.dart" as http;
 import 'dart:convert';
 import 'forget_password.dart';
 import 'hi_screen.dart';
+import '../main_screen.dart'; // 메인 네비게이션 페이지를 import
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -24,25 +25,31 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    final url = Uri.parse('http://your-server-url/login');
-    final response = await http.post(
-      url,
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'email': email, 'password': password}),
+    // 임의로 로그인 성공 처리
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => const MainScreen()),
     );
 
-    if (response.statusCode == 200) {
-      final responseBody = jsonDecode(response.body);
-      if (responseBody['success']) {
-        // 로그인 성공 처리
-        // 예: 홈 화면으로 이동
-        Navigator.pushReplacementNamed(context, '/home');
-      } else {
-        _showErrorDialog(responseBody['message']);
-      }
-    } else {
-      _showErrorDialog('Login failed. Please try again.');
-    }
+    // 실제 로그인 요청 로직 (임시로 주석 처리)
+    // final url = Uri.parse('http://your-server-url/login');
+    // final response = await http.post(
+    //   url,
+    //   headers: {'Content-Type': 'application/json'},
+    //   body: jsonEncode({'email': email, 'password': password}),
+    // );
+
+    // if (response.statusCode == 200) {
+    //   final responseBody = jsonDecode(response.body);
+    //   if (responseBody['success']) {
+    //     // 로그인 성공 처리
+    //     Navigator.pushReplacementNamed(context, '/home');
+    //   } else {
+    //     _showErrorDialog(responseBody['message']);
+    //   }
+    // } else {
+    //   _showErrorDialog('Login failed. Please try again.');
+    // }
   }
 
   void _showErrorDialog(String message) {
@@ -211,7 +218,8 @@ class _LoginPageState extends State<LoginPage> {
               // KakaoTalk Sign-In Button
               OutlinedButton.icon(
                 onPressed: () {},
-                icon: Image.asset('assets/images/apple.png', width: 24),
+                icon: Image.asset('assets/images/kakao.png',
+                    width: 24), // 아이콘 파일명을 변경했습니다.
                 label: const Text('카카오 로그인',
                     style: TextStyle(color: Colors.black)),
                 style: OutlinedButton.styleFrom(
@@ -227,7 +235,8 @@ class _LoginPageState extends State<LoginPage> {
               // Naver Sign-In Button
               OutlinedButton.icon(
                 onPressed: () {},
-                icon: Image.asset('assets/images/facebook.png', width: 24),
+                icon: Image.asset('assets/images/naver.png',
+                    width: 24), // 아이콘 파일명을 변경했습니다.
                 label: const Text('네이버 로그인',
                     style: TextStyle(color: Colors.white)),
                 style: OutlinedButton.styleFrom(
