@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'signup_step2.dart';
 import 'login.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class SignUpStep1 extends StatefulWidget {
   const SignUpStep1({super.key});
@@ -44,6 +46,63 @@ class SignUpStep1State extends State<SignUpStep1> {
       return '비밀번호는 8자리 이상, 그리고 최소 1개의 숫자나 특수문자를 사용해주세요';
     }
     return null;
+  }
+
+  Future<void> _signupStep1() async {
+    final userId = _idController.text;
+    final email = _emailController.text;
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+
+    if (password != confirmPassword) {
+      _showErrorDialog('Passwords do not match');
+      return;
+    }
+
+    final url = Uri.parse('http://127.0.0.1:8000/api/user/signup/step-1/');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'userId': userId,
+        'email': email,
+        'password1': password,
+        'password2': confirmPassword,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      final responseBody = jsonDecode(response.body);
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => SignUpStep2(userId: responseBody['user_id']),
+        ),
+      );
+    } else {
+      final responseBody = jsonDecode(response.body);
+      _showErrorDialog(responseBody.toString());
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -106,11 +165,7 @@ class SignUpStep1State extends State<SignUpStep1> {
               ElevatedButton(
                 onPressed: () {
                   if (_formKey.currentState!.validate()) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const SignUpStep2()),
-                    );
+                    _signupStep1();
                   }
                 },
                 style: ElevatedButton.styleFrom(

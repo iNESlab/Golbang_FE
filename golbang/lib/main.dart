@@ -35,7 +35,6 @@ class MyApp extends StatelessWidget {
       home: const HiScreen(),
       routes: {
         '/signupStep1': (context) => const SignUpStep1(),
-        '/signupStep2': (context) => const SignUpStep2(),
         '/signupComplete': (context) => const SignupComplete(),
         '/main': (context) => const MainScreen(), // 메인 네비게이션 페이지 경로 추가
       },
