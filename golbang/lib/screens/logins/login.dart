@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import "package:http/http.dart" as http;
+import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart'; // JWT 토큰을 저장하기 위해 shared_preferences 사용
 import 'forget_password.dart';
 import 'hi_screen.dart';
 import '../main_screen.dart'; // 메인 네비게이션 페이지를 import
@@ -25,31 +26,33 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    // 임의로 로그인 성공 처리
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const MainScreen()),
+    final url = Uri.parse('http://127.0.0.1:8000/api/user/login/');
+    final response = await http.post(
+      url,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'username': email, 'password': password}),
     );
 
-    // 실제 로그인 요청 로직 (임시로 주석 처리)
-    // final url = Uri.parse('http://your-server-url/login');
-    // final response = await http.post(
-    //   url,
-    //   headers: {'Content-Type': 'application/json'},
-    //   body: jsonEncode({'email': email, 'password': password}),
-    // );
+    if (response.statusCode == 200) {
+      final responseBody = jsonDecode(response.body);
+      if (responseBody['access_token'] != null && responseBody['refresh_token'] != null) {
+        // JWT 토큰을 저장
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('access_token', responseBody['access_token']);
+        await prefs.setString('refresh_token', responseBody['refresh_token']);
 
-    // if (response.statusCode == 200) {
-    //   final responseBody = jsonDecode(response.body);
-    //   if (responseBody['success']) {
-    //     // 로그인 성공 처리
-    //     Navigator.pushReplacementNamed(context, '/home');
-    //   } else {
-    //     _showErrorDialog(responseBody['message']);
-    //   }
-    // } else {
-    //   _showErrorDialog('Login failed. Please try again.');
-    // }
+        // 로그인 성공 처리
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const MainScreen()),
+        );
+      } else {
+        _showErrorDialog('Login failed. Please try again.');
+      }
+    } else {
+      final responseBody = jsonDecode(response.body);
+      _showErrorDialog(responseBody['message'] ?? 'Login failed. Please try again.');
+    }
   }
 
   void _showErrorDialog(String message) {
@@ -158,8 +161,7 @@ class _LoginPageState extends State<LoginPage> {
                 onPressed: _login,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.teal, // Background color
-                  minimumSize:
-                      const Size(double.infinity, 50), // Full-width button
+                  minimumSize: const Size(double.infinity, 50), // Full-width button
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(30.0),
                   ),
@@ -203,8 +205,7 @@ class _LoginPageState extends State<LoginPage> {
               OutlinedButton.icon(
                 onPressed: () {},
                 icon: Image.asset('assets/images/google.png', width: 24),
-                label:
-                    const Text('Google', style: TextStyle(color: Colors.black)),
+                label: const Text('Google', style: TextStyle(color: Colors.black)),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.grey[900],
                   backgroundColor: Colors.white,
@@ -218,10 +219,8 @@ class _LoginPageState extends State<LoginPage> {
               // KakaoTalk Sign-In Button
               OutlinedButton.icon(
                 onPressed: () {},
-                icon: Image.asset('assets/images/kakao.png',
-                    width: 24), // 아이콘 파일명을 변경했습니다.
-                label: const Text('카카오 로그인',
-                    style: TextStyle(color: Colors.black)),
+                icon: Image.asset('assets/images/kakao.png', width: 24), // 아이콘 파일명을 변경했습니다.
+                label: const Text('카카오 로그인', style: TextStyle(color: Colors.black)),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.black,
                   backgroundColor: Colors.yellow,
@@ -235,10 +234,8 @@ class _LoginPageState extends State<LoginPage> {
               // Naver Sign-In Button
               OutlinedButton.icon(
                 onPressed: () {},
-                icon: Image.asset('assets/images/naver.png',
-                    width: 24), // 아이콘 파일명을 변경했습니다.
-                label: const Text('네이버 로그인',
-                    style: TextStyle(color: Colors.white)),
+                icon: Image.asset('assets/images/naver.png', width: 24), // 아이콘 파일명을 변경했습니다.
+                label: const Text('네이버 로그인', style: TextStyle(color: Colors.white)),
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
                   backgroundColor: Colors.green,

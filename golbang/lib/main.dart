@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'screens/logins/hi_screen.dart';
 import 'screens/logins/signup_step1.dart';
-import 'screens/logins/signup_step2.dart';
 import 'screens/logins/signup_complete.dart';
 import 'screens/main_screen.dart';
 
