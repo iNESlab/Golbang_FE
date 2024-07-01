@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../home/splash_screen.dart';
 
 class SignupComplete extends StatelessWidget {
   const SignupComplete({super.key});
@@ -31,7 +32,11 @@ class SignupComplete extends StatelessWidget {
             const SizedBox(height: 40),
             ElevatedButton(
               onPressed: () {
-                Navigator.popUntil(context, ModalRoute.withName('/'));
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const SplashScreen()),
+                );
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,

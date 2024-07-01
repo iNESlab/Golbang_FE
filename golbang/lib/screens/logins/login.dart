@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'forget_password.dart';
 import 'hi_screen.dart';
 import '../main_screen.dart'; // 메인 네비게이션 페이지를 import
+import 'package:golbang/global_config.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -25,11 +26,15 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
-    // 임의로 로그인 성공 처리
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const MainScreen()),
-    );
+    // 테스트 계정 정보와 비교하여 로그인 처리
+    if (email == testEmail && password == testPassword) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const MainScreen()),
+      );
+    } else {
+      _showErrorDialog('Invalid email or password');
+    }
 
     // 실제 로그인 요청 로직 (임시로 주석 처리)
     // final url = Uri.parse('http://your-server-url/login');

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:golbang/global_config.dart';
+import 'create_new_password.dart';
 
 class OTPVerificationPage extends StatefulWidget {
   final String email;
@@ -10,78 +12,37 @@ class OTPVerificationPage extends StatefulWidget {
 }
 
 class _OTPVerificationPageState extends State<OTPVerificationPage> {
-  final TextEditingController _otpController1 = TextEditingController();
-  final TextEditingController _otpController2 = TextEditingController();
-  final TextEditingController _otpController3 = TextEditingController();
-  final TextEditingController _otpController4 = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-
-  @override
-  void dispose() {
-    _otpController1.dispose();
-    _otpController2.dispose();
-    _otpController3.dispose();
-    _otpController4.dispose();
-    super.dispose();
-  }
+  List<String> otpDigits = List.filled(4, '');
+  final FocusNode _focusNode1 = FocusNode();
+  final FocusNode _focusNode2 = FocusNode();
+  final FocusNode _focusNode3 = FocusNode();
+  final FocusNode _focusNode4 = FocusNode();
 
   void _verifyOTP() {
-    // print('Verify button pressed');
-    if (_formKey.currentState!.validate()) {
-      String enteredOTP = _otpController1.text +
-          _otpController2.text +
-          _otpController3.text +
-          _otpController4.text;
+    String enteredOTP = otpDigits.join('');
 
-      // print('Entered OTP: $enteredOTP');
-
-      if (enteredOTP == '1234') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('OTP Verified Successfully!')),
-        );
-        // print('OTP Verified Successfully!');
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const SuccessPage()),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Invalid OTP, please try again.')),
-        );
-        // print('Invalid OTP, please try again.');
-      }
-    } else {
-      // print('Form validation failed');
+    // OTP 형식 검증 (숫자 4자리인지 확인)
+    if (enteredOTP.length != 4 || !RegExp(r'^\d{4}$').hasMatch(enteredOTP)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid 4-digit OTP')),
+      );
+      return; // 유효하지 않은 경우 함수 종료
     }
-  }
 
-  Widget _buildOTPField(TextEditingController controller) {
-    return SizedBox(
-      width: 50,
-      child: TextFormField(
-        controller: controller,
-        keyboardType: TextInputType.number,
-        textAlign: TextAlign.center,
-        maxLength: 1,
-        decoration: InputDecoration(
-          counterText: "",
-          filled: true,
-          fillColor: Colors.grey[800],
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(8.0),
-            borderSide: BorderSide.none,
-          ),
+    if (enteredOTP == testOTP) {
+      // OTP 일치 - 다음 화면으로 이동 등의 처리
+      //Navigator.of(context).pushReplacementNamed('/success');
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => const CreateNewPasswordPage(), // SuccessPage 생성
         ),
-        style: const TextStyle(color: Colors.white, fontSize: 24),
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return 'Input required';
-          }
-          return null;
-        },
-      ),
-    );
+      );
+    } else {
+      // OTP 불일치 - 에러 메시지 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please check your OTP')),
+      );
+    }
   }
 
   @override
@@ -93,107 +54,99 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'OTP Verification',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'OTP Verification',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              "Enter the verification code we just sent on your email address.",
+              style: TextStyle(fontSize: 16, color: Colors.grey[400]),
+            ),
+            const SizedBox(height: 32),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildOTPField(0, _focusNode1),
+                _buildOTPField(1, _focusNode2),
+                _buildOTPField(2, _focusNode3),
+                _buildOTPField(3, _focusNode4),
+              ],
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: _verifyOTP,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.teal,
+                minimumSize: const Size(double.infinity, 50),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30.0),
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                "Enter the verification code we just sent on your email address.",
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[400],
-                ),
-              ),
-              const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildOTPField(_otpController1),
-                  _buildOTPField(_otpController2),
-                  _buildOTPField(_otpController3),
-                  _buildOTPField(_otpController4),
-                ],
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _verifyOTP,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                ),
-                child: const Text(
-                  'Verify',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                  ),
-                ),
-              ),
-              Expanded(child: Container()),
-              Center(
-                child: GestureDetector(
-                  onTap: () {
-                    // Implement OTP resend functionality here.
-                  },
-                  child: const Text(
-                    "Didn't receive code? Resend",
+              child: const Text('Verify',
+                  style: TextStyle(color: Colors.white, fontSize: 18)),
+            ),
+            const Spacer(),
+            Center(
+              child: TextButton(
+                onPressed: () {
+                  // OTP 재전송 로직
+                },
+                child: const Text("Didn't receive code? Resend",
                     style: TextStyle(
-                      color: Colors.blueAccent,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
+                        color: Colors.blueAccent, fontWeight: FontWeight.bold)),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
-}
 
-class SuccessPage extends StatelessWidget {
-  const SuccessPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[900],
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.white),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+  Widget _buildOTPField(int index, FocusNode focusNode) {
+    return SizedBox(
+      width: MediaQuery.of(context).size.width * 0.2,
+      child: TextField(
+        focusNode: focusNode,
+        keyboardType: TextInputType.number,
+        textAlign: TextAlign.center,
+        maxLength: 1,
+        onChanged: (value) {
+          if (value.length == 1) {
+            otpDigits[index] = value;
+            if (index < 3) {
+              FocusScope.of(context).requestFocus(_focusNode2);
+            } else {
+              FocusScope.of(context).unfocus();
+            }
+          } else {
+            otpDigits[index] = '';
+          }
+        },
+        decoration: InputDecoration(
+          counterText: '',
+          filled: true,
+          fillColor: Colors.grey[800],
+          hintText: '0',
+          hintStyle: TextStyle(color: Colors.grey[500]),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10.0),
+            borderSide: BorderSide.none,
+          ),
         ),
-      ),
-      body: const Center(
-        child: Text(
-          'OTP Verified Successfully!',
-          style: TextStyle(color: Colors.white, fontSize: 24),
-        ),
+        style: const TextStyle(color: Colors.white, fontSize: 24),
       ),
     );
   }
