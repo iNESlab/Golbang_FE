@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'screens/logins/hi_screen.dart';
-import 'screens/logins/signup_step1.dart';
-import 'screens/logins/signup_step2.dart';
+import 'screens/logins/signup.dart';
 import 'screens/logins/signup_complete.dart';
-import 'screens/main_screen.dart';
 
 void main() {
   initializeDateFormatting().then((_) => runApp(const MyApp()));
@@ -34,10 +32,8 @@ class MyApp extends StatelessWidget {
       ),
       home: const HiScreen(),
       routes: {
-        '/signupStep1': (context) => const SignUpStep1(),
-        '/signupStep2': (context) => const SignUpStep2(),
+        '/signup': (context) => SignUpPage(),
         '/signupComplete': (context) => const SignupComplete(),
-        '/main': (context) => const MainScreen(), // 메인 네비게이션 페이지 경로 추가
       },
     );
   }

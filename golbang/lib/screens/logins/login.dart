@@ -3,8 +3,9 @@ import "package:http/http.dart" as http;
 import 'dart:convert';
 import 'forget_password.dart';
 import 'hi_screen.dart';
-import '../main_screen.dart'; // 메인 네비게이션 페이지를 import
+import '../home/splash_screen.dart';
 import 'package:golbang/global_config.dart';
+
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -14,8 +15,8 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController(text: 'test@example.com');
+  final TextEditingController _passwordController = TextEditingController(text: 'password123');
 
   Future<void> _login() async {
     final email = _emailController.text;
@@ -30,7 +31,7 @@ class _LoginPageState extends State<LoginPage> {
     if (email == testEmail && password == testPassword) {
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (context) => const MainScreen()),
+        MaterialPageRoute(builder: (context) => const SplashScreen()),
       );
     } else {
       _showErrorDialog('Invalid email or password');

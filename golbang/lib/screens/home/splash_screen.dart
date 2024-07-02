@@ -19,7 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
     await Future.delayed(const Duration(seconds: 2));
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
-        builder: (context) => const HomePage(), // MainScreen 위젯으로 변경
+        builder: (context) => HomePage(), // MainScreen 위젯으로 변경
       ),
     );
   }

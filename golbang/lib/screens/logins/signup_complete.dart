@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../home/splash_screen.dart';
+import 'login.dart';
 
 class SignupComplete extends StatelessWidget {
   const SignupComplete({super.key});
@@ -35,7 +35,7 @@ class SignupComplete extends StatelessWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => const SplashScreen()),
+                      builder: (context) => const LoginPage()),
                 );
               },
               style: ElevatedButton.styleFrom(
