@@ -9,7 +9,7 @@ class Event {
   final String dinnerStatus;
   final bool isAdmin;
 
-  Event(
+  const Event(
       this.eventName,
       this.groupName,
       this.time,

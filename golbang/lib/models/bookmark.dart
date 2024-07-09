@@ -5,7 +5,7 @@ class Bookmark {
   final String? detail1;
   final String? detail2;
 
-  Bookmark(this.title, this.value, [this.subtitle, this.detail1, this.detail2]);
+  const Bookmark(this.title, this.value, [this.subtitle, this.detail1, this.detail2]);
 
   factory Bookmark.fromJson(Map<String, dynamic> json) {
     return Bookmark(

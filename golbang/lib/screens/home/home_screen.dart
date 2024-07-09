@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import '../../widgets/bookmark_section.dart';
-import '../../widgets/groups_section.dart';
-import '../../models/bookmark.dart';
-import '../../models/event.dart';
-import '../../models/group.dart';
-import '../../widgets/section_with_scroll.dart';
-import '../events/events_screen.dart';
-import '../groups/groups_screen.dart';
-import '../profile/profile_screen.dart';
-import '../../widgets/upcoming_events.dart';
+import 'package:golbang/global_config.dart';
+import 'package:golbang/models/bookmark.dart';
+import 'package:golbang/models/event.dart';
+import 'package:golbang/models/group.dart';
+import 'package:golbang/widgets/bookmark_section.dart';
+import 'package:golbang/widgets/groups_section.dart';
+import 'package:golbang/widgets/section_with_scroll.dart';
+import 'package:golbang/widgets/upcoming_events.dart';
+import 'package:golbang/screens/events/events_screen.dart';
+import 'package:golbang/screens/groups/groups_screen.dart';
+import 'package:golbang/screens/profile/profile_screen.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,7 +25,7 @@ class _HomePageState extends State<HomePage> {
   static final List<Widget> _widgetOptions = <Widget>[
     const HomeScreen(),
     const EventsScreen(),
-    const GroupsScreen(),
+    GroupsScreen(),
     const ProfileScreen(),
   ];
 
@@ -99,40 +101,15 @@ class _HomePageState extends State<HomePage> {
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
-  Future<List<Bookmark>> fetchBookmarks() async {
-    return [
-      Bookmark('내 프로필', '-15.9', 'G핸디'),
-      Bookmark('스코어', '72(-1)', 'Par-Tee Time', '23.02.12'),
-      Bookmark('기록', '100', '99등', '23.02.07'),
-    ];
-  }
-
-  Future<List<Event>> fetchEvents() async {
-    return [
-      Event('Event 1', 'Group 1', '12:00 PM', 'Location 1', 10, 'Group A', '완료',
-          '참석', true),
-      Event('Event 2', 'Group 2', '2:00 PM', 'Location 2', 20, 'Group B', '미납',
-          '불참', false),
-      Event('Event 3', 'Group 3', '3:00 PM', 'Location 3', 30, 'Group C', '완료',
-          '미정', true),
-    ];
-  }
-
-  Future<List<Group>> fetchGroups() async {
-    return [
-      Group('Group 1', true),
-      Group('Group 2', false),
-      Group('Group 3', true),
-      Group('Group 4', false),
-      Group('Group 5', true),
-    ];
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: FutureBuilder(
-        future: Future.wait([fetchBookmarks(), fetchEvents(), fetchGroups()]),
+        future: Future.wait([
+          Future.value(GlobalConfig.bookmarks),
+          Future.value(GlobalConfig.events),
+          Future.value(GlobalConfig.groups),
+        ]),
         builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
