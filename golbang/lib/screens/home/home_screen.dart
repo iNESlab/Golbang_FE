@@ -8,7 +8,7 @@ import 'package:golbang/widgets/groups_section.dart';
 import 'package:golbang/widgets/section_with_scroll.dart';
 import 'package:golbang/widgets/upcoming_events.dart';
 import 'package:golbang/screens/events/events_screen.dart';
-import 'package:golbang/screens/groups/groups_screen.dart';
+import 'package:golbang/screens/groups/groups_main.dart';
 import 'package:golbang/screens/profile/profile_screen.dart';
 
 
@@ -25,7 +25,7 @@ class _HomePageState extends State<HomePage> {
   static final List<Widget> _widgetOptions = <Widget>[
     const HomeScreen(),
     const EventsScreen(),
-    GroupsScreen(),
+    GroupsMain(),
     const ProfileScreen(),
   ];
 
