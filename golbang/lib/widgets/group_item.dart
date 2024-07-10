@@ -9,12 +9,16 @@ class GroupItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(right: 10),
+      alignment: Alignment.center,
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Image.asset(image, width: 60, height: 60),
-          SizedBox(height: 5),
-          Text(label, style: TextStyle(fontSize: 14)),
+          Image.asset(image, width: 100, height: 70),
+          Text(
+            label,
+            style: TextStyle(fontSize: 14),
+            overflow: TextOverflow.ellipsis, // 텍스트가 길면 "..." 표시
+          ),
         ],
       ),
     );

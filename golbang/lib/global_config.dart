@@ -36,19 +36,19 @@ class GlobalConfig {
 
   static List<Map<String, String>> groupData = [
     {
-      'image': 'assets/images/google.png',
+      'image': 'assets/images/dragon.jpeg',
       'label': '가천대 동문',
     },
     {
-      'image': 'assets/images/google.png',
+      'image': 'assets/images/facebook.png',
       'label': 'INES',
     },
     {
-      'image': 'assets/images/google.png',
+      'image': 'assets/images/kakao.png',
       'label': '성남 북부신',
     },
     {
-      'image': 'assets/images/google.png',
+      'image': 'assets/images/naver.png',
       'label': '골프에 미치다',
     },
     {
@@ -66,16 +66,19 @@ class GlobalConfig {
       'title': '정수미',
       'date': '2024.03.07',
       'content': '[관리자 변경 안내] 가천대 동문 그룹 모임 관리자가 변경되었습니다.',
+      'image': 'assets/images/google.png',
     },
     {
       'title': '김민정',
       'date': '2024.03.06',
       'content': '[회비 납부 안내] 회비 납부 계좌가 기존 시흥은행에서 가천은행으로 변경되었습니다.',
+      'image': 'assets/images/google.png',
     },
     {
       'title': '이진우',
       'date': '2024.03.06',
       'content': '투표 결과 확인',
+      'image': 'assets/images/google.png',
     },
   ];
 }

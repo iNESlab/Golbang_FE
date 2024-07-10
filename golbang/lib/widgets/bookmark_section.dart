@@ -20,7 +20,7 @@ class BookmarkSection extends StatelessWidget {
 
   Widget _buildInfoCard(Bookmark bookmark) {
     return Container(
-      width: 110,
+      width: 130,
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
       decoration: BoxDecoration(
         color: Colors.white,
