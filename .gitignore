@@ -1,4 +1,5 @@
 # Miscellaneous
+golbang/build/
 *.class
 *.log
 *.pyc
