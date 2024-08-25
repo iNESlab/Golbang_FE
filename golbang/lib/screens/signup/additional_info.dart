@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:golbang/services/user_service.dart';
 import 'signup_complete.dart'; // 회원가입 완료 페이지 import
 
 class AdditionalInfoPage extends StatefulWidget {
   final String name;
   final String phoneNumber;
+  final int userId;
 
-  const AdditionalInfoPage({Key? key, required this.name, required this.phoneNumber}) : super(key: key);
+  const AdditionalInfoPage({
+    Key? key,
+    required this.name,
+    required this.phoneNumber,
+    required this.userId
+  }) : super(key: key);
 
   @override
   _AdditionalInfoPageState createState() => _AdditionalInfoPageState();
@@ -15,7 +22,7 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
   final _formKey = GlobalKey<FormState>();
   // TextEditingController에 초기값 설정
   final _nicknameController = TextEditingController(text: '닉네임 예시');
-  final _phoneNumberController = TextEditingController(text: '010-1111-1111');
+  final _phoneNumberController = TextEditingController(text: '010-1111-2222');
   final _handicapController = TextEditingController(text: '28'); // 예시 핸디캡
   final _birthdayController = TextEditingController(text: '1990-01-01'); // 예시 생일
   final _addressController = TextEditingController(text: '서울시 강남구'); // 예시 주소
@@ -32,18 +39,6 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
     _addressController.dispose();
     _studentIdController.dispose();
     super.dispose();
-  }
-
-  void _signUp() {
-    if (_formKey.currentState!.validate()) {
-      // 회원가입 로직 (예: 서버 API 호출)
-      // 회원가입 성공 시 SignUpPage로 이동
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => SignupComplete(),
-        ),
-      );
-    }
   }
 
   @override
@@ -64,7 +59,7 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
                 const SizedBox(height: 16),
                 _buildDropdownButtonFormField('성별', <String>['남자', '여자']),
                 const SizedBox(height: 16),
-                _buildTextFormField('전화번호', _handicapController, TextInputType.number),
+                _buildTextFormField('전화번호', _phoneNumberController, TextInputType.number),
                 const SizedBox(height: 16),
                 _buildTextFormField('핸디캡', _handicapController, TextInputType.number),
                 const SizedBox(height: 16),
@@ -75,7 +70,7 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
                 _buildTextFormField('학번', _studentIdController, TextInputType.text),
                 const SizedBox(height: 32),
                 ElevatedButton(
-                  onPressed: _signUp,
+                  onPressed: _signUpStep2,
                   child: const Text('가입하기'),
                 ),
                 const SizedBox(height: 16),
@@ -90,6 +85,33 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
         ),
       ),
     );
+  }
+
+  Future<void> _signUpStep2() async {
+    if (_formKey.currentState!.validate()) {
+      // 회원가입 로직 (예: 서버 API 호출)
+      var response = await UserService.saveAdditionalInfo(
+          userId: widget.userId,
+          name: _nicknameController.text,
+          phoneNumber: _phoneNumberController.text,
+          handicap: int.parse(_handicapController.text),
+          dateOfBirth: _birthdayController.text,
+          address: _addressController.text,
+          studentId: _studentIdController.text
+      );
+      // 회원가입 성공 시 SignUpCompletePage로 이동
+      if (response.statusCode == 200) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) => SignupComplete(),
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('추가 정보 갱신에 실패했습니다. 다시 시도해 주세요.')),
+        );
+      }
+    }
   }
 
   Widget _buildTextFormField(String label, TextEditingController controller, TextInputType keyboardType) {

@@ -1,4 +1,5 @@
 # Miscellaneous
+golbang/build/
 *.class
 *.log
 *.pyc
@@ -9,6 +10,9 @@
 .history
 .svn/
 migrate_working_dir/
+
+# key file
+golbang/assets/config/.env
 
 # IntelliJ related
 *.iml
@@ -24,7 +28,7 @@ migrate_working_dir/
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
-.dart_tool/
+golbang/.dart_tool/
 .flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
