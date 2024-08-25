@@ -1,34 +1,91 @@
-import 'package:flutter/material.dart';
-import "package:http/http.dart" as http;
 import 'dart:convert';
-import 'forget_password.dart';
-import 'hi_screen.dart';
+import 'package:flutter/material.dart';
+import 'package:golbang/screens/logins/widgets/login_widgets.dart';
+import 'package:golbang/screens/logins/widgets/social_login_widgets.dart';
+import 'package:golbang/services/auth_service.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';  // hooks_riverpod 사용
+import 'package:http/http.dart' as http;
+
+import '../../repoisitory/secure_storage.dart';
 import '../home/splash_screen.dart';
-import 'package:golbang/global_config.dart';
 
-
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
   _LoginPageState createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  final TextEditingController _emailController = TextEditingController(text: 'test@example.com');
-  final TextEditingController _passwordController = TextEditingController(text: 'password123');
+class _LoginPageState extends ConsumerState<LoginPage> {
+  final TextEditingController _emailController =
+  TextEditingController(text: 'test@example.com');
+  final TextEditingController _passwordController =
+  TextEditingController(text: 'password123');
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[900],
+      body: Center(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const LoginTitle(),
+              const SizedBox(height: 32),
+              EmailField(controller: _emailController),
+              const SizedBox(height: 16),
+              PasswordField(controller: _passwordController),
+              const SizedBox(height: 16),
+              const ForgotPasswordLink(),
+              const SizedBox(height: 32),
+              LoginButton(onPressed: _login),
+              const SizedBox(height: 32),
+              const SignInDivider(),
+              const SizedBox(height: 16),
+              const SocialLoginButtons(),
+              const SizedBox(height: 32),
+              const SignUpLink(),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
   Future<void> _login() async {
-    final email = _emailController.text;
-    final password = _passwordController.text;
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
 
-    if (email.isEmpty || password.isEmpty) {
+    if (_validateInputs(email, password)) {
+      try {
+        final response = await AuthService.login(
+          username: email,
+          password: password,
+        );
+        await _handleLoginResponse(response);
+      } catch (e) {
+        print('error: $e');
+        _showErrorDialog('An error occurred. Please try again.');
+      }
+    } else {
       _showErrorDialog('Please fill in all fields');
-      return;
     }
+  }
 
-    // 테스트 계정 정보와 비교하여 로그인 처리
-    if (email == testEmail && password == testPassword) {
+  bool _validateInputs(String email, String password) {
+    return email.isNotEmpty && password.isNotEmpty;
+  }
+
+  Future<void> _handleLoginResponse(http.Response response) async {
+    if (response.statusCode == 200) {
+      final body = json.decode(response.body);
+      var accessToken = body['data']['access_token'];
+      // SecureStorage 접근
+      final storage = ref.watch(secureStorageProvider);
+      await storage.saveAccessToken(accessToken);
+
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (context) => const SplashScreen()),
@@ -36,26 +93,6 @@ class _LoginPageState extends State<LoginPage> {
     } else {
       _showErrorDialog('Invalid email or password');
     }
-
-    // 실제 로그인 요청 로직 (임시로 주석 처리)
-    // final url = Uri.parse('http://your-server-url/login');
-    // final response = await http.post(
-    //   url,
-    //   headers: {'Content-Type': 'application/json'},
-    //   body: jsonEncode({'email': email, 'password': password}),
-    // );
-
-    // if (response.statusCode == 200) {
-    //   final responseBody = jsonDecode(response.body);
-    //   if (responseBody['success']) {
-    //     // 로그인 성공 처리
-    //     Navigator.pushReplacementNamed(context, '/home');
-    //   } else {
-    //     _showErrorDialog(responseBody['message']);
-    //   }
-    // } else {
-    //   _showErrorDialog('Login failed. Please try again.');
-    // }
   }
 
   void _showErrorDialog(String message) {
@@ -75,215 +112,6 @@ class _LoginPageState extends State<LoginPage> {
           ],
         );
       },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey[900],
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Welcome Back',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Login to access your account',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey[400],
-                ),
-              ),
-              const SizedBox(height: 32),
-              TextField(
-                controller: _emailController,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.grey[800],
-                  hintText: 'Email Address',
-                  hintStyle: TextStyle(color: Colors.grey[500]),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                style: const TextStyle(color: Colors.white),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.grey[800],
-                  hintText: 'Password',
-                  hintStyle: TextStyle(color: Colors.grey[500]),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                    borderSide: BorderSide.none,
-                  ),
-                  suffixIcon: Icon(
-                    Icons.visibility_off,
-                    color: Colors.grey[500],
-                  ),
-                ),
-                style: const TextStyle(color: Colors.white),
-              ),
-              const SizedBox(height: 16),
-              Align(
-                alignment: Alignment.centerRight,
-                child: GestureDetector(
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => const ForgotPasswordPage()),
-                    );
-                  },
-                  child: const Text(
-                    'Forgot Password',
-                    style: TextStyle(
-                      color: Colors.redAccent,
-                      fontSize: 14,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: _login,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal, // Background color
-                  minimumSize:
-                      const Size(double.infinity, 50), // Full-width button
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                ),
-                child: const Text(
-                  'Login',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              Row(
-                children: [
-                  Expanded(
-                    child: Divider(
-                      color: Colors.grey[700],
-                      thickness: 1,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text(
-                      'Or Sign In With',
-                      style: TextStyle(
-                        color: Colors.grey[400],
-                      ),
-                    ),
-                  ),
-                  Expanded(
-                    child: Divider(
-                      color: Colors.grey[700],
-                      thickness: 1,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              // Google Sign-In Button
-              OutlinedButton.icon(
-                onPressed: () {},
-                icon: Image.asset('assets/images/google.png', width: 24),
-                label:
-                    const Text('Google', style: TextStyle(color: Colors.black)),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.grey[900],
-                  backgroundColor: Colors.white,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // KakaoTalk Sign-In Button
-              OutlinedButton.icon(
-                onPressed: () {},
-                icon: Image.asset('assets/images/kakao.png',
-                    width: 24), // 아이콘 파일명을 변경했습니다.
-                label: const Text('카카오 로그인',
-                    style: TextStyle(color: Colors.black)),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.black,
-                  backgroundColor: Colors.yellow,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              // Naver Sign-In Button
-              OutlinedButton.icon(
-                onPressed: () {},
-                icon: Image.asset('assets/images/naver.png',
-                    width: 24), // 아이콘 파일명을 변경했습니다.
-                label: const Text('네이버 로그인',
-                    style: TextStyle(color: Colors.white)),
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white,
-                  backgroundColor: Colors.green,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 32),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Don't have an account? ",
-                    style: TextStyle(color: Colors.grey[400]),
-                  ),
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => const HiScreen()),
-                      );
-                    },
-                    child: const Text(
-                      'Sign Up',
-                      style: TextStyle(
-                        color: Colors.blueAccent,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }
