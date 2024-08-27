@@ -11,7 +11,7 @@ class GroupItem extends StatelessWidget {
     return Column(
       children: [
         Expanded(
-          child: Image.network(image, fit: BoxFit.cover),
+          child: Image.asset(image, fit: BoxFit.cover),
         ),
         SizedBox(height: 5),
         Text(label, style: TextStyle(fontSize: 16)),

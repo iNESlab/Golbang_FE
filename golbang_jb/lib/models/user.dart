@@ -1,5 +1,6 @@
 class User {
   final int userId;
+  final String userToken;
   final String username;
   final String role;
   final String fullname;
@@ -20,6 +21,7 @@ class User {
 
   User({
     required this.userId,
+    required this.userToken,
     required this.username,
     required this.role,
     required this.fullname,
@@ -42,6 +44,7 @@ class User {
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       userId: json['userId'],
+      userToken: json['userToken'],
       username: json['username'],
       role: json['role'],
       fullname: json['fullname'],
@@ -65,6 +68,7 @@ class User {
   Map<String, dynamic> toJson() {
     return {
       'userId': userId,
+      'userToken': userToken,
       'username': username,
       'role': role,
       'fullname': fullname,
@@ -83,5 +87,15 @@ class User {
       'recentConnectionTime': recentConnectionTime.toIso8601String(),
       'releaseAt': releaseAt.toIso8601String(),
     };
+  }
+  User? getUserByToken(List<User> users, String token) {
+    // List에서 특정 token과 일치하는 User를 찾아 반환
+    for (var user in users) {
+      if (user.userToken == token) {
+        return user;
+      }
+    }
+    // 일치하는 User가 없으면 null 반환
+    return null;
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
-
+import 'package:provider/provider.dart';
+import 'package:golbang/provider/user_token_provider.dart';
 import 'package:golbang/pages/home/home_page.dart';
 /*
 import 'screens/logins/hi_screen.dart';
@@ -10,7 +11,17 @@ import 'screens/logins/signup_complete.dart';
 */
 
 void main() {
-  initializeDateFormatting().then((_) => runApp(const MyApp()));
+  // 날짜 형식화를 초기화한 후 앱을 시작합니다.
+  initializeDateFormatting().then((_) {
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => UserTokenProvider()),
+        ],
+        child: const MyApp(),
+      ),
+    );
+  });
 }
 
 class MyApp extends StatelessWidget {

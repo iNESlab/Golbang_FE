@@ -76,6 +76,7 @@ class GlobalConfig {
 List<User> users = [
   User(
     userId: 1,
+    userToken: 'token_john_doe',
     username: 'john_doe',
     role: 'ROLE_USER',
     fullname: 'John Doe',
@@ -93,9 +94,11 @@ List<User> users = [
     updatedAt: DateTime.now(),
     recentConnectionTime: DateTime.now(),
     releaseAt: DateTime.now().add(Duration(days: 365)),
+
   ),
   User(
     userId: 2,
+    userToken: 'token_jane_doe',
     username: 'jane_doe',
     role: 'ROLE_USER',
     fullname: 'Jane Doe',
@@ -116,6 +119,7 @@ List<User> users = [
   ),
   User(
     userId: 3,
+    userToken: 'token_jungbeom_ko',
     username: '고중범',
     role: 'ROLE_USER',
     fullname: '고중범',
@@ -136,6 +140,7 @@ List<User> users = [
   ),
   User(
     userId: 4,
+    userToken: 'token_sumi_jung',
     username: '정수미',
     role: 'ROLE_USER',
     fullname: '정수미',
