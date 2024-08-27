@@ -41,22 +41,24 @@ class GlobalConfig {
       pendingCount: 2,
       participants: [
         Participant(
-          participantId: 17,
           statusType: "ACCEPT",
           teamType: "A",
           groupType: 1,
           sumScore: 72,
-          rank: 1,
+          rank: "1",
           handicapScore: 70,
+          handicapRank: "1",
+          points: 2
         ),
         Participant(
-          participantId: 18,
           statusType: "PENDING",
           teamType: "B",
           groupType: 2,
           sumScore: 75,
-          rank: 2,
-          handicapScore: 75,
+          rank: "2",
+          handicapScore: 73,
+          handicapRank: "2",
+          points: 2
         ),
       ], group: '가천대 동문',
     ),

@@ -2,8 +2,6 @@
 // 이벤트 참여자
 
 class Participant {
-  final int id;
-  final int memberId;
   final String teamType;
   final int groupType;
   final int sumScore;
@@ -14,8 +12,6 @@ class Participant {
   final String statusType;
 
   Participant({
-    required this.id,
-    required this.memberId,
     required this.teamType,
     required this.groupType,
     required this.sumScore,
@@ -28,8 +24,6 @@ class Participant {
 
   factory Participant.fromJson(Map<String, dynamic> json) {
     return Participant(
-      id: json['participant_id'],
-      memberId: json['member_id'],
       teamType: json['team_type'],
       groupType: json['group_type'],
       sumScore: json['sum_score'],
