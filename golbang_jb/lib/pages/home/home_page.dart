@@ -38,7 +38,7 @@ class _HomePageState extends State<HomePage> {
 
   static final List<Widget> _widgetOptions = <Widget>[
     const HomeContent(),
-    GroupMainPage(),
+    EventPage(),
     GroupMainPage(),
     const ProfileScreen(),
   ];

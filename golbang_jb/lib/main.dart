@@ -3,6 +3,7 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 import 'package:golbang/provider/user_token_provider.dart';
 import 'package:golbang/pages/home/home_page.dart';
+import 'package:golbang/pages/game/score_card_page.dart';
 /*
 import 'screens/logins/hi_screen.dart';
 import 'screens/logins/signup.dart';
@@ -46,7 +47,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         useMaterial3: true,
       ),
-      home: const HomePage(),
+      home: ScoreCardPage(),
       /*
       routes: {
         '/signup': (context) => SignUpPage(),
