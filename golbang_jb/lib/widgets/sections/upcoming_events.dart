@@ -19,7 +19,7 @@ class UpcomingEvents extends StatelessWidget {
             final event = events[index];
 
             // 첫 번째 참여자의 상태를 사용하여 테두리 색상 설정
-            String statusType = event.participants.isNotEmpty ? event.participants[0].statusType : '미정';
+            String? statusType = event.participants.isNotEmpty ? event.participants[0].statusType : '미정';
 
             return Container(
               margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
@@ -27,7 +27,7 @@ class UpcomingEvents extends StatelessWidget {
               decoration: BoxDecoration(
                 color: Colors.white,
                 border: Border.all(
-                  color: _getBorderColor(statusType),
+                  color: _getBorderColor(statusType!),
                   width: 1.5,
                 ),
                 borderRadius: BorderRadius.circular(15.0),

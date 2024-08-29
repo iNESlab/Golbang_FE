@@ -1,25 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/event/event_create1.dart';
+import 'package:golbang/repoisitory/secure_storage.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'dart:collection';
 import '../../models/event.dart';
 import '../../utils/date_utils.dart';
-import 'package:golbang/global_config.dart';
+import 'package:golbang/services/participant_service.dart';
+import 'package:golbang/services/event_service.dart';
 
 import 'event_create1.dart';
-import 'event_detail.dart'; // Import the global configuration
+import 'event_detail.dart';
 
-class EventPage extends StatefulWidget {
+class EventPage extends ConsumerStatefulWidget {
   const EventPage({super.key});
 
   @override
   EventPageState createState() => EventPageState();
 }
 
-class EventPageState extends State<EventPage> {
+class EventPageState extends ConsumerState<EventPage> {
   late final ValueNotifier<List<Event>> _selectedEvents;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
+  late EventService _eventService;
 
   final Map<DateTime, List<Event>> _events = LinkedHashMap(
     equals: isSameDay,
@@ -30,21 +34,51 @@ class EventPageState extends State<EventPage> {
   void initState() {
     super.initState();
 
-    // Initialize _events with data from GlobalConfig
-    for (var event in GlobalConfig.events) {
-      DateTime eventDate = DateTime(event.startDateTime.year, event.startDateTime.month, event.startDateTime.day);
-
-      if (_events.containsKey(eventDate)) {
-        _events[eventDate]!.add(event);
-      } else {
-        _events[eventDate] = [event];
-      }
-    }
-
     _selectedDay = _focusedDay;
     _selectedEvents = ValueNotifier(_getUpcomingEvents());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showMostRecentEvent();
+    });
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // Riverpod의 ref 사용하여 초기화
+    final storage = ref.watch(secureStorageProvider);
+    _eventService = EventService(storage);
+
+    // Load events from API for the current month
+    _loadEventsForMonth();
+  }
+
+  Future<void> _loadEventsForMonth() async {
+    final storage = ref.watch(secureStorageProvider); // Riverpod의 ref 사용
+    final eventService = EventService(storage);
+    print("AAAAAAAAAAAAAAAAA");
+    // 날짜 설정 (현재 달로 설정)
+    String date = '${_focusedDay.year}-${_focusedDay.month.toString().padLeft(2, '0')}-01';
+    print(date);
+
+    // API 호출하여 이벤트 불러오기
+    List<Event> events = await eventService.getEventsForMonth(date: date);
+
+    // 이벤트를 달력에 로드
+    setState(() {
+      for (var event in events) {
+        DateTime eventDate = DateTime(
+          event.startDateTime.year,
+          event.startDateTime.month,
+          event.startDateTime.day,
+        );
+
+        if (_events.containsKey(eventDate)) {
+          _events[eventDate]!.add(event);
+        } else {
+          _events[eventDate] = [event];
+        }
+      }
     });
   }
 
@@ -63,7 +97,7 @@ class EventPageState extends State<EventPage> {
 
   void _showMostRecentEvent() {
     DateTime now = DateTime.now();
-    if (_events.isEmpty) return; // Handle case where there are no events
+    if (_events.isEmpty) return;
 
     DateTime mostRecentDay = _events.keys
         .where((date) => date.isAfter(now) || isSameDay(date, now))
@@ -79,6 +113,14 @@ class EventPageState extends State<EventPage> {
   void dispose() {
     _selectedEvents.dispose();
     super.dispose();
+  }
+
+  // 기존의 ParticipantService를 활용하는 메서드
+  Future<void> _updateParticipantStatus(int participantId, String statusType) async {
+    final storage = ref.watch(secureStorageProvider);
+    final participantService = ParticipantService(storage);
+    await participantService.updateParticipantStatus(participantId, statusType);
+    setState(() {});
   }
 
   @override
@@ -105,6 +147,7 @@ class EventPageState extends State<EventPage> {
             },
             onPageChanged: (focusedDay) {
               _focusedDay = focusedDay;
+              _loadEventsForMonth(); // 페이지가 바뀔 때마다 이벤트 로드
             },
             calendarBuilders: CalendarBuilders(
               selectedBuilder: (context, date, events) => Container(
@@ -131,49 +174,6 @@ class EventPageState extends State<EventPage> {
                   style: const TextStyle(color: Colors.white),
                 ),
               ),
-              headerTitleBuilder: (context, date) {
-                return Center(
-                  child: GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _focusedDay = DateTime.now();
-                        _selectedDay = DateTime.now();
-                        _selectedEvents.value = _getEventsForDay(_selectedDay!);
-                      });
-                    },
-                    child: Text(
-                      '${date.year}년 ${date.month}월',
-                      style: const TextStyle(
-                        fontSize: 20.0,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                );
-              },
-              markerBuilder: (context, date, events) {
-                if (events.isNotEmpty) {
-                  Color markerColor;
-                  switch (events[0].participants[0].statusType) {
-                    case '참석':
-                      markerColor = Colors.cyan;
-                      break;
-                    case '불참':
-                      markerColor = Colors.red;
-                      break;
-                    case '참석·회식':
-                      markerColor = Colors.deepPurple;
-                      break;
-                    default:
-                      markerColor = Colors.black;
-                  }
-                  return Positioned(
-                    bottom: 1,
-                    child: _buildEventsMarker(date, events, markerColor),
-                  );
-                }
-                return Container();
-              },
             ),
             headerStyle: const HeaderStyle(
               formatButtonVisible: false,
@@ -235,7 +235,7 @@ class EventPageState extends State<EventPage> {
                     Color attendDinnerColor = Colors.grey;
                     Color absentColor = Colors.grey;
 
-                    switch (value[index].participants[index].statusType) {
+                    switch (value[index].participants[0].statusType) {
                       case '참석':
                         borderColor = Colors.cyan;
                         attendColor = Colors.cyan;
@@ -263,7 +263,7 @@ class EventPageState extends State<EventPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            value[index].group,
+                            value[index].eventTitle,
                             style: const TextStyle(fontSize: 12.0),
                           ),
                           const SizedBox(height: 4.0),
@@ -272,14 +272,17 @@ class EventPageState extends State<EventPage> {
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
                           ),
                           const SizedBox(height: 8.0),
-                          Text('시간: ${value[index].startDateTime.hour}:${value[index].endDateTime.minute}'),
-                          Text('인원수: 참석 ${value[index].participants}명'),
+                          Text('시간: ${value[index].startDateTime.hour}:${value[index].startDateTime.minute}'),
+                          Text('인원수: 참석 ${value[index].participants.length}명'),
                           Text('장소: ${value[index].location}'),
                           Row(
                             children: [
                               const Text('참석 여부: '),
                               ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  //_updateParticipantStatus(value[index].participants[0].id, '참석');
+                                  _updateParticipantStatus(1, '참석');
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: attendColor,
                                   minimumSize: const Size(50, 30),
@@ -297,7 +300,10 @@ class EventPageState extends State<EventPage> {
                               ),
                               const SizedBox(width: 8.0),
                               ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  //_updateParticipantStatus(value[index].participants[0].id, '참석·회식');
+                                  _updateParticipantStatus(1, '참석·회식');
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: attendDinnerColor,
                                   minimumSize: const Size(50, 30),
@@ -315,7 +321,10 @@ class EventPageState extends State<EventPage> {
                               ),
                               const SizedBox(width: 8.0),
                               ElevatedButton(
-                                onPressed: () {},
+                                onPressed: () {
+                                  //_updateParticipantStatus(value[index].participants[0].id, '불참');
+                                  _updateParticipantStatus(1, '불참');
+                                },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: absentColor,
                                   minimumSize: const Size(50, 30),
@@ -358,7 +367,6 @@ class EventPageState extends State<EventPage> {
                                     style: TextStyle(color: Colors.black),
                                   ),
                                 ),
-
                                 TextButton(
                                   onPressed: () {},
                                   style: TextButton.styleFrom(
@@ -367,8 +375,9 @@ class EventPageState extends State<EventPage> {
                                   child: const Text(
                                     '게임 시작',
                                     style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black),
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                    ),
                                   ),
                                 ),
                               ],

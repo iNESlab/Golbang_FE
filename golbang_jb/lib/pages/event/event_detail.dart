@@ -65,7 +65,7 @@ class EventDetailPage extends StatelessWidget {
             // Dynamic members' list or any additional event details
             if (event == '참석') ...[
               Text(
-                '참석자: ${event.group}', // Display group details or members
+                '참석자: ${event.eventTitle}', // Display group details or members
                 style: TextStyle(fontSize: 16),
               ),
               // Add other dynamic content based on event properties
