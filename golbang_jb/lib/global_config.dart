@@ -1,3 +1,4 @@
+
 import 'models/bookmark.dart';
 import 'models/event.dart';
 import 'models/group.dart';
@@ -23,47 +24,7 @@ class GlobalConfig {
     Bookmark('기록', '100', '99등', '23.02.07'),
   ];
 
-  // 데이터가 아직 준비되지 않았을 때를 위한 더미 데이터
-  static List<Event> events = [
-    Event(
-      eventId: 8,
-      eventTitle: "Annual Golf Tournament",
-      location: "Sunset Golf Club",
-      startDateTime: DateTime.parse("2024-08-02T18:00:00+09:00"),
-      endDateTime: DateTime.parse("2024-08-03T02:00:00+09:00"),
-      repeatType: "NONE",
-      gameMode: "MP",
-      alertDateTime: null,
-      participantsCount: 2,
-      partyCount: 0,
-      acceptCount: 0,
-      denyCount: 0,
-      pendingCount: 2,
-      participants: [
-        Participant(
-            statusType: "ACCEPT",
-            teamType: "A",
-            groupType: 1,
-            sumScore: 72,
-            rank: "1",
-            handicapScore: 70,
-            handicapRank: "1",
-            points: 2
-        ),
-        Participant(
-            statusType: "PENDING",
-            teamType: "B",
-            groupType: 2,
-            sumScore: 75,
-            rank: "2",
-            handicapScore: 71,
-            handicapRank: "2",
-            points: 1
-        ),
-      ],
-      group: '가천대 동문',
-    ),
-  ];
+
 
 // List<Club> club = [
 //   Club(

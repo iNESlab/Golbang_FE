@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/global_config.dart';
+
 import 'package:golbang/models/bookmark.dart';
 import 'package:golbang/models/event.dart';
 import 'package:golbang/models/group.dart';
 import 'package:golbang/models/user_profile.dart';
+import 'package:golbang/services/event_service.dart';
 import 'package:golbang/widgets/sections/bookmark_section.dart';
 import 'package:golbang/widgets/sections/groups_section.dart';
 import 'package:golbang/widgets/common/section_with_scroll.dart';
@@ -118,12 +120,17 @@ class HomeContent extends ConsumerWidget {
     final storage = ref.watch(secureStorageProvider);
     final UserService userService = UserService(storage);
     final GroupService groupService = GroupService(storage);
+    final EventService eventService = EventService(storage);
+    DateTime _focusedDay = DateTime.now();
+
+    String date = '${_focusedDay.year}-${_focusedDay.month.toString().padLeft(2, '0')}-01';
+    print(date);
 
     return Scaffold(
       body: FutureBuilder(
         future: Future.wait([
           Future.value(GlobalConfig.bookmarks),
-          Future.value(GlobalConfig.events),
+          eventService.getEventsForMonth(date: date),
           groupService.getUserGroups(), // 그룹 데이터를 비동기적으로 가져옴
         ]),
         builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
