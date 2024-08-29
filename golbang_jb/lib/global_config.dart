@@ -12,8 +12,8 @@ import 'models/club_member.dart';
 import 'models/events.dart';
 import 'models/participant.dart';
 
-const String testEmail = 'test@example.com';
-const String testPassword = 'password123';
+const String testEmail = 'test@email.com';
+const String testPassword = '1q2w3e4r';
 const String testOTP = '1234';
 
 class GlobalConfig {
@@ -56,9 +56,9 @@ class GlobalConfig {
           groupType: 2,
           sumScore: 75,
           rank: "2",
-          handicapScore: 73,
+          handicapScore: 71,
           handicapRank: "2",
-          points: 2
+          points: 1
         ),
       ], group: '가천대 동문',
     ),
