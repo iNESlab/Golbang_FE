@@ -3,7 +3,9 @@ import 'package:table_calendar/table_calendar.dart';
 import 'dart:collection';
 import '../../models/event.dart';
 import '../../utils/date_utils.dart';
-import 'package:golbang/global_config.dart'; // Import the global configuration
+import 'package:golbang/global_config.dart';
+
+import 'event_create1.dart'; // Import the global configuration
 
 class EventPage extends StatefulWidget {
   const EventPage({super.key});
@@ -194,7 +196,13 @@ class EventPageState extends State<EventPage> {
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // 일정 추가 버튼을 눌렀을 때 EventsCreate1 페이지로 이동
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => EventsCreate1()),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
