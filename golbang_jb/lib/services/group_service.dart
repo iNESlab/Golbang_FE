@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:golbang/models/user_profile.dart';
@@ -51,7 +50,8 @@ class GroupService {
           .toList();
       print('Filtered admins: $filteredAdmins');
 
-      // 로그 찍기 - members와 admins 리스트를 콤마로 조합한 후 출력
+
+// 로그 찍기 - members와 admins 리스트를 콤마로 조합한 후 출력
       String membersString = filteredMembers.join(',');
       String adminsString = filteredAdmins.join(',');
 
@@ -59,6 +59,7 @@ class GroupService {
       print('Admins string: $adminsString');
 
       // 데이터 추가
+
       request.fields['name'] = name;
       request.fields['description'] = description;
       request.fields['members'] = membersString;
@@ -73,6 +74,7 @@ class GroupService {
       final response = await request.send();
 
       if (response.statusCode == 201) {
+
         print('Success! Group created.');
         return true;
       } else {

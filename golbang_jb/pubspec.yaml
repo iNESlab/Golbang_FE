@@ -79,10 +79,7 @@ flutter:
   assets:
     - assets/config/.env
     - assets/images/
-<<<<<<< HEAD
-=======
 
->>>>>>> c6557d6 (fix(club): 모임 생성시, 201 응답 반환하도록 설정)
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 
