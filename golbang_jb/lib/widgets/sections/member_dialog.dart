@@ -1,18 +1,26 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/global_config.dart';
+import 'package:golbang/models/user_profile.dart';
 
-class MemberDialog extends StatefulWidget {
-  final List<String> selectedMembers;
-  final ValueChanged<List<String>> onMembersSelected;
+import '../../repoisitory/secure_storage.dart';
+import '../../services/user_service.dart';
 
-  MemberDialog({required this.selectedMembers, required this.onMembersSelected});
+class MemberDialog extends ConsumerStatefulWidget {
+  final List<UserProfile> selectedMembers;
+  final ValueChanged<List<UserProfile>> onMembersSelected;
+
+  MemberDialog({
+    required this.selectedMembers,
+    required this.onMembersSelected,
+  });
 
   @override
   _MemberDialogState createState() => _MemberDialogState();
 }
 
-class _MemberDialogState extends State<MemberDialog> {
-  late List<String> tempSelectedMembers;
+class _MemberDialogState extends ConsumerState<MemberDialog> {
+  late List<UserProfile> tempSelectedMembers;
 
   @override
   void initState() {
@@ -22,6 +30,9 @@ class _MemberDialogState extends State<MemberDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final storage = ref.watch(secureStorageProvider);
+    final UserService userService = UserService(storage);
+
     return AlertDialog(
       backgroundColor: Colors.white,
       shape: RoundedRectangleBorder(
@@ -54,59 +65,54 @@ class _MemberDialogState extends State<MemberDialog> {
       content: Container(
         color: Colors.white,
         width: MediaQuery.of(context).size.width * 0.9,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: '이름 또는 닉네임으로 검색',
-                  prefixIcon: Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              SizedBox(height: 10),
-              Container(
-                height: 300,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: users.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundImage: AssetImage(users[index].profileImage!),
-                      ),
-                      title: Text(users[index].fullname!),
-                      trailing: Checkbox(
-                        value: tempSelectedMembers.contains(users[index].fullname),
-                        onChanged: (bool? value) {
-                          setState(() {
-                            if (value != null && value) {
-                              tempSelectedMembers.add(users[index].fullname!);
-                            } else {
-                              tempSelectedMembers.remove(users[index].fullname);
-                            }
-                          });
-                        },
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+        child: FutureBuilder<List<UserProfile>>(
+          future: userService.getUserProfileList(), // 이 메서드가 위젯 생성 시 자동으로 호출됩니다.
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return Center(child: Text('No users found.'));
+            } else {
+              final users = snapshot.data!;
+              return ListView.builder(
+                shrinkWrap: true,
+                itemCount: users.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return ListTile(
+                    leading: CircleAvatar(
+                      // backgroundImage: NetworkImage(),
+                      backgroundImage: users[index].profileImage.startsWith('http')
+                          ? NetworkImage(users[index].profileImage)
+                          : AssetImage(users[index].profileImage) as ImageProvider,
+                    ),
+                    title: Text(users[index].name),
+                    trailing: Checkbox(
+                      value: tempSelectedMembers.contains(users[index]),
+                      onChanged: (bool? value) {
+                        setState(() {
+                          if (value != null && value) {
+                            tempSelectedMembers.add(users[index]);
+                            print('selectedMember[$index]: ${tempSelectedMembers[index]}');
+                          } else {
+                            tempSelectedMembers.remove(users[index]);
+                          }
+                        });
+                      },
+                    ),
+                  );
+                },
+              );
+            }
+          },
         ),
       ),
       actions: <Widget>[
         Center(
           child: ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop(tempSelectedMembers);
+                Navigator.of(context).pop(tempSelectedMembers);
             },
             child: Text('완료'),
             style: ElevatedButton.styleFrom(
