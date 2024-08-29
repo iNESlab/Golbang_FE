@@ -2,6 +2,7 @@ import 'models/bookmark.dart';
 import 'models/event.dart';
 import 'models/group.dart';
 import 'models/member.dart';
+import 'models/participant.dart';
 import 'models/post.dart';
 import 'models/user.dart';
 
@@ -16,13 +17,52 @@ class GlobalConfig {
     Bookmark('기록', '100', '99등', '23.02.07'),
   ];
 
+  // static List<Event> events = [
+  //   Event('Event 1', 'Group 1', DateTime(2024, 8, 28, 12, 0), 'Location 1', 10, 'Group A', '완료', '참석', true, '스트로크'),
+  //   Event('Event 2', 'Group 2', DateTime(2024, 8, 28, 14, 0), 'Location 2', 20, 'Group B', '미납', '불참', false, '스트로크'),
+  //   Event('Event 3', 'Group 3', DateTime(2024, 9, 3, 15, 0), 'Location 3', 30, 'Group C', '완료', '미정', true, '스트로크'),
+  //   Event('Event 4', 'Group 3', DateTime(2024, 9, 4, 17, 0), 'Location 4', 20, 'Group C', '완료', '미정', true, '스트로크'),
+  //   Event('Event 5', 'Group 3', DateTime(2024, 9, 5, 9, 0), 'Location 5', 10, 'Group C', '완료', '미정', true, '스트로크'),
+  // ];
+  // 데이터가 아직 준비되지 않았을 때를 위한 더미 데이터
   static List<Event> events = [
-    Event('Event 1', 'Group 1', DateTime(2024, 8, 28, 12, 0), 'Location 1', 10, 'Group A', '완료', '참석', true, '스트로크'),
-    Event('Event 2', 'Group 2', DateTime(2024, 8, 28, 14, 0), 'Location 2', 20, 'Group B', '미납', '불참', false, '스트로크'),
-    Event('Event 3', 'Group 3', DateTime(2024, 9, 3, 15, 0), 'Location 3', 30, 'Group C', '완료', '미정', true, '스트로크'),
-    Event('Event 4', 'Group 3', DateTime(2024, 9, 4, 17, 0), 'Location 4', 20, 'Group C', '완료', '미정', true, '스트로크'),
-    Event('Event 5', 'Group 3', DateTime(2024, 9, 5, 9, 0), 'Location 5', 10, 'Group C', '완료', '미정', true, '스트로크'),
+    Event(
+      eventId: 8,
+      eventTitle: "Annual Golf Tournament",
+      location: "Sunset Golf Club",
+      startDateTime: DateTime.parse("2024-08-02T18:00:00+09:00"),
+      endDateTime: DateTime.parse("2024-08-03T02:00:00+09:00"),
+      repeatType: "NONE",
+      gameMode: "MP",
+      alertDateTime: null,
+      participantsCount: 2,
+      partyCount: 0,
+      acceptCount: 0,
+      denyCount: 0,
+      pendingCount: 2,
+      participants: [
+        Participant(
+          participantId: 17,
+          statusType: "ACCEPT",
+          teamType: "A",
+          groupType: 1,
+          sumScore: 72,
+          rank: 1,
+          handicapScore: 70,
+        ),
+        Participant(
+          participantId: 18,
+          statusType: "PENDING",
+          teamType: "B",
+          groupType: 2,
+          sumScore: 75,
+          rank: 2,
+          handicapScore: 75,
+        ),
+      ], group: '가천대 동문',
+    ),
   ];
+
 
   static List<Group> groups = [
     Group(

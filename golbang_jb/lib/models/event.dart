@@ -1,55 +1,63 @@
-class Event {
-  final String eventTitle;
-  final String group;
-  final DateTime time;  // 변경된 부분
-  final String location;
-  final int participants;
-  final String organizer;
-  final String paymentStatus;
-  final String attendanceStatus; // 참석자 수
-  final bool isCompleted;
-  final String gameMode; // Django의 game_mode 필드
+// event.dart
 
-  Event(
-      this.eventTitle,
-      this.group,
-      this.time,  // 변경된 부분
-      this.location,
-      this.participants,
-      this.organizer,
-      this.paymentStatus,
-      this.attendanceStatus,
-      this.isCompleted,
-      this.gameMode,
-      );
+import 'package:golbang/models/participant.dart';
+
+class Event {
+  final int eventId;
+  final String group;
+  final String eventTitle;
+  final String location;
+  final DateTime startDateTime;
+  final DateTime endDateTime;
+  final String repeatType;
+  final String gameMode;
+  final DateTime? alertDateTime;
+  final int participantsCount;
+  final int partyCount;
+  final int acceptCount;
+  final int denyCount;
+  final int pendingCount;
+  final List<Participant> participants;
+
+  Event({
+    required this.eventId,
+    required this.group,
+    required this.eventTitle,
+    required this.location,
+    required this.startDateTime,
+    required this.endDateTime,
+    required this.repeatType,
+    required this.gameMode,
+    this.alertDateTime,
+    required this.participantsCount,
+    required this.partyCount,
+    required this.acceptCount,
+    required this.denyCount,
+    required this.pendingCount,
+    required this.participants,
+  });
 
   factory Event.fromJson(Map<String, dynamic> json) {
     return Event(
-      json['title'],
-      json['group'],
-      DateTime.parse(json['time']),  // 변경된 부분
-      json['location'],
-      json['participants'],
-      json['organizer'],
-      json['paymentStatus'],
-      json['attendanceStatus'],
-      json['isCompleted'],
-      json['gameMode'],
+      eventId: json['event_id'],
+      group: json['group'],
+      eventTitle: json['event_title'],
+      location: json['location'],
+      startDateTime: DateTime.parse(json['start_date_time']),
+      endDateTime: DateTime.parse(json['end_date_time']),
+      repeatType: json['repeat_type'],
+      gameMode: json['game_mode'],
+      alertDateTime: json['alert_date_time'] != null
+          ? DateTime.parse(json['alert_date_time'])
+          : null,
+      participantsCount: json['participants_count'],
+      partyCount: json['party_count'],
+      acceptCount: json['accept_count'],
+      denyCount: json['deny_count'],
+      pendingCount: json['pending_count'],
+      participants: (json['participants'] as List)
+          .map((p) => Participant.fromJson(p))
+          .toList(),
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'title': eventTitle,
-      'group': group,
-      'time': time.toIso8601String(),  // 변경된 부분
-      'location': location,
-      'participants': participants,
-      'organizer': organizer,
-      'paymentStatus': paymentStatus,
-      'attendanceStatus': attendanceStatus,
-      'isCompleted': isCompleted,
-      'gameMode': gameMode,
-    };
   }
 }

@@ -43,7 +43,7 @@ class EventDetailPage extends StatelessWidget {
                       style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      '${event.time.toLocal().toIso8601String().split('T').first} • ${event.time.hour}:${event.time.minute.toString().padLeft(2, '0')} ~ ${event.time.add(Duration(hours: 2)).hour}:${event.time.minute.toString().padLeft(2, '0')}', // Event time range
+                      '${event.startDateTime.toLocal().toIso8601String().split('T').first} • ${event.endDateTime.hour}:${event.startDateTime.minute.toString().padLeft(2, '0')} ~ ${event.endDateTime.add(Duration(hours: 2)).hour}:${event.startDateTime.minute.toString().padLeft(2, '0')}', // Event time range
                       style: TextStyle(fontSize: 16),
                     ),
                     Text(
@@ -65,7 +65,7 @@ class EventDetailPage extends StatelessWidget {
             ),
             SizedBox(height: 10),
             // Dynamic members' list or any additional event details
-            if (event.attendanceStatus == '참석') ...[
+            if (event == '참석') ...[
               Text(
                 '참석자: ${event.group}', // Display group details or members
                 style: TextStyle(fontSize: 16),

@@ -31,7 +31,7 @@ class EventPageState extends State<EventPage> {
 
     // Initialize _events with data from GlobalConfig
     for (var event in GlobalConfig.events) {
-      DateTime eventDate = DateTime(event.time.year, event.time.month, event.time.day);
+      DateTime eventDate = DateTime(event.startDateTime.year, event.startDateTime.month, event.startDateTime.day);
 
       if (_events.containsKey(eventDate)) {
         _events[eventDate]!.add(event);
@@ -57,7 +57,7 @@ class EventPageState extends State<EventPage> {
         .where((entry) => entry.key.isAfter(now) || isSameDay(entry.key, now))
         .expand((entry) => entry.value)
         .toList()
-      ..sort((a, b) => a.time.compareTo(b.time));
+      ..sort((a, b) => a.startDateTime.compareTo(b.endDateTime));
   }
 
   void _showMostRecentEvent() {
@@ -153,7 +153,7 @@ class EventPageState extends State<EventPage> {
               markerBuilder: (context, date, events) {
                 if (events.isNotEmpty) {
                   Color markerColor;
-                  switch (events[0].attendanceStatus) {
+                  switch (events[0].participants[0].statusType) {
                     case '참석':
                       markerColor = Colors.cyan;
                       break;
@@ -235,7 +235,7 @@ class EventPageState extends State<EventPage> {
                     Color attendDinnerColor = Colors.grey;
                     Color absentColor = Colors.grey;
 
-                    switch (value[index].attendanceStatus) {
+                    switch (value[index].participants[index].statusType) {
                       case '참석':
                         borderColor = Colors.cyan;
                         attendColor = Colors.cyan;
@@ -272,7 +272,7 @@ class EventPageState extends State<EventPage> {
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
                           ),
                           const SizedBox(height: 8.0),
-                          Text('시간: ${value[index].time.hour}:${value[index].time.minute}'),
+                          Text('시간: ${value[index].startDateTime.hour}:${value[index].endDateTime.minute}'),
                           Text('인원수: 참석 ${value[index].participants}명'),
                           Text('장소: ${value[index].location}'),
                           Row(
