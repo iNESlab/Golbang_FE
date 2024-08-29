@@ -91,3 +91,14 @@ Map<String, dynamic> getGroupMembers(int groupId) {
     "data": groupMembers,
   };
 }
+
+User? getUserByToken(List<User> users, String token) {
+  // List에서 특정 token과 일치하는 User를 찾아 반환
+  for (var user in users) {
+    if (user.userToken == token) {
+      return user;
+    }
+  }
+  // 일치하는 User가 없으면 null 반환
+  return null;
+}

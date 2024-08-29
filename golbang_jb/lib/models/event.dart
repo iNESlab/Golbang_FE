@@ -1,7 +1,7 @@
 class Event {
   final String title;
   final String group;
-  final String time;
+  final DateTime time;  // 변경된 부분
   final String location;
   final int participants;
   final String organizer;
@@ -12,7 +12,7 @@ class Event {
   Event(
       this.title,
       this.group,
-      this.time,
+      this.time,  // 변경된 부분
       this.location,
       this.participants,
       this.organizer,
@@ -25,7 +25,7 @@ class Event {
     return Event(
       json['title'],
       json['group'],
-      json['time'],
+      DateTime.parse(json['time']),  // 변경된 부분
       json['location'],
       json['participants'],
       json['organizer'],
@@ -39,7 +39,7 @@ class Event {
     return {
       'title': title,
       'group': group,
-      'time': time,
+      'time': time.toIso8601String(),  // 변경된 부분
       'location': location,
       'participants': participants,
       'organizer': organizer,

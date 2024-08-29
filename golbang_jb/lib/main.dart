@@ -7,10 +7,25 @@ import 'package:golbang/pages/signup/signup_complete.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:golbang/pages/home/home_page.dart';
-
+import 'package:golbang/pages/game/score_card_page.dart';
+/*
+import 'screens/logins/hi_screen.dart';
+import 'screens/logins/signup.dart';
+import 'screens/logins/signup_complete.dart';
+*/
 Future<void> main() async {
   await dotenv.load(fileName: 'assets/config/.env');
-  initializeDateFormatting().then((_) => runApp(const MyApp()));
+  // 날짜 형식화를 초기화한 후 앱을 시작합니다.
+  initializeDateFormatting().then((_) {
+    runApp(
+      MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (_) => UserTokenProvider()),
+        ],
+        child: const MyApp(),
+      ),
+    );
+  });
 }
 
 class MyApp extends StatelessWidget {

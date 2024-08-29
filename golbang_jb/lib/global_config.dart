@@ -17,11 +17,11 @@ class GlobalConfig {
   ];
 
   static List<Event> events = [
-    Event('Event 1', 'Group 1', '12:00 PM', 'Location 1', 10, 'Group A', '완료', '참석', true),
-    Event('Event 2', 'Group 2', '2:00 PM', 'Location 2', 20, 'Group B', '미납', '불참', false),
-    Event('Event 3', 'Group 3', '3:00 PM', 'Location 3', 30, 'Group C', '완료', '미정', true),
-    Event('Event 3', 'Group 3', '3:00 PM', 'Location 3', 30, 'Group C', '완료', '미정', true),
-    Event('Event 3', 'Group 3', '3:00 PM', 'Location 3', 30, 'Group C', '완료', '미정', true),
+    Event('Event 1', 'Group 1', DateTime(2024, 8, 28, 12, 0), 'Location 1', 10, 'Group A', '완료', '참석', true),
+    Event('Event 2', 'Group 2', DateTime(2024, 8, 28, 14, 0), 'Location 2', 20, 'Group B', '미납', '불참', false),
+    Event('Event 3', 'Group 3', DateTime(2024, 9, 3, 15, 0), 'Location 3', 30, 'Group C', '완료', '미정', true),
+    Event('Event 4', 'Group 3', DateTime(2024, 9, 4, 17, 0), 'Location 3', 30, 'Group C', '완료', '미정', true),
+    Event('Event 5', 'Group 3', DateTime(2024, 9, 5, 9, 0), 'Location 3', 30, 'Group C', '완료', '미정', true),
   ];
 
   static List<Group> groups = [
@@ -76,6 +76,7 @@ class GlobalConfig {
 List<User> users = [
   User(
     userId: 1,
+    userToken: 'token_john_doe',
     username: 'john_doe',
     role: 'ROLE_USER',
     fullname: 'John Doe',
@@ -93,9 +94,11 @@ List<User> users = [
     updatedAt: DateTime.now(),
     recentConnectionTime: DateTime.now(),
     releaseAt: DateTime.now().add(Duration(days: 365)),
+
   ),
   User(
     userId: 2,
+    userToken: 'token_jane_doe',
     username: 'jane_doe',
     role: 'ROLE_USER',
     fullname: 'Jane Doe',
@@ -116,6 +119,7 @@ List<User> users = [
   ),
   User(
     userId: 3,
+    userToken: 'token_jungbeom_ko',
     username: '고중범',
     role: 'ROLE_USER',
     fullname: '고중범',
@@ -136,6 +140,7 @@ List<User> users = [
   ),
   User(
     userId: 4,
+    userToken: 'token_sumi_jung',
     username: '정수미',
     role: 'ROLE_USER',
     fullname: '정수미',

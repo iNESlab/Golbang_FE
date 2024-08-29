@@ -4,15 +4,20 @@ import 'package:golbang/api.dart';
 import 'package:golbang/widgets/sections/member_dialog.dart';
 import 'package:golbang/widgets/sections/member_invite.dart';
 
+import '../../models/user.dart';
+
 class GroupCreatePage extends StatefulWidget {
   @override
   _GroupCreatePageState createState() => _GroupCreatePageState();
 }
 
 class _GroupCreatePageState extends State<GroupCreatePage> {
+
   List<String> selectedMembers = [];
   TextEditingController _groupNameController = TextEditingController();
   TextEditingController _groupDescriptionController = TextEditingController();
+
+  User? user = getUserByToken(users, 'token_john_doe');
 
   void _showMemberDialog() {
     showDialog<List<String>>(
@@ -106,7 +111,7 @@ class _GroupCreatePageState extends State<GroupCreatePage> {
                 leading: CircleAvatar(
                   backgroundImage: AssetImage('assets/images/apple.png'),
                 ),
-                title: Text('박김정'),
+                title: Text(user!.username),
                 trailing: IconButton(
                   icon: Icon(Icons.arrow_forward_ios, color: Colors.green),
                   onPressed: _showMemberDialog,
