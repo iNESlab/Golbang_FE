@@ -216,45 +216,6 @@ List<User> users = [
   ),
 ];
 
-List<Member> members = [
-  Member(
-    id: 1,
-    groupId: 1,
-    userId: 1,
-    role: 'MEMBER',
-  ),
-  Member(
-    id: 2,
-    groupId: 2,
-    userId: 1,
-    role: 'MEMBER',
-  ),
-  Member(
-    id: 3,
-    groupId: 3,
-    userId: 2,
-    role: 'MEMBER',
-  ),
-  Member(
-    id: 4,
-    groupId: 4,
-    userId: 1,
-    role: 'MEMBER',
-  ),
-  Member(
-    id: 5,
-    groupId: 5,
-    userId: 2,
-    role: 'MEMBER',
-  ),
-  Member(
-    id: 5,
-    groupId: 5,
-    userId: 1,
-    role: 'MEMBER',
-  ),
-];
-
 List<Post> posts = [
   Post(
     postId: 1,

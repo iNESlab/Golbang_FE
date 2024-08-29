@@ -23,7 +23,8 @@ class _CommunityMainState extends State<CommunityMain> {
     super.initState();
     final groupId = _getGroupId();
     posts = getGroupPosts(groupId)['data'];
-    members = getGroupMembers(groupId)['data'];
+    members = [];
+    //members = getGroupMembers(groupId)['data'];
 
     // 로그에 데이터 출력
     print('Posts: $posts');

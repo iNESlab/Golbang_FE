@@ -29,24 +29,6 @@ Map<String, dynamic> getGroupPosts(int groupId) {
   };
 }
 
-Map<String, dynamic> getGroupMembers(int groupId) {
-  var groupMembers = members.where((member) => member.groupId == groupId).map((member) {
-    var user = users.firstWhere((user) => user.userId == member.userId);
-    return {
-      "user_id": user.userId,
-      "username": user.username,
-      "fullname": user.fullname,
-      "email": user.email,
-      "profileImage": user.profileImage,
-    };
-  }).toList();
-
-  return {
-    "status": 200,
-    "message": "Success",
-    "data": groupMembers,
-  };
-}
 
 User? getUserByToken(List<User> users, String token) {
   // List에서 특정 token과 일치하는 User를 찾아 반환

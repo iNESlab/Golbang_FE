@@ -19,15 +19,14 @@ class Group {
 
   // JSON 데이터를 Group 객체로 변환하는 함수
   factory Group.fromJson(Map<String, dynamic> json) {
-    var membersList = json['members'] as List;
-    List<Member> members = membersList.map((i) => Member.fromJson(i)).toList();
-
     return Group(
-      id: json['id'],
-      name: json['name'],
-      description: json['description'],
-      image: json['image'],
-      members: members,
+      id: json['id'] ?? 0, // 기본값 설정
+      name: json['name'] ?? '',
+      description: json['description'] ?? '',
+      image: json['image'] ?? 'assets/images/apple.png',
+      members: (json['members'] as List<dynamic>)
+          .map((member) => Member.fromJson(member))
+          .toList(),
       createdAt: DateTime.parse(json['created_at']),
     );
   }
