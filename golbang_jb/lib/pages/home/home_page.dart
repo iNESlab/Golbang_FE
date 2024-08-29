@@ -8,12 +8,11 @@ import 'package:golbang/widgets/sections/bookmark_section.dart';
 import 'package:golbang/widgets/sections/groups_section.dart';
 import 'package:golbang/widgets/common/section_with_scroll.dart';
 import 'package:golbang/widgets/sections/upcoming_events.dart';
-
 import 'package:golbang/pages/event/event_main.dart';
 import 'package:golbang/pages/group/group_main.dart';
 import 'package:golbang/pages/profile/profile_screen.dart';
 import 'package:golbang/api.dart';
-import 'package:provider/provider.dart'; // Import API functions
+import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -119,6 +118,13 @@ class HomeContent extends StatelessWidget {
   Widget build(BuildContext context) {
     // Simulate fetching user token
     final userTokenProvider = Provider.of<UserTokenProvider>(context);
+
+    // null-check to avoid null value error
+    if (userTokenProvider.userToken == null) {
+      return Center(child: Text('User token is not available.'));
+    }
+
+    // Handle asynchronous call to getUserGroups
     var userGroupsData = getUserGroups(userTokenProvider.userToken!);
     List<Group> userGroups = userGroupsData;
 
