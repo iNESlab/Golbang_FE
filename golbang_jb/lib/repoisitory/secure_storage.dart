@@ -54,16 +54,20 @@ class SecureStorage {
   }
 
   // 에세스 토큰 불러오기
-  Future<String?> readAccessToken() async {
+  Future<String> readAccessToken() async {
     try {
       final accessToken = await storage.read(key: 'ACCESS_TOKEN');
       print('[SECURE_STORAGE] readAccessToken: $accessToken');
       //final refreshToken = await storage.read(key: REFRESH_TOKEN);
       //print('[SECURE_STORAGE] readRefreshToken: $refreshToken');
+
+      if(accessToken == null)
+        throw StateError('Access token is not available');
+
       return accessToken;
     } catch (e) {
       print("[ERR] AccessToken 불러오기 실패: $e");
-      return null;
+      throw StateError('Failed to retrieve access token: $e');
     }
   }
 }
