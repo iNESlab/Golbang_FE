@@ -4,7 +4,7 @@
 
 import 'package:golbang/models/participant.dart';
 
-class Event {
+class Events {
   final int id;
   final String title;
   final String location;
@@ -15,7 +15,7 @@ class Event {
   final DateTime? alertDateTime;
   final List<Participant> participants;
 
-  Event({
+  Events({
     required this.id,
     required this.title,
     required this.location,
@@ -27,11 +27,11 @@ class Event {
     required this.participants,
   });
 
-  factory Event.fromJson(Map<String, dynamic> json) {
+  factory Events.fromJson(Map<String, dynamic> json) {
     var participantsFromJson = json['participants'] as List;
     List<Participant> participantList = participantsFromJson.map((i) => Participant.fromJson(i)).toList();
 
-    return Event(
+    return Events(
       id: json['event_id'],
       title: json['event_title'],
       location: json['location'],

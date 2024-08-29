@@ -2,9 +2,15 @@ import 'models/bookmark.dart';
 import 'models/event.dart';
 import 'models/group.dart';
 import 'models/member.dart';
-import 'models/participant.dart';
 import 'models/post.dart';
 import 'models/user.dart';
+
+// 민정 사용 로직:
+import 'models/users.dart';
+import 'models/club.dart';
+import 'models/club_member.dart';
+import 'models/events.dart';
+import 'models/participant.dart';
 
 const String testEmail = 'test@example.com';
 const String testPassword = 'password123';
@@ -17,13 +23,6 @@ class GlobalConfig {
     Bookmark('기록', '100', '99등', '23.02.07'),
   ];
 
-  // static List<Event> events = [
-  //   Event('Event 1', 'Group 1', DateTime(2024, 8, 28, 12, 0), 'Location 1', 10, 'Group A', '완료', '참석', true, '스트로크'),
-  //   Event('Event 2', 'Group 2', DateTime(2024, 8, 28, 14, 0), 'Location 2', 20, 'Group B', '미납', '불참', false, '스트로크'),
-  //   Event('Event 3', 'Group 3', DateTime(2024, 9, 3, 15, 0), 'Location 3', 30, 'Group C', '완료', '미정', true, '스트로크'),
-  //   Event('Event 4', 'Group 3', DateTime(2024, 9, 4, 17, 0), 'Location 4', 20, 'Group C', '완료', '미정', true, '스트로크'),
-  //   Event('Event 5', 'Group 3', DateTime(2024, 9, 5, 9, 0), 'Location 5', 10, 'Group C', '완료', '미정', true, '스트로크'),
-  // ];
   // 데이터가 아직 준비되지 않았을 때를 위한 더미 데이터
   static List<Event> events = [
     Event(
@@ -63,6 +62,68 @@ class GlobalConfig {
     ),
   ];
 
+
+  // List<Club> club = [
+  //   Club(
+  //     id: 1,
+  //     name: '가천대 동문',
+  //     description: '가천대 동문 그룹 모임',
+  //     image: 'assets/images/dragon.jpeg',
+  //     createdAt: DateTime.parse('2024-07-01T00:00:00Z'),
+  //     members: [
+  //       ClubMember(
+  //           user: Users(
+  //             userId: 'ming',
+  //             email: 'ming@email.com',
+  //             name: 'Test Ming',
+  //             handicap: 1,
+  //             studentId: '1',
+  //             phoneNumber: '123-4567-8900',
+  //             address: '123',
+  //
+  //         ),
+  //         role: 'ADMIN',
+  //         totalPoints: 100,
+  //         totalRank: '1',
+  //         totalHandicapRank: '2',
+  //         totalAvgScore: 89,
+  //         totalHandicapAvgScore: 84
+  //       )
+  //       ]
+  //   )
+  // ];
+  //
+  // List<ClubMember> clubMember = [
+  //   ClubMember(
+  //     user: Users(
+  //       userId: 1,
+  //       userToken: 'token_john_doe',
+  //       username: 'john_doe',
+  //       role: 'ROLE_USER',
+  //       fullname: 'John Doe',
+  //       email: 'john.doe@example.com',
+  //       loginType: 'normal',
+  //       provider: 'local',
+  //       password: 'password123',
+  //       mobile: '123-456-7890',
+  //       address: '123 Main St, Anytown, USA',
+  //       dateOfBirth: DateTime(1990, 1, 1),
+  //       handicap: 'None',
+  //       studentId: 'S12345678',
+  //       profileImage: 'assets/images/apple.png',
+  //       createdAt: DateTime.now(),
+  //       updatedAt: DateTime.now(),
+  //       recentConnectionTime: DateTime.now(),
+  //       releaseAt: DateTime.now().add(Duration(days: 365)),
+  //     ),
+  //     role: 'ADMIN',
+  //     totalPoints: 100,
+  //     totalRank: '1',
+  //     totalHandicapRank: '2',
+  //     totalAvgScore: 89,
+  //     totalHandicapAvgScore: 84
+  //   ),
+  // ];
 
   static List<Group> groups = [
     Group(

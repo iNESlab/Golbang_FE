@@ -2,7 +2,7 @@
 // 사용자
 // 추후 이 코드를 models/user.dart에 덮어씌워야 함
 
-class User {
+class Users {
   final int id;
   final String userId;
   final String email;
@@ -14,7 +14,7 @@ class User {
   final String? studentId;
   final String? profileImage;
 
-  User({
+  Users({
     required this.id,
     required this.userId,
     required this.email,
@@ -27,8 +27,8 @@ class User {
     this.profileImage,
   });
 
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
+  factory Users.fromJson(Map<String, dynamic> json) {
+    return Users(
       id: json['id'],
       userId: json['user_id'],
       email: json['email'],
