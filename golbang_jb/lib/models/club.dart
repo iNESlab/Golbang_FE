@@ -1,6 +1,8 @@
 // models/club.py
 // 모임
 
+import 'club_member.dart';
+
 class Club {
   final int id;
   final String name;
@@ -19,45 +21,16 @@ class Club {
   });
 
   factory Club.fromJson(Map<String, dynamic> json) {
+    var membersFromJson = json['members'] as List;
+    List<ClubMember> memberList = membersFromJson.map((i) => ClubMember.fromJson(i)).toList();
+
     return Club(
       id: json['id'],
       name: json['name'],
       description: json['description'],
       image: json['image'],
-      members: (json['members'] as List)
-          .map((member) => ClubMember.fromJson(member))
-          .toList(),
+      members: memberList,
       createdAt: DateTime.parse(json['created_at']),
-    );
-  }
-}
-
-class ClubMember {
-  final User user;
-  final String role;
-
-  ClubMember({required this.user, required this.role});
-
-  factory ClubMember.fromJson(Map<String, dynamic> json) {
-    return ClubMember(
-      user: User.fromJson(json['user']),
-      role: json['role'],
-    );
-  }
-}
-
-class User {
-  final int id;
-  final String name;
-  final String email;
-
-  User({required this.id, required this.name, required this.email});
-
-  factory User.fromJson(Map<String, dynamic> json) {
-    return User(
-      id: json['id'],
-      name: json['name'],
-      email: json['email'],
     );
   }
 }
