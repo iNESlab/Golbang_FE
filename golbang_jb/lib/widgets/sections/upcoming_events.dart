@@ -17,13 +17,17 @@ class UpcomingEvents extends StatelessWidget {
           itemCount: events.length,
           itemBuilder: (context, index) {
             final event = events[index];
+
+            // 첫 번째 참여자의 상태를 사용하여 테두리 색상 설정
+            String statusType = event.participants.isNotEmpty ? event.participants[0].statusType : '미정';
+
             return Container(
               margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
               padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 border: Border.all(
-                  color: _getBorderColor(event.attendanceStatus),
+                  color: _getBorderColor(statusType),
                   width: 1.5,
                 ),
                 borderRadius: BorderRadius.circular(15.0),
@@ -44,31 +48,28 @@ class UpcomingEvents extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          event.title,
+                          event.eventTitle,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        if (event.isCompleted)
-                          const Icon(
-                            Icons.admin_panel_settings,
-                            color: Colors.green,
-                            size: 25,
-                          ),
+                        // if (event.isCompleted)
+                        //   const Icon(
+                        //     Icons.admin_panel_settings,
+                        //     color: Colors.green,
+                        //     size: 25,
+                        //   ),
                       ],
                     ),
                     Text(
-                      '${event.time}',
+                      '${event.startDateTime.toLocal()}',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text('장소: ${event.location}'),
                     Row(
                       children: [
                         const Text('참석 여부: '),
-                        _buildStatusButton(event.attendanceStatus),
-                        const SizedBox(width: 8.0),
-                        const Text('회비: '),
-                        _buildPaymentButton(event.paymentStatus),
+                        _buildStatusButton(statusType),
                       ],
                     ),
                   ],
@@ -107,34 +108,6 @@ class UpcomingEvents extends StatelessWidget {
       ),
       child: Text(
         status,
-        style: const TextStyle(fontSize: 12, color: Colors.white),
-      ),
-    );
-  }
-
-  Widget _buildPaymentButton(String paymentStatus) {
-    Color color;
-    switch (paymentStatus) {
-      case '완료':
-        color = Colors.deepPurple;
-        break;
-      case '미납':
-        color = Colors.red;
-        break;
-      default:
-        color = Colors.grey;
-    }
-    return ElevatedButton(
-      onPressed: () {},
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        minimumSize: const Size(40, 30),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
-        ),
-      ),
-      child: Text(
-        paymentStatus,
         style: const TextStyle(fontSize: 12, color: Colors.white),
       ),
     );

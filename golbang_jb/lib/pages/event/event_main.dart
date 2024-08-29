@@ -3,7 +3,10 @@ import 'package:table_calendar/table_calendar.dart';
 import 'dart:collection';
 import '../../models/event.dart';
 import '../../utils/date_utils.dart';
-import 'package:golbang/global_config.dart'; // Import the global configuration
+import 'package:golbang/global_config.dart';
+
+import 'event_create1.dart';
+import 'event_detail.dart'; // Import the global configuration
 
 class EventPage extends StatefulWidget {
   const EventPage({super.key});
@@ -28,7 +31,7 @@ class EventPageState extends State<EventPage> {
 
     // Initialize _events with data from GlobalConfig
     for (var event in GlobalConfig.events) {
-      DateTime eventDate = DateTime(event.time.year, event.time.month, event.time.day);
+      DateTime eventDate = DateTime(event.startDateTime.year, event.startDateTime.month, event.startDateTime.day);
 
       if (_events.containsKey(eventDate)) {
         _events[eventDate]!.add(event);
@@ -54,7 +57,7 @@ class EventPageState extends State<EventPage> {
         .where((entry) => entry.key.isAfter(now) || isSameDay(entry.key, now))
         .expand((entry) => entry.value)
         .toList()
-      ..sort((a, b) => a.time.compareTo(b.time));
+      ..sort((a, b) => a.startDateTime.compareTo(b.endDateTime));
   }
 
   void _showMostRecentEvent() {
@@ -150,7 +153,7 @@ class EventPageState extends State<EventPage> {
               markerBuilder: (context, date, events) {
                 if (events.isNotEmpty) {
                   Color markerColor;
-                  switch (events[0].attendanceStatus) {
+                  switch (events[0].participants[0].statusType) {
                     case '참석':
                       markerColor = Colors.cyan;
                       break;
@@ -194,7 +197,13 @@ class EventPageState extends State<EventPage> {
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    // 일정 추가 버튼을 눌렀을 때 EventsCreate1 페이지로 이동
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => EventsCreate1()),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
@@ -226,7 +235,7 @@ class EventPageState extends State<EventPage> {
                     Color attendDinnerColor = Colors.grey;
                     Color absentColor = Colors.grey;
 
-                    switch (value[index].attendanceStatus) {
+                    switch (value[index].participants[index].statusType) {
                       case '참석':
                         borderColor = Colors.cyan;
                         attendColor = Colors.cyan;
@@ -259,11 +268,11 @@ class EventPageState extends State<EventPage> {
                           ),
                           const SizedBox(height: 4.0),
                           Text(
-                            value[index].title,
+                            value[index].eventTitle,
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
                           ),
                           const SizedBox(height: 8.0),
-                          Text('시간: ${value[index].time.hour}:${value[index].time.minute}'),
+                          Text('시간: ${value[index].startDateTime.hour}:${value[index].endDateTime.minute}'),
                           Text('인원수: 참석 ${value[index].participants}명'),
                           Text('장소: ${value[index].location}'),
                           Row(
@@ -333,7 +342,14 @@ class EventPageState extends State<EventPage> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 TextButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => EventDetailPage(event: value[index]),
+                                      ),
+                                    );
+                                  },
                                   style: TextButton.styleFrom(
                                     foregroundColor: Colors.green,
                                   ),
@@ -342,6 +358,7 @@ class EventPageState extends State<EventPage> {
                                     style: TextStyle(color: Colors.black),
                                   ),
                                 ),
+
                                 TextButton(
                                   onPressed: () {},
                                   style: TextButton.styleFrom(
