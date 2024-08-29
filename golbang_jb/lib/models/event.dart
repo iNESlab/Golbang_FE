@@ -1,16 +1,17 @@
 class Event {
-  final String title;
+  final String eventTitle;
   final String group;
   final DateTime time;  // 변경된 부분
   final String location;
   final int participants;
   final String organizer;
   final String paymentStatus;
-  final String attendanceStatus;
+  final String attendanceStatus; // 참석자 수
   final bool isCompleted;
+  final String gameMode; // Django의 game_mode 필드
 
   Event(
-      this.title,
+      this.eventTitle,
       this.group,
       this.time,  // 변경된 부분
       this.location,
@@ -19,6 +20,7 @@ class Event {
       this.paymentStatus,
       this.attendanceStatus,
       this.isCompleted,
+      this.gameMode,
       );
 
   factory Event.fromJson(Map<String, dynamic> json) {
@@ -32,12 +34,13 @@ class Event {
       json['paymentStatus'],
       json['attendanceStatus'],
       json['isCompleted'],
+      json['gameMode'],
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-      'title': title,
+      'title': eventTitle,
       'group': group,
       'time': time.toIso8601String(),  // 변경된 부분
       'location': location,
@@ -46,6 +49,7 @@ class Event {
       'paymentStatus': paymentStatus,
       'attendanceStatus': attendanceStatus,
       'isCompleted': isCompleted,
+      'gameMode': gameMode,
     };
   }
 }

@@ -44,7 +44,7 @@ class UpcomingEvents extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                          event.title,
+                          event.eventTitle,
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
                           ),

@@ -5,7 +5,8 @@ import '../../models/event.dart';
 import '../../utils/date_utils.dart';
 import 'package:golbang/global_config.dart';
 
-import 'event_create1.dart'; // Import the global configuration
+import 'event_create1.dart';
+import 'event_detail.dart'; // Import the global configuration
 
 class EventPage extends StatefulWidget {
   const EventPage({super.key});
@@ -267,7 +268,7 @@ class EventPageState extends State<EventPage> {
                           ),
                           const SizedBox(height: 4.0),
                           Text(
-                            value[index].title,
+                            value[index].eventTitle,
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
                           ),
                           const SizedBox(height: 8.0),
@@ -341,7 +342,14 @@ class EventPageState extends State<EventPage> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 TextButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) => EventDetailPage(event: value[index]),
+                                      ),
+                                    );
+                                  },
                                   style: TextButton.styleFrom(
                                     foregroundColor: Colors.green,
                                   ),
@@ -350,6 +358,7 @@ class EventPageState extends State<EventPage> {
                                     style: TextStyle(color: Colors.black),
                                   ),
                                 ),
+
                                 TextButton(
                                   onPressed: () {},
                                   style: TextButton.styleFrom(

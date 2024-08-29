@@ -17,11 +17,11 @@ class GlobalConfig {
   ];
 
   static List<Event> events = [
-    Event('Event 1', 'Group 1', DateTime(2024, 8, 28, 12, 0), 'Location 1', 10, 'Group A', '완료', '참석', true),
-    Event('Event 2', 'Group 2', DateTime(2024, 8, 28, 14, 0), 'Location 2', 20, 'Group B', '미납', '불참', false),
-    Event('Event 3', 'Group 3', DateTime(2024, 9, 3, 15, 0), 'Location 3', 30, 'Group C', '완료', '미정', true),
-    Event('Event 4', 'Group 3', DateTime(2024, 9, 4, 17, 0), 'Location 3', 30, 'Group C', '완료', '미정', true),
-    Event('Event 5', 'Group 3', DateTime(2024, 9, 5, 9, 0), 'Location 3', 30, 'Group C', '완료', '미정', true),
+    Event('Event 1', 'Group 1', DateTime(2024, 8, 28, 12, 0), 'Location 1', 10, 'Group A', '완료', '참석', true, '스트로크'),
+    Event('Event 2', 'Group 2', DateTime(2024, 8, 28, 14, 0), 'Location 2', 20, 'Group B', '미납', '불참', false, '스트로크'),
+    Event('Event 3', 'Group 3', DateTime(2024, 9, 3, 15, 0), 'Location 3', 30, 'Group C', '완료', '미정', true, '스트로크'),
+    Event('Event 4', 'Group 3', DateTime(2024, 9, 4, 17, 0), 'Location 4', 20, 'Group C', '완료', '미정', true, '스트로크'),
+    Event('Event 5', 'Group 3', DateTime(2024, 9, 5, 9, 0), 'Location 5', 10, 'Group C', '완료', '미정', true, '스트로크'),
   ];
 
   static List<Group> groups = [
