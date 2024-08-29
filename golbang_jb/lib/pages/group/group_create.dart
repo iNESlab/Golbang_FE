@@ -1,31 +1,47 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
-import 'package:golbang/global_config.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/api.dart';
+import 'package:golbang/pages/group/widgets/admin_button_widget.dart';
+import 'package:golbang/services/user_service.dart';
 import 'package:golbang/widgets/sections/member_dialog.dart';
 import 'package:golbang/widgets/sections/member_invite.dart';
+import 'package:image_picker/image_picker.dart';
 
-import '../../models/user.dart';
+import '../../models/user_profile.dart';
+import '../../repoisitory/secure_storage.dart';
+import '../../services/group_service.dart';
 
-class GroupCreatePage extends StatefulWidget {
+class GroupCreatePage extends ConsumerStatefulWidget {
   @override
   _GroupCreatePageState createState() => _GroupCreatePageState();
 }
 
-class _GroupCreatePageState extends State<GroupCreatePage> {
-
-  List<String> selectedMembers = [];
+class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
+  List<UserProfile> selectedAdmins = [];
+  List<UserProfile> selectedMembers = [];
   TextEditingController _groupNameController = TextEditingController();
   TextEditingController _groupDescriptionController = TextEditingController();
+  XFile? _imageFile;
 
-  User? user = getUserByToken(users, 'token_john_doe');
+  final ImagePicker _picker = ImagePicker();
 
-  void _showMemberDialog() {
-    showDialog<List<String>>(
+  Future<void> _pickImage() async {
+    final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
+    setState(() {
+      _imageFile = pickedFile;
+    });
+  }
+
+
+  void _showMemberDialog(List<UserProfile> users) {
+    showDialog<List<UserProfile>>(
       context: context,
       builder: (BuildContext context) {
         return MemberDialog(
-          selectedMembers: selectedMembers,
-          onMembersSelected: (List<String> members) {
+          selectedMembers: users,
+          onMembersSelected: (List<UserProfile> members) {
             setState(() {
               selectedMembers = members;
             });
@@ -35,29 +51,57 @@ class _GroupCreatePageState extends State<GroupCreatePage> {
     ).then((result) {
       if (result != null) {
         setState(() {
-          selectedMembers = List<String>.from(result);
+          if(users == selectedMembers){
+            selectedMembers = result;
+            selectedAdmins.removeWhere((admin) =>
+                selectedMembers.contains(admin)
+            );
+          }
+          else if(users == selectedAdmins){
+            selectedAdmins = result;
+            selectedMembers.removeWhere((member) =>
+                selectedAdmins.contains(member)
+            );
+          }
         });
       }
     });
   }
 
-  void _onComplete() {
+  void _onComplete() async {
     String groupName = _groupNameController.text;
     String groupDescription = _groupDescriptionController.text;
+
     if (groupName.isNotEmpty && groupDescription.isNotEmpty) {
-      addGroup(groupName, 'assets/images/apple.png');
-      Navigator.of(context).pop();
+      final groupService = GroupService(ref.read(secureStorageProvider));
+      bool success = await groupService.saveGroup(
+        name: groupName,
+        description: groupDescription,
+        members: selectedMembers,
+        admins: selectedAdmins,
+        imageFile: _imageFile != null ? File(_imageFile!.path) : null,
+      );
+
+      if (success) {
+        Navigator.of(context).pop(); // 성공 시 페이지 닫기
+      } else {
+        // 실패 시 기본 에러 메시지 표시
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('그룹을 생성하는 데 실패했습니다. 나중에 다시 시도해주세요.')),
+        );
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('그룹 이름과 설명을 입력해주세요.'),
-        ),
+        SnackBar(content: Text('그룹 이름과 설명을 입력해주세요.')),
       );
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
+    final storage = ref.watch(secureStorageProvider);
+    final UserService userService = UserService(storage);
     return Scaffold(
       appBar: AppBar(
         title: Text('모임 생성'),
@@ -77,11 +121,14 @@ class _GroupCreatePageState extends State<GroupCreatePage> {
               Center(
                 child: Column(
                   children: [
-                    Icon(Icons.camera_alt, size: 100, color: Colors.grey),
+                    _imageFile != null
+                        ? CircleAvatar(
+                      radius: 50,
+                      backgroundImage: FileImage(File(_imageFile!.path)),
+                    )
+                        : Icon(Icons.camera_alt, size: 100, color: Colors.grey),
                     TextButton(
-                      onPressed: () {
-                        // 사진 추가 버튼 클릭시 동작
-                      },
+                      onPressed: _pickImage,
                       child: Text('사진 추가'),
                     ),
                   ],
@@ -107,20 +154,41 @@ class _GroupCreatePageState extends State<GroupCreatePage> {
                 '내 프로필',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              ListTile(
-                leading: CircleAvatar(
-                  backgroundImage: AssetImage('assets/images/apple.png'),
-                ),
-                title: Text(user!.username),
-                trailing: IconButton(
-                  icon: Icon(Icons.arrow_forward_ios, color: Colors.green),
-                  onPressed: _showMemberDialog,
-                ),
+              FutureBuilder<UserProfile>(
+                future: userService.getUserProfile(),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return Center(child: CircularProgressIndicator());
+                  } else if (snapshot.hasError) {
+                    return Center(child: Text('프로필을 불러오는데 실패했습니다.'));
+                  } else if (snapshot.hasData) {
+                    final userProfile = snapshot.data!;
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage: userProfile.profileImage.startsWith('http')
+                            ? NetworkImage(userProfile.profileImage)
+                            : AssetImage(userProfile.profileImage) as ImageProvider,
+                      ),
+                      title: Text(userProfile.name),
+                      trailing: IconButton(
+                        icon: Icon(Icons.arrow_forward_ios, color: Colors.green),
+                        onPressed: () => _showMemberDialog(selectedMembers),
+                      ),
+                    );
+                  } else {
+                    return Center(child: Text('프로필이 없습니다.'));
+                  }
+                },
               ),
-              SizedBox(height: 20),
-              Text(
-                '멤버 초대',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              Row(
+                children: [
+                  Expanded(
+                    child: AdminAddButton(onPressed: ()=>_showMemberDialog(selectedAdmins)),
+                  ),
+                  Expanded(
+                    child: MemberInvite(selectedMembers: selectedAdmins),
+                  ),
+                ],
               ),
               MemberInvite(selectedMembers: selectedMembers),
               SizedBox(height: 20),
