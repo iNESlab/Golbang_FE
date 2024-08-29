@@ -23,54 +23,6 @@ class GlobalConfig {
     Event('Event 4', 'Group 3', DateTime(2024, 9, 4, 17, 0), 'Location 3', 30, 'Group C', '완료', '미정', true),
     Event('Event 5', 'Group 3', DateTime(2024, 9, 5, 9, 0), 'Location 3', 30, 'Group C', '완료', '미정', true),
   ];
-
-  static List<Group> groups = [
-    Group(
-      id: 1,
-      name: '가천대 동문',
-      description: '가천대 동문 그룹 모임',
-      image: 'assets/images/dragon.jpeg',
-      membersCount: 7,
-      createdAt: DateTime.parse('2024-07-01T00:00:00Z'),
-      isActive: true,
-    ),
-    Group(
-      id: 2,
-      name: 'INES',
-      description: 'INES 그룹',
-      image: 'assets/images/facebook.png',
-      membersCount: 7,
-      createdAt: DateTime.parse('2024-06-01T00:00:00Z'),
-      isActive: true,
-    ),
-    Group(
-      id: 3,
-      name: '성남 북부신',
-      description: '성남 북부신 그룹',
-      image: 'assets/images/kakao.png',
-      membersCount: 7,
-      createdAt: DateTime.parse('2024-06-15T00:00:00Z'),
-      isActive: true,
-    ),
-    Group(
-      id: 4,
-      name: '골프에 미치다',
-      description: '골프에 미치다 그룹',
-      image: 'assets/images/naver.png',
-      membersCount: 7,
-      createdAt: DateTime.parse('2024-06-20T00:00:00Z'),
-      isActive: true,
-    ),
-    Group(
-      id: 5,
-      name: '파티타임',
-      description: '파티타임 그룹',
-      image: 'assets/images/google.png',
-      membersCount: 7,
-      createdAt: DateTime.parse('2024-06-25T00:00:00Z'),
-      isActive: true,
-    ),
-  ];
 }
 
 List<User> users = [

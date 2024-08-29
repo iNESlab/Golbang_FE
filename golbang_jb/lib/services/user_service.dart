@@ -26,7 +26,6 @@ class UserService {
 
     // API 요청
     var response = await http.get(uri, headers: headers);
-
     print("${json.decode(utf8.decode(response.bodyBytes))}");
 
     // 응답 코드가 200(성공)인지 확인
@@ -60,12 +59,9 @@ class UserService {
         "Content-type": "application/json",
         "Authorization": "Bearer $accessToken"
       };
-
       // API 요청
       var response = await http.get(uri, headers: headers);
-
-      print("${json.decode(utf8.decode(response.bodyBytes))}");
-
+      //print(response.statusCode);
       // 응답 코드가 200(성공)인지 확인
       if (response.statusCode == 200) {
         // JSON 데이터 파싱

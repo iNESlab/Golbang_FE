@@ -21,7 +21,6 @@ class GroupsSection extends StatelessWidget {
           itemCount: groups.length,
           itemBuilder: (context, index) {
             final group = groups[index];
-            bool isNew = group.isActive;
 
             return Padding(
               padding: const EdgeInsets.only(right: 10),
@@ -32,7 +31,7 @@ class GroupsSection extends StatelessWidget {
                     MaterialPageRoute(
                       builder: (context) => CommunityMain(
                         communityName: group.name,
-                        communityImage: group.image,
+                        communityImage: group.image!,
                       ),
                     ),
                   );
@@ -42,7 +41,6 @@ class GroupsSection extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: isNew ? Colors.green : Colors.transparent,
                       width: 3,
                     ),
                     boxShadow: [
@@ -57,7 +55,7 @@ class GroupsSection extends StatelessWidget {
                   child: CircleAvatar(
                     radius: 35,
                     backgroundColor: Colors.grey,
-                    backgroundImage: AssetImage(group.image),
+                    backgroundImage: AssetImage(group.image!),
                   ),
                 ),
               ),

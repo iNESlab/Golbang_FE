@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:golbang/pages/login/signup_complete.dart';
 import 'package:golbang/pages/logins/hi_screen.dart';
 import 'package:golbang/pages/signup/signup.dart';
-import 'package:golbang/pages/signup/signup_complete.dart';
-import 'package:golbang/pages/home/home_page.dart';
-import 'package:golbang/pages/game/score_card_page.dart';
-import 'package:golbang/provider/user_token_provider.dart';
-import 'package:golbang/repoisitory/secure_storage.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:provider/provider.dart';
+
+
+
 
 Future<void> main() async {
   await dotenv.load(fileName: 'assets/config/.env');
@@ -46,11 +47,13 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
       ),
       home: const HiScreen(),
+
       routes: {
         '/signup': (context) => SignUpPage(),
         '/signupComplete': (context) => const SignupComplete(),
         // 추가적인 라우트를 여기에 추가할 수 있습니다.
       },
+
     );
   }
 }

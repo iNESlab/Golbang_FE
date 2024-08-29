@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/global_config.dart';
 import 'package:golbang/models/bookmark.dart';
 import 'package:golbang/models/event.dart';
 import 'package:golbang/models/group.dart';
-import 'package:golbang/provider/user_token_provider.dart';
+import 'package:golbang/models/user_profile.dart';
 import 'package:golbang/widgets/sections/bookmark_section.dart';
 import 'package:golbang/widgets/sections/groups_section.dart';
 import 'package:golbang/widgets/common/section_with_scroll.dart';
@@ -12,8 +13,10 @@ import 'package:golbang/widgets/sections/upcoming_events.dart';
 import 'package:golbang/pages/event/event_main.dart';
 import 'package:golbang/pages/group/group_main.dart';
 import 'package:golbang/pages/profile/profile_screen.dart';
-import 'package:golbang/api.dart';
-import 'package:provider/provider.dart'; // Import API functions
+
+import 'package:golbang/services/group_service.dart';
+import 'package:golbang/services/user_service.dart';
+import '../../repoisitory/secure_storage.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -28,12 +31,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-
-    // userToken을 초기화하기 위해 initState에서 설정
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final userTokenProvider = Provider.of<UserTokenProvider>(context, listen: false);
-      userTokenProvider.setUserToken('token_john_doe');
-    });
   }
 
   static final List<Widget> _widgetOptions = <Widget>[
@@ -112,22 +109,24 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class HomeContent extends StatelessWidget {
+class HomeContent extends ConsumerWidget {
   const HomeContent({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // Simulate fetching user token
-    final userTokenProvider = Provider.of<UserTokenProvider>(context);
-    var userGroupsData = getUserGroups(userTokenProvider.userToken!);
-    List<Group> userGroups = userGroupsData;
+    final storage = ref.watch(secureStorageProvider);
+    final UserService userService = UserService(storage);
+    final GroupService groupService = GroupService(storage);
+
+
 
     return Scaffold(
       body: FutureBuilder(
         future: Future.wait([
           Future.value(GlobalConfig.bookmarks),
           Future.value(GlobalConfig.events),
-          Future.value(userGroups),
+          groupService.getUserGroups(), // 그룹 데이터를 비동기적으로 가져옴
         ]),
         builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -135,6 +134,7 @@ class HomeContent extends StatelessWidget {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
+            // Snapshot에서 데이터를 가져옴
             List<Bookmark> bookmarks = snapshot.data![0];
             List<Event> events = snapshot.data![1];
             List<Group> groups = snapshot.data![2];

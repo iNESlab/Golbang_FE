@@ -1,9 +1,11 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:golbang/models/user_profile.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart'; // basename을 사용하기 위해 필요
 import '../repoisitory/secure_storage.dart';
+import 'package:golbang/models/group.dart';
 
 class GroupService {
   final SecureStorage storage;
@@ -81,6 +83,41 @@ class GroupService {
     } catch (e) {
       print('Error: $e');
       return false;
+    }
+  }
+
+
+  Future<List<Group>> getUserGroups() async {
+    try {
+      // API 엔드포인트 설정 (dotenv를 통해 환경 변수에서 호스트 URL을 가져옴)
+      var uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/clubs/");
+
+      // 토큰을 읽어와서 인증 헤더 설정
+      final accessToken = await storage.readAccessToken(); // storage는 로컬 저장소에 접근하는 클래스의 인스턴스입니다.
+      Map<String, String> headers = {
+        "Content-type": "application/json",
+        "Authorization": "Bearer $accessToken"
+      };
+
+      // API 요청
+      var response = await http.get(uri, headers: headers);
+
+      // 응답 상태 코드가 200인 경우, 데이터를 성공적으로 가져온 경우
+      if (response.statusCode == 200) {
+        // JSON 디코딩
+        List<dynamic> data = jsonDecode(response.body);
+
+        // JSON 데이터를 Group 객체로 변환
+        List<Group> groups = data.map((group) => Group.fromJson(group)).toList();
+
+        return groups; // 그룹 리스트 반환
+      } else {
+        print('Failed to load groups with status code: ${response.statusCode}');
+        return []; // 실패 시 빈 리스트 반환
+      }
+    } catch (e) {
+      print('Error: $e');
+      return []; // 예외 발생 시 빈 리스트 반환
     }
   }
 }
