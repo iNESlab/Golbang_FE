@@ -52,6 +52,7 @@ class GroupService {
           .toList();
       print('Filtered admins: $filteredAdmins');
 
+
 // 로그 찍기 - members와 admins 리스트를 콤마로 조합한 후 출력
       String membersString = filteredMembers.join(',');
       String adminsString = filteredAdmins.join(',');
@@ -59,7 +60,8 @@ class GroupService {
       print('Members string: $membersString');
       print('Admins string: $adminsString');
 
-// 다른 데이터 추가
+      // 데이터 추가
+
       request.fields['name'] = name;
       request.fields['description'] = description;
       request.fields['members'] = membersString;
@@ -73,7 +75,8 @@ class GroupService {
       // 서버에 요청 보내기
       final response = await request.send();
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
+
         print('Success! Group created.');
         return true;
       } else {
