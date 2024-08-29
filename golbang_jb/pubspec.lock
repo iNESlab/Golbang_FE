@@ -339,7 +339,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.2"
-<<<<<<< HEAD
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -348,7 +347,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.22"
-=======
   flutter_riverpod:
     dependency: "direct main"
     description:
@@ -405,7 +403,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
->>>>>>> 571d2e2 (Merge: golbang과 golbang_jb 통합)
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -416,9 +413,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
   freezed_annotation:
     dependency: transitive
     description:
@@ -443,7 +437,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.2"
->>>>>>> 5f854be (feat&bug: 모임 생성 페이지 api 연동(post 미동작))
   google_maps:
     dependency: transitive
     description:
@@ -492,42 +485,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.5.10"
-<<<<<<< HEAD
-  html:
-    dependency: transitive
-    description:
-      name: html
-      sha256: "3a7812d5bcd2894edf53dfaf8cd640876cf6cef50a8f238745c8b8120ea74d3a"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.15.4"
-=======
-  freezed_annotation:
-    dependency: transitive
-    description:
-      name: freezed_annotation
-      sha256: c2e2d632dd9b8a2b7751117abcfc2b4888ecfe181bd9fca7170d9ef02e595fe2
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.4.4"
-  frontend_server_client:
-    dependency: transitive
-    description:
-      name: frontend_server_client
-      sha256: f64a0333a82f30b0cca061bc3d143813a486dc086b574bfb233b7c1372427694
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.0.0"
-  glob:
-    dependency: transitive
-    description:
-      name: glob
-      sha256: "0e7014b3b7d4dac1ca4d6114f82bf1782ee86745b9b42a92c9289c23d8a0ab63"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.2"
-=======
->>>>>>> 5f854be (feat&bug: 모임 생성 페이지 api 연동(post 미동작))
   graphs:
     dependency: transitive
     description:
@@ -552,9 +509,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.2.0"
-<<<<<<< HEAD
->>>>>>> 571d2e2 (Merge: golbang과 golbang_jb 통합)
-=======
   html:
     dependency: transitive
     description:
@@ -563,7 +517,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.15.4"
->>>>>>> 5f854be (feat&bug: 모임 생성 페이지 api 연동(post 미동작))
   http:
     dependency: "direct main"
     description:
@@ -764,8 +717,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.15.0"
-<<<<<<< HEAD
-=======
   mime:
     dependency: transitive
     description:
@@ -774,7 +725,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.6"
->>>>>>> 571d2e2 (Merge: golbang과 golbang_jb 통합)
   nested:
     dependency: transitive
     description:
@@ -783,8 +733,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
-<<<<<<< HEAD
-=======
   package_config:
     dependency: transitive
     description:
@@ -793,7 +741,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
->>>>>>> 571d2e2 (Merge: golbang과 golbang_jb 통합)
   path:
     dependency: transitive
     description:
@@ -802,11 +749,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.0"
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-=======
->>>>>>> 5f854be (feat&bug: 모임 생성 페이지 api 연동(post 미동작))
   path_provider:
     dependency: transitive
     description:
@@ -863,7 +805,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.5"
->>>>>>> 571d2e2 (Merge: golbang과 golbang_jb 통합)
   plugin_platform_interface:
     dependency: transitive
     description:
@@ -872,8 +813,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
-<<<<<<< HEAD
-=======
   pool:
     dependency: transitive
     description:
@@ -882,7 +821,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.1"
->>>>>>> 571d2e2 (Merge: golbang과 golbang_jb 통합)
   provider:
     dependency: "direct main"
     description:
@@ -891,16 +829,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.1.2"
-<<<<<<< HEAD
-  sanitize_html:
-    dependency: transitive
-    description:
-      name: sanitize_html
-      sha256: "12669c4a913688a26555323fb9cec373d8f9fbe091f2d01c40c723b33caa8989"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.0"
-=======
   pub_semver:
     dependency: transitive
     description:
@@ -989,7 +917,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
->>>>>>> 571d2e2 (Merge: golbang과 golbang_jb 통합)
   simple_gesture_detector:
     dependency: transitive
     description:
@@ -1138,10 +1065,7 @@ packages:
       sha256: "5c5f338a667b4c644744b661f309fb8080bb94b18a7e91ef1dbd343bed00ed6d"
       url: "https://pub.dev"
     source: hosted
-<<<<<<< HEAD
     version: "14.2.5"
-=======
-    version: "14.2.4"
   watcher:
     dependency: transitive
     description:
@@ -1150,7 +1074,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.1.0"
->>>>>>> 571d2e2 (Merge: golbang과 golbang_jb 통합)
   web:
     dependency: transitive
     description:
@@ -1159,10 +1082,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
-<<<<<<< HEAD
-sdks:
-  dart: ">=3.4.0 <4.0.0"
-=======
   web_socket:
     dependency: transitive
     description:
@@ -1204,11 +1123,5 @@ sdks:
     source: hosted
     version: "3.1.2"
 sdks:
-<<<<<<< HEAD
-  dart: ">=3.5.0-259.0.dev <4.0.0"
->>>>>>> 571d2e2 (Merge: golbang과 golbang_jb 통합)
-  flutter: ">=3.22.0"
-=======
   dart: ">=3.5.0 <4.0.0"
   flutter: ">=3.24.0"
->>>>>>> 5f854be (feat&bug: 모임 생성 페이지 api 연동(post 미동작))
