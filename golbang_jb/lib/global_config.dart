@@ -41,139 +41,91 @@ class GlobalConfig {
       pendingCount: 2,
       participants: [
         Participant(
-          statusType: "ACCEPT",
-          teamType: "A",
-          groupType: 1,
-          sumScore: 72,
-          rank: "1",
-          handicapScore: 70,
-          handicapRank: "1",
-          points: 2
+            statusType: "ACCEPT",
+            teamType: "A",
+            groupType: 1,
+            sumScore: 72,
+            rank: "1",
+            handicapScore: 70,
+            handicapRank: "1",
+            points: 2
         ),
         Participant(
-          statusType: "PENDING",
-          teamType: "B",
-          groupType: 2,
-          sumScore: 75,
-          rank: "2",
-          handicapScore: 71,
-          handicapRank: "2",
-          points: 1
+            statusType: "PENDING",
+            teamType: "B",
+            groupType: 2,
+            sumScore: 75,
+            rank: "2",
+            handicapScore: 71,
+            handicapRank: "2",
+            points: 1
         ),
-      ], group: '가천대 동문',
+      ],
+      group: '가천대 동문',
     ),
   ];
 
-
-  // List<Club> club = [
-  //   Club(
-  //     id: 1,
-  //     name: '가천대 동문',
-  //     description: '가천대 동문 그룹 모임',
-  //     image: 'assets/images/dragon.jpeg',
-  //     createdAt: DateTime.parse('2024-07-01T00:00:00Z'),
-  //     members: [
-  //       ClubMember(
-  //           user: Users(
-  //             userId: 'ming',
-  //             email: 'ming@email.com',
-  //             name: 'Test Ming',
-  //             handicap: 1,
-  //             studentId: '1',
-  //             phoneNumber: '123-4567-8900',
-  //             address: '123',
-  //
-  //         ),
-  //         role: 'ADMIN',
-  //         totalPoints: 100,
-  //         totalRank: '1',
-  //         totalHandicapRank: '2',
-  //         totalAvgScore: 89,
-  //         totalHandicapAvgScore: 84
-  //       )
-  //       ]
-  //   )
-  // ];
-  //
-  // List<ClubMember> clubMember = [
-  //   ClubMember(
-  //     user: Users(
-  //       userId: 1,
-  //       userToken: 'token_john_doe',
-  //       username: 'john_doe',
-  //       role: 'ROLE_USER',
-  //       fullname: 'John Doe',
-  //       email: 'john.doe@example.com',
-  //       loginType: 'normal',
-  //       provider: 'local',
-  //       password: 'password123',
-  //       mobile: '123-456-7890',
-  //       address: '123 Main St, Anytown, USA',
-  //       dateOfBirth: DateTime(1990, 1, 1),
-  //       handicap: 'None',
-  //       studentId: 'S12345678',
-  //       profileImage: 'assets/images/apple.png',
-  //       createdAt: DateTime.now(),
-  //       updatedAt: DateTime.now(),
-  //       recentConnectionTime: DateTime.now(),
-  //       releaseAt: DateTime.now().add(Duration(days: 365)),
-  //     ),
-  //     role: 'ADMIN',
-  //     totalPoints: 100,
-  //     totalRank: '1',
-  //     totalHandicapRank: '2',
-  //     totalAvgScore: 89,
-  //     totalHandicapAvgScore: 84
-  //   ),
-  // ];
-
-  static List<Group> groups = [
-    Group(
-      id: 1,
-      name: '가천대 동문',
-      description: '가천대 동문 그룹 모임',
-      image: 'assets/images/dragon.jpeg',
-      membersCount: 7,
-      createdAt: DateTime.parse('2024-07-01T00:00:00Z'),
-      isActive: true,
-    ),
-    Group(
-      id: 2,
-      name: 'INES',
-      description: 'INES 그룹',
-      image: 'assets/images/facebook.png',
-      membersCount: 7,
-      createdAt: DateTime.parse('2024-06-01T00:00:00Z'),
-      isActive: true,
-    ),
-    Group(
-      id: 3,
-      name: '성남 북부신',
-      description: '성남 북부신 그룹',
-      image: 'assets/images/kakao.png',
-      membersCount: 7,
-      createdAt: DateTime.parse('2024-06-15T00:00:00Z'),
-      isActive: true,
-    ),
-    Group(
-      id: 4,
-      name: '골프에 미치다',
-      description: '골프에 미치다 그룹',
-      image: 'assets/images/naver.png',
-      membersCount: 7,
-      createdAt: DateTime.parse('2024-06-20T00:00:00Z'),
-      isActive: true,
-    ),
-    Group(
-      id: 5,
-      name: '파티타임',
-      description: '파티타임 그룹',
-      image: 'assets/images/google.png',
-      membersCount: 7,
-      createdAt: DateTime.parse('2024-06-25T00:00:00Z'),
-      isActive: true,
-    ),
-  ];
+// List<Club> club = [
+//   Club(
+//     id: 1,
+//     name: '가천대 동문',
+//     description: '가천대 동문 그룹 모임',
+//     image: 'assets/images/dragon.jpeg',
+//     createdAt: DateTime.parse('2024-07-01T00:00:00Z'),
+//     members: [
+//       ClubMember(
+//           user: Users(
+//             userId: 'ming',
+//             email: 'ming@email.com',
+//             name: 'Test Ming',
+//             handicap: 1,
+//             studentId: '1',
+//             phoneNumber: '123-4567-8900',
+//             address: '123',
+//
+//         ),
+//         role: 'ADMIN',
+//         totalPoints: 100,
+//         totalRank: '1',
+//         totalHandicapRank: '2',
+//         totalAvgScore: 89,
+//         totalHandicapAvgScore: 84
+//       )
+//       ]
+//   )
+// ];
+//
+// List<ClubMember> clubMember = [
+//   ClubMember(
+//     user: Users(
+//       userId: 1,
+//       userToken: 'token_john_doe',
+//       username: 'john_doe',
+//       role: 'ROLE_USER',
+//       fullname: 'John Doe',
+//       email: 'john.doe@example.com',
+//       loginType: 'normal',
+//       provider: 'local',
+//       password: 'password123',
+//       mobile: '123-456-7890',
+//       address: '123 Main St, Anytown, USA',
+//       dateOfBirth: DateTime(1990, 1, 1),
+//       handicap: 'None',
+//       studentId: 'S12345678',
+//       profileImage: 'assets/images/apple.png',
+//       createdAt: DateTime.now(),
+//       updatedAt: DateTime.now(),
+//       recentConnectionTime: DateTime.now(),
+//       releaseAt: DateTime.now().add(Duration(days: 365)),
+//     ),
+//     role: 'ADMIN',
+//     totalPoints: 100,
+//     totalRank: '1',
+//     totalHandicapRank: '2',
+//     totalAvgScore: 89,
+//     totalHandicapAvgScore: 84
+//   ),
+// ];
 }
 
 List<User> users = [

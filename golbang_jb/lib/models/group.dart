@@ -1,43 +1,34 @@
+import 'member.dart';
+// Group 객체를 정의
 class Group {
   final int id;
   final String name;
   final String description;
-  final String image;
-  final int membersCount;
+  final String? image;
+  final List<Member> members;
   final DateTime createdAt;
-  final bool isActive;
 
   Group({
     required this.id,
     required this.name,
     required this.description,
-    required this.image,
-    required this.membersCount,
+    this.image,
+    required this.members,
     required this.createdAt,
-    required this.isActive,
   });
 
+  // JSON 데이터를 Group 객체로 변환하는 함수
   factory Group.fromJson(Map<String, dynamic> json) {
+    var membersList = json['members'] as List;
+    List<Member> members = membersList.map((i) => Member.fromJson(i)).toList();
+
     return Group(
       id: json['id'],
       name: json['name'],
       description: json['description'],
       image: json['image'],
-      membersCount: json['membersCount'],
-      createdAt: DateTime.parse(json['createdAt']),
-      isActive: json['isActive'],
+      members: members,
+      createdAt: DateTime.parse(json['created_at']),
     );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'name': name,
-      'description': description,
-      'image': image,
-      'membersCount': membersCount,
-      'createdAt': createdAt.toIso8601String(),
-      'isActive': isActive,
-    };
   }
 }

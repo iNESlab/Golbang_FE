@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:golbang/pages/event/event_create1.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'dart:collection';
 import '../../models/event.dart';
@@ -198,7 +199,6 @@ class EventPageState extends State<EventPage> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    // 일정 추가 버튼을 눌렀을 때 EventsCreate1 페이지로 이동
                     Navigator.push(
                       context,
                       MaterialPageRoute(builder: (context) => EventsCreate1()),

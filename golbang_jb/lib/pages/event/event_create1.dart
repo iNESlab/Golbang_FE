@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:golbang/pages/event/event_create2.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 class EventsCreate1 extends StatefulWidget {
@@ -510,7 +511,10 @@ class _EventsCreate1State extends State<EventsCreate1> {
               Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    // Handle the next step action
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => EventsCreate2()),
+                    );
                   },
                   child: Text('다음'),
                   style: ElevatedButton.styleFrom(

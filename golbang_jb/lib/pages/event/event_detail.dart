@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:golbang/pages/game/score_card_page.dart';
 import '../../models/event.dart';
-import '../../models/group.dart';
 
 class EventDetailPage extends StatelessWidget {
   final Event event;
-
   EventDetailPage({required this.event});
 
   @override

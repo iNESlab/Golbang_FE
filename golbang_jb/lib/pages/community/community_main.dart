@@ -31,8 +31,8 @@ class _CommunityMainState extends State<CommunityMain> {
   }
 
   int _getGroupId() {
-    final group = GlobalConfig.groups.firstWhere((group) => group.name == widget.communityName);
-    return group.id;
+    //final group = GlobalConfig.groups.firstWhere((group) => group.name == widget.communityName);
+    return 1;
   }
 
   @override
