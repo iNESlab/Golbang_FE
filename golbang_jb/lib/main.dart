@@ -5,17 +5,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:golbang/pages/logins/hi_screen.dart';
 import 'package:golbang/pages/signup/signup.dart';
 import 'package:golbang/pages/signup/signup_complete.dart';
-<<<<<<< HEAD
-import 'package:intl/date_symbol_data_local.dart';
-import 'package:provider/provider.dart';
-import 'package:golbang/provider/user_token_provider.dart';
-import 'package:golbang/pages/home/home_page.dart';
-
-
-Future<void> main() async {
-  await dotenv.load(fileName: 'assets/config/.env');
-  initializeDateFormatting().then((_) => runApp(const MyApp()));
-=======
 import 'package:golbang/pages/home/home_page.dart';
 import 'package:golbang/pages/game/score_card_page.dart';
 import 'package:golbang/provider/user_token_provider.dart';
@@ -32,7 +21,6 @@ Future<void> main() async {
       ),
     );
   });
->>>>>>> 5f854be (feat&bug: 모임 생성 페이지 api 연동(post 미동작))
 }
 
 class MyApp extends StatelessWidget {
