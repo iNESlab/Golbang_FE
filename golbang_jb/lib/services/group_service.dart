@@ -104,14 +104,21 @@ class GroupService {
 
       // API 요청
       var response = await http.get(uri, headers: headers);
-
       // 응답 상태 코드가 200인 경우, 데이터를 성공적으로 가져온 경우
       if (response.statusCode == 200) {
         // JSON 디코딩
         List<dynamic> data = jsonDecode(response.body);
 
         // JSON 데이터를 Group 객체로 변환
-        List<Group> groups = data.map((group) => Group.fromJson(group)).toList();
+        print(data);
+        List<Group> groups = data.map((groupJson) {
+          try {
+            return Group.fromJson(groupJson);
+          } catch (e) {
+            print('Error parsing group: $e');
+            return null; // 파싱 오류가 발생한 경우 null 반환
+          }
+        }).whereType<Group>().toList(); // null이 아닌 Group 객체만 리스트에 포함
 
         return groups; // 그룹 리스트 반환
       } else {
@@ -119,6 +126,7 @@ class GroupService {
         return []; // 실패 시 빈 리스트 반환
       }
     } catch (e) {
+
       print('Error: $e');
       return []; // 예외 발생 시 빈 리스트 반환
     }
