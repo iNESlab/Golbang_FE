@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
-import 'package:golbang/pages/event/event_create2.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import '../../models/club.dart';
+import '../../repoisitory/secure_storage.dart';
+import '../../services/club_service.dart';
+import 'event_create2.dart';
+import 'widgets/location_search_dialog.dart';
+import 'widgets/participant_dialog.dart';
+import '../../models/member_profile.dart';
 
-class EventsCreate1 extends StatefulWidget {
+class EventsCreate1 extends ConsumerStatefulWidget {
   @override
   _EventsCreate1State createState() => _EventsCreate1State();
 }
 
-class _EventsCreate1State extends State<EventsCreate1> {
+class _EventsCreate1State extends ConsumerState<EventsCreate1> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _startDateController = TextEditingController();
@@ -15,126 +22,48 @@ class _EventsCreate1State extends State<EventsCreate1> {
   final TextEditingController _endDateController = TextEditingController();
   final TextEditingController _endTimeController = TextEditingController();
   LatLng? _selectedLocation;
-  List<String> selectedParticipants = [];
+  List<Club> _clubs = [];
+  Club? _selectedClub;
   String? _selectedGameMode;
-  String? _selectedGroup;
+  List<ClubMemberProfile> _selectedParticipants = [];
+  late ClubService _clubService;
 
-  final List<String> _groups = ["iNES", "Group A", "Group B", "Group C"];
-  List<String> _locationSuggestions = [
-    "Jeju Nine Bridges",
-    "Seoul Tower",
-    "Busan Haeundae Beach",
-    "Incheon Airport",
-  ];
 
-  final Map<String, LatLng> _locationCoordinates = {
-    "Jeju Nine Bridges": LatLng(33.431441, 126.875828),
-    "Seoul Tower": LatLng(37.5511694, 126.9882266),
-    "Busan Haeundae Beach": LatLng(35.158697, 129.160384),
-    "Incheon Airport": LatLng(37.4602, 126.4407),
-  };
+  @override
+  void initState() {
+    super.initState();
+    _clubService = ClubService(ref.read(secureStorageProvider));
+    _fetchClubs();
+  }
+
+  Future<void> _fetchClubs() async {
+    try {
+      List<Club> clubs = await _clubService.getClubList();
+      setState(() {
+        _clubs = clubs;
+      });
+    } catch (e) {
+      print("Failed to load clubs: $e");
+    }
+  }
 
   void _showLocationSearchDialog() {
     showDialog(
       context: context,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(20.0)),
-              ),
-              titlePadding: EdgeInsets.zero,
-              title: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
-                ),
-                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(),
-                    Text(
-                      '장소 검색',
-                      style: TextStyle(color: Colors.green, fontSize: 25),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.close),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              content: Container(
-                width: MediaQuery.of(context).size.width * 0.9,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextField(
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white,
-                          hintText: '장소를 입력하세요',
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                        onChanged: (value) {
-                          setState(() {
-                            _locationSuggestions = _locationCoordinates.keys
-                                .where((location) => location.toLowerCase().contains(value.toLowerCase()))
-                                .toList();
-                          });
-                        },
-                      ),
-                      SizedBox(height: 10),
-                      Container(
-                        height: 300,
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: _locationSuggestions.length,
-                          itemBuilder: (BuildContext context, int index) {
-                            return ListTile(
-                              title: Text(_locationSuggestions[index]),
-                              onTap: () {
-                                final selectedLocation = _locationSuggestions[index];
-                                _locationController.text = selectedLocation;
-                                _selectedLocation = _locationCoordinates[selectedLocation];
-                                Navigator.pop(context);
-                              },
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: <Widget>[
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text('완료'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                      minimumSize: Size(double.infinity, 50),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
+      builder: (context) => LocationSearchDialog(
+        locationController: _locationController,
+        locationCoordinates: {
+          "Jeju Nine Bridges": LatLng(33.431441, 126.875828),
+          "Seoul Tower": LatLng(37.5511694, 126.9882266),
+          "Busan Haeundae Beach": LatLng(35.158697, 129.160384),
+          "Incheon Airport": LatLng(37.4602, 126.4407),
+        },
+        onLocationSelected: (LatLng location) {
+          setState(() {
+            _selectedLocation = location;
+          });
+        },
+      ),
     );
   }
 
@@ -175,113 +104,16 @@ class _EventsCreate1State extends State<EventsCreate1> {
   }
 
   void _showParticipantDialog() {
-    List<String> tempSelectedParticipants = List.from(selectedParticipants);
     showDialog(
       context: context,
-      builder: (BuildContext context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return AlertDialog(
-              backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.all(Radius.circular(20.0)),
-              ),
-              titlePadding: EdgeInsets.zero,
-              title: Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[200],
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
-                ),
-                padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(),
-                    Text(
-                      '참여자 추가',
-                      style: TextStyle(color: Colors.green, fontSize: 25),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.close),
-                      onPressed: () {
-                        Navigator.of(context).pop(tempSelectedParticipants);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-              content: Container(
-                width: MediaQuery.of(context).size.width * 0.9,
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      TextField(
-                        decoration: InputDecoration(
-                          filled: true,
-                          fillColor: Colors.white,
-                          hintText: '이름 또는 닉네임으로 검색',
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8.0),
-                            borderSide: BorderSide.none,
-                          ),
-                        ),
-                      ),
-                      SizedBox(height: 10),
-                      Container(
-                        height: 300,
-                        child: ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: 10, // Example participant list length
-                          itemBuilder: (BuildContext context, int index) {
-                            return ListTile(
-                              leading: CircleAvatar(
-                                child: Text('P$index'),
-                              ),
-                              title: Text('Participant $index'),
-                              trailing: Checkbox(
-                                value: tempSelectedParticipants.contains('Participant $index'),
-                                onChanged: (bool? value) {
-                                  setState(() {
-                                    if (value != null && value) {
-                                      tempSelectedParticipants.add('Participant $index');
-                                    } else {
-                                      tempSelectedParticipants.remove('Participant $index');
-                                    }
-                                  });
-                                },
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: <Widget>[
-                Center(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(tempSelectedParticipants);
-                    },
-                    child: Text('완료'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.teal,
-                      minimumSize: Size(double.infinity, 50),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          },
-        );
-      },
+      builder: (context) => ParticipantDialog(
+        selectedParticipants: _selectedParticipants,
+        clubId: _selectedClub?.id ?? 0,
+      ),
     ).then((result) {
       if (result != null) {
         setState(() {
-          selectedParticipants = List<String>.from(result);
+          _selectedParticipants = List<ClubMemberProfile>.from(result);
         });
       }
     });
@@ -316,23 +148,24 @@ class _EventsCreate1State extends State<EventsCreate1> {
                 ),
               ),
               SizedBox(height: 16),
-              DropdownButtonFormField<String>(
+              DropdownButtonFormField<Club>(
                 decoration: InputDecoration(
-                  labelText: '그룹',
+                  labelText: '클럽 선택',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),
                 ),
-                value: _selectedGroup,
-                onChanged: (value) {
+                value: _selectedClub,
+                onChanged: (Club? value) {
                   setState(() {
-                    _selectedGroup = value;
+                    _selectedClub = value;
+                    _selectedParticipants = []; // 클럽 변경 시 참여자 초기화
                   });
                 },
-                items: _groups.map<DropdownMenuItem<String>>((String group) {
-                  return DropdownMenuItem<String>(
-                    value: group,
-                    child: Text(group),
+                items: _clubs.map<DropdownMenuItem<Club>>((Club club) {
+                  return DropdownMenuItem<Club>(
+                    value: club,
+                    child: Text(club.name),
                   );
                 }).toList(),
               ),
@@ -463,21 +296,22 @@ class _EventsCreate1State extends State<EventsCreate1> {
               Text('참여자', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               SizedBox(height: 8),
               GestureDetector(
-                onTap: _showParticipantDialog,
+                onTap: _selectedClub != null ? _showParticipantDialog : null, // 클럽이 선택되지 않았으면 비활성화
                 child: Container(
                   padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Colors.grey),
+                    border: Border.all(color: _selectedClub != null ? Colors.grey : Colors.grey[300]!),
                     borderRadius: BorderRadius.circular(8.0),
+                    color: _selectedClub != null ? Colors.white : Colors.grey[200],
                   ),
                   child: Row(
                     children: [
-                      Icon(Icons.person_add, color: Colors.grey),
+                      Icon(Icons.person_add, color: _selectedClub != null ? Colors.grey : Colors.grey[300]),
                       SizedBox(width: 8),
                       Text(
-                        selectedParticipants.isEmpty
+                        _selectedParticipants.isEmpty
                             ? '+ 참여자 추가'
-                            : selectedParticipants.join(', '),
+                            : _selectedParticipants.map((p) => p.name).join(', '),
                         style: TextStyle(color: Colors.black),
                       ),
                     ],
@@ -495,12 +329,12 @@ class _EventsCreate1State extends State<EventsCreate1> {
                   ),
                 ),
                 value: _selectedGameMode,
-                onChanged: (value) {
+                onChanged: (String? value) {
                   setState(() {
                     _selectedGameMode = value;
                   });
                 },
-                items: ['모드 1', '모드 2', '모드 3'].map<DropdownMenuItem<String>>((String mode) {
+                items: ['ST', 'MP'].map<DropdownMenuItem<String>>((String mode) {
                   return DropdownMenuItem<String>(
                     value: mode,
                     child: Text(mode),
@@ -529,4 +363,3 @@ class _EventsCreate1State extends State<EventsCreate1> {
     );
   }
 }
-
