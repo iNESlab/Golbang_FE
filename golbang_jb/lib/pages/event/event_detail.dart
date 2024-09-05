@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:golbang/pages/game/score_card_page.dart';
 import '../../models/event.dart';
 import '../../models/participant.dart';
@@ -13,10 +14,37 @@ class EventDetailPage extends StatefulWidget {
 
 class _EventDetailPageState extends State<EventDetailPage> {
   List<bool> _isExpandedList = [false, false, false, false];
+  LatLng? _selectedLocation;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedLocation = _parseLocation(widget.event.location);
+  }
+
+  LatLng? _parseLocation(String? location) {
+    if (location == null) {
+      return null;
+    }
+
+    try {
+      if (location.startsWith('LatLng')) {
+        final coords = location
+            .substring(7, location.length - 1) // "LatLng("와 ")" 제거
+            .split(',')
+            .map((e) => double.parse(e.trim())) // 공백 제거 후 숫자로 변환
+            .toList();
+        return LatLng(coords[0], coords[1]);
+      } else {
+        return null; // LatLng 형식이 아니면 null 반환
+      }
+    } catch (e) {
+      return null; // 파싱 실패 시 null 반환
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // 현재 로그인한 사용자의 groupType을 가져옵니다
     final myGroupType = widget.event.participants
         .firstWhere((p) => p.participantId == widget.event.myParticipantId)
         .groupType;
@@ -35,10 +63,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
             onSelected: (String value) {
               switch (value) {
                 case 'edit':
-                  _editEvent(); // 수정 버튼이 눌렸을 때 실행할 함수
+                  _editEvent();
                   break;
                 case 'delete':
-                  _deleteEvent(); // 삭제 버튼이 눌렸을 때 실행할 함수
+                  _deleteEvent();
                   break;
               }
             },
@@ -65,7 +93,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
               Row(
                 children: [
                   Image.asset(
-                    'assets/images/golf_icon.png', // Example event image
+                    'assets/images/golf_icon.png',
                     width: 50,
                     height: 50,
                     fit: BoxFit.cover,
@@ -79,7 +107,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                         style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        '${widget.event.startDateTime.toLocal().toIso8601String().split('T').first} • ${widget.event.endDateTime.hour}:${widget.event.startDateTime.minute.toString().padLeft(2, '0')} ~ ${widget.event.endDateTime.add(Duration(hours: 2)).hour}:${widget.event.startDateTime.minute.toString().padLeft(2, '0')}', // Event time range
+                        '${widget.event.startDateTime.toLocal().toIso8601String().split('T').first} • ${widget.event.endDateTime.hour}:${widget.event.startDateTime.minute.toString().padLeft(2, '0')} ~ ${widget.event.endDateTime.add(Duration(hours: 2)).hour}:${widget.event.startDateTime.minute.toString().padLeft(2, '0')}',
                         style: TextStyle(fontSize: 16),
                       ),
                       Text(
@@ -110,7 +138,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   ),
                   Container(
                     decoration: BoxDecoration(
-                      color: Colors.yellow.withOpacity(0.5), // 형광펜 효과를 위한 배경색
+                      color: Colors.yellow.withOpacity(0.5),
                       borderRadius: BorderRadius.circular(5),
                     ),
                     padding: EdgeInsets.symmetric(horizontal: 4),
@@ -138,6 +166,34 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   _buildParticipantPanel('대기', widget.event.participants, 'PENDING', Colors.grey.withOpacity(0.3), 3),
                 ],
               ),
+
+              // 골프장 위치 표시
+              if (_selectedLocation != null) ...[
+                SizedBox(height: 16),
+                Text(
+                  "골프장 위치",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 16),
+                Container(
+                  height: 200,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                  child: GoogleMap(
+                    initialCameraPosition: CameraPosition(
+                      target: _selectedLocation!,
+                      zoom: 14.0,
+                    ),
+                    markers: {
+                      Marker(
+                        markerId: MarkerId('selected-location'),
+                        position: _selectedLocation!,
+                      ),
+                    },
+                  ),
+                ),
+              ],
             ],
           ),
         ),
@@ -155,8 +211,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
           },
           child: Text('게임 시작'),
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green, // 버튼의 배경색 설정
-            foregroundColor: Colors.white, // 텍스트 색을 흰색으로 설정
+            backgroundColor: Colors.green,
+            foregroundColor: Colors.white,
             padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
             minimumSize: Size(double.infinity, 50),
             shape: RoundedRectangleBorder(
@@ -168,16 +224,15 @@ class _EventDetailPageState extends State<EventDetailPage> {
     );
   }
 
-  // 각 status_type에 맞는 참가자 목록을 출력하는 ExpansionPanel
   ExpansionPanel _buildParticipantPanel(String title, List<Participant> participants, String statusType, Color backgroundColor, int index) {
     final filteredParticipants = participants.where((p) => p.statusType == statusType).toList();
-    final count = filteredParticipants.length; // 해당 statusType의 참가자 수 계산
+    final count = filteredParticipants.length;
 
     return ExpansionPanel(
       headerBuilder: (BuildContext context, bool isExpanded) {
         return Container(
           decoration: BoxDecoration(
-            color: backgroundColor, // 상태별 배경색 설정
+            color: backgroundColor,
             borderRadius: BorderRadius.circular(10),
           ),
           padding: EdgeInsets.all(10),
@@ -189,7 +244,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
       },
       body: Container(
         decoration: BoxDecoration(
-          color: backgroundColor, // 상태별 배경색 설정
+          color: backgroundColor,
           borderRadius: BorderRadius.circular(10),
         ),
         padding: EdgeInsets.all(10),
@@ -200,7 +255,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
             final isSameGroup = participant.groupType == widget.event.participants.firstWhere((p) => p.participantId == widget.event.myParticipantId).groupType;
 
             return Padding(
-              padding: const EdgeInsets.only(bottom: 10.0), // 각 Row의 아래에 10픽셀 간격 추가
+              padding: const EdgeInsets.only(bottom: 10.0),
               child: Row(
                 children: [
                   CircleAvatar(
@@ -213,15 +268,13 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   Container(
                     decoration: isSameGroup
                         ? BoxDecoration(
-                      color: Colors.yellow.withOpacity(0.5), // 형광펜 효과를 위한 배경색
+                      color: Colors.yellow.withOpacity(0.5),
                       borderRadius: BorderRadius.circular(5),
                     )
                         : null,
                     padding: EdgeInsets.symmetric(horizontal: 4),
                     child: Text(
-                      member != null
-                          ? member.name
-                          : 'Unknown', // 만약 member 정보가 없으면 'Unknown' 출력
+                      member != null ? member.name : 'Unknown',
                       style: TextStyle(fontSize: 14),
                     ),
                   ),
