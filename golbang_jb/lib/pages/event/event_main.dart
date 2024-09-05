@@ -9,7 +9,6 @@ import '../../utils/date_utils.dart';
 import 'package:golbang/services/participant_service.dart';
 import 'package:golbang/services/event_service.dart';
 
-import 'event_create1.dart';
 import 'event_detail.dart';
 
 class EventPage extends ConsumerStatefulWidget {
