@@ -20,7 +20,7 @@ class UpcomingEvents extends StatelessWidget {
             final event = events[index];
 
             // 첫 번째 참여자의 상태를 사용하여 테두리 색상 설정
-            String? statusType = event.participants.isNotEmpty ? event.participants[0].statusType : '미정';
+            String? statusType = event.participants.isNotEmpty ? event.participants[0].statusType : 'PENDING';
 
             return GestureDetector(
               onTap: () {
@@ -37,7 +37,7 @@ class UpcomingEvents extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border.all(
-                    color: _getBorderColor(statusType!),
+                    color: _getBorderColor(statusType),
                     width: 1.5,
                   ),
                   borderRadius: BorderRadius.circular(15.0),
@@ -88,20 +88,8 @@ class UpcomingEvents extends StatelessWidget {
   }
 
   Widget _buildStatusButton(String status) {
-    Color color;
-    switch (status) {
-      case '참석':
-        color = Colors.cyan;
-        break;
-      case '불참':
-        color = Colors.red;
-        break;
-      case '미정':
-        color = Colors.grey;
-        break;
-      default:
-        color = Colors.grey;
-    }
+    Color color = _getStatusColor(status);
+
     return ElevatedButton(
       onPressed: () {},
       style: ElevatedButton.styleFrom(
@@ -118,16 +106,21 @@ class UpcomingEvents extends StatelessWidget {
     );
   }
 
-  Color _getBorderColor(String status) {
+  Color _getStatusColor(String status) {
     switch (status) {
-      case '참석':
-        return Colors.cyan;
-      case '불참':
-        return Colors.red;
-      case '미정':
-        return Colors.grey;
+      case 'PARTY':
+        return const Color(0xFF4D08BD); // 보라색
+      case 'ACCEPT':
+        return const Color(0xFF08BDBD); // 파란색
+      case 'DENY':
+        return const Color(0xFFF21B3F); // 빨간색
+      case 'PENDING':
       default:
-        return Colors.black;
+        return const Color(0xFF7E7E7E); // 회색
     }
+  }
+
+  Color _getBorderColor(String status) {
+    return _getStatusColor(status);
   }
 }
