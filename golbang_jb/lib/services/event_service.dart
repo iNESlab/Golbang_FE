@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:golbang/models/create_participant.dart';
 import 'package:http/http.dart' as http;
+import '../models/create_event.dart';
 import '../repoisitory/secure_storage.dart';
 import '../models/event.dart';
 
@@ -8,6 +10,49 @@ class EventService {
   final SecureStorage storage;
 
   EventService(this.storage);
+
+  Future<bool> postEvent({
+    required int clubId,
+    required CreateEvent event,
+    required List<CreateParticipant> participants,
+  }) async {
+    try {
+      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/?club_id=$clubId');
+      final accessToken = await storage.readAccessToken();
+
+      // Event의 JSON과 참가자 리스트의 JSON을 각각 생성
+      Map<String, dynamic> eventJson = event.toJson();
+      List<Map<String, dynamic>> participantsJson =
+      participants.map((p) => p.toJson()).toList();
+
+      // 두 개의 데이터를 하나의 Map으로 병합
+      Map<String, dynamic> requestBody = {
+        ...eventJson, // Event의 데이터를 추가
+        'participants': participantsJson, // 참가자 데이터를 추가
+      };
+      print('requestBody: $requestBody');
+      // 병합된 데이터를 JSON으로 변환
+      final response = await http.post(
+        url,
+        headers: {
+          "Content-Type": "application/json",
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(requestBody), // JSON 데이터를 전송
+      );
+
+      if (response.statusCode == 201) {
+        print("Event created successfully");
+        return true;
+      } else {
+        print("Failed to create event: ${response.body}");
+        return false;
+      }
+    } catch (e){
+        print('Error occurred while fetching events: $e');
+        return false;
+    }
+  }
 
   Future<List<Event>> getEventsForMonth({String? date, String? statusType}) async {
     try {
