@@ -63,13 +63,14 @@ class EventDetailPage extends StatelessWidget {
               '참여 인원: ${event.participants.length}명',
               style: TextStyle(fontSize: 16),
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 20),
             // 참석 상태별 참석자 목록을 표시합니다
             _buildParticipantList('수락 및 회식', event.participants, 'PARTY'),
             _buildParticipantList('수락', event.participants, 'ACCEPT'),
             _buildParticipantList('거절', event.participants, 'DENY'),
             _buildParticipantList('대기', event.participants, 'PENDING'),
             Spacer(),
+
             Center(
               child: ElevatedButton(
                 onPressed: () {
@@ -101,8 +102,9 @@ class EventDetailPage extends StatelessWidget {
   // 각 status_type에 맞는 참석자 목록을 출력하는 위젯
   Widget _buildParticipantList(String title, List<Participant> participants, String statusType) {
     final filteredParticipants = participants.where((p) => p.statusType == statusType).toList();
+    final count = filteredParticipants.length; // 해당 statusType의 참가자 수 계산
 
-    if (filteredParticipants.isEmpty) {
+    if (count == 0) {
       return SizedBox(); // 해당 statusType에 참가자가 없을 경우 빈 공간 반환
     }
 
@@ -110,31 +112,34 @@ class EventDetailPage extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '$title:',
+          '$title ($count):', // 제목에 참가자 수를 괄호 안에 표시
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 5),
         ...filteredParticipants.map((participant) {
           final member = participant.member;
-          return Row(
-            children: [
-              CircleAvatar(
-                radius: 15,
-                backgroundImage: member?.profileImage != null
-                    ? NetworkImage(member!.profileImage!)
-                    : AssetImage('assets/images/user_default.png') as ImageProvider,
-              ),
-              SizedBox(width: 10),
-              Text(
-                member != null
-                    ? member.name
-                    : 'Unknown', // 만약 member 정보가 없으면 'Unknown' 출력
-                style: TextStyle(fontSize: 14),
-              ),
-            ],
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 10.0), // 각 Row의 아래에 10픽셀 간격 추가
+            child: Row(
+              children: [
+                CircleAvatar(
+                  radius: 15,
+                  backgroundImage: member?.profileImage != null
+                      ? NetworkImage(member!.profileImage!)
+                      : AssetImage('assets/images/user_default.png') as ImageProvider,
+                ),
+                SizedBox(width: 10),
+                Text(
+                  member != null
+                      ? member.name
+                      : 'Unknown', // 만약 member 정보가 없으면 'Unknown' 출력
+                  style: TextStyle(fontSize: 14),
+                ),
+              ],
+            ),
           );
         }).toList(),
-        SizedBox(height: 10),
+        SizedBox(height: 20),
       ],
     );
   }
