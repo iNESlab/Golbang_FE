@@ -8,7 +8,6 @@ import '../../models/event.dart';
 import '../../utils/date_utils.dart';
 import 'package:golbang/services/participant_service.dart';
 import 'package:golbang/services/event_service.dart';
-
 import 'event_detail.dart';
 
 class EventPage extends ConsumerStatefulWidget {
@@ -23,6 +22,7 @@ class EventPageState extends ConsumerState<EventPage> {
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   late EventService _eventService;
+  late ParticipantService _participantService;
 
   final Map<DateTime, List<Event>> _events = LinkedHashMap(
     equals: isSameDay,
@@ -32,7 +32,6 @@ class EventPageState extends ConsumerState<EventPage> {
   @override
   void initState() {
     super.initState();
-
     _selectedDay = _focusedDay;
     _selectedEvents = ValueNotifier(_getUpcomingEvents());
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -43,26 +42,17 @@ class EventPageState extends ConsumerState<EventPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-
-    // Riverpod의 ref 사용하여 초기화
     final storage = ref.watch(secureStorageProvider);
     _eventService = EventService(storage);
-
-    // Load events from API for the current month
+    _participantService = ParticipantService(storage);
     _loadEventsForMonth();
   }
 
   Future<void> _loadEventsForMonth() async {
-    final storage = ref.watch(secureStorageProvider); // Riverpod의 ref 사용
+    final storage = ref.watch(secureStorageProvider);
     final eventService = EventService(storage);
-
-    // 날짜 설정 (현재 달로 설정)
     String date = '${_focusedDay.year}-${_focusedDay.month.toString().padLeft(2, '0')}-01';
-
-    // API 호출하여 이벤트 불러오기
     List<Event> events = await eventService.getEventsForMonth(date: date);
-
-    // 이벤트를 달력에 로드
     setState(() {
       for (var event in events) {
         DateTime eventDate = DateTime(
@@ -70,7 +60,6 @@ class EventPageState extends ConsumerState<EventPage> {
           event.startDateTime.month,
           event.startDateTime.day,
         );
-
         if (_events.containsKey(eventDate)) {
           _events[eventDate]!.add(event);
         } else {
@@ -113,12 +102,11 @@ class EventPageState extends ConsumerState<EventPage> {
     super.dispose();
   }
 
-  // 기존의 ParticipantService를 활용하는 메서드
   Future<void> _updateParticipantStatus(int participantId, String statusType) async {
-    final storage = ref.watch(secureStorageProvider);
-    final participantService = ParticipantService(storage);
-    await participantService.updateParticipantStatus(participantId, statusType);
-    setState(() {});
+    bool success = await _participantService.updateParticipantStatus(participantId, statusType);
+    if (success) {
+      setState(() {});
+    }
   }
 
   @override
@@ -145,7 +133,7 @@ class EventPageState extends ConsumerState<EventPage> {
             },
             onPageChanged: (focusedDay) {
               _focusedDay = focusedDay;
-              _loadEventsForMonth(); // 페이지가 바뀔 때마다 이벤트 로드
+              _loadEventsForMonth();
             },
             calendarBuilders: CalendarBuilders(
               selectedBuilder: (context, date, events) => Container(
@@ -174,9 +162,13 @@ class EventPageState extends ConsumerState<EventPage> {
               ),
               markerBuilder: (context, date, events) {
                 if (events.isNotEmpty) {
-                  // 첫 번째 이벤트의 상태를 기반으로 색상 설정
                   final event = events.first;
-                  String statusType = event.participants[0].statusType;
+                  // myParticipantId에 해당하는 Participant 찾기
+                  final participant = event.participants.firstWhere(
+                          (p) => p.participantId == event.myParticipantId,
+                      orElse: () => event.participants[0]); // 없으면 첫번째 참가자 선택
+
+                  String statusType = participant.statusType;
                   Color statusColor = _getStatusColor(statusType);
 
                   return Positioned(
@@ -248,8 +240,14 @@ class EventPageState extends ConsumerState<EventPage> {
                 return ListView.builder(
                   itemCount: value.length,
                   itemBuilder: (context, index) {
-                    String statusType = value[index].participants[0].statusType;
+                    // myParticipantId에 해당하는 Participant 찾기
+                    final participant = value[index].participants.firstWhere(
+                            (p) => p.participantId == value[index].myParticipantId,
+                        orElse: () => value[index].participants[0]); // 없으면 첫번째 참가자 선택
+
+                    String statusType = participant.statusType;
                     Color statusColor = _getStatusColor(statusType);
+                    String selectedStatusType = statusType;
 
                     return Container(
                       margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
@@ -277,7 +275,54 @@ class EventPageState extends ConsumerState<EventPage> {
                           Row(
                             children: [
                               const Text('참석 여부: '),
-                              _buildStatusButton(statusType, statusColor),
+                              ToggleButtons(
+                                isSelected: [
+                                  selectedStatusType == 'ACCEPT',
+                                  selectedStatusType == 'PARTY',
+                                  selectedStatusType == 'DENY',
+                                ],
+                                onPressed: (int buttonIndex) async {
+                                  String newStatusType;
+                                  switch (buttonIndex) {
+                                    case 0:
+                                      newStatusType = 'ACCEPT';
+                                      break;
+                                    case 1:
+                                      newStatusType = 'PARTY';
+                                      break;
+                                    case 2:
+                                      newStatusType = 'DENY';
+                                      break;
+                                    default:
+                                      newStatusType = 'PENDING';
+                                  }
+
+                                  bool success = await _participantService.updateParticipantStatus(
+                                    participant.participantId,
+                                    newStatusType,
+                                  );
+
+                                  if (success) {
+                                    setState(() {
+                                      selectedStatusType = newStatusType;
+                                    });
+                                  }
+                                },
+                                children: <Widget>[
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                    child: Text('ACCEPT'),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                    child: Text('PARTY'),
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
+                                    child: Text('DENY'),
+                                  ),
+                                ],
+                              ),
                             ],
                           ),
                           Container(

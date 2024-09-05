@@ -8,10 +8,9 @@ class ParticipantService {
 
   ParticipantService(this.storage);
 
-  // 특정 참가자의 참석 여부를 수정하는 메서드
-  Future<void> updateParticipantStatus(int participantId, String statusType) async {
+  Future<bool> updateParticipantStatus(int participantId, String statusType) async {
     try {
-      final url = Uri.parse('${dotenv.env['API_HOST']}/participants/$participantId/');
+      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/participants/$participantId/?status_type=$statusType');
       final accessToken = await storage.readAccessToken();
       final response = await http.patch(
         url,
@@ -19,16 +18,20 @@ class ParticipantService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken',
         },
-        body: jsonEncode({'status_type': statusType}),
       );
 
       if (response.statusCode == 200) {
         print('참석 여부 수정 성공: ${response.body}');
+        return true;
       } else {
         print('참석 여부 수정 실패: ${response.statusCode} - ${response.body}');
+        print('/participants/$participantId/?status_type=$statusType');
+
+        return false;
       }
     } catch (e) {
       print('Error occurred while updating participant status: $e');
+      return false;
     }
   }
 }
