@@ -118,6 +118,8 @@ class EventDetailPage extends StatelessWidget {
         SizedBox(height: 5),
         ...filteredParticipants.map((participant) {
           final member = participant.member;
+          final isSameGroup = participant.groupType == event.participants.firstWhere((p) => p.participantId == event.myParticipantId).groupType;
+
           return Padding(
             padding: const EdgeInsets.only(bottom: 10.0), // 각 Row의 아래에 10픽셀 간격 추가
             child: Row(
@@ -129,11 +131,20 @@ class EventDetailPage extends StatelessWidget {
                       : AssetImage('assets/images/user_default.png') as ImageProvider,
                 ),
                 SizedBox(width: 10),
-                Text(
-                  member != null
-                      ? member.name
-                      : 'Unknown', // 만약 member 정보가 없으면 'Unknown' 출력
-                  style: TextStyle(fontSize: 14),
+                Container(
+                  decoration: isSameGroup
+                      ? BoxDecoration(
+                    color: Colors.yellow.withOpacity(0.5), // 형광펜 효과를 위한 배경색
+                    borderRadius: BorderRadius.circular(5),
+                  )
+                      : null,
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    member != null
+                        ? member.name
+                        : 'Unknown', // 만약 member 정보가 없으면 'Unknown' 출력
+                    style: TextStyle(fontSize: 14),
+                  ),
                 ),
               ],
             ),
