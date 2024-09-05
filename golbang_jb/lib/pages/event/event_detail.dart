@@ -49,6 +49,12 @@ class _EventDetailPageState extends State<EventDetailPage> {
         .firstWhere((p) => p.participantId == widget.event.myParticipantId)
         .groupType;
 
+    // 더미 데이터
+    final courseName = "더미 코스 이름";
+    final hole = "18홀";
+    final par = "72";
+    final courseType = "더미 코스 타입";
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.event.eventTitle),
@@ -193,6 +199,16 @@ class _EventDetailPageState extends State<EventDetailPage> {
                     },
                   ),
                 ),
+                SizedBox(height: 16),
+                Text(
+                  "코스 정보",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 8),
+                Text("코스 이름: $courseName"),
+                Text("홀: $hole"),
+                Text("Par: $par"),
+                Text("코스 타입: $courseType"),
               ],
             ],
           ),
@@ -290,12 +306,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
   }
 
   void _editEvent() {
-    // 이벤트 수정 로직 구현
     print('수정 버튼이 눌렸습니다.');
   }
 
   void _deleteEvent() {
-    // 이벤트 삭제 로직 구현
     print('삭제 버튼이 눌렸습니다.');
   }
 }
