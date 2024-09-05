@@ -8,7 +8,7 @@ import 'package:golbang/pages/logins/hi_screen.dart';
 import 'package:golbang/pages/signup/signup.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-
+import 'package:golbang/pages/game/score_card_page.dart';
 
 
 Future<void> main() async {
@@ -45,7 +45,8 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         useMaterial3: true,
       ),
-      home: const HiScreen(),
+      home : ScoreCardPage(),
+      //home: const HiScreen(),
 
       routes: {
         '/signup': (context) => SignUpPage(),
