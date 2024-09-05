@@ -9,6 +9,11 @@ class EventDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 현재 로그인한 사용자의 groupType을 가져옵니다
+    final myGroupType = event.participants
+        .firstWhere((p) => p.participantId == event.myParticipantId)
+        .groupType;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(event.eventTitle),
@@ -62,6 +67,27 @@ class EventDetailPage extends StatelessWidget {
             Text(
               '참여 인원: ${event.participants.length}명',
               style: TextStyle(fontSize: 16),
+            ),
+            SizedBox(height: 10),
+            // 나의 조 표시
+            Row(
+              children: [
+                Text(
+                  '나의 조: ',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.yellow.withOpacity(0.5), // 형광펜 효과를 위한 배경색
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    '$myGroupType',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: 20),
             // 참석 상태별 참석자 목록을 표시합니다
