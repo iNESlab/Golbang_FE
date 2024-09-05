@@ -55,10 +55,9 @@ class EventPageState extends ConsumerState<EventPage> {
   Future<void> _loadEventsForMonth() async {
     final storage = ref.watch(secureStorageProvider); // Riverpod의 ref 사용
     final eventService = EventService(storage);
-    print("AAAAAAAAAAAAAAAAA");
+
     // 날짜 설정 (현재 달로 설정)
     String date = '${_focusedDay.year}-${_focusedDay.month.toString().padLeft(2, '0')}-01';
-    print(date);
 
     // API 호출하여 이벤트 불러오기
     List<Event> events = await eventService.getEventsForMonth(date: date);
@@ -173,6 +172,26 @@ class EventPageState extends ConsumerState<EventPage> {
                   style: const TextStyle(color: Colors.white),
                 ),
               ),
+              markerBuilder: (context, date, events) {
+                if (events.isNotEmpty) {
+                  // 첫 번째 이벤트의 상태를 기반으로 색상 설정
+                  final event = events.first;
+                  String statusType = event.participants[0].statusType;
+                  Color statusColor = _getStatusColor(statusType);
+
+                  return Positioned(
+                    child: Container(
+                      width: 7.0,
+                      height: 7.0,
+                      decoration: BoxDecoration(
+                        color: statusColor,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  );
+                }
+                return null;
+              },
             ),
             headerStyle: const HeaderStyle(
               formatButtonVisible: false,
@@ -229,33 +248,14 @@ class EventPageState extends ConsumerState<EventPage> {
                 return ListView.builder(
                   itemCount: value.length,
                   itemBuilder: (context, index) {
-                    Color borderColor;
-                    Color attendColor = Colors.grey;
-                    Color attendDinnerColor = Colors.grey;
-                    Color absentColor = Colors.grey;
-
-                    switch (value[index].participants[0].statusType) {
-                      case '참석':
-                        borderColor = Colors.cyan;
-                        attendColor = Colors.cyan;
-                        break;
-                      case '불참':
-                        borderColor = Colors.red;
-                        absentColor = Colors.red;
-                        break;
-                      case '참석·회식':
-                        borderColor = Colors.deepPurple;
-                        attendDinnerColor = Colors.deepPurple;
-                        break;
-                      default:
-                        borderColor = Colors.grey;
-                    }
+                    String statusType = value[index].participants[0].statusType;
+                    Color statusColor = _getStatusColor(statusType);
 
                     return Container(
                       margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
                       padding: const EdgeInsets.all(8.0),
                       decoration: BoxDecoration(
-                        border: Border.all(color: borderColor, width: 2.0),
+                        border: Border.all(color: statusColor, width: 2.0),
                         borderRadius: BorderRadius.circular(15.0),
                       ),
                       child: Column(
@@ -277,68 +277,7 @@ class EventPageState extends ConsumerState<EventPage> {
                           Row(
                             children: [
                               const Text('참석 여부: '),
-                              ElevatedButton(
-                                onPressed: () {
-                                  //_updateParticipantStatus(value[index].participants[0].id, '참석');
-                                  _updateParticipantStatus(1, '참석');
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: attendColor,
-                                  minimumSize: const Size(50, 30),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
-                                ),
-                                child: const Text(
-                                  '참석',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8.0),
-                              ElevatedButton(
-                                onPressed: () {
-                                  //_updateParticipantStatus(value[index].participants[0].id, '참석·회식');
-                                  _updateParticipantStatus(1, '참석·회식');
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: attendDinnerColor,
-                                  minimumSize: const Size(50, 30),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
-                                ),
-                                child: const Text(
-                                  '참석·회식',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 8.0),
-                              ElevatedButton(
-                                onPressed: () {
-                                  //_updateParticipantStatus(value[index].participants[0].id, '불참');
-                                  _updateParticipantStatus(1, '불참');
-                                },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: absentColor,
-                                  minimumSize: const Size(50, 30),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                  ),
-                                ),
-                                child: const Text(
-                                  '불참',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
+                              _buildStatusButton(statusType, statusColor),
                             ],
                           ),
                           Container(
@@ -395,15 +334,37 @@ class EventPageState extends ConsumerState<EventPage> {
     );
   }
 
-  Widget _buildEventsMarker(DateTime date, List<Event> events, Color color) {
-    return Container(
-      decoration: BoxDecoration(
-        color: color,
-        shape: BoxShape.circle,
+  Color _getStatusColor(String statusType) {
+    switch (statusType) {
+      case 'PARTY':
+        return Color(0xFF4D08BD);
+      case 'ACCEPT':
+        return Color(0xFF08BDBD);
+      case 'DENY':
+        return Color(0xFFF21B3F);
+      case 'PENDING':
+      default:
+        return Color(0xFF7E7E7E);
+    }
+  }
+
+  Widget _buildStatusButton(String statusType, Color statusColor) {
+    return ElevatedButton(
+      onPressed: () {},
+      style: ElevatedButton.styleFrom(
+        backgroundColor: statusColor,
+        minimumSize: const Size(50, 30),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10.0),
+        ),
       ),
-      width: 7.0,
-      height: 7.0,
-      margin: const EdgeInsets.symmetric(horizontal: 1.5),
+      child: Text(
+        statusType,
+        style: const TextStyle(
+          fontSize: 12,
+          color: Colors.white,
+        ),
+      ),
     );
   }
 }
