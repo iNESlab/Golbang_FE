@@ -28,7 +28,7 @@ class EventDetailPage extends StatelessWidget {
             Row(
               children: [
                 Image.asset(
-                  'assets/images/apple.png', // Example event image
+                  'assets/images/golf_icon.png', // Example event image
                   width: 50,
                   height: 50,
                   fit: BoxFit.cover,
@@ -114,12 +114,26 @@ class EventDetailPage extends StatelessWidget {
           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
         ),
         SizedBox(height: 5),
-        ...filteredParticipants.map((participant) => Text(
-          participant.member != null
-              ? '- ${participant.member!.name}' // 참가자의 이름을 표시
-              : '- ${participant.participantId}', // 참가자의 이름이 없을 경우 ID 표시
-          style: TextStyle(fontSize: 14),
-        )),
+        ...filteredParticipants.map((participant) {
+          final member = participant.member;
+          return Row(
+            children: [
+              CircleAvatar(
+                radius: 15,
+                backgroundImage: member?.profileImage != null
+                    ? NetworkImage(member!.profileImage!)
+                    : AssetImage('assets/images/user_default.png') as ImageProvider,
+              ),
+              SizedBox(width: 10),
+              Text(
+                member != null
+                    ? member.name
+                    : 'Unknown', // 만약 member 정보가 없으면 'Unknown' 출력
+                style: TextStyle(fontSize: 14),
+              ),
+            ],
+          );
+        }).toList(),
         SizedBox(height: 10),
       ],
     );
