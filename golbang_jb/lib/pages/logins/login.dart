@@ -18,7 +18,11 @@ class LoginPage extends ConsumerStatefulWidget {
 
 class _LoginPageState extends ConsumerState<LoginPage> {
   final TextEditingController _emailController = TextEditingController(text: 'hihello@email.com');
+<<<<<<< HEAD
   final TextEditingController _passwordController = TextEditingController(text: '1q2w3e4r!');
+=======
+  final TextEditingController _passwordController = TextEditingController(text: '1q2w3e4r');
+>>>>>>> 1d2879a (design(event): 이벤트 상세 조회 페이지에 참여자의 status_type과 이름 정보 리스트 추가)
 
   @override
   Widget build(BuildContext context) {
