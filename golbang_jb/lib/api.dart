@@ -1,6 +1,3 @@
-
-import 'models/group.dart';
-import 'models/member.dart';
 import 'models/post.dart';
 import 'models/user.dart';
 import 'global_config.dart';
