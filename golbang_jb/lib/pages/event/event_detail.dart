@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:golbang/pages/game/score_card_page.dart';
 import '../../models/event.dart';
+import '../../models/participant.dart';
 
 class EventDetailPage extends StatelessWidget {
   final Event event;
@@ -57,19 +58,17 @@ class EventDetailPage extends StatelessWidget {
               ],
             ),
             SizedBox(height: 10),
+            // 참석자 수를 표시합니다
             Text(
-              '참여 인원: ${event.participants}명',
+              '참여 인원: ${event.participants.length}명',
               style: TextStyle(fontSize: 16),
             ),
             SizedBox(height: 10),
-            // Dynamic members' list or any additional event details
-            if (event == '참석') ...[
-              Text(
-                '참석자: ${event.eventTitle}', // Display group details or members
-                style: TextStyle(fontSize: 16),
-              ),
-              // Add other dynamic content based on event properties
-            ],
+            // 참석 상태별 참석자 목록을 표시합니다
+            _buildParticipantList('수락 및 회식', event.participants, 'PARTY'),
+            _buildParticipantList('수락', event.participants, 'ACCEPT'),
+            _buildParticipantList('거절', event.participants, 'DENY'),
+            _buildParticipantList('대기', event.participants, 'PENDING'),
             Spacer(),
             Center(
               child: ElevatedButton(
@@ -81,9 +80,7 @@ class EventDetailPage extends StatelessWidget {
                     ),
                   );
                 },
-
                 child: Text('게임 시작'),
-
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green, // 버튼의 배경색 설정
                   foregroundColor: Colors.white, // 텍스트 색을 흰색으로 설정
@@ -98,6 +95,33 @@ class EventDetailPage extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  // 각 status_type에 맞는 참석자 목록을 출력하는 위젯
+  Widget _buildParticipantList(String title, List<Participant> participants, String statusType) {
+    final filteredParticipants = participants.where((p) => p.statusType == statusType).toList();
+
+    if (filteredParticipants.isEmpty) {
+      return SizedBox(); // 해당 statusType에 참가자가 없을 경우 빈 공간 반환
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '$title:',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 5),
+        ...filteredParticipants.map((participant) => Text(
+          participant.member != null
+              ? '- ${participant.member!.name}' // 참가자의 이름을 표시
+              : '- ${participant.participantId}', // 참가자의 이름이 없을 경우 ID 표시
+          style: TextStyle(fontSize: 14),
+        )),
+        SizedBox(height: 10),
+      ],
     );
   }
 }

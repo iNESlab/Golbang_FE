@@ -1,3 +1,5 @@
+import 'member.dart';
+
 class Participant {
   final int participantId;
   final String statusType;
@@ -8,6 +10,8 @@ class Participant {
   final String rank;
   final String handicapRank;
   final int handicapScore;
+  final Member? member; // member 속성
+
 
   Participant({
     required this.participantId,
@@ -19,6 +23,7 @@ class Participant {
     required this.rank,
     required this.handicapRank,
     required this.handicapScore,
+    this.member,
   });
 
   factory Participant.fromJson(Map<String, dynamic> json) {
@@ -32,6 +37,7 @@ class Participant {
       rank: json['rank'] ?? "",
       handicapRank: json['handicap_rank'] ?? "",
       handicapScore: json['handicap_score'] ?? 0,
+      member: json['member'] != null ? Member.fromJson(json['member']) : null,
     );
   }
 }
