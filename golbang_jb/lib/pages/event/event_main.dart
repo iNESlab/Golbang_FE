@@ -16,7 +16,6 @@ class EventPage extends ConsumerStatefulWidget {
   @override
   EventPageState createState() => EventPageState();
 }
-
 class EventPageState extends ConsumerState<EventPage> {
   late final ValueNotifier<List<Event>> _selectedEvents;
   DateTime _focusedDay = DateTime.now();
@@ -102,10 +101,17 @@ class EventPageState extends ConsumerState<EventPage> {
     super.dispose();
   }
 
-  Future<void> _updateParticipantStatus(int participantId, String statusType) async {
-    bool success = await _participantService.updateParticipantStatus(participantId, statusType);
+  Future<void> _updateParticipantStatus(int participantId, String newStatusType, Event event) async {
+    bool success = await _participantService.updateParticipantStatus(participantId, newStatusType);
     if (success) {
-      setState(() {});
+      setState(() {
+        // 해당 참가자의 상태를 업데이트
+        final participant = event.participants.firstWhere(
+              (p) => p.participantId == participantId,
+        );
+        participant.statusType = newStatusType;
+      });
+      await _loadEventsForMonth();  // 상태가 업데이트되면 이벤트를 다시 로드
     }
   }
 
@@ -163,10 +169,10 @@ class EventPageState extends ConsumerState<EventPage> {
               markerBuilder: (context, date, events) {
                 if (events.isNotEmpty) {
                   final event = events.first;
-                  // myParticipantId에 해당하는 Participant 찾기
                   final participant = event.participants.firstWhere(
-                          (p) => p.participantId == event.myParticipantId,
-                      orElse: () => event.participants[0]); // 없으면 첫번째 참가자 선택
+                        (p) => p.participantId == event.myParticipantId,
+                    orElse: () => event.participants[0],
+                  );
 
                   String statusType = participant.statusType;
                   Color statusColor = _getStatusColor(statusType);
@@ -240,14 +246,14 @@ class EventPageState extends ConsumerState<EventPage> {
                 return ListView.builder(
                   itemCount: value.length,
                   itemBuilder: (context, index) {
-                    // myParticipantId에 해당하는 Participant 찾기
-                    final participant = value[index].participants.firstWhere(
-                            (p) => p.participantId == value[index].myParticipantId,
-                        orElse: () => value[index].participants[0]); // 없으면 첫번째 참가자 선택
+                    final event = value[index];
+                    final participant = event.participants.firstWhere(
+                          (p) => p.participantId == event.myParticipantId,
+                      orElse: () => event.participants[0],
+                    );
 
                     String statusType = participant.statusType;
                     Color statusColor = _getStatusColor(statusType);
-                    String selectedStatusType = statusType;
 
                     return Container(
                       margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
@@ -260,69 +266,31 @@ class EventPageState extends ConsumerState<EventPage> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            value[index].eventTitle,
+                            event.eventTitle,
                             style: const TextStyle(fontSize: 12.0),
                           ),
                           const SizedBox(height: 4.0),
                           Text(
-                            value[index].eventTitle,
+                            event.eventTitle,
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
                           ),
                           const SizedBox(height: 8.0),
-                          Text('시간: ${value[index].startDateTime.hour}:${value[index].startDateTime.minute}'),
-                          Text('인원수: 참석 ${value[index].participants.length}명'),
-                          Text('장소: ${value[index].location}'),
+                          Text('시간: ${event.startDateTime.hour}:${event.startDateTime.minute}'),
+                          Text('인원수: 참석 ${event.participants.length}명'),
+                          Text('장소: ${event.location}'),
                           Row(
                             children: [
-                              const Text('참석 여부: '),
-                              ToggleButtons(
-                                isSelected: [
-                                  selectedStatusType == 'ACCEPT',
-                                  selectedStatusType == 'PARTY',
-                                  selectedStatusType == 'DENY',
-                                ],
-                                onPressed: (int buttonIndex) async {
-                                  String newStatusType;
-                                  switch (buttonIndex) {
-                                    case 0:
-                                      newStatusType = 'ACCEPT';
-                                      break;
-                                    case 1:
-                                      newStatusType = 'PARTY';
-                                      break;
-                                    case 2:
-                                      newStatusType = 'DENY';
-                                      break;
-                                    default:
-                                      newStatusType = 'PENDING';
-                                  }
-
-                                  bool success = await _participantService.updateParticipantStatus(
-                                    participant.participantId,
-                                    newStatusType,
-                                  );
-
-                                  if (success) {
-                                    setState(() {
-                                      selectedStatusType = newStatusType;
-                                    });
-                                  }
-                                },
-                                children: <Widget>[
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                                    child: Text('ACCEPT'),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                                    child: Text('PARTY'),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(horizontal: 12.0),
-                                    child: Text('DENY'),
-                                  ),
-                                ],
-                              ),
+                              _buildStatusButton('ACCEPT', statusType, () async {
+                                await _handleStatusChange('ACCEPT', participant.participantId, event);
+                              }),
+                              const SizedBox(width: 8),
+                              _buildStatusButton('PARTY', statusType, () async {
+                                await _handleStatusChange('PARTY', participant.participantId, event);
+                              }),
+                              const SizedBox(width: 8),
+                              _buildStatusButton('DENY', statusType, () async {
+                                await _handleStatusChange('DENY', participant.participantId, event);
+                              }),
                             ],
                           ),
                           Container(
@@ -338,7 +306,7 @@ class EventPageState extends ConsumerState<EventPage> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => EventDetailPage(event: value[index]),
+                                        builder: (context) => EventDetailPage(event: event),
                                       ),
                                     );
                                   },
@@ -393,23 +361,75 @@ class EventPageState extends ConsumerState<EventPage> {
     }
   }
 
-  Widget _buildStatusButton(String statusType, Color statusColor) {
+  Widget _buildStatusButton(String status, String selectedStatus, VoidCallback onPressed) {
+    // 버튼이 선택된 상태인지 확인
+    final bool isSelected = status == selectedStatus;
+
+    // 선택된 상태에 따라 버튼의 색상을 결정
+    final Color backgroundColor = isSelected
+        ? _getStatusColor(status) // 선택된 상태이면 해당 색상을 사용
+        : Color(0xFF7E7E7E); // 선택되지 않은 상태일 때는 기본 회색을 사용
+
+    // 버튼의 모양과 스타일을 정의
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: onPressed,
       style: ElevatedButton.styleFrom(
-        backgroundColor: statusColor,
-        minimumSize: const Size(50, 30),
+        backgroundColor: backgroundColor,
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10.0),
+          borderRadius: BorderRadius.circular(20),
         ),
       ),
-      child: Text(
-        statusType,
-        style: const TextStyle(
-          fontSize: 12,
-          color: Colors.white,
-        ),
+      child: Row(
+        children: [
+          Icon(
+            status == selectedStatus ? Icons.check_circle : Icons.radio_button_unchecked,
+            color: Colors.white,
+            size: 16,
+          ),
+          const SizedBox(width: 8),
+          Text(
+            _getStatusText(status), // 상태에 맞는 텍스트를 가져오기
+            style: const TextStyle(color: Colors.white),
+          ),
+        ],
       ),
     );
   }
+
+
+  String _getStatusText(String status) {
+    switch (status) {
+      case 'ACCEPT':
+        return '참석';
+      case 'PARTY':
+        return '참석 · 회식';
+      case 'DENY':
+        return '불참';
+      default:
+        return '';
+    }
+  }
+
+  Future<void> _handleStatusChange(String newStatus, int participantId, Event event) async {
+    // 상태를 업데이트
+    bool success = await _participantService.updateParticipantStatus(participantId, newStatus);
+
+    if (success) {
+      setState(() {
+        // 해당 이벤트의 참가자의 상태를 업데이트
+        final participant = event.participants.firstWhere(
+              (p) => p.participantId == participantId,
+        );
+        participant.statusType = newStatus;
+
+        // 현재 선택된 이벤트 리스트를 다시 로드하여 즉시 반영
+        // TODO: 잘 반영이 안 됨. 반영되도록 수정 필요
+        _selectedEvents.value = _getEventsForDay(_selectedDay!);
+      });
+    }
+  }
+
+
+
 }

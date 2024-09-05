@@ -1,11 +1,41 @@
 import 'package:flutter/material.dart';
 import 'package:golbang/models/event.dart';
-import 'package:golbang/pages/event/event_detail.dart'; // EventDetailPage를 불러오기 위한 import 추가
+import 'package:golbang/pages/event/event_detail.dart';
+import 'package:golbang/services/participant_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class UpcomingEvents extends StatelessWidget {
+import '../../repoisitory/secure_storage.dart';
+
+class UpcomingEvents extends ConsumerStatefulWidget {
   final List<Event> events;
 
   const UpcomingEvents({super.key, required this.events});
+
+  @override
+  UpcomingEventsState createState() => UpcomingEventsState();
+}
+
+class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
+  late ParticipantService _participantService;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final storage = ref.watch(secureStorageProvider);
+    _participantService = ParticipantService(storage);
+  }
+
+  Future<void> _handleStatusChange(String newStatus, int participantId, Event event) async {
+    bool success = await _participantService.updateParticipantStatus(participantId, newStatus);
+    if (success) {
+      setState(() {
+        final participant = event.participants.firstWhere(
+              (p) => p.participantId == participantId,
+        );
+        participant.statusType = newStatus;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -15,12 +45,16 @@ class UpcomingEvents extends StatelessWidget {
       child: SizedBox(
         height: 200,
         child: ListView.builder(
-          itemCount: events.length,
+          itemCount: widget.events.length,
           itemBuilder: (context, index) {
-            final event = events[index];
+            final event = widget.events[index];
 
-            // 첫 번째 참여자의 상태를 사용하여 테두리 색상 설정
-            String? statusType = event.participants.isNotEmpty ? event.participants[0].statusType : 'PENDING';
+            // 수정된 부분: myParticipantId와 동일한 participantId의 statusType을 가져옴
+            final participant = event.participants.firstWhere(
+                  (p) => p.participantId == event.myParticipantId,
+              orElse: () => event.participants[0],
+            );
+            String statusType = participant.statusType;
 
             return GestureDetector(
               onTap: () {
@@ -73,7 +107,7 @@ class UpcomingEvents extends StatelessWidget {
                       Row(
                         children: [
                           const Text('참석 여부: '),
-                          _buildStatusButton(statusType),
+                          _buildStatusButton(statusType, event),
                         ],
                       ),
                     ],
@@ -87,11 +121,25 @@ class UpcomingEvents extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusButton(String status) {
+  Widget _buildStatusButton(String status, Event event) {
     Color color = _getStatusColor(status);
+    int participantId = event.participants.isNotEmpty
+        ? event.participants.firstWhere(
+          (p) => p.participantId == event.myParticipantId,
+      orElse: () => event.participants[0],
+    ).participantId
+        : -1; // 참가자가 없는 경우를 처리
 
     return ElevatedButton(
-      onPressed: () {},
+      onPressed: participantId != -1
+          ? () async {
+        await _handleStatusChange(status == 'ACCEPT'
+            ? 'DENY'
+            : status == 'DENY'
+            ? 'PARTY'
+            : 'ACCEPT', participantId, event);
+      }
+          : null, // 참가자가 없는 경우 버튼 비활성화
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
         minimumSize: const Size(40, 30),
@@ -100,10 +148,23 @@ class UpcomingEvents extends StatelessWidget {
         ),
       ),
       child: Text(
-        status,
+        _getStatusText(status),
         style: const TextStyle(fontSize: 12, color: Colors.white),
       ),
     );
+  }
+
+  String _getStatusText(String status) {
+    switch (status) {
+      case 'ACCEPT':
+        return '참석';
+      case 'PARTY':
+        return '참석 · 회식';
+      case 'DENY':
+        return '불참';
+      default:
+        return '미정';
+    }
   }
 
   Color _getStatusColor(String status) {

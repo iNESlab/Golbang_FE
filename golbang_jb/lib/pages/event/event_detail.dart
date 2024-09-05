@@ -129,7 +129,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                 ],
               ),
               SizedBox(height: 10),
-              // 참석자 수를 표시합니다
+              // 참석자 수를 표시
               Text(
                 '참여 인원: ${widget.event.participants.length}명',
                 style: TextStyle(fontSize: 16),
@@ -166,8 +166,8 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   });
                 },
                 children: [
-                  _buildParticipantPanel('수락 및 회식', widget.event.participants, 'PARTY', Color(0xFF4D08BD).withOpacity(0.3), 0),
-                  _buildParticipantPanel('수락', widget.event.participants, 'ACCEPT', Color(0xFF08BDBD).withOpacity(0.3), 1),
+                  _buildParticipantPanel('참석 및 회식', widget.event.participants, 'PARTY', Color(0xFF4D08BD).withOpacity(0.3), 0),
+                  _buildParticipantPanel('참석', widget.event.participants, 'ACCEPT', Color(0xFF08BDBD).withOpacity(0.3), 1),
                   _buildParticipantPanel('거절', widget.event.participants, 'DENY', Color(0xFFF21B3F).withOpacity(0.3), 2),
                   _buildParticipantPanel('대기', widget.event.participants, 'PENDING', Color(0xFF7E7E7E).withOpacity(0.3), 3),
                 ],
