@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../models/club.dart';
+import '../../models/enum/event.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/club_service.dart';
 import 'event_create2.dart';
@@ -20,20 +21,43 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
   final TextEditingController _startDateController = TextEditingController();
   final TextEditingController _startTimeController = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
-  final TextEditingController _endTimeController = TextEditingController();
   LatLng? _selectedLocation;
   List<Club> _clubs = [];
   Club? _selectedClub;
-  String? _selectedGameMode;
+  GameMode? _selectedGameMode;
   List<ClubMemberProfile> _selectedParticipants = [];
   late ClubService _clubService;
+  bool _isButtonEnabled = false;
 
+  final TimeOfDay _fixedTime = TimeOfDay(hour: 23, minute: 59);
 
   @override
   void initState() {
     super.initState();
     _clubService = ClubService(ref.read(secureStorageProvider));
     _fetchClubs();
+    _setupListeners();
+  }
+
+  void _setupListeners() {
+    _titleController.addListener(_validateForm);
+    _locationController.addListener(_validateForm);
+    _startDateController.addListener(_validateForm);
+    _endDateController.addListener(_validateForm);
+  }
+
+  void _validateForm() {
+    final isValid = _titleController.text.isNotEmpty &&
+        _locationController.text.isNotEmpty &&
+        _startDateController.text.isNotEmpty &&
+        _endDateController.text.isNotEmpty &&
+        _selectedLocation != null &&
+        _selectedClub != null &&
+        _selectedGameMode != null;
+
+    setState(() {
+      _isButtonEnabled = isValid;
+    });
   }
 
   Future<void> _fetchClubs() async {
@@ -51,7 +75,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
     showDialog(
       context: context,
       builder: (context) => LocationSearchDialog(
-        locationController: _locationController,
+        locationController: _locationController, //TODO: 지금 위도로 저장되는데 이대로 유지할지 결정해야함
         locationCoordinates: {
           "Jeju Nine Bridges": LatLng(33.431441, 126.875828),
           "Seoul Tower": LatLng(37.5511694, 126.9882266),
@@ -61,6 +85,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
         onLocationSelected: (LatLng location) {
           setState(() {
             _selectedLocation = location;
+            _validateForm();
           });
         },
       ),
@@ -82,6 +107,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
         } else {
           _endDateController.text = formattedDate;
         }
+        _validateForm();
       });
     }
   }
@@ -93,14 +119,23 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
     );
     if (pickedTime != null) {
       setState(() {
-        final formattedTime = pickedTime.format(context);
-        if (isStartTime) {
-          _startTimeController.text = formattedTime;
-        } else {
-          _endTimeController.text = formattedTime;
-        }
+        _startTimeController.text = pickedTime.format(context);
       });
     }
+  }
+
+  DateTime _combineDateAndTime(DateTime date, TimeOfDay time) {
+    return DateTime(date.year, date.month, date.day, time.hour, time.minute);
+  }
+
+  TimeOfDay _parseTimeOfDay(String time) {
+    final timeParts = time.split(' ');
+    final timeOfDayParts = timeParts[0].split(':');
+    final hour = int.parse(timeOfDayParts[0]);
+    final minute = int.parse(timeOfDayParts[1]);
+    final isPM = timeParts[1].toLowerCase() == 'pm';
+
+    return TimeOfDay(hour: isPM && hour < 12 ? hour + 12 : hour, minute: minute);
   }
 
   void _showParticipantDialog() {
@@ -115,6 +150,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
         setState(() {
           _selectedParticipants = List<ClubMemberProfile>.from(result);
         });
+        _validateForm();
       }
     });
   }
@@ -160,6 +196,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                   setState(() {
                     _selectedClub = value;
                     _selectedParticipants = []; // 클럽 변경 시 참여자 초기화
+                    _validateForm();
                   });
                 },
                 items: _clubs.map<DropdownMenuItem<Club>>((Club club) {
@@ -271,25 +308,6 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 8),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _selectTime(context, false),
-                      child: AbsorbPointer(
-                        child: TextField(
-                          controller: _endTimeController,
-                          decoration: InputDecoration(
-                            labelText: '종료 시간',
-                            hintText: '시간 선택',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            prefixIcon: Icon(Icons.access_time),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
                 ],
               ),
               SizedBox(height: 16),
@@ -321,35 +339,53 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
               SizedBox(height: 16),
               Text('게임모드', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               SizedBox(height: 8),
-              DropdownButtonFormField<String>(
+              DropdownButtonFormField<GameMode>(
                 decoration: InputDecoration(
-                  labelText: '게임모드 선택',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
+                  labelText: '게임모드',
+                  border: OutlineInputBorder(),
                 ),
-                value: _selectedGameMode,
-                onChanged: (String? value) {
+                value: _selectedGameMode, // value를 GameMode 타입으로 설정
+                onChanged: (newValue) {
                   setState(() {
-                    _selectedGameMode = value;
+                    _selectedGameMode = newValue!;
+                    _validateForm();
                   });
                 },
-                items: ['ST', 'MP'].map<DropdownMenuItem<String>>((String mode) {
-                  return DropdownMenuItem<String>(
+                items: GameMode.values.map((mode) {
+                  return DropdownMenuItem<GameMode>(
                     value: mode,
-                    child: Text(mode),
+                    child: Text(
+                      mode == GameMode.STROKE ? '스트로크' : mode.toString(),
+                    ),
                   );
                 }).toList(),
               ),
               SizedBox(height: 16),
               Center(
                 child: ElevatedButton(
-                  onPressed: () {
+                  onPressed: _isButtonEnabled
+                      ? () {
+                    final DateTime startDate = DateTime.parse(_startDateController.text);
+                    final TimeOfDay startTime = _parseTimeOfDay(_startTimeController.text);
+                    final DateTime startDateTime = _combineDateAndTime(startDate, startTime);
+                    final DateTime endDateTime = _combineDateAndTime(DateTime.parse(_endDateController.text), _fixedTime);
+
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => EventsCreate2()),
+                      MaterialPageRoute(
+                        builder: (context) => EventsCreate2(
+                          title: _titleController.text,
+                          selectedClub: _selectedClub!,
+                          selectedLocation: _selectedLocation!,
+                          startDate: startDateTime,
+                          endDate: endDateTime,
+                          selectedParticipants: _selectedParticipants,
+                          selectedGameMode: _selectedGameMode!,
+                        ),
+                      ),
                     );
-                  },
+                  }
+                      : null,
                   child: Text('다음'),
                   style: ElevatedButton.styleFrom(
                     minimumSize: Size(double.infinity, 50),

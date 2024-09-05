@@ -31,13 +31,30 @@ class Participant {
       participantId: json['participant_id'] ?? 0,
       statusType: json['status_type'] ?? '',
       teamType: json['team_type'] ?? '',
-      holeNumber: json['hole_number'] ?? 0, // nullable이므로 기본값 없이 처리
+      holeNumber: json['hole_number'] ?? 0,
+      // nullable이므로 기본값 없이 처리
       groupType: json['group_type'] ?? 0,
-      sumScore: json['sum_score'], // nullable이므로 기본값 없이 처리
+      sumScore: json['sum_score'],
+      // nullable이므로 기본값 없이 처리
       rank: json['rank'] ?? "",
       handicapRank: json['handicap_rank'] ?? "",
       handicapScore: json['handicap_score'] ?? 0,
       member: json['member'] != null ? Member.fromJson(json['member']) : null,
     );
+  }
+
+
+  Map<String, dynamic> toJson() {
+    return {
+      'participant_id': participantId,
+      'status_type': statusType,
+      'team_type': teamType,
+      'hole_number': holeNumber, // nullable이므로 null이 아닐 때만 포함
+      'group_type': groupType,
+      'sum_score': sumScore, // nullable이므로 null이 아닐 때만 포함
+      'rank': rank,
+      'handicap_rank': handicapRank,
+      'handicap_score': handicapScore,
+    };
   }
 }
