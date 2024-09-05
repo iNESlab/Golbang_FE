@@ -1,73 +1,117 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'login.dart';
+import 'package:golbang/pages/home/splash_screen.dart';
+import 'package:golbang/pages/logins/widgets/login_widgets.dart';
+import 'package:golbang/pages/logins/widgets/social_login_widgets.dart';
+import 'package:golbang/services/auth_service.dart';
+import 'package:hooks_riverpod/hooks_riverpod.dart';  // hooks_riverpod 사용
+import 'package:http/http.dart' as http;
 
-class PasswordChangedPage extends StatelessWidget {
-  const PasswordChangedPage({Key? key}) : super(key: key);
+import '../../repoisitory/secure_storage.dart';
+
+class LoginPage extends ConsumerStatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends ConsumerState<LoginPage> {
+  final TextEditingController _emailController =
+  TextEditingController(text: 'yoonsh1004z');
+  final TextEditingController _passwordController =
+  TextEditingController(text: 'todwnl@7706');
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[900], // 배경색 설정
+      backgroundColor: Colors.grey[900],
       body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.all(24.0),
-                decoration: BoxDecoration(
-                  color: Colors.teal,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.check,
-                  size: 48.0,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Password Changed!',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 8),
-              const Text(
-                'Your password has been changed successfully.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.grey,
-                ),
-                textAlign: TextAlign.center,
-              ),
+              const LoginTitle(),
               const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: () {
-                  // LoginPage로 이동 (popUntil 사용)
-                  Navigator.of(context).popUntil((route) => route.isFirst);
-                  Navigator.of(context).pushReplacement(
-                    MaterialPageRoute(
-                      builder: (context) => const LoginPage(),
-                    ),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.teal,
-                  minimumSize: const Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30.0),
-                  ),
-                ),
-                child: const Text('Back to Login', style: TextStyle(fontSize: 18)),
-              ),
+              EmailField(controller: _emailController),
+              const SizedBox(height: 16),
+              PasswordField(controller: _passwordController),
+              const SizedBox(height: 16),
+              const ForgotPasswordLink(),
+              const SizedBox(height: 32),
+              LoginButton(onPressed: _login),
+              const SizedBox(height: 32),
+              const SignInDivider(),
+              const SizedBox(height: 16),
+              const SocialLoginButtons(),
+              const SizedBox(height: 32),
+              const SignUpLink(),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _login() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
+
+    if (_validateInputs(email, password)) {
+      try {
+        final response = await AuthService.login(
+          username: email,
+          password: password,
+        );
+        await _handleLoginResponse(response);
+      } catch (e) {
+        print('error: $e');
+        _showErrorDialog('An error occurred. Please try again.');
+      }
+    } else {
+      _showErrorDialog('Please fill in all fields');
+    }
+  }
+
+  bool _validateInputs(String email, String password) {
+    return email.isNotEmpty && password.isNotEmpty;
+  }
+
+  Future<void> _handleLoginResponse(http.Response response) async {
+    if (response.statusCode == 200) {
+      final body = json.decode(response.body);
+      var accessToken = body['data']['access_token'];
+      // SecureStorage 접근
+      final storage = ref.watch(secureStorageProvider);
+      await storage.saveAccessToken(accessToken);
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const SplashScreen()),
+      );
+    } else {
+      _showErrorDialog('Invalid email or password');
+    }
+  }
+
+  void _showErrorDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Error'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
 }

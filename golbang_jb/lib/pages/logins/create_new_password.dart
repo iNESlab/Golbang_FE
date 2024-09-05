@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../login/success_change_password.dart';
 import 'success_change_password.dart';
 
 class CreateNewPasswordPage extends StatefulWidget {
