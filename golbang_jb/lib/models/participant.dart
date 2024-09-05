@@ -34,4 +34,18 @@ class Participant {
       handicapScore: json['handicap_score'] ?? 0,
     );
   }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'participant_id': participantId,
+      'status_type': statusType,
+      'team_type': teamType,
+      'hole_number': holeNumber, // nullable이므로 null이 아닐 때만 포함
+      'group_type': groupType,
+      'sum_score': sumScore, // nullable이므로 null이 아닐 때만 포함
+      'rank': rank,
+      'handicap_rank': handicapRank,
+      'handicap_score': handicapScore,
+    };
+  }
 }

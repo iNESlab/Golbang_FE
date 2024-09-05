@@ -18,9 +18,9 @@ class LoginPage extends ConsumerStatefulWidget {
 
 class _LoginPageState extends ConsumerState<LoginPage> {
   final TextEditingController _emailController =
-  TextEditingController(text: 'testtest3@email.com');
+  TextEditingController(text: 'yoonsh1004z');
   final TextEditingController _passwordController =
-  TextEditingController(text: '1q2w3e4r!');
+  TextEditingController(text: 'todwnl@7706');
 
   @override
   Widget build(BuildContext context) {
