@@ -11,8 +11,14 @@ class EventDetailPage extends StatefulWidget {
   _EventDetailPageState createState() => _EventDetailPageState();
 }
 
+<<<<<<< HEAD
 class _EventDetailPageState extends State<EventDetailPage> {
   List<bool> _isExpandedList = [false, false, false, false];
+=======
+class _LoginPageState extends ConsumerState<LoginPage> {
+  final TextEditingController _emailController = TextEditingController(text: 'hihello@email.com');
+  final TextEditingController _passwordController = TextEditingController(text: '1q2w3e4r!');
+>>>>>>> dc31647 (design(event):우측상단에 [...] 표시 누르면 수정/삭제 버튼 뜨도록 설정)
 
   @override
   Widget build(BuildContext context) {

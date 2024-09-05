@@ -30,6 +30,30 @@ class _EventDetailPageState extends State<EventDetailPage> {
             Navigator.of(context).pop();
           },
         ),
+        actions: [
+          PopupMenuButton<String>(
+            onSelected: (String value) {
+              switch (value) {
+                case 'edit':
+                  _editEvent(); // 수정 버튼이 눌렸을 때 실행할 함수
+                  break;
+                case 'delete':
+                  _deleteEvent(); // 삭제 버튼이 눌렸을 때 실행할 함수
+                  break;
+              }
+            },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+              const PopupMenuItem<String>(
+                value: 'edit',
+                child: Text('수정'),
+              ),
+              const PopupMenuItem<String>(
+                value: 'delete',
+                child: Text('삭제'),
+              ),
+            ],
+          ),
+        ],
       ),
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -320,5 +344,15 @@ class _EventDetailPageState extends State<EventDetailPage> {
       canTapOnHeader: true,
 >>>>>>> d8ab64b (design(event): 각 StatusType(수락 및 회식, 수락, 거절, 대기)을 토글 가능한 형태로 변경하여, 섹션을 눌렀을 때만 해당 참가자들이 보이도록 설정)
     );
+  }
+
+  void _editEvent() {
+    // 이벤트 수정 로직 구현
+    print('수정 버튼이 눌렸습니다.');
+  }
+
+  void _deleteEvent() {
+    // 이벤트 삭제 로직 구현
+    print('삭제 버튼이 눌렸습니다.');
   }
 }
