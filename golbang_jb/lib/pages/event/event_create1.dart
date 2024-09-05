@@ -19,7 +19,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _startDateController = TextEditingController();
-  final TextEditingController _startTimeController = TextEditingController();
+  final TextEditingController _startTimeController = TextEditingController(text: "11:00 AM");
   final TextEditingController _endDateController = TextEditingController();
   LatLng? _selectedLocation;
   List<Club> _clubs = [];
@@ -120,6 +120,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
     if (pickedTime != null) {
       setState(() {
         _startTimeController.text = pickedTime.format(context);
+        print('startTime: ${_startTimeController.text}');
       });
     }
   }
