@@ -3,20 +3,27 @@ import 'package:golbang/pages/game/score_card_page.dart';
 import '../../models/event.dart';
 import '../../models/participant.dart';
 
-class EventDetailPage extends StatelessWidget {
+class EventDetailPage extends StatefulWidget {
   final Event event;
   EventDetailPage({required this.event});
 
   @override
+  _EventDetailPageState createState() => _EventDetailPageState();
+}
+
+class _EventDetailPageState extends State<EventDetailPage> {
+  List<bool> _isExpandedList = [false, false, false, false];
+
+  @override
   Widget build(BuildContext context) {
     // 현재 로그인한 사용자의 groupType을 가져옵니다
-    final myGroupType = event.participants
-        .firstWhere((p) => p.participantId == event.myParticipantId)
+    final myGroupType = widget.event.participants
+        .firstWhere((p) => p.participantId == widget.event.myParticipantId)
         .groupType;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(event.eventTitle),
+        title: Text(widget.event.eventTitle),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
@@ -25,7 +32,11 @@ class EventDetailPage extends StatelessWidget {
         ),
       ),
 <<<<<<< HEAD
+<<<<<<< HEAD
       body: SingleChildScrollView( // 스크롤 가능하도록 설정
+=======
+      body: SingleChildScrollView(
+>>>>>>> d8ab64b (design(event): 각 StatusType(수락 및 회식, 수락, 거절, 대기)을 토글 가능한 형태로 변경하여, 섹션을 눌렀을 때만 해당 참가자들이 보이도록 설정)
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -45,19 +56,19 @@ class EventDetailPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        event.eventTitle,
+                        widget.event.eventTitle,
                         style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        '${event.startDateTime.toLocal().toIso8601String().split('T').first} • ${event.endDateTime.hour}:${event.startDateTime.minute.toString().padLeft(2, '0')} ~ ${event.endDateTime.add(Duration(hours: 2)).hour}:${event.startDateTime.minute.toString().padLeft(2, '0')}', // Event time range
+                        '${widget.event.startDateTime.toLocal().toIso8601String().split('T').first} • ${widget.event.endDateTime.hour}:${widget.event.startDateTime.minute.toString().padLeft(2, '0')} ~ ${widget.event.endDateTime.add(Duration(hours: 2)).hour}:${widget.event.startDateTime.minute.toString().padLeft(2, '0')}', // Event time range
                         style: TextStyle(fontSize: 16),
                       ),
                       Text(
-                        '장소: ${event.location}',
+                        '장소: ${widget.event.location}',
                         style: TextStyle(fontSize: 16),
                       ),
                       Text(
-                        '게임모드: ${event.gameMode}',
+                        '게임모드: ${widget.event.gameMode}',
                         style: TextStyle(fontSize: 16),
                       ),
                     ],
@@ -67,7 +78,7 @@ class EventDetailPage extends StatelessWidget {
               SizedBox(height: 10),
               // 참석자 수를 표시합니다
               Text(
-                '참여 인원: ${event.participants.length}명',
+                '참여 인원: ${widget.event.participants.length}명',
                 style: TextStyle(fontSize: 16),
               ),
               SizedBox(height: 10),
@@ -163,12 +174,22 @@ class EventDetailPage extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 20),
-              // 참석 상태별 참석자 목록을 표시합니다
-              _buildParticipantList('수락 및 회식', event.participants, 'PARTY', Colors.purple.withOpacity(0.3)),
-              _buildParticipantList('수락', event.participants, 'ACCEPT', Colors.blue.withOpacity(0.3)),
-              _buildParticipantList('거절', event.participants, 'DENY', Colors.red.withOpacity(0.3)),
-              _buildParticipantList('대기', event.participants, 'PENDING', Colors.grey.withOpacity(0.3)),
-              SizedBox(height: 20),
+              // 토글 가능한 참석 상태별 리스트
+              ExpansionPanelList(
+                elevation: 1,
+                expandedHeaderPadding: EdgeInsets.all(0),
+                expansionCallback: (int index, bool isExpanded) {
+                  setState(() {
+                    _isExpandedList[index] = !_isExpandedList[index];
+                  });
+                },
+                children: [
+                  _buildParticipantPanel('수락 및 회식', widget.event.participants, 'PARTY', Colors.purple.withOpacity(0.3), 0),
+                  _buildParticipantPanel('수락', widget.event.participants, 'ACCEPT', Colors.blue.withOpacity(0.3), 1),
+                  _buildParticipantPanel('거절', widget.event.participants, 'DENY', Colors.red.withOpacity(0.3), 2),
+                  _buildParticipantPanel('대기', widget.event.participants, 'PENDING', Colors.grey.withOpacity(0.3), 3),
+                ],
+              ),
             ],
           ),
         ),
@@ -199,34 +220,42 @@ class EventDetailPage extends StatelessWidget {
     );
   }
 
+<<<<<<< HEAD
   // 각 status_type에 맞는 참석자 목록을 출력하는 위젯
 <<<<<<< HEAD
   Widget _buildParticipantList(String title, List<Participant> participants, String statusType, Color backgroundColor) {
+=======
+  // 각 status_type에 맞는 참가자 목록을 출력하는 ExpansionPanel
+  ExpansionPanel _buildParticipantPanel(String title, List<Participant> participants, String statusType, Color backgroundColor, int index) {
+>>>>>>> d8ab64b (design(event): 각 StatusType(수락 및 회식, 수락, 거절, 대기)을 토글 가능한 형태로 변경하여, 섹션을 눌렀을 때만 해당 참가자들이 보이도록 설정)
     final filteredParticipants = participants.where((p) => p.statusType == statusType).toList();
     final count = filteredParticipants.length; // 해당 statusType의 참가자 수 계산
 
-    if (count == 0) {
-      return SizedBox(); // 해당 statusType에 참가자가 없을 경우 빈 공간 반환
-    }
-
-    return Container(
-      decoration: BoxDecoration(
-        color: backgroundColor, // 상태별 배경색 설정
-        borderRadius: BorderRadius.circular(10),
-      ),
-      padding: EdgeInsets.all(10), // 패딩 추가
-      margin: EdgeInsets.only(bottom: 20), // 각 상태 블록 사이에 간격 추가
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '$title ($count):', // 제목에 참가자 수를 괄호 안에 표시
+    return ExpansionPanel(
+      headerBuilder: (BuildContext context, bool isExpanded) {
+        return Container(
+          decoration: BoxDecoration(
+            color: backgroundColor, // 상태별 배경색 설정
+            borderRadius: BorderRadius.circular(10),
+          ),
+          padding: EdgeInsets.all(10),
+          child: Text(
+            '$title ($count):',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 5),
-          ...filteredParticipants.map((participant) {
+        );
+      },
+      body: Container(
+        decoration: BoxDecoration(
+          color: backgroundColor, // 상태별 배경색 설정
+          borderRadius: BorderRadius.circular(10),
+        ),
+        padding: EdgeInsets.all(10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: filteredParticipants.map((participant) {
             final member = participant.member;
-            final isSameGroup = participant.groupType == event.participants.firstWhere((p) => p.participantId == event.myParticipantId).groupType;
+            final isSameGroup = participant.groupType == widget.event.participants.firstWhere((p) => p.participantId == widget.event.myParticipantId).groupType;
 
             return Padding(
               padding: const EdgeInsets.only(bottom: 10.0), // 각 Row의 아래에 10픽셀 간격 추가
@@ -258,8 +287,9 @@ class EventDetailPage extends StatelessWidget {
               ),
             );
           }).toList(),
-        ],
+        ),
       ),
+<<<<<<< HEAD
 =======
   Widget _buildParticipantList(String title, List<Participant> participants, String statusType) {
     final filteredParticipants = participants.where((p) => p.statusType == statusType).toList();
@@ -285,6 +315,10 @@ class EventDetailPage extends StatelessWidget {
         SizedBox(height: 10),
       ],
 >>>>>>> 1d2879a (design(event): 이벤트 상세 조회 페이지에 참여자의 status_type과 이름 정보 리스트 추가)
+=======
+      isExpanded: _isExpandedList[index],
+      canTapOnHeader: true,
+>>>>>>> d8ab64b (design(event): 각 StatusType(수락 및 회식, 수락, 거절, 대기)을 토글 가능한 형태로 변경하여, 섹션을 눌렀을 때만 해당 참가자들이 보이도록 설정)
     );
   }
 }
