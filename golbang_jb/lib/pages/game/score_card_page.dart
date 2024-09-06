@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: ScoreCardPage(),
-    );
-  }
+import 'package:flutter/services.dart';
+import 'package:golbang/pages/game/overall_score_page.dart';
+
+void main() {
+  runApp(MaterialApp(
+    home: ScoreCardPage(),
+  ));
 }
 
 class ScoreCardPage extends StatefulWidget {
@@ -14,184 +14,109 @@ class ScoreCardPage extends StatefulWidget {
 }
 
 class _ScoreCardPageState extends State<ScoreCardPage> {
-  int _currentPage = 0;
+  int _currentPageIndex = 0;
+
+  final List<String> _teamMembers = ['고동범', '김민정', '박재윤', '정수미'];
+  final List<List<String>> _scores = List.generate(18, (_) => List.generate(4, (_) => ''));
+  final List<int> _handicaps = [2, 3, 1, 4]; // 각 선수의 핸디캡 설정
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.black,
       appBar: AppBar(
+        title: Text('제 18회 iNES 골프대전',
+            style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
-        elevation: 0,
-        leading: Icon(Icons.arrow_back, color: Colors.white),
-        title: Text(
-          '제 18회 iNES 골프대전',
-          style: TextStyle(color: Colors.white),
+        leading: IconButton( // 뒤로 가기 버튼 추가
+          icon: Icon(Icons.arrow_back),
+          color: Colors.white,
+          onPressed: () {
+            Navigator.pop(context);
+          },
         ),
       ),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Image.asset(
-                          'assets/images/golf_icon.png',
-                          height: 50,
-                        ),
-                        SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '2024.03.18',
-                              style: TextStyle(color: Colors.white, fontSize: 16),
-                            ),
-                            Text(
-                              '스트로크, 개인전',
-                              style: TextStyle(color: Colors.white, fontSize: 14),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 10),
-                    TextButton(
-                      onPressed: () {},
-                      style: TextButton.styleFrom(
-                        backgroundColor: Colors.grey.shade800,
-                        padding: EdgeInsets.symmetric(vertical: 6, horizontal: 16),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
-                      child: Text(
-                        '전체 현황 조회',
-                        style: TextStyle(color: Colors.white, fontSize: 14),
-                      ),
-                    ),
-                  ],
-                ),
-                Spacer(),
-                Column(
-                  children: [
-                    RankHandicapCard(title: 'Rank', value: '2', player: '고종범', color: Colors.red),
-                    SizedBox(height: 8),
-                    RankHandicapCard(title: 'Handicap', value: '-3', player: '고종범', color: Colors.teal),
-                  ],
-                )
-              ],
-            ),
-          ),
+          _buildHeader(),
           Expanded(
-            child: PageView(
-              onPageChanged: (int page) {
-                setState(() {
-                  _currentPage = page;
-                });
-              },
+            child: Column(
               children: [
-                _buildScoreTablePage(start: 1, end: 9),
-                _buildScoreTablePage(start: 10, end: 18),
+                Expanded(
+                  child: PageView(
+                    onPageChanged: (index) {
+                      setState(() {
+                        _currentPageIndex = index;
+                      });
+                    },
+                    children: [
+                      _buildScoreTable(1, 9),
+                      _buildScoreTable(10, 18),
+                    ],
+                  ),
+                ),
+                _buildPageIndicator(),
               ],
             ),
           ),
-          SizedBox(height: 10),
-          DotsIndicator(dotsCount: 2, position: _currentPage),
+          SizedBox(height: 8),  // 거리 조정
+          _buildSummaryTable(), // 페이지 넘김 없이 고정된 스코어 요약 표
         ],
       ),
+      backgroundColor: Colors.black,
     );
   }
 
-  Widget _buildScoreTablePage({required int start, required int end}) {
-    return SingleChildScrollView(
+  Widget _buildHeader() {
+    return Container(
+      color: Colors.black,
+      padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Table(
-            border: TableBorder.all(color: Colors.grey.shade800),
-            columnWidths: {
-              0: FlexColumnWidth(1),
-              1: FlexColumnWidth(1.5),
-              2: FlexColumnWidth(1.5),
-              3: FlexColumnWidth(1.5),
-              4: FlexColumnWidth(1.5),
-            },
+          Row(
             children: [
-              TableRow(
+              Image.asset(
+                'assets/images/google.png', // assets에 있는 로고 이미지 사용
+                height: 40,
+              ),
+              SizedBox(width: 10),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildTableCell('홀'),
-                  _buildTableCell('고종범'),
-                  _buildTableCell('김민정'),
-                  _buildTableCell('박재윤'),
-                  _buildTableCell('정수미'),
+                  Text(
+                    '제 18회 iNES 골프대전',
+                    style: TextStyle(color: Colors.white, fontSize: 16),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    '2024.03.18',
+                    style: TextStyle(color: Colors.white, fontSize: 14),
+                  ),
                 ],
               ),
-              ...List.generate(end - start + 1, (index) {
-                return TableRow(
-                  children: [
-                    _buildTableCell((start + index).toString()),
-                    _buildTableCell(''),
-                    _buildTableCell(''),
-                    _buildTableCell(''),
-                    _buildTableCell(''),
-                  ],
-                );
-              }),
             ],
           ),
-          SizedBox(height: 20),
-          Table(
-            border: TableBorder.all(color: Colors.grey.shade800),
-            columnWidths: {
-              0: FlexColumnWidth(1),
-              1: FlexColumnWidth(1.5),
-              2: FlexColumnWidth(1.5),
-              3: FlexColumnWidth(1.5),
-              4: FlexColumnWidth(1.5),
-            },
+          SizedBox(height: 8),
+          Row(
             children: [
-              TableRow(
-                children: [
-                  _buildTableCell('전반'),
-                  _buildTableCell(''),
-                  _buildTableCell(''),
-                  _buildTableCell(''),
-                  _buildTableCell(''),
-                ],
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => OverallScorePage()),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.grey[800],
+                  ),
+                  child: Text('전체 현황 조회'),
+                ),
               ),
-              TableRow(
-                children: [
-                  _buildTableCell('후반'),
-                  _buildTableCell(''),
-                  _buildTableCell(''),
-                  _buildTableCell(''),
-                  _buildTableCell(''),
-                ],
-              ),
-              TableRow(
-                children: [
-                  _buildTableCell('스코어'),
-                  _buildTableCell(''),
-                  _buildTableCell(''),
-                  _buildTableCell(''),
-                  _buildTableCell(''),
-                ],
-              ),
-              TableRow(
-                children: [
-                  _buildTableCell('핸디 스코어'),
-                  _buildTableCell(''),
-                  _buildTableCell(''),
-                  _buildTableCell(''),
-                  _buildTableCell(''),
-                ],
-              ),
+              SizedBox(width: 8),
+              _buildRankIndicator('Rank', '2 고동범', Colors.red),
+              SizedBox(width: 8),
+              _buildRankIndicator('Handicap', '3 고동범', Colors.cyan),
             ],
           ),
         ],
@@ -199,33 +124,7 @@ class _ScoreCardPageState extends State<ScoreCardPage> {
     );
   }
 
-  Widget _buildTableCell(String text) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(color: Colors.white, fontSize: 16),
-      ),
-    );
-  }
-}
-
-class RankHandicapCard extends StatelessWidget {
-  final String title;
-  final String value;
-  final String player;
-  final Color color;
-
-  RankHandicapCard({
-    required this.title,
-    required this.value,
-    required this.player,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildRankIndicator(String title, String value, Color color) {
     return Container(
       padding: EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -233,52 +132,219 @@ class RankHandicapCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             title,
             style: TextStyle(color: Colors.white, fontSize: 12),
           ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(
-                '$value ',
-                style: TextStyle(color: Colors.white, fontSize: 24),
-              ),
-              Text(
-                player,
-                style: TextStyle(color: Colors.white, fontSize: 16),
-              ),
-            ],
+          Text(
+            value,
+            style: TextStyle(color: Colors.white, fontSize: 14),
           ),
         ],
       ),
     );
   }
-}
 
-class DotsIndicator extends StatelessWidget {
-  final int dotsCount;
-  final int position;
+  Widget _buildScoreTable(int startHole, int endHole) {
+    return SingleChildScrollView(
+      child: Container(
+        color: Colors.black,
+        padding: EdgeInsets.all(16.0),
+        child: Table(
+          border: TableBorder.all(color: Colors.grey),
+          children: [
+            _buildTableHeaderRow(),
+            for (int i = startHole; i <= endHole; i++)
+              _buildEditableTableRow(i - 1),
+          ],
+        ),
+      ),
+    );
+  }
 
-  DotsIndicator({required this.dotsCount, required this.position});
+  TableRow _buildTableHeaderRow() {
+    return TableRow(
+      children: [
+        _buildTableHeaderCell('홀'),
+        for (String member in _teamMembers) _buildTableHeaderCell(member),
+        _buildTableHeaderCell('니어/롱기'),
+      ],
+    );
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(dotsCount, (index) {
-        return Container(
-          margin: EdgeInsets.symmetric(horizontal: 4),
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: index == position ? Colors.green : Colors.grey,
-            shape: BoxShape.circle,
+  Widget _buildTableHeaderCell(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 2.0),
+      child: Center(
+        child: Text(
+          title,
+          style: TextStyle(color: Colors.white),
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
+  TableRow _buildEditableTableRow(int holeIndex) {
+    return TableRow(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Center(
+            child: Text(
+              (holeIndex + 1).toString(),
+              style: TextStyle(color: Colors.white),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
+        for (int i = 0; i < _teamMembers.length; i++)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 2.0),
+            child: Center(
+              child: TextFormField(
+                initialValue: _scores[holeIndex][i],
+                style: TextStyle(color: Colors.white),
+                textAlign: TextAlign.center,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly], // 숫자만 입력 가능하도록 설정
+                onChanged: (value) {
+                  _updateScore(holeIndex, i, value);
+                },
+                decoration: InputDecoration(
+                  isDense: true,
+                  contentPadding: EdgeInsets.symmetric(vertical: 4.0),
+                  border: InputBorder.none,
+                  hintStyle: TextStyle(color: Colors.grey),
+                ),
+              ),
+            ),
+          ),
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 3.0, horizontal: 2.0),
+          child: Center(
+            child: TextFormField(
+              initialValue: '', // 초기 값 설정
+              style: TextStyle(color: Colors.white),
+              textAlign: TextAlign.center,
+              keyboardType: TextInputType.number,
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly], // 숫자만 입력 가능하도록 설정
+              onChanged: (value) {
+                // 필요한 경우 입력값을 처리할 수 있도록 설정
+              },
+              decoration: InputDecoration(
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(vertical: 4.0),
+                border: InputBorder.none,
+                hintStyle: TextStyle(color: Colors.grey),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSummaryTable() {
+    List<int> frontNine = _calculateFrontNineScores();
+    List<int> backNine = _calculateBackNineScores();
+    List<int> totalScores = _calculateTotalScores();
+    List<int> handicapScores = _calculateHandicapScores(totalScores);
+
+    return Container(
+      color: Colors.black,
+      padding: EdgeInsets.all(16.0),
+      child: Table(
+        border: TableBorder.all(color: Colors.grey),
+        children: [
+          _buildSummaryTableRow(['', ..._teamMembers]),
+          _buildSummaryTableRow(['전반', ...frontNine.map((e) => e.toString()).toList()]),
+          _buildSummaryTableRow(['후반', ...backNine.map((e) => e.toString()).toList()]),
+          _buildSummaryTableRow(['스코어', ...totalScores.map((e) => e.toString()).toList()]),
+          _buildSummaryTableRow(['핸디 스코어', ...handicapScores.map((e) => e.toString()).toList()]),
+        ],
+      ),
+    );
+  }
+
+  TableRow _buildSummaryTableRow(List<String> cells) {
+    return TableRow(
+      children: cells.map((cell) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0), // 간격 조정
+          child: Center(
+            child: Text(
+              cell,
+              style: TextStyle(color: Colors.white),
+              textAlign: TextAlign.center,
+            ),
           ),
         );
-      }),
+      }).toList(),
+    );
+  }
+
+  List<int> _calculateFrontNineScores() {
+    return List.generate(_teamMembers.length, (i) {
+      int sum = 0;
+      for (int j = 0; j < 9; j++) {
+        sum += int.tryParse(_scores[j][i]) ?? 0;
+      }
+      return sum;
+    });
+  }
+
+  List<int> _calculateBackNineScores() {
+    return List.generate(_teamMembers.length, (i) {
+      int sum = 0;
+      for (int j = 9; j < 18; j++) {
+        sum += int.tryParse(_scores[j][i]) ?? 0;
+      }
+      return sum;
+    });
+  }
+
+  List<int> _calculateTotalScores() {
+    return List.generate(_teamMembers.length, (i) {
+      return _calculateFrontNineScores()[i] + _calculateBackNineScores()[i];
+    });
+  }
+
+  List<int> _calculateHandicapScores(List<int> totalScores) {
+    return List.generate(_teamMembers.length, (i) {
+      return totalScores[i] - _handicaps[i];
+    });
+  }
+
+  void _updateScore(int holeIndex, int playerIndex, String value) {
+    setState(() {
+      _scores[holeIndex][playerIndex] = value;
+    });
+  }
+
+  Widget _buildPageIndicator() {
+    return Padding(
+      padding: const EdgeInsets.all(4.0),  // 간격 조정
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          _buildIndicatorDot(0),
+          SizedBox(width: 8),
+          _buildIndicatorDot(1),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildIndicatorDot(int index) {
+    return Container(
+      width: 8,
+      height: 8,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: _currentPageIndex == index ? Colors.white : Colors.grey,
+      ),
     );
   }
 }
