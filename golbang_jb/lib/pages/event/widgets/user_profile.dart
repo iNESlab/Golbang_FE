@@ -4,6 +4,9 @@
 import 'package:flutter/material.dart';
 import '../../../models/user_profile.dart';
 
+import 'package:flutter/material.dart';
+import '../../../models/user_profile.dart';
+
 class UserProfileWidget extends StatelessWidget {
   final UserProfile userProfile;
 
@@ -11,39 +14,84 @@ class UserProfileWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        CircleAvatar(
-          backgroundImage: NetworkImage(userProfile.profileImage),
-          radius: 30,
-        ),
-        SizedBox(width: 10),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white, // 배경 흰색
+        borderRadius: BorderRadius.circular(10), // 모서리 둥글게
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1), // 그림자
+            blurRadius: 5,
+            offset: Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // 프로필 이미지
+          CircleAvatar(
+            backgroundImage: NetworkImage(userProfile.profileImage),
+            radius: 30,
+            backgroundColor: Colors.transparent, // 배경을 투명하게 설정
+          ),
+          SizedBox(width: 10),
+          // 이름
+          Expanded(
+            child: Text(
               userProfile.name,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            Text(
-              '총 점수: ${userProfile.sumScore}',
-              style: TextStyle(fontSize: 16),
+          ),
+          // 스코어 (기본)
+          _buildScoreBox(
+            label: 'Score',
+            score: userProfile.sumScore.toString(),
+          ),
+          SizedBox(width: 10),
+          // 랭킹 (기본)
+          _buildScoreBox(
+            label: 'My Rank',
+            score: userProfile.rank,
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 스코어와 랭킹을 표시하는 박스 위젯
+  Widget _buildScoreBox({required String label, required String score}) {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.green[100], // 배경색을 연한 녹색으로
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: [
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.green[800], // 텍스트 색상은 짙은 녹색
+              fontWeight: FontWeight.bold,
             ),
-            Text(
-              '핸디캡 점수: ${userProfile.handicapScore}',
-              style: TextStyle(fontSize: 16),
+          ),
+          SizedBox(height: 4),
+          Text(
+            score,
+            style: TextStyle(
+              fontSize: 16,
+              color: Colors.black,
+              fontWeight: FontWeight.bold,
             ),
-            Text(
-              '랭킹: ${userProfile.rank}',
-              style: TextStyle(fontSize: 16),
-            ),
-            Text(
-              '핸디캡 랭킹: ${userProfile.handicapRank}',
-              style: TextStyle(fontSize: 16),
-            ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }
