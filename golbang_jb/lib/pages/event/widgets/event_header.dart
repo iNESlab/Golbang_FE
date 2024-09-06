@@ -13,6 +13,8 @@ class EventHeader extends StatelessWidget {
   final String gameMode;
   final String participantCount;
   final String myGroupType;
+  final bool isHandicapEnabled;
+  final ValueChanged<bool> onHandicapToggle;
 
   const EventHeader({
     required this.eventTitle,
@@ -22,64 +24,96 @@ class EventHeader extends StatelessWidget {
     required this.gameMode,
     required this.participantCount,
     required this.myGroupType,
+    required this.isHandicapEnabled,
+    required this.onHandicapToggle,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Image.asset(
-          'assets/images/golf_icon.png', // 이벤트 아이콘 (원래 스타일)
-          width: 50,
-          height: 50,
-          fit: BoxFit.cover,
-        ),
-        SizedBox(width: 10),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              eventTitle,
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              '${startDateTime.toLocal().toIso8601String().split('T').first} • ${startDateTime.hour}:${startDateTime.minute.toString().padLeft(2, '0')} ~ ${endDateTime.hour}:${endDateTime.minute.toString().padLeft(2, '0')}',
-              style: TextStyle(fontSize: 16),
-            ),
-            Text(
-              '장소: $location',
-              style: TextStyle(fontSize: 16),
-            ),
-            Text(
-              '게임모드: $gameMode',
-              style: TextStyle(fontSize: 16),
-            ),
-            Text(
-              '참여 인원: $participantCount명',
-              style: TextStyle(fontSize: 16),
-            ),
-            Row(
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8.0),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.5),
+            spreadRadius: 2,
+            blurRadius: 5,
+            offset: Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Image.asset(
+            'assets/images/golf_icon.png', // 이벤트 아이콘 (원래 스타일)
+            width: 50,
+            height: 50,
+            fit: BoxFit.cover,
+          ),
+          SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '나의 조: ',
+                  eventTitle,
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  '${startDateTime.toLocal().toIso8601String().split('T').first} • ${startDateTime.hour}:${startDateTime.minute.toString().padLeft(2, '0')} ~ ${endDateTime.hour}:${endDateTime.minute.toString().padLeft(2, '0')}',
                   style: TextStyle(fontSize: 16),
                 ),
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.yellow.withOpacity(0.5),
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                  padding: EdgeInsets.symmetric(horizontal: 4),
-                  child: Text(
-                    '$myGroupType',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+                Text(
+                  '장소: $location',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            '게임모드: $gameMode',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          Text(
+                            '참여 인원: $participantCount명',
+                            style: TextStyle(fontSize: 16),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Text(
+                          'Handicap',
+                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                        ),
+                        Transform.scale(
+                          scale: 0.8, // 토글 버튼 크기 조절
+                          child: Switch(
+                            value: isHandicapEnabled,
+                            onChanged: onHandicapToggle,
+                            activeColor: Colors.white,
+                            activeTrackColor: Colors.grey,
+                            inactiveThumbColor: Colors.white,
+                            inactiveTrackColor: Colors.grey[300],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }
