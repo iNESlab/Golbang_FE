@@ -93,12 +93,11 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
                 });
               },
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             UserProfileWidget(userProfile: _userProfile!),
-            SizedBox(height: 20),
-            Text("Score Card", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            ScoreCard(scorecard: _userProfile!.scorecard),
-            SizedBox(height: 20),
+            SizedBox(height: 10),
+            MiniScoreCard(scorecard: _userProfile!.scorecard),
+            SizedBox(height: 10),
             Text("Ranking", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             RankingList(
               participants: _eventData!['participants'].map<Map<String, String>>((participantJson) {
