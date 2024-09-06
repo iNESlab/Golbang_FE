@@ -101,19 +101,19 @@ class EventPageState extends ConsumerState<EventPage> {
     super.dispose();
   }
 
-  Future<void> _updateParticipantStatus(int participantId, String newStatusType, Event event) async {
-    bool success = await _participantService.updateParticipantStatus(participantId, newStatusType);
-    if (success) {
-      setState(() {
-        // 해당 참가자의 상태를 업데이트
-        final participant = event.participants.firstWhere(
-              (p) => p.participantId == participantId,
-        );
-        participant.statusType = newStatusType;
-      });
-      await _loadEventsForMonth();  // 상태가 업데이트되면 이벤트를 다시 로드
-    }
-  }
+  // Future<void> _updateParticipantStatus(int participantId, String newStatusType, Event event) async {
+  //   bool success = await _participantService.updateParticipantStatus(participantId, newStatusType);
+  //   if (success) {
+  //     setState(() {
+  //       // 해당 참가자의 상태를 업데이트
+  //       final participant = event.participants.firstWhere(
+  //             (p) => p.participantId == participantId,
+  //       );
+  //       participant.statusType = newStatusType;
+  //     });
+  //     await _loadEventsForMonth();  // 상태가 업데이트되면 이벤트를 다시 로드
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
