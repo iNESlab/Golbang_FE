@@ -1,37 +1,50 @@
+/* pages/models/user_profile.dart
+* 이벤트 결과 조회 시 사용자 정보 (이름, 이미지, 스코어, 랭킹)
+**/
 class UserProfile {
-  final int userId;
+  final String userId;
   final String name;
   final String profileImage;
+  final int sumScore;
+  final int handicapScore;
+  final String rank;
+  final String handicapRank;
+  final List<int> scorecard;
 
   UserProfile({
     required this.userId,
     required this.name,
     required this.profileImage,
+    required this.sumScore,
+    required this.handicapScore,
+    required this.rank,
+    required this.handicapRank,
+    required this.scorecard,
   });
 
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
-      userId: json['id'],
+      userId: json['user_id'],
       name: json['name'],
-      profileImage: json['profile_image'] ?? 'assets/images/dragon.jpeg'
+      profileImage: json['profile_image'] ?? 'assets/images/user_default.png',
+      sumScore: json['sum_score'],
+      handicapScore: json['handicap_score'],
+      rank: json['rank'],
+      handicapRank: json['handicap_rank'],
+      scorecard: List<int>.from(json['scorecard']),
     );
   }
 
-  // 특정 필드만 추출하는 메서드
   Map<String, dynamic> toJson() {
     return {
-      'userId': userId,
+      'user_id': userId,
       'name': name,
-      'profileImage': profileImage,
+      'profile_image': profileImage,
+      'sum_score': sumScore,
+      'handicap_score': handicapScore,
+      'rank': rank,
+      'handicap_rank': handicapRank,
+      'scorecard': scorecard,
     };
   }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    return other is UserProfile && other.userId == userId;
-  }
-
-  @override
-  int get hashCode => userId.hashCode;
 }

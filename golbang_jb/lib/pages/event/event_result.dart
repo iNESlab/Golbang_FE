@@ -4,12 +4,15 @@ pages/event/event_result.dart
 */
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:golbang/pages/event/widgets/user_profile.dart';
 import 'package:golbang/services/event_service.dart';
 import 'package:golbang/pages/event/widgets/event_header.dart';
 import 'package:golbang/pages/event/widgets/mini_score_card.dart';
 import 'package:golbang/pages/event/widgets/ranking_list.dart';
+import 'package:golbang/pages/event/widgets/user_profile.dart';
 
 import '../../models/participant.dart';
+import '../../models/user_profile.dart';
 import '../../repoisitory/secure_storage.dart';
 
 class EventResultPage extends ConsumerStatefulWidget {
@@ -22,6 +25,7 @@ class EventResultPage extends ConsumerStatefulWidget {
 }
 
 class _EventResultPageState extends ConsumerState<EventResultPage> {
+  UserProfile? _userProfile;
   Map<String, dynamic>? _eventData;
   bool _isLoading = true;
 
@@ -39,6 +43,7 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
 
     if (data != null) {
       setState(() {
+        _userProfile = UserProfile.fromJson(data['user']);
         _eventData = data;
         _isLoading = false;
       });
@@ -78,13 +83,13 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
               endDateTime: DateTime.parse(_eventData!['end_date_time']),
               gameMode: _eventData!['game_mode'],
               participantCount: _eventData!['participants'].length.toString(),
-              myGroupType: "A", // 기본값으로 설정 (그룹 타입 없음)
+              myGroupType: _eventData!['group_type'].toString(),
             ),
             SizedBox(height: 20),
+            UserProfileWidget(userProfile: _userProfile!),
+            SizedBox(height: 20),
             Text("Score Card", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            ScoreCard(
-              scorecard: List<int>.from(_eventData!['user']['scorecard']),
-            ),
+            ScoreCard(scorecard: _userProfile!.scorecard),
             SizedBox(height: 20),
             Text("Ranking", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             RankingList(
@@ -93,7 +98,7 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
                 return {
                   'rank': participant.rank,
                   'name': participant.member?.name ?? 'Unknown',
-                  'stroke': participant.sumScore?.toString() ?? 'N/A',  // null 처리 추가
+                  'stroke': participant.sumScore?.toString() ?? 'N/A',
                 };
               }).toList(),
             ),
