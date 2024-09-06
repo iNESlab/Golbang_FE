@@ -67,6 +67,7 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
           },
         ),
       ),
+      backgroundColor: Colors.grey[200], // 배경을 연한 회색으로 설정
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : _eventData == null
