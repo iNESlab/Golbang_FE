@@ -100,13 +100,8 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
             SizedBox(height: 10),
             Text("Ranking", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             RankingList(
-              participants: _eventData!['participants'].map<Map<String, String>>((participantJson) {
-                Participant participant = Participant.fromJson(participantJson);
-                return {
-                  'rank': participant.rank,
-                  'name': participant.member?.name ?? 'Unknown',
-                  'stroke': participant.sumScore?.toString() ?? 'N/A',
-                };
+              participants: _eventData!['participants'].map<Participant>((participantJson) {
+                return Participant.fromJson(participantJson);
               }).toList(),
             ),
           ],
