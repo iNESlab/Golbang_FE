@@ -10,7 +10,6 @@ import 'models/user.dart';
 import 'models/users.dart';
 import 'models/club.dart';
 import 'models/club_member.dart';
-import 'models/events.dart';
 import 'models/participant.dart';
 
 const String testEmail = 'test@email.com';
