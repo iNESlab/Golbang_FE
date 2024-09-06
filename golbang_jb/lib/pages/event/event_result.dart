@@ -28,6 +28,7 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
   UserProfile? _userProfile;
   Map<String, dynamic>? _eventData;
   bool _isLoading = true;
+  bool _isHandicapEnabled = false;
 
   @override
   void didChangeDependencies() {
@@ -85,6 +86,12 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
               gameMode: _eventData!['game_mode'],
               participantCount: _eventData!['participants'].length.toString(),
               myGroupType: _eventData!['group_type'].toString(),
+              isHandicapEnabled: _isHandicapEnabled,
+              onHandicapToggle: (value) {
+                setState(() {
+                  _isHandicapEnabled = value;
+                });
+              },
             ),
             SizedBox(height: 20),
             UserProfileWidget(userProfile: _userProfile!),
