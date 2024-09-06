@@ -2,6 +2,7 @@
 pages/event/widgets/event_header.dart
 이벤트의 제목, 장소, 시간, 모드, 핸디캡 토글 등을 표시
 */
+
 import 'package:flutter/material.dart';
 
 class EventHeader extends StatelessWidget {
@@ -10,7 +11,8 @@ class EventHeader extends StatelessWidget {
   final DateTime startDateTime;
   final DateTime endDateTime;
   final String gameMode;
-  final bool isHandicapEnabled;
+  final String participantCount;
+  final String myGroupType;
 
   const EventHeader({
     required this.eventTitle,
@@ -18,26 +20,64 @@ class EventHeader extends StatelessWidget {
     required this.startDateTime,
     required this.endDateTime,
     required this.gameMode,
-    required this.isHandicapEnabled,
+    required this.participantCount,
+    required this.myGroupType,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
-        Text(
-          eventTitle,
-          style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+        Image.asset(
+          'assets/images/golf_icon.png', // 이벤트 아이콘 (원래 스타일)
+          width: 50,
+          height: 50,
+          fit: BoxFit.cover,
         ),
-        Text('$location | ${startDateTime.toLocal()} - ${endDateTime.toLocal()}'),
-        Text('모드: $gameMode'),
-        SwitchListTile(
-          title: Text('핸디캡 적용'),
-          value: isHandicapEnabled,
-          onChanged: (bool value) {
-            // 핸디캡 적용 상태 변경 로직
-          },
+        SizedBox(width: 10),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              eventTitle,
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              '${startDateTime.toLocal().toIso8601String().split('T').first} • ${startDateTime.hour}:${startDateTime.minute.toString().padLeft(2, '0')} ~ ${endDateTime.hour}:${endDateTime.minute.toString().padLeft(2, '0')}',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '장소: $location',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '게임모드: $gameMode',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '참여 인원: $participantCount명',
+              style: TextStyle(fontSize: 16),
+            ),
+            Row(
+              children: [
+                Text(
+                  '나의 조: ',
+                  style: TextStyle(fontSize: 16),
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    color: Colors.yellow.withOpacity(0.5),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 4),
+                  child: Text(
+                    '$myGroupType',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+          ],
         ),
       ],
     );

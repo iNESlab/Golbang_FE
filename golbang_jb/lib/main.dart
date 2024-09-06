@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:golbang/pages/event/event_result.dart';
 import 'package:golbang/pages/login/signup_complete.dart';
 import 'package:golbang/pages/logins/hi_screen.dart';
 import 'package:golbang/pages/signup/signup.dart';
@@ -44,7 +45,8 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         useMaterial3: true,
       ),
-      home: const HiScreen(),
+      // home: const HiScreen(),
+      home: EventResultPage(),
 
       routes: {
         '/signup': (context) => SignUpPage(),

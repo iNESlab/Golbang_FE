@@ -15,7 +15,7 @@ class ScoreCard extends StatelessWidget {
       border: TableBorder.all(),
       children: [
         TableRow(
-          children: List.generate(18, (index) => Center(child: Text('Hole ${index + 1}'))),
+          children: List.generate(18, (index) => Center(child: Text('${index + 1}'))),
         ),
         TableRow(
           children: scorecard
