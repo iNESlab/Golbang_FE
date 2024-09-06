@@ -43,7 +43,6 @@ class Participant {
     );
   }
 
-
   Map<String, dynamic> toJson() {
     return {
       'participant_id': participantId,
@@ -58,3 +57,4 @@ class Participant {
     };
   }
 }
+
