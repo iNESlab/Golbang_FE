@@ -89,4 +89,32 @@ class EventService {
       return [];
     }
   }
+
+  // 이벤트 개인전 결과 조회
+  Future<Map<String, dynamic>?> getIndividualResults(int eventId) async {
+    try {
+      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/individual-results/');
+      final accessToken = await storage.readAccessToken();
+
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final jsonData = jsonDecode(utf8.decode(response.bodyBytes))['data'];
+        print("개인전 결과 조회 성공: $jsonData");
+        return jsonData;
+      } else {
+        print('개인전 결과 조회 실패: ${response.statusCode} - ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      print('Error occurred while fetching individual results: $e');
+      return null;
+    }
+  }
 }

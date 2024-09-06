@@ -45,8 +45,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         useMaterial3: true,
       ),
-      // home: const HiScreen(),
-      home: EventResultPage(),
+      home: const HiScreen(),
 
       routes: {
         '/signup': (context) => SignUpPage(),
