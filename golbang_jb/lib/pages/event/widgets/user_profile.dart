@@ -1,39 +1,46 @@
-/*
-pages/event/widgets/user_profile.dart
-사용자 프로필 이미지를 표시하고 이름, 스트로크, 랭크 정보를 보여준다.
-*/
+/* pages/models/user_profile.dart
+* 이벤트 결과 조회 시 사용자 정보 (이름, 이미지, 스코어, 랭킹)
+**/
 import 'package:flutter/material.dart';
+import '../../../models/user_profile.dart';
 
-class UserProfile extends StatelessWidget {
-  final String profileImage;
-  final String name;
-  final int stroke;
-  final String rank;
+class UserProfileWidget extends StatelessWidget {
+  final UserProfile userProfile;
 
-  const UserProfile({
-    required this.profileImage,
-    required this.name,
-    required this.stroke,
-    required this.rank,
-  });
+  const UserProfileWidget({Key? key, required this.userProfile}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         CircleAvatar(
+          backgroundImage: NetworkImage(userProfile.profileImage),
           radius: 30,
-          backgroundImage: profileImage.isNotEmpty
-              ? NetworkImage(profileImage)
-              : AssetImage('assets/images/user_default.png') as ImageProvider,
         ),
         SizedBox(width: 10),
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(name, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            Text('Stroke: $stroke'),
-            Text('Rank: $rank'),
+            Text(
+              userProfile.name,
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              '총 점수: ${userProfile.sumScore}',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '핸디캡 점수: ${userProfile.handicapScore}',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '랭킹: ${userProfile.rank}',
+              style: TextStyle(fontSize: 16),
+            ),
+            Text(
+              '핸디캡 랭킹: ${userProfile.handicapRank}',
+              style: TextStyle(fontSize: 16),
+            ),
           ],
         ),
       ],
