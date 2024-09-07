@@ -102,8 +102,8 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
               userProfile: _isHandicapEnabled
                   ? UserProfile.fromJson({
                 ..._eventData!['user'],
-                'sum_score': _eventData!['user']['handicap_score'],
-                'rank': _eventData!['user']['handicap_rank'],
+                'sum_score': _eventData!['user']['handicap_score'] ?? _eventData!['user']['sum_score'], // null 체크 추가
+                'rank': _eventData!['user']['handicap_rank'] ?? _eventData!['user']['rank'], // null 체크 추가
               })
                   : _userProfile!,
             ),
@@ -111,44 +111,46 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
             if (_isTeamEvent) ...[
               TeamResultWidget(
                 teamAGroupWins: _isHandicapEnabled
-                    ? _teamResultData!['group_scores']['team_a_group_wins_handicap']
-                    : _teamResultData!['group_scores']['team_a_group_wins'],
+                    ? _teamResultData!['group_scores']['team_a_group_wins_handicap'] ?? 0 // null 체크 추가
+                    : _teamResultData!['group_scores']['team_a_group_wins'] ?? 0, // null 체크 추가
                 teamBGroupWins: _isHandicapEnabled
-                    ? _teamResultData!['group_scores']['team_b_group_wins_handicap']
-                    : _teamResultData!['group_scores']['team_b_group_wins'],
+                    ? _teamResultData!['group_scores']['team_b_group_wins_handicap'] ?? 0 // null 체크 추가
+                    : _teamResultData!['group_scores']['team_b_group_wins'] ?? 0, // null 체크 추가
                 groupWinTeam: _isHandicapEnabled
-                    ? _teamResultData!['group_scores']['group_win_team_handicap']
-                    : _teamResultData!['group_scores']['group_win_team'],
+                    ? _teamResultData!['group_scores']['group_win_team_handicap'] ?? 'N/A' // null 체크 추가
+                    : _teamResultData!['group_scores']['group_win_team'] ?? 'N/A', // null 체크 추가
                 teamATotalScore: _isHandicapEnabled
-                    ? _teamResultData!['total_scores']['team_a_total_score_handicap']
-                    : _teamResultData!['total_scores']['team_a_total_score'],
+                    ? _teamResultData!['total_scores']['team_a_total_score_handicap'] ?? 0 // null 체크 추가
+                    : _teamResultData!['total_scores']['team_a_total_score'] ?? 0, // null 체크 추가
                 teamBTotalScore: _isHandicapEnabled
-                    ? _teamResultData!['total_scores']['team_b_total_score_handicap']
-                    : _teamResultData!['total_scores']['team_b_total_score'],
+                    ? _teamResultData!['total_scores']['team_b_total_score_handicap'] ?? 0 // null 체크 추가
+                    : _teamResultData!['total_scores']['team_b_total_score'] ?? 0, // null 체크 추가
                 totalWinTeam: _isHandicapEnabled
-                    ? _teamResultData!['total_scores']['total_win_team_handicap']
-                    : _teamResultData!['total_scores']['total_win_team'],
+                    ? _teamResultData!['total_scores']['total_win_team_handicap'] ?? 'N/A' // null 체크 추가
+                    : _teamResultData!['total_scores']['total_win_team'] ?? 'N/A', // null 체크 추가
               ),
             ],
             SizedBox(height: 10),
             MiniScoreCard(
-              scorecard: _isHandicapEnabled
+              scorecard: _isHandicapEnabled && _eventData!['user']['handicap_scorecard'] != null
                   ? List<int>.from(_eventData!['user']['handicap_scorecard'])
                   : _userProfile!.scorecard,
             ),
             SizedBox(height: 10),
             Text("Ranking", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             RankingList(
-              participants: _eventData!['participants'].map<Participant>((participantJson) {
+              participants: _eventData!['participants'] != null
+                  ? _eventData!['participants'].map<Participant>((participantJson) {
                 return Participant.fromJson(participantJson).copyWith(
                   sumScore: _isHandicapEnabled
-                      ? participantJson['handicap_score']
+                      ? participantJson['handicap_score'] ?? participantJson['sum_score'] // null 체크 추가
                       : participantJson['sum_score'],
                   rank: _isHandicapEnabled
-                      ? participantJson['handicap_rank']
+                      ? participantJson['handicap_rank'] ?? participantJson['rank'] // null 체크 추가
                       : participantJson['rank'],
                 );
-              }).toList(),
+              }).toList()
+                  : [],  // 만약 null이라면 빈 리스트를 반환
             ),
           ],
         ),
