@@ -4,9 +4,6 @@
 import 'package:flutter/material.dart';
 import '../../../models/user_profile.dart';
 
-import 'package:flutter/material.dart';
-import '../../../models/user_profile.dart';
-
 class UserProfileWidget extends StatelessWidget {
   final UserProfile userProfile;
 
@@ -32,7 +29,9 @@ class UserProfileWidget extends StatelessWidget {
         children: [
           // 프로필 이미지
           CircleAvatar(
-            backgroundImage: NetworkImage(userProfile.profileImage),
+            backgroundImage: userProfile.profileImage != null && userProfile.profileImage.isNotEmpty
+                ? NetworkImage(userProfile.profileImage)
+                : AssetImage('assets/images/user_default.png') as ImageProvider,
             radius: 30,
             backgroundColor: Colors.transparent, // 배경을 투명하게 설정
           ),
