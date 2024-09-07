@@ -33,21 +33,32 @@ class RankingList extends StatelessWidget {
           final String name = participant.member?.name ?? 'Unknown';
           final String sumScore = participant.sumScore?.toString() ?? 'N/A';
           final String profileImage = participant.member?.profileImage ?? 'assets/images/user_default.png';
+          final int holeNumber = participant.holeNumber ?? 0;
 
           return Padding(
             padding: const EdgeInsets.symmetric(vertical: 4.0),
             child: ListTile(
               leading: _buildRankIcon(int.tryParse(rank) ?? 0),
-              title: Row(
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    backgroundImage: NetworkImage(profileImage),
-                    radius: 20,
+                  Row(
+                    children: [
+                      CircleAvatar(
+                        backgroundImage: NetworkImage(profileImage),
+                        radius: 20,
+                      ),
+                      SizedBox(width: 10),
+                      Text(
+                        name,
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
-                  SizedBox(width: 10),
+                  SizedBox(height: 4),
                   Text(
-                    name,
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    '$holeNumber홀',
+                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                   ),
                 ],
               ),
