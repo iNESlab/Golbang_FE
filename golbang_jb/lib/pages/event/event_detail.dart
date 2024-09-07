@@ -265,8 +265,60 @@ class _EventDetailPageState extends State<EventDetailPage> {
             ),
           ],
         ),
+        child: _buildBottomButtons(),
       ),
     );
+  }
+
+  Widget _buildBottomButtons() {
+    final DateTime currentDate = DateTime.now();
+    final DateTime eventDate = widget.event.startDateTime;
+
+    if (currentDate.isBefore(eventDate)) {
+      // 현재 날짜가 이벤트 날짜보다 이전인 경우 "게임 시작" 버튼만 표시
+      return ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ScoreCardPage(),
+            ),
+          );
+        },
+        child: Text('게임 시작'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.green,
+          foregroundColor: Colors.white,
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          minimumSize: Size(double.infinity, 50),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+        ),
+      );
+    } else {
+      // 현재 날짜가 이벤트 날짜보다 이후인 경우 "결과 조회" 버튼만 표시
+      return ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EventResultPage(eventId: widget.event.eventId),
+            ),
+          );
+        },
+        child: Text('결과 조회'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          minimumSize: Size(double.infinity, 50),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+        ),
+      );
+    }
   }
 
   ExpansionPanel _buildParticipantPanel(String title, List<Participant> participants, String statusType, Color backgroundColor, int index) {

@@ -8,7 +8,7 @@ import 'package:golbang/pages/event/widgets/mini_score_card.dart';
 import 'package:golbang/pages/event/widgets/ranking_list.dart';
 
 import '../../models/participant.dart';
-import '../../models/user_profile.dart';
+import '../../models/profile/user_profile.dart';
 import '../../repoisitory/secure_storage.dart';
 
 class EventResultPage extends ConsumerStatefulWidget {
