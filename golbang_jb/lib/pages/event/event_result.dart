@@ -1,4 +1,3 @@
-// event_result.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/event/widgets/team_result.dart';
@@ -7,7 +6,6 @@ import 'package:golbang/services/event_service.dart';
 import 'package:golbang/pages/event/widgets/event_header.dart';
 import 'package:golbang/pages/event/widgets/mini_score_card.dart';
 import 'package:golbang/pages/event/widgets/ranking_list.dart';
-import 'package:golbang/pages/event/widgets/user_profile.dart';
 
 import '../../models/participant.dart';
 import '../../models/user_profile.dart';
@@ -28,6 +26,7 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
   Map<String, dynamic>? _teamResultData;
   bool _isLoading = true;
   bool _isHandicapEnabled = false;
+  bool _isTeamEvent = false;
 
   @override
   void didChangeDependencies() {
@@ -43,6 +42,9 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
     final teamData = await eventService.getTeamResults(widget.eventId);
 
     if (individualData != null && teamData != null) {
+      // Check if this is a team event by inspecting the team_type of participants
+      _isTeamEvent = individualData['participants'].any((participant) => participant['team_type'] != 'NONE');
+
       setState(() {
         _userProfile = UserProfile.fromJson(individualData['user']);
         _eventData = individualData;
@@ -70,7 +72,7 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
           },
         ),
       ),
-      backgroundColor: Colors.grey[200], // 배경을 연한 회색으로 설정
+      backgroundColor: Colors.grey[200],
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : _eventData == null
@@ -96,28 +98,58 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
               },
             ),
             SizedBox(height: 10),
-            UserProfileWidget(userProfile: _userProfile!),
+            UserProfileWidget(
+              userProfile: _isHandicapEnabled
+                  ? UserProfile.fromJson({
+                ..._eventData!['user'],
+                'sum_score': _eventData!['user']['handicap_score'],
+                'rank': _eventData!['user']['handicap_rank'],
+              })
+                  : _userProfile!,
+            ),
             SizedBox(height: 10),
-            if (_teamResultData != 'NONE') ...[
+            if (_isTeamEvent) ...[
               TeamResultWidget(
-                teamAGroupWins: _teamResultData!['group_scores']['team_a_group_wins'],
-                teamBGroupWins: _teamResultData!['group_scores']['team_b_group_wins'],
-                groupWinTeam: _teamResultData!['group_scores']['group_win_team'],
-                teamATotalScore: _teamResultData!['total_scores']['team_a_total_score'],
-                teamBTotalScore: _teamResultData!['total_scores']['team_b_total_score'],
-                totalWinTeam: _teamResultData!['total_scores']['total_win_team'],
+                teamAGroupWins: _isHandicapEnabled
+                    ? _teamResultData!['group_scores']['team_a_group_wins_handicap']
+                    : _teamResultData!['group_scores']['team_a_group_wins'],
+                teamBGroupWins: _isHandicapEnabled
+                    ? _teamResultData!['group_scores']['team_b_group_wins_handicap']
+                    : _teamResultData!['group_scores']['team_b_group_wins'],
+                groupWinTeam: _isHandicapEnabled
+                    ? _teamResultData!['group_scores']['group_win_team_handicap']
+                    : _teamResultData!['group_scores']['group_win_team'],
+                teamATotalScore: _isHandicapEnabled
+                    ? _teamResultData!['total_scores']['team_a_total_score_handicap']
+                    : _teamResultData!['total_scores']['team_a_total_score'],
+                teamBTotalScore: _isHandicapEnabled
+                    ? _teamResultData!['total_scores']['team_b_total_score_handicap']
+                    : _teamResultData!['total_scores']['team_b_total_score'],
+                totalWinTeam: _isHandicapEnabled
+                    ? _teamResultData!['total_scores']['total_win_team_handicap']
+                    : _teamResultData!['total_scores']['total_win_team'],
               ),
             ],
             SizedBox(height: 10),
-            MiniScoreCard(scorecard: _userProfile!.scorecard),
+            MiniScoreCard(
+              scorecard: _isHandicapEnabled
+                  ? List<int>.from(_eventData!['user']['handicap_scorecard'])
+                  : _userProfile!.scorecard,
+            ),
             SizedBox(height: 10),
             Text("Ranking", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             RankingList(
               participants: _eventData!['participants'].map<Participant>((participantJson) {
-              return Participant.fromJson(participantJson);
+                return Participant.fromJson(participantJson).copyWith(
+                  sumScore: _isHandicapEnabled
+                      ? participantJson['handicap_score']
+                      : participantJson['sum_score'],
+                  rank: _isHandicapEnabled
+                      ? participantJson['handicap_rank']
+                      : participantJson['rank'],
+                );
               }).toList(),
             ),
-
           ],
         ),
       ),

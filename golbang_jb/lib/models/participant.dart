@@ -26,6 +26,25 @@ class Participant {
     this.member,
   });
 
+  // copyWith 메서드 추가
+  Participant copyWith({
+    int? sumScore,
+    String? rank,
+  }) {
+    return Participant(
+      participantId: participantId,
+      statusType: statusType,
+      teamType: teamType,
+      holeNumber: holeNumber,
+      groupType: groupType,
+      sumScore: sumScore ?? this.sumScore,
+      rank: rank ?? this.rank,
+      handicapRank: handicapRank,
+      handicapScore: handicapScore,
+      member: member,
+    );
+  }
+
   factory Participant.fromJson(Map<String, dynamic> json) {
     return Participant(
       participantId: json['participant_id'] ?? 0,
