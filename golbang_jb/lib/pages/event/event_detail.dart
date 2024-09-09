@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:golbang/pages/game/score_card_page.dart';
 import 'package:golbang/pages/event/event_result.dart';
 import '../../models/event.dart';
 import '../../models/participant.dart';
+import '../game/score_card_page2.dart';
 
 class EventDetailPage extends StatefulWidget {
   final Event event;
@@ -226,7 +226,10 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ScoreCardPage(),
+                      builder: (context) => ScoreCardPage(
+                        participantId: widget.event.myParticipantId,
+                        myGroupParticipants: widget.event.participants.where((p)=>p.groupType==myGroupType).toList(),
+                      ),
                     ),
                   );
                 },

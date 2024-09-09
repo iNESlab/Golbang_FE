@@ -1,40 +1,72 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
-import 'package:golbang/models/hole_score.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/game/overall_score_page.dart';
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../../models/hole_score.dart';
+import '../../models/participant.dart';
 import '../../models/socket/score_card.dart';
+import '../../repoisitory/secure_storage.dart';
 
-class ScoreCardPage extends StatefulWidget {
-  final int participant_id;
+class ScoreCardPage extends ConsumerStatefulWidget {
+  final int participantId;
+  final List<Participant> myGroupParticipants;
 
-  const ScoreCardPage({super.key, required this.participant_id});
+  const ScoreCardPage( {
+    super.key,
+    required this.participantId,
+    required this.myGroupParticipants,
+  });
+
   @override
   _ScoreCardPageState createState() => _ScoreCardPageState();
 }
 
-class _ScoreCardPageState extends State<ScoreCardPage> {
+class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
+
   int _currentPageIndex = 0;
+  /*
+  final List<String> _teamMembers = ['고동범', '김민정', '박재윤', '정수미'];
+  final List<List<String>> _scores = List.generate(18, (_) => List.generate(4, (_) => ''));
+  final List<int> _handicaps = [2, 3, 1, 4]; // 각 선수의 핸디캡 설정
+   */
+
   late final WebSocketChannel _channel;
 
   final List<ScoreCard> _teamMembers = []; // ScoreCard 리스트
   final Map<int, List<HoleScore>> _scorecard = {}; // 참가자별 홀 점수
 
   @override
-  void initState() {
+  initState() {
     super.initState();
+    _initWebSocket();
+  }
 
+  Future<void> _initWebSocket() async {
+    SecureStorage secureStorage = ref.read(secureStorageProvider);
+    final accessToken = await secureStorage.readAccessToken();
+    print('websocket: accessToken: $accessToken');
     // WebSocket 연결 설정
-    _channel = WebSocketChannel.connect(
-      Uri.parse('wss://${dotenv.env['API_HOST']}/participants/${widget.participant_id}/group/stroke'), // 실제 WebSocket 서버 주소로 변경
+    _channel = IOWebSocketChannel.connect(
+      Uri.parse('${dotenv.env['WS_HOST']}/participants/${widget.participantId}/group/stroke'), // 실제 WebSocket 서버 주소로 변경
+      headers: {
+        'Authorization': 'Bearer $accessToken', // 토큰을 헤더에 포함
+      },
     );
 
     // WebSocket 메시지를 수신
     _channel.stream.listen((data) {
+      print('WebSocket 데이터 수신: $data'); // 수신된 데이터를 로그로 출력
       _handleWebSocketData(data);
+    }, onError: (error) {
+      print('WebSocket 오류 발생: $error'); // 오류 발생 시 로그 출력
+    }, onDone: () {
+      print('WebSocket 연결 종료'); // 연결이 종료되면 로그 출력
     });
   }
 
@@ -47,6 +79,7 @@ class _ScoreCardPageState extends State<ScoreCardPage> {
   void _handleWebSocketData(String data) {
     // WebSocket에서 수신한 JSON 데이터를 파싱하여 ScoreCard 갱신
     List<dynamic> parsedData = jsonDecode(data);
+    print('WebSocket 데이터 파싱 완료: $parsedData'); // 파싱된 데이터를 로그로 출력
 
     for (var entry in parsedData) {
       int participantId = int.parse(entry['participant_id']);
@@ -66,6 +99,8 @@ class _ScoreCardPageState extends State<ScoreCardPage> {
           score: scoreData['score'],
         );
       }).toList();
+
+      print('ScoreCard 생성: participantId: $participantId, userName: $userName'); // ScoreCard 생성 로그 출력
 
       // ScoreCard 생성
       ScoreCard scoreCard = ScoreCard(
@@ -100,9 +135,10 @@ class _ScoreCardPageState extends State<ScoreCardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('제 18회 iNES 골프대전', style: TextStyle(color: Colors.white)),
+        title: Text('제 18회 iNES 골프대전',
+            style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
-        leading: IconButton(
+        leading: IconButton( // 뒤로 가기 버튼 추가
           icon: Icon(Icons.arrow_back),
           color: Colors.white,
           onPressed: () {
@@ -133,8 +169,8 @@ class _ScoreCardPageState extends State<ScoreCardPage> {
               ],
             ),
           ),
-          SizedBox(height: 8),
-          _buildSummaryTable(),
+          SizedBox(height: 8),  // 거리 조정
+          _buildSummaryTable(_teamMembers.map((m)=>m.handicapScore).toList()), // 페이지 넘김 없이 고정된 스코어 요약 표
         ],
       ),
       backgroundColor: Colors.black,
@@ -151,7 +187,7 @@ class _ScoreCardPageState extends State<ScoreCardPage> {
           Row(
             children: [
               Image.asset(
-                'assets/images/google.png',
+                'assets/images/google.png', // assets에 있는 로고 이미지 사용
                 height: 40,
               ),
               SizedBox(width: 10),
@@ -179,8 +215,7 @@ class _ScoreCardPageState extends State<ScoreCardPage> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(
-                          builder: (context) => OverallScorePage()),
+                      MaterialPageRoute(builder: (context) => OverallScorePage()),
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -231,7 +266,8 @@ class _ScoreCardPageState extends State<ScoreCardPage> {
           border: TableBorder.all(color: Colors.grey),
           children: [
             _buildTableHeaderRow(),
-            for (int i = startHole; i <= endHole; i++) _buildEditableTableRow(i - 1),
+            for (int i = startHole; i <= endHole; i++)
+              _buildEditableTableRow(i - 1),
           ],
         ),
       ),
@@ -274,27 +310,41 @@ class _ScoreCardPageState extends State<ScoreCardPage> {
             ),
           ),
         ),
+        // 팀원별 점수 열 추가
         for (ScoreCard member in _teamMembers)
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 2.0),
-            child: Center(
-              child: Text(
-                _scorecard[member.participantId]![holeIndex].score.toString(),
-                style: TextStyle(color: Colors.white),
+          if (_scorecard[member.participantId] != null &&
+              holeIndex < _scorecard[member.participantId]!.length)
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center(
+                child: Text(
+                  _scorecard[member.participantId]![holeIndex].score.toString(),
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+            )
+          else
+          // 점수가 없을 경우 대체 텍스트
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center(
+                child: Text(
+                  '-',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
-          ),
         Padding(
           padding: const EdgeInsets.symmetric(vertical: 3.0, horizontal: 2.0),
           child: Center(
             child: TextFormField(
-              initialValue: '', // 니어/롱기 정보
+              initialValue: '', // 초기 값 설정
               style: TextStyle(color: Colors.white),
               textAlign: TextAlign.center,
               keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+              inputFormatters: [FilteringTextInputFormatter.digitsOnly], // 숫자만 입력 가능하도록 설정
               onChanged: (value) {
-                // 니어/롱기 정보 업데이트 처리
+                // 필요한 경우 입력값을 처리할 수 있도록 설정
               },
               decoration: InputDecoration(
                 isDense: true,
@@ -309,13 +359,85 @@ class _ScoreCardPageState extends State<ScoreCardPage> {
     );
   }
 
-  Widget _buildSummaryTable() {
-    return Container(); // 요약 테이블 구현
+  Widget _buildSummaryTable(List<int> handiScores) {
+    List<int> frontNine = _calculateFrontNineScores();
+    List<int> backNine = _calculateBackNineScores();
+    List<int> totalScores = _calculateTotalScores();
+    List<int> handicapScores = handiScores;
+    return Container(
+      color: Colors.black,
+      padding: EdgeInsets.all(16.0),
+      child: Table(
+        border: TableBorder.all(color: Colors.grey),
+        children: [
+          _buildSummaryTableRow(['', ..._teamMembers.map((m) => m.userName??'unknown').toList()]),
+          _buildSummaryTableRow(['전반', ...frontNine.map((e) => e.toString()).toList()]),
+          _buildSummaryTableRow(['후반', ...backNine.map((e) => e.toString()).toList()]),
+          _buildSummaryTableRow(['스코어', ...totalScores.map((e) => e.toString()).toList()]),
+          _buildSummaryTableRow(['핸디 스코어', ...handicapScores.map((e) => e.toString()).toList()]),
+        ],
+      ),
+    );
+  }
+
+  TableRow _buildSummaryTableRow(List<String> cells) {
+    return TableRow(
+      children: cells.map((cell) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0), // 간격 조정
+          child: Center(
+            child: Text(
+              cell,
+              style: TextStyle(color: Colors.white),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  List<int> _calculateFrontNineScores() {
+    return List.generate(_teamMembers.length, (i) {
+      int participantId = _teamMembers[i].participantId;
+      int sum = 0;
+
+      // 참가자의 scorecard에서 앞 9개의 홀 점수를 더함
+      for (int j = 0; j < 9; j++) {
+        // 참가자의 _scorecard에 저장된 홀 점수에서 j번째 홀 점수를 가져와 더함
+        if (_scorecard[participantId] != null && j < _scorecard[participantId]!.length) {
+          sum += _scorecard[participantId]![j].score;
+        }
+      }
+      return sum;
+    });
+  }
+  List<int> _calculateBackNineScores() {
+    return List.generate(_teamMembers.length, (i) {
+      int participantId = _teamMembers[i].participantId;
+      int sum = 0;
+
+      // 참가자의 scorecard에서 앞 9개의 홀 점수를 더함
+      for (int j = 9; j < 18; j++) {
+        // 참가자의 _scorecard에 저장된 홀 점수에서 j번째 홀 점수를 가져와 더함
+        if (_scorecard[participantId] != null && j < _scorecard[participantId]!.length) {
+          sum += _scorecard[participantId]![j].score;
+        }
+      }
+
+      return sum;
+    });
+  }
+
+  List<int> _calculateTotalScores() {
+    return List.generate(_teamMembers.length, (i) {
+      return _calculateFrontNineScores()[i] + _calculateBackNineScores()[i];
+    });
   }
 
   Widget _buildPageIndicator() {
     return Padding(
-      padding: const EdgeInsets.all(4.0),
+      padding: const EdgeInsets.all(4.0),  // 간격 조정
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
