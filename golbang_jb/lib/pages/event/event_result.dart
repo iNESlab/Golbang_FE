@@ -137,7 +137,6 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
                   : _userProfile!.scorecard,
             ),
             SizedBox(height: 10),
-            Text("Ranking", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             RankingList(
               participants: _eventData!['participants'] != null
                   ? _eventData!['participants'].map<Participant>((participantJson) {
