@@ -1,7 +1,3 @@
-/*
-pages/event/widgets/ranking_list.dart
-이벤트에 참여한 사람들의 랭킹 정보를 표시
-*/
 import 'package:flutter/material.dart';
 import '../../../models/participant.dart';
 
@@ -28,71 +24,102 @@ class RankingList extends StatelessWidget {
       padding: EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: participants.map((participant) {
-          final String rank = participant.rank;
-          final String name = participant.member?.name ?? 'Unknown';
-          final String sumScore = participant.sumScore?.toString() ?? 'N/A';
-          final String profileImage = participant.member?.profileImage ?? 'assets/images/user_default.png';
-          final int holeNumber = participant.holeNumber ?? 0;
+        children: [
+          // "Ranking" 텍스트를 추가
+          Text(
+            "Ranking",
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 10), // "Ranking" 텍스트와 리스트 간의 간격 추가
 
-          return Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
-            child: ListTile(
-              leading: _buildRankIcon(int.tryParse(rank) ?? 0),
-              title: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+          // 참가자 리스트
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: participants.map((participant) {
+              final String rank = participant.rank;
+              final String name = participant.member?.name ?? 'Unknown';
+              final String sumScore = participant.sumScore?.toString() ?? 'N/A';
+              final String profileImage = participant.member?.profileImage ?? '';
+              final int holeNumber = participant.holeNumber ?? 0;
+
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4.0),
+                child: ListTile(
+                  leading: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      CircleAvatar(
-                        backgroundImage: NetworkImage(profileImage),
-                        radius: 20,
-                      ),
+                      _buildRankIcon(rank),
                       SizedBox(width: 10),
+                      CircleAvatar(
+                        radius: 30,
+                        backgroundColor: Colors.transparent,
+                        child: ClipOval(
+                          child: Image.network(
+                            profileImage.isNotEmpty ? profileImage : 'assets/images/user_default.png',
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Image.asset(
+                                'assets/images/user_default.png',
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.cover,
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  title: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
                         name,
                         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
+                      SizedBox(height: 4),
+                      Text(
+                        '$holeNumber홀',
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                      ),
                     ],
                   ),
-                  SizedBox(height: 4),
-                  Text(
-                    '$holeNumber홀',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                  trailing: Text(
+                    sumScore,
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                ],
-              ),
-              trailing: Text(
-                sumScore,
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-          );
-        }).toList(),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildRankIcon(int rank) {
+  // Rank에 따른 아이콘 색상 및 텍스트 설정
+  Widget _buildRankIcon(String rank) {
     Color color;
     String text;
 
-    switch (rank) {
-      case 1:
-        color = Colors.amber;
-        text = '1';
-        break;
-      case 2:
-        color = Colors.grey;
-        text = '2';
-        break;
-      case 3:
-        color = Colors.brown;
-        text = '3';
-        break;
-      default:
-        color = Colors.grey[400]!;
-        text = '$rank';
+    // rank에 따른 메달 색상 결정
+    if (rank == '1' || rank == 'T1') {
+      color = Colors.amber; // 금
+      text = rank;
+    } else if (rank == '2' || rank == 'T2') {
+      color = Colors.grey; // 은
+      text = rank;
+    } else if (rank == '3' || rank == 'T3') {
+      color = Colors.brown; // 동
+      text = rank;
+    } else {
+      color = Colors.black54; // 기본 색상
+      text = rank;
     }
 
     return Container(
