@@ -90,6 +90,66 @@ class EventService {
     }
   }
 
+  // 이벤트 수정 메서드
+  Future<bool> updateEvent(int eventId, Map<String, dynamic> eventData) async {
+    try {
+      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/');
+      final accessToken = await storage.readAccessToken();
+
+      final response = await http.put(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+        body: jsonEncode(eventData),
+      );
+
+      if (response.statusCode == 200) {
+        print("Event updated successfully");
+        return true;
+      } else if (response.statusCode == 403) {
+        print("관리자가 아닙니다. 관리자만 수정할 수 있습니다.");
+        return false;
+      } else {
+        print("Failed to update event: ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print('Error occurred while updating event: $e');
+      return false;
+    }
+  }
+
+  // 이벤트 삭제 메서드
+  Future<bool> deleteEvent(int eventId) async {
+    try {
+      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/');
+      final accessToken = await storage.readAccessToken();
+
+      final response = await http.delete(
+        url,
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 204) {
+        print("Event deleted successfully");
+        return true;
+      } else if (response.statusCode == 403) {
+        print("관리자가 아닙니다. 관리자만 삭제할 수 있습니다.");
+        return false;
+      } else {
+        print("Failed to delete event: ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print('Error occurred while deleting event: $e');
+      return false;
+    }
+  }
+
   // 이벤트 개인전 결과 조회
   // 개인전 결과 조회 메서드
   Future<Map<String, dynamic>?> getIndividualResults(int eventId, {String? sortType}) async {
