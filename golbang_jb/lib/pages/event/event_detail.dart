@@ -281,7 +281,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
 
   Widget _buildBottomButtons() {
     final DateTime currentDate = DateTime.now();
-    final DateTime eventDate = widget.event.startDateTime;
+    final DateTime eventDate = widget.event.endDateTime;
 
     if (currentDate.isBefore(eventDate)) {
       // 현재 날짜가 이벤트 날짜보다 이전인 경우 "게임 시작" 버튼만 표시
