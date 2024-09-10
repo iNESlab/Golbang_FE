@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../models/club.dart';
 import '../../models/enum/event.dart';
 import '../../models/event.dart';
+import '../../models/member.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/club_service.dart';
 import 'event_create2.dart';
@@ -12,9 +13,9 @@ import 'widgets/participant_dialog.dart';
 import '../../models/member_profile.dart';
 
 class EventEditPage extends ConsumerStatefulWidget {
-  final int eventId;
+  final Event event;
 
-  const EventEditPage({Key? key, required this.eventId}) : super(key: key);
+  const EventEditPage({Key? key, required this.event}) : super(key: key);
 
   @override
   _EventEditPageState createState() => _EventEditPageState();
@@ -32,7 +33,6 @@ class _EventEditPageState extends ConsumerState<EventEditPage> {
   GameMode? _selectedGameMode;
   List<ClubMemberProfile> _selectedParticipants = [];
   late ClubService _clubService;
-  bool _isButtonEnabled = false;
 
   final TimeOfDay _fixedTime = TimeOfDay(hour: 23, minute: 59);
 
@@ -41,28 +41,23 @@ class _EventEditPageState extends ConsumerState<EventEditPage> {
     super.initState();
     _clubService = ClubService(ref.read(secureStorageProvider));
     _fetchClubs();
-    _setupListeners();
-  }
 
-  void _setupListeners() {
-    _titleController.addListener(_validateForm);
-    _locationController.addListener(_validateForm);
-    _startDateController.addListener(_validateForm);
-    _endDateController.addListener(_validateForm);
-  }
-
-  void _validateForm() {
-    final isValid = _titleController.text.isNotEmpty &&
-        _locationController.text.isNotEmpty &&
-        _startDateController.text.isNotEmpty &&
-        _endDateController.text.isNotEmpty &&
-        _selectedLocation != null &&
-        _selectedClub != null &&
-        _selectedGameMode != null;
-
-    setState(() {
-      _isButtonEnabled = isValid;
-    });
+    // 전달받은 데이터를 필드에 초기화
+    _titleController.text = widget.event.eventTitle;
+    _locationController.text = widget.event.location ?? '';
+    _startDateController.text = widget.event.startDateTime.toLocal().toIso8601String().split('T').first;
+    _startTimeController.text = widget.event.startDateTime.toLocal().toIso8601String().split('T').last;
+    _endDateController.text = widget.event.endDateTime.toLocal().toIso8601String().split('T').first;
+    _selectedGameMode = GameMode.values.firstWhere((mode) => mode.value == widget.event.gameMode);
+    _selectedParticipants = widget.event.participants.map((participant) {
+      final member = participant.member as Member;
+      return ClubMemberProfile(
+        memberId: member.id,
+        name: member.name,
+        profileImage: member.profileImage ?? 'assets/images/user_default.png',
+        role: member.role,
+      );
+    }).toList();
   }
 
   Future<void> _fetchClubs() async {
@@ -70,6 +65,12 @@ class _EventEditPageState extends ConsumerState<EventEditPage> {
       List<Club> clubs = await _clubService.getClubList();
       setState(() {
         _clubs = clubs;
+
+        // 이벤트에 연결된 클럽을 기본으로 설정
+        _selectedClub = clubs.firstWhere(
+              (club) => club.id == widget.event.memberGroup,
+          orElse: () => clubs.first,
+        );
       });
     } catch (e) {
       print("Failed to load clubs: $e");
@@ -80,7 +81,7 @@ class _EventEditPageState extends ConsumerState<EventEditPage> {
     showDialog(
       context: context,
       builder: (context) => LocationSearchDialog(
-        locationController: _locationController, //TODO: 지금 위도로 저장되는데 이대로 유지할지 결정해야함
+        locationController: _locationController,
         locationCoordinates: {
           "Jeju Nine Bridges": LatLng(33.431441, 126.875828),
           "Seoul Tower": LatLng(37.5511694, 126.9882266),
@@ -90,13 +91,11 @@ class _EventEditPageState extends ConsumerState<EventEditPage> {
         onLocationSelected: (LatLng location) {
           setState(() {
             _selectedLocation = location;
-            _validateForm();
           });
         },
       ),
     );
   }
-
 
   Future<void> _selectDate(BuildContext context, bool isStartDate) async {
     final DateTime? pickedDate = await showDatePicker(
@@ -113,7 +112,6 @@ class _EventEditPageState extends ConsumerState<EventEditPage> {
         } else {
           _endDateController.text = formattedDate;
         }
-        _validateForm();
       });
     }
   }
@@ -157,7 +155,6 @@ class _EventEditPageState extends ConsumerState<EventEditPage> {
         setState(() {
           _selectedParticipants = List<ClubMemberProfile>.from(result);
         });
-        _validateForm();
       }
     });
   }
@@ -203,7 +200,6 @@ class _EventEditPageState extends ConsumerState<EventEditPage> {
                   setState(() {
                     _selectedClub = value;
                     _selectedParticipants = []; // 클럽 변경 시 참여자 초기화
-                    _validateForm();
                   });
                 },
                 items: _clubs.map<DropdownMenuItem<Club>>((Club club) {
@@ -321,7 +317,7 @@ class _EventEditPageState extends ConsumerState<EventEditPage> {
               Text('참여자', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               SizedBox(height: 8),
               GestureDetector(
-                onTap: _selectedClub != null ? _showParticipantDialog : null, // 클럽이 선택되지 않았으면 비활성화
+                onTap: _selectedClub != null ? _showParticipantDialog : null,
                 child: Container(
                   padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   decoration: BoxDecoration(
@@ -351,11 +347,10 @@ class _EventEditPageState extends ConsumerState<EventEditPage> {
                   labelText: '게임모드',
                   border: OutlineInputBorder(),
                 ),
-                value: _selectedGameMode, // value를 GameMode 타입으로 설정
+                value: _selectedGameMode,
                 onChanged: (newValue) {
                   setState(() {
                     _selectedGameMode = newValue!;
-                    _validateForm();
                   });
                 },
                 items: GameMode.values.map((mode) {
@@ -370,8 +365,7 @@ class _EventEditPageState extends ConsumerState<EventEditPage> {
               SizedBox(height: 16),
               Center(
                 child: ElevatedButton(
-                  onPressed: _isButtonEnabled
-                      ? () {
+                  onPressed: () {
                     final DateTime startDate = DateTime.parse(_startDateController.text);
                     final TimeOfDay startTime = _parseTimeOfDay(_startTimeController.text);
                     final DateTime startDateTime = _combineDateAndTime(startDate, startTime);
@@ -391,8 +385,7 @@ class _EventEditPageState extends ConsumerState<EventEditPage> {
                         ),
                       ),
                     );
-                  }
-                      : null,
+                  },
                   child: Text('다음'),
                   style: ElevatedButton.styleFrom(
                     minimumSize: Size(double.infinity, 50),
