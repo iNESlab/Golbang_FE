@@ -38,11 +38,17 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
     final storage = ref.watch(secureStorageProvider);
     final eventService = EventService(storage);
 
-    final individualData = await eventService.getIndividualResults(widget.eventId);
-    final teamData = await eventService.getTeamResults(widget.eventId);
+    // 토글On->핸디캡 순으로 정렬된 데이터를 가져오도록 sortType을 설정 / 토글Off->핸디캡 NULL
+    final individualData = await eventService.getIndividualResults(
+      widget.eventId,
+      sortType: _isHandicapEnabled ? 'handicap_score' : null,
+    );
+    final teamData = await eventService.getTeamResults(
+      widget.eventId,
+      sortType: _isHandicapEnabled ? 'handicap_score' : null,
+    );
 
     if (individualData != null && teamData != null) {
-      // Check if this is a team event by inspecting the team_type of participants
       _isTeamEvent = individualData['participants'].any((participant) => participant['team_type'] != 'NONE');
 
       setState(() {
@@ -94,7 +100,9 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
               onHandicapToggle: (value) {
                 setState(() {
                   _isHandicapEnabled = value;
+                  _isLoading = true;
                 });
+                _loadEventResults(); // 데이터를 다시 로드
               },
             ),
             SizedBox(height: 10),
@@ -149,7 +157,7 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
                       : participantJson['rank'],
                 );
               }).toList()
-                  : [],  // 만약 null이라면 빈 리스트를 반환
+                  : [], // 만약 null이라면 빈 리스트를 반환
             ),
           ],
         ),

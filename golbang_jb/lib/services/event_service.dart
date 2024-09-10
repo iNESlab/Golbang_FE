@@ -143,6 +143,7 @@ class EventService {
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(utf8.decode(response.bodyBytes))['data'];
         print("팀전 결과 조회 성공: $jsonData");
+        print("url $url");
         return jsonData;
       } else {
         print('팀전 결과 조회 실패: ${response.statusCode} - ${response.body}');
