@@ -2,7 +2,7 @@
 * 이벤트 결과 조회 시 사용자 정보 (이름, 이미지, 스코어, 랭킹)
 **/
 import 'package:flutter/material.dart';
-import '../../../models/user_profile.dart';
+import '../../../models/profile/user_profile.dart';
 
 class UserProfileWidget extends StatelessWidget {
   final UserProfile userProfile;

@@ -3,9 +3,16 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:golbang/pages/event/event_result.dart';
 import '../../models/event.dart';
 import '../../models/participant.dart';
+<<<<<<< HEAD
 import '../game/score_card_page.dart';
+=======
+import '../../repoisitory/secure_storage.dart';
+import '../../services/event_service.dart';
+import 'event_create1.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+>>>>>>> 90a90bc (feat(event): 이벤트 수정, 삭제 버튼 클릭시 발생하는 이벤트 함수 구현)
 
-class EventDetailPage extends StatefulWidget {
+class EventDetailPage extends ConsumerStatefulWidget {
   final Event event;
 
   EventDetailPage({required this.event});
@@ -14,7 +21,7 @@ class EventDetailPage extends StatefulWidget {
   _EventDetailPageState createState() => _EventDetailPageState();
 }
 
-class _EventDetailPageState extends State<EventDetailPage> {
+class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   List<bool> _isExpandedList = [false, false, false, false];
   LatLng? _selectedLocation;
 
@@ -387,10 +394,70 @@ class _EventDetailPageState extends State<EventDetailPage> {
   }
 
   void _editEvent() {
-    print('수정 버튼이 눌렸습니다.');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EventsCreate1(),
+      ),
+    ).then((updatedEvent) {
+      if (updatedEvent != null) {
+        // 수정된 이벤트 데이터를 받아서 API 호출
+        _updateEvent(updatedEvent);
+      }
+    });
   }
 
-  void _deleteEvent() {
-    print('삭제 버튼이 눌렸습니다.');
+  void _updateEvent(Event updatedEvent) async {
+    // ref.watch를 이용하여 storage 인스턴스를 얻고 이를 EventService에 전달
+    final storage = ref.watch(secureStorageProvider);
+    final eventService = EventService(storage);
+
+    final eventData = {
+      "event_title": updatedEvent.eventTitle,
+      "location": updatedEvent.location,
+      "start_date_time": updatedEvent.startDateTime.toIso8601String(),
+      "end_date_time": updatedEvent.endDateTime.toIso8601String(),
+      "game_mode": updatedEvent.gameMode.toString(),
+      // 필요한 다른 필드들 추가
+    };
+
+    final success = await eventService.updateEvent(widget.event.eventId, eventData);
+
+    if (success) {
+      // 성공 알림 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('성공적으로 수정되었습니다')),
+      );
+      // 이벤트 상세 페이지로 돌아오기
+      Navigator.of(context).pop(); // 생성 페이지에서 상세 페이지로 돌아오기
+    } else {
+      // 실패 알림 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('이벤트 수정에 실패했습니다.')),
+      );
+    }
+  }
+
+  void _deleteEvent() async {
+    // ref.watch를 이용하여 storage 인스턴스를 얻고 이를 EventService에 전달
+    final storage = ref.watch(secureStorageProvider);
+    final eventService = EventService(storage);
+
+    final success = await eventService.deleteEvent(widget.event.eventId);
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('성공적으로 삭제되었습니다')),
+      );
+      Navigator.of(context).pop(); // 삭제 후 페이지를 나가기
+    } else if(success == 403) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('관리자가 아닙니다. 관리자만 삭제할 수 있습니다.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('이벤트 삭제에 실패했습니다.')),
+      );
+    }
   }
 }
