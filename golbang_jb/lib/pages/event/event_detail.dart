@@ -399,7 +399,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EventEditPage(eventId: widget.event.eventId),
+        builder: (context) => EventEditPage(event: widget.event), // 이벤트 데이터 자체를 전달
       ),
     ).then((updatedEvent) {
       if (updatedEvent != null) {
