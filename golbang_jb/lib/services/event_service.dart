@@ -91,9 +91,13 @@ class EventService {
   }
 
   // 이벤트 개인전 결과 조회
-  Future<Map<String, dynamic>?> getIndividualResults(int eventId) async {
+  // 개인전 결과 조회 메서드
+  Future<Map<String, dynamic>?> getIndividualResults(int eventId, {String? sortType}) async {
     try {
-      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/individual-results/');
+      // Uri 생성 시 sortType이 있을 때만 추가
+      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/individual-results/')
+          .replace(queryParameters: sortType != null ? {'sort_type': sortType} : null);
+
       final accessToken = await storage.readAccessToken();
 
       final response = await http.get(
@@ -120,9 +124,12 @@ class EventService {
 
 
   // 이벤트 팀전 결과 조회
-  Future<Map<String, dynamic>?> getTeamResults(int eventId) async {
+  Future<Map<String, dynamic>?> getTeamResults(int eventId, {String? sortType}) async {
     try {
-      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/team-results/');
+      // Uri 생성 시 sortType이 있을 때만 추가
+      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/team-results/')
+          .replace(queryParameters: sortType != null ? {'sort_type': sortType} : null);
+
       final accessToken = await storage.readAccessToken();
 
       final response = await http.get(
