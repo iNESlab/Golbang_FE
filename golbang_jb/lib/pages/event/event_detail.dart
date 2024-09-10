@@ -9,6 +9,8 @@ import '../../services/event_service.dart';
 import 'event_create1.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'event_update.dart';
+
 class EventDetailPage extends ConsumerStatefulWidget {
   final Event event;
 
@@ -347,7 +349,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EventsCreate1(),
+        builder: (context) => EventEditPage(eventId: widget.event.eventId),
       ),
     ).then((updatedEvent) {
       if (updatedEvent != null) {
