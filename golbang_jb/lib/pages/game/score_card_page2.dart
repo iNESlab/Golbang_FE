@@ -30,12 +30,6 @@ class ScoreCardPage extends ConsumerStatefulWidget {
 class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
 
   int _currentPageIndex = 0;
-  /*
-  final List<String> _teamMembers = ['고동범', '김민정', '박재윤', '정수미'];
-  final List<List<String>> _scores = List.generate(18, (_) => List.generate(4, (_) => ''));
-  final List<int> _handicaps = [2, 3, 1, 4]; // 각 선수의 핸디캡 설정
-   */
-
   late final WebSocketChannel _channel;
 
   final List<ScoreCard> _teamMembers = []; // ScoreCard 리스트
@@ -44,8 +38,32 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
   @override
   initState() {
     super.initState();
+    _initTeamMembers();
     _initWebSocket();
   }
+
+  // myGroupParticipants를 이용한 초기화
+  void _initTeamMembers() {
+    for (var participant in widget.myGroupParticipants) {
+      // participant 정보를 기반으로 기본 ScoreCard를 생성
+      ScoreCard scoreCard = ScoreCard(
+        participantId: participant.participantId,
+        userName: participant.member?.name ?? 'Unknown',
+        teamType: participant.teamType,
+        groupType: participant.groupType,
+        isGroupWin: false, // 기본 값 설정
+        isGroupWinHandicap: false, // 기본 값 설정
+        sumScore: participant.sumScore ?? 0,
+        handicapScore: participant.handicapScore,
+        scores: [], // 기본적으로 빈 리스트로 초기화
+      );
+
+      _teamMembers.add(scoreCard);
+      _scorecard[participant.participantId] = []; // 빈 스코어 리스트로 초기화
+    }
+    setState(() {}); // UI 업데이트
+  }
+
 
   Future<void> _initWebSocket() async {
     SecureStorage secureStorage = ref.read(secureStorageProvider);
