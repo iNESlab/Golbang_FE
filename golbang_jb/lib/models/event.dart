@@ -45,7 +45,7 @@ class Event {
   factory Event.fromJson(Map<String, dynamic> json) {
 
     return Event(
-      club: json['club'],
+      club: json['club'] != null ? ClubProfile.fromJson(json['club']) : null,
       eventId: json['event_id'],
       memberGroup: json['memberGroup'] ?? "",
       eventTitle: json['event_title'],
