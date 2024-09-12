@@ -208,7 +208,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('제 18회 iNES 골프대전', style: TextStyle(color: Colors.white)),
+        title: Text('${widget.event.eventTitle}', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
         leading: IconButton( // 뒤로 가기 버튼 추가
           icon: Icon(Icons.arrow_back),
@@ -256,6 +256,10 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
     );
   }
 
+  String _formattedDate(DateTime dateTime) {
+    return dateTime.toIso8601String().split('T').first; // T 문자로 나누고 첫 번째 부분만 가져옴
+  }
+
   Widget _buildHeader() {
     return Container(
       color: Colors.black,
@@ -266,7 +270,6 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
           Row(
             children: [
               CircleAvatar(
-                // backgroundImage: NetworkImage(),
                 backgroundImage: _clubProfile.image.startsWith('http')
                     ? NetworkImage(_clubProfile.image)
                     : AssetImage(_clubProfile.image) as ImageProvider,
@@ -275,9 +278,9 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('${widget.event.eventTitle}', style: TextStyle(color: Colors.white, fontSize: 16)),
+                  Text('${widget.event.club!.name}', style: TextStyle(color: Colors.white, fontSize: 16)),
                   SizedBox(height: 4),
-                  Text('${widget.event.startDateTime}', style: TextStyle(color: Colors.white, fontSize: 14)),
+                  Text('${_formattedDate(widget.event.startDateTime)}', style: TextStyle(color: Colors.white, fontSize: 14)),
                 ],
               ),
             ],
@@ -299,10 +302,10 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
                   child: Text('전체 현황 조회'),
                 ),
               ),
-              SizedBox(width: 8),
-              _buildRankIndicator('Rank', '2 고동범', Colors.red),
-              SizedBox(width: 8),
-              _buildRankIndicator('Handicap', '3 고동범', Colors.cyan),
+              // SizedBox(width: 8), TODO: mvp에서 일시적으로 제외
+              // _buildRankIndicator('Rank', '2 고동범', Colors.red),
+              // SizedBox(width: 8),
+              // _buildRankIndicator('Handicap', '3 고동범', Colors.cyan),
             ],
           ),
         ],

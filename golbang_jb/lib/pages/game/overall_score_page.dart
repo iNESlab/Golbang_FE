@@ -106,7 +106,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          '제 18회 iNES 골프대전 - 전체 현황',
+          '${widget.event.eventTitle} - 전체 현황',
           style: TextStyle(color: Colors.white),
         ),
         backgroundColor: Colors.black,
@@ -135,56 +135,57 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
     );
   }
 
+  String _formattedDate(DateTime dateTime) {
+    return dateTime.toIso8601String().split('T').first; // T 문자로 나누고 첫 번째 부분만 가져옴
+  }
+
   Widget _buildHeader() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
       color: Colors.black,
       child: Row(
         children: [
-          CircleAvatar(
-            // backgroundImage: NetworkImage(),
-            backgroundImage: _clubProfile.image.startsWith('http')
-                ? NetworkImage(_clubProfile.image)
-                : AssetImage(_clubProfile.image) as ImageProvider,
-          ),
           SizedBox(width: 10),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+            child: Row(
               children: [
-                CircleAvatar(
-                  // backgroundImage: NetworkImage(),
-                  backgroundImage: _clubProfile.image.startsWith('http')
-                      ? NetworkImage(_clubProfile.image)
-                      : AssetImage(_clubProfile.image) as ImageProvider,
-                ),
-                SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('${widget.event.eventTitle}', style: TextStyle(color: Colors.white, fontSize: 16)),
-                    SizedBox(height: 4),
-                    Text('${widget.event.startDateTime}', style: TextStyle(color: Colors.white, fontSize: 14)),
+                    CircleAvatar(
+                      // backgroundImage: NetworkImage(),
+                      backgroundImage: _clubProfile.image.startsWith('http')
+                          ? NetworkImage(_clubProfile.image)
+                          : AssetImage(_clubProfile.image) as ImageProvider,
+                    ),
+                    SizedBox(width: 10),
+                    Text('${widget.event.club!.name}', style: TextStyle(color: Colors.white, fontSize: 16)),
                   ],
                 ),
-                SizedBox(height: 8),
-                Row(
+                SizedBox(width: 8),
+                Column(
                   children: [
+                    Text('${_formattedDate(widget.event.startDateTime)}', style: TextStyle(color: Colors.white, fontSize: 14)),
+                    SizedBox(height: 8),
                     ElevatedButton(
                       onPressed: () {
                         Navigator.pop(context);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey[800],
+                        backgroundColor: Colors.white,
                       ),
-                      child: Text('스코어카드 가기'),
+                      child: Text('스코어카드 가기', style: TextStyle(color: Colors.grey, fontSize: 16)),
                     ),
-                    SizedBox(width: 8),
+                  ]
+                ),
+                SizedBox(width: 8),
+                //Column(
+                //  children: [
                     _buildRankIndicator('My Rank', _getPlayerRank(), Colors.red),
                     SizedBox(width: 8),
                     _buildHandicapToggle(),
-                  ],
-                ),
+               //  ],
+                //)
               ],
             ),
           ),
@@ -216,7 +217,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
   }
 
   Widget _buildHandicapToggle() {
-    return Row(
+    return Column(
       children: [
         Text(
           'Handicap',
