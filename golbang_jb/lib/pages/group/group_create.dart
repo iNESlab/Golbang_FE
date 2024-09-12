@@ -2,14 +2,13 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:golbang/api.dart';
 import 'package:golbang/pages/group/widgets/admin_button_widget.dart';
 import 'package:golbang/services/user_service.dart';
 import 'package:golbang/widgets/sections/member_dialog.dart';
 import 'package:golbang/widgets/sections/member_invite.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../models/user_profile.dart';
+import '../../models/profile/user_profile.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/group_service.dart';
 

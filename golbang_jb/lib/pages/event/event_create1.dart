@@ -8,7 +8,7 @@ import '../../services/club_service.dart';
 import 'event_create2.dart';
 import 'widgets/location_search_dialog.dart';
 import 'widgets/participant_dialog.dart';
-import '../../models/member_profile.dart';
+import '../../models/profile/member_profile.dart';
 
 class EventsCreate1 extends ConsumerStatefulWidget {
   @override

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:golbang/global_config.dart';
-import 'package:golbang/models/user_profile.dart';
+import 'package:golbang/models/profile/user_profile.dart';
 
 import '../../repoisitory/secure_storage.dart';
 import '../../services/user_service.dart';
