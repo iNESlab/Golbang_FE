@@ -4,23 +4,23 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:golbang/models/event.dart';
 import 'package:golbang/pages/game/overall_score_page.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 import '../../models/hole_score.dart';
 import '../../models/participant.dart';
+import '../../models/profile/club_profile.dart';
 import '../../models/socket/score_card.dart';
 import '../../repoisitory/secure_storage.dart';
 
 class ScoreCardPage extends ConsumerStatefulWidget {
-  final int participantId;
-  final List<Participant> myGroupParticipants;
+  final Event event;
 
   const ScoreCardPage({
     super.key,
-    required this.participantId,
-    required this.myGroupParticipants,
+    required this.event,
   });
 
   @override
@@ -31,14 +31,21 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
   int _currentPageIndex = 0;
   late final WebSocketChannel _channel;
 
+  late final int _myParticipantId;
+  late final List<Participant> _myGroupParticipants;
   final List<ScoreCard> _teamMembers = []; // ScoreCard 리스트
   final Map<int, List<HoleScore>> _scorecard = {}; // 참가자별 홀 점수
   // 입력 필드의 포커스를 감지하기 위한 FocusNode들을 저장하는 맵
   final Map<int, List<FocusNode>> _focusNodes = {};
+  late final ClubProfile _clubProfile;
 
   @override
   initState() {
     super.initState();
+    this._myParticipantId = widget.event.myParticipantId;
+    this._myGroupParticipants = widget.event.participants.where((p)=>
+        p.groupType==widget.event.memberGroup).toList();
+    this._clubProfile = widget.event.club!;
     _initTeamMembers();
     _initWebSocket();
   }
@@ -47,7 +54,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
   void _initTeamMembers() {
     List<HoleScore> initialScores = List.generate(18, (index) => HoleScore(holeNumber: index + 1, score: 0));
 
-    for (var participant in widget.myGroupParticipants) {
+    for (var participant in _myGroupParticipants) {
       ScoreCard scoreCard = ScoreCard(
         participantId: participant.participantId,
         userName: participant.member?.name ?? 'Unknown',
@@ -75,7 +82,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
     final accessToken = await secureStorage.readAccessToken();
     // WebSocket 연결 설정
     _channel = IOWebSocketChannel.connect(
-      Uri.parse('${dotenv.env['WS_HOST']}/participants/${widget.participantId}/group/stroke'), // 실제 WebSocket 서버 주소로 변경
+      Uri.parse('${dotenv.env['WS_HOST']}/participants/${_myParticipantId}/group/stroke'), // 실제 WebSocket 서버 주소로 변경
       headers: {
         'Authorization': 'Bearer $accessToken', // 토큰을 헤더에 포함
       },
@@ -258,17 +265,19 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
         children: [
           Row(
             children: [
-              Image.asset(
-                'assets/images/google.png', // assets에 있는 로고 이미지 사용
-                height: 40,
+              CircleAvatar(
+                // backgroundImage: NetworkImage(),
+                backgroundImage: _clubProfile.image.startsWith('http')
+                    ? NetworkImage(_clubProfile.image)
+                    : AssetImage(_clubProfile.image) as ImageProvider,
               ),
               SizedBox(width: 10),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('제 18회 iNES 골프대전', style: TextStyle(color: Colors.white, fontSize: 16)),
+                  Text('${widget.event.eventTitle}', style: TextStyle(color: Colors.white, fontSize: 16)),
                   SizedBox(height: 4),
-                  Text('2024.03.18', style: TextStyle(color: Colors.white, fontSize: 14)),
+                  Text('${widget.event.startDateTime}', style: TextStyle(color: Colors.white, fontSize: 14)),
                 ],
               ),
             ],
@@ -281,7 +290,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => OverallScorePage(participantId: widget.participantId)),
+                      MaterialPageRoute(builder: (context) => OverallScorePage(event: widget.event)),
                     );
                   },
                   style: ElevatedButton.styleFrom(

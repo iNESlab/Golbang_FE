@@ -47,9 +47,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final myGroupType = widget.event.participants
-        .firstWhere((p) => p.participantId == widget.event.myParticipantId)
-        .groupType;
+    final myGroupType = widget.event.memberGroup;
 
     // 더미 데이터
     final courseName = "더미 코스 이름";
@@ -226,10 +224,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ScoreCardPage(
-                        participantId: widget.event.myParticipantId,
-                        myGroupParticipants: widget.event.participants.where((p)=>p.groupType==myGroupType).toList(),
-                      ),
+                      builder: (context) => ScoreCardPage(event: widget.event),
                     ),
                   );
                 },

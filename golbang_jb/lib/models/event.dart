@@ -1,8 +1,10 @@
 // event.dart
 
 import 'package:golbang/models/participant.dart';
+import 'package:golbang/models/profile/club_profile.dart';
 
 class Event {
+  final ClubProfile? club;
   final int eventId;
   final String? memberGroup;
   final String eventTitle;
@@ -21,6 +23,7 @@ class Event {
   final List<Participant> participants;
 
   Event({
+    this.club,
     required this.eventId,
     this.memberGroup,
     required this.eventTitle,
@@ -41,9 +44,8 @@ class Event {
 
   factory Event.fromJson(Map<String, dynamic> json) {
 
-    print(json['group']);
-    print("PASSS");
     return Event(
+      club: json['club'],
       eventId: json['event_id'],
       memberGroup: json['memberGroup'] ?? "",
       eventTitle: json['event_title'],

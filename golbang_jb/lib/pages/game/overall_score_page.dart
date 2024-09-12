@@ -2,18 +2,20 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:golbang/models/profile/club_profile.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
+import '../../models/event.dart';
 import '../../models/socket/rank.dart';
 import '../../repoisitory/secure_storage.dart';
 
 class OverallScorePage extends ConsumerStatefulWidget {
-  final int participantId;
+  final Event event;
 
   const OverallScorePage({
     super.key,
-    required this.participantId,
+    required this.event,
   });
 
   @override
@@ -25,11 +27,15 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
   late final WebSocketChannel _channel;
   List<Rank> _players = [];
   bool _handicapOn = false; // 핸디캡 버튼 상태
+  late final int _myParticipantId;
+  late final ClubProfile _clubProfile;
 
   @override
   void initState() {
     super.initState();
     _initWebSocket();
+    _myParticipantId = widget.event.myParticipantId;
+    _clubProfile = widget.event.club!;
   }
 
   @override
@@ -43,7 +49,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
     SecureStorage secureStorage = ref.read(secureStorageProvider);
     final accessToken = await secureStorage.readAccessToken();
     _channel = IOWebSocketChannel.connect(
-      Uri.parse('${dotenv.env['WS_HOST']}/participants/${widget.participantId}/event/stroke'),
+      Uri.parse('${dotenv.env['WS_HOST']}/participants/${_myParticipantId}/event/stroke'),
       headers: {
         'Authorization': 'Bearer $accessToken', // 토큰을 헤더에 포함
       },// 실제 WebSocket 서버 주소로 변경
@@ -73,7 +79,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
 
   String _getPlayerRank() {
     final player = _players.firstWhere(
-          (p) => p.participantId == widget.participantId,
+          (p) => p.participantId == _myParticipantId,
     );
     if (_handicapOn)
       return player.handicapRank;
@@ -135,18 +141,31 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
       color: Colors.black,
       child: Row(
         children: [
-          Image.asset(
-            'assets/images/google.png', // 로고 이미지
-            height: 40,
+          CircleAvatar(
+            // backgroundImage: NetworkImage(),
+            backgroundImage: _clubProfile.image.startsWith('http')
+                ? NetworkImage(_clubProfile.image)
+                : AssetImage(_clubProfile.image) as ImageProvider,
           ),
           SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  '2024.03.18',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
+                CircleAvatar(
+                  // backgroundImage: NetworkImage(),
+                  backgroundImage: _clubProfile.image.startsWith('http')
+                      ? NetworkImage(_clubProfile.image)
+                      : AssetImage(_clubProfile.image) as ImageProvider,
+                ),
+                SizedBox(width: 10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('${widget.event.eventTitle}', style: TextStyle(color: Colors.white, fontSize: 16)),
+                    SizedBox(height: 4),
+                    Text('${widget.event.startDateTime}', style: TextStyle(color: Colors.white, fontSize: 14)),
+                  ],
                 ),
                 SizedBox(height: 8),
                 Row(
@@ -253,7 +272,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
                 ],
               ),
             ),
-            if (player.participantId == widget.participantId)
+            if (player.participantId == _myParticipantId)
               Container(
                 padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
