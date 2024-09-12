@@ -101,50 +101,71 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
   }
 
   void _handleWebSocketData(String data) {
-    List<dynamic> parsedData = jsonDecode(data);
+    // 데이터를 파싱
+    var parsedData = jsonDecode(data);
+    // 만약 데이터가 리스트 형식이면 처리
+    if (parsedData is List) {
+      for (var entry in parsedData) {
+        ScoreCard scoreCard = _parseScoreCard(entry);
 
-    for (var entry in parsedData) {
-      int participantId = int.parse(entry['participant_id']);
-      String userName = entry['user_name'] ?? 'Unknown';
-      int groupType = int.parse(entry['group_type']);
-      String teamType = entry['team_type'];
-      bool isGroupWin = entry['is_group_win'];
-      bool isGroupWinHandicap = entry['is_group_win_handicap'];
-      int sumScore = entry['sum_score'] ?? 0;
-      int handicapScore = entry['handicap_score'] ?? 0;
-      List<dynamic> scoresJson = entry['scores'];
-
-      // scores를 HoleNumber 기준으로 정렬하고 누락된 홀 채우기
-      List<HoleScore> scores = List.generate(18, (index) => HoleScore(holeNumber: index + 1, score: 0));
-
-      for (var scoreData in scoresJson) {
-        int holeNumber = scoreData['hole_number'];
-        int score = scoreData['score'];
-        scores[holeNumber - 1] = HoleScore(holeNumber: holeNumber, score: score);
+        setState(() {
+          _updateTeamMember(scoreCard);
+          _scorecard[scoreCard.participantId] = scoreCard.scores ?? [];
+        });
       }
+    }
+    // 만약 데이터가 Map 형식이면 처리
+    else print("Unexpected data format: response가 List가 아닙니다.");
+  }
 
-      ScoreCard scoreCard = ScoreCard(
-        participantId: participantId,
-        userName: userName,
-        teamType: teamType,
-        groupType: groupType,
-        isGroupWin: isGroupWin,
-        isGroupWinHandicap: isGroupWinHandicap,
-        sumScore: sumScore,
-        handicapScore: handicapScore,
-        scores: scores,
-      );
+// ScoreCard 객체를 생성하는 함수
+  ScoreCard _parseScoreCard(Map<String, dynamic> entry) {
+    int participantId = int.parse(entry['participant_id'].toString());
+    String userName = entry['user_name'] ?? 'Unknown';
+    int groupType = int.parse(entry['group_type'].toString());
+    String teamType = entry['team_type'];
+    bool isGroupWin = entry['is_group_win'];
+    bool isGroupWinHandicap = entry['is_group_win_handicap'];
+    int sumScore = entry['sum_score'] ?? 0;
+    int handicapScore = entry['handicap_score'] ?? 0;
 
-      setState(() {
-        int existingIndex = _teamMembers.indexWhere((sc) => sc.participantId == participantId);
-        if (existingIndex != -1) {
-          _teamMembers[existingIndex] = scoreCard;
-        } else {
-          _teamMembers.add(scoreCard);
-        }
+    // scores를 HoleNumber 기준으로 정렬하고 누락된 홀 채우기
+    List<HoleScore> scores = _parseScores(entry['scores']);
 
-        _scorecard[participantId] = scores;
-      });
+    return ScoreCard(
+      participantId: participantId,
+      userName: userName,
+      teamType: teamType,
+      groupType: groupType,
+      isGroupWin: isGroupWin,
+      isGroupWinHandicap: isGroupWinHandicap,
+      sumScore: sumScore,
+      handicapScore: handicapScore,
+      scores: scores,
+    );
+  }
+
+  // 스코어 데이터를 정렬하고 누락된 홀 채우기
+  List<HoleScore> _parseScores(List<dynamic> scoresJson) {
+    List<HoleScore> scores = List.generate(18, (index) => HoleScore(holeNumber: index + 1, score: 0));
+
+    for (var scoreData in scoresJson) {
+      int holeNumber = scoreData['hole_number'];
+      int score = scoreData['score'];
+      scores[holeNumber - 1] = HoleScore(holeNumber: holeNumber, score: score);
+    }
+
+    return scores;
+  }
+
+  // 팀 멤버 정보를 업데이트하는 함수
+  void _updateTeamMember(ScoreCard scoreCard) {
+    int existingIndex = _teamMembers.indexWhere((sc) => sc.participantId == scoreCard.participantId);
+
+    if (existingIndex != -1) {
+      _teamMembers[existingIndex] = scoreCard;
+    } else {
+      _teamMembers.add(scoreCard);
     }
   }
 
@@ -163,6 +184,20 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
     print('Score 전송: $message');
   }
 
+  // 서버에 새로고침 요청을 보내는 함수
+  Future<void> _handleRefresh() async {
+    final message = jsonEncode({
+      'action': 'get',
+    });
+
+    // WebSocket을 통해 새로고침 요청 전송
+    _channel.sink.add(message);
+    print('Score 전송: $message');
+
+    // 약간의 지연시간을 추가하여 새로고침 완료 시각적으로 표시
+    await Future.delayed(Duration(seconds: 1));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -176,6 +211,13 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
             Navigator.pop(context);
           },
         ),
+        actions: [
+          IconButton(
+              icon: Icon(Icons.refresh),
+              color: Colors.white,
+              onPressed: _handleRefresh,
+          )
+        ],
       ),
       body: Column(
         children: [
