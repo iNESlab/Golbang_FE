@@ -3,7 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:golbang/pages/event/event_result.dart';
 import '../../models/event.dart';
 import '../../models/participant.dart';
-import '../game/score_card_page2.dart';
+import '../game/score_card_page.dart';
 
 class EventDetailPage extends StatefulWidget {
   final Event event;

@@ -73,7 +73,6 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
   Future<void> _initWebSocket() async {
     SecureStorage secureStorage = ref.read(secureStorageProvider);
     final accessToken = await secureStorage.readAccessToken();
-    print('websocket: accessToken: $accessToken');
     // WebSocket 연결 설정
     _channel = IOWebSocketChannel.connect(
       Uri.parse('${dotenv.env['WS_HOST']}/participants/${widget.participantId}/group/stroke'), // 실제 WebSocket 서버 주소로 변경
@@ -282,7 +281,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
                   onPressed: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => OverallScorePage()),
+                      MaterialPageRoute(builder: (context) => OverallScorePage(participantId: widget.participantId)),
                     );
                   },
                   style: ElevatedButton.styleFrom(
