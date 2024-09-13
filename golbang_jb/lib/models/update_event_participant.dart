@@ -5,7 +5,7 @@ import 'dart:convert';
 import 'package:golbang/models/participant.dart';
 
 import 'member.dart';
-import 'member_profile.dart';
+import 'profile/member_profile.dart';
 
 class UpdateEventParticipant {
   final int memberId;

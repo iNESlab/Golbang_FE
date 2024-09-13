@@ -3,14 +3,11 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:golbang/pages/event/event_result.dart';
 import '../../models/event.dart';
 import '../../models/participant.dart';
-<<<<<<< HEAD
 import '../game/score_card_page.dart';
-=======
 import '../../repoisitory/secure_storage.dart';
 import '../../services/event_service.dart';
 import 'event_create1.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
->>>>>>> 90a90bc (feat(event): 이벤트 수정, 삭제 버튼 클릭시 발생하는 이벤트 함수 구현)
 
 import 'event_update1.dart';
 
@@ -225,55 +222,8 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ScoreCardPage(event: widget.event),
-                    ),
-                  );
-                },
-                child: Text('게임 시작'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                  minimumSize: Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(width: 10),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EventResultPage(eventId: widget.event.eventId),
-                    ),
-                  );
-                },
-                child: Text('결과 조회'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                  minimumSize: Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+        // 여기에 `child: _buildBottomButtons(),` 부분이 있었습니다.
+        // child 매개변수를 삭제하고 `_buildBottomButtons()` 함수만 남깁니다.
         child: _buildBottomButtons(),
       ),
     );
@@ -290,7 +240,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => ScoreCardPage(),
+              builder: (context) => ScoreCardPage(event: widget.event),
             ),
           );
         },

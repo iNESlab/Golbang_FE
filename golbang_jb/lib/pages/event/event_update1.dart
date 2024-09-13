@@ -4,7 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../models/club.dart';
 import '../../models/enum/event.dart';
 import '../../models/event.dart';
-import '../../models/member_profile.dart';
+import '../../models/profile/member_profile.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/club_service.dart';
 import 'widgets/location_search_dialog.dart';
