@@ -9,7 +9,7 @@ class GroupCard extends StatelessWidget {
   GroupCard({
     required this.groupName,
     required this.members,
-    required this.onAddParticipant,
+    required this.onAddParticipant, required TextStyle buttonTextStyle,
   });
 
   @override

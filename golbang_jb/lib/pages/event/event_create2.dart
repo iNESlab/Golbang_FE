@@ -331,7 +331,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                             members: members,
                             onAddParticipant: () {
                               _showParticipantSelectionDialog(groupName);
-                            },
+                            }, buttonTextStyle: TextStyle(color: Colors.white),
                           );
                         }).toList(),
                       ),
