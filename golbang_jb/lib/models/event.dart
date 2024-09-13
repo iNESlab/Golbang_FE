@@ -1,6 +1,7 @@
 // event.dart
 
 import 'package:golbang/models/participant.dart';
+import 'package:golbang/models/update_event_participant.dart';
 
 class Event {
   final int eventId;
@@ -81,5 +82,25 @@ class Event {
     };
   }
 
+  // UpdateEventParticipant로 변환하는 코드
+  List<UpdateEventParticipant> toUpdateEventParticipantList() {
+    return participants.map((participant) {
+      return UpdateEventParticipant(
+        memberId: participant.member?.memberId ?? 0,
+        name: participant.member?.name ?? 'Unknown',
+        profileImage: participant.member?.profileImage ?? 'assets/images/user_default.png',
+        role: participant.member?.role ?? 'member',
+        participantId: participant.participantId,
+        statusType: participant.statusType,
+        teamType: participant.teamType,
+        holeNumber: participant.holeNumber,
+        groupType: participant.groupType,
+        sumScore: participant.sumScore,
+        rank: participant.rank,
+        handicapRank: participant.handicapRank,
+        handicapScore: participant.handicapScore,
+      );
+    }).toList();
+  }
 
 }

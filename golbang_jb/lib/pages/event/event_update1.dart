@@ -4,7 +4,10 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../models/club.dart';
 import '../../models/enum/event.dart';
 import '../../models/event.dart';
+import '../../models/member.dart';
 import '../../models/member_profile.dart';
+import '../../models/participant.dart';
+import '../../models/update_event_participant.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/club_service.dart';
 import 'widgets/location_search_dialog.dart';
@@ -29,7 +32,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
   List<Club> _clubs = [];
   Club? _selectedClub;
   GameMode? _selectedGameMode;
-  List<ClubMemberProfile> _selectedParticipants = [];
+  List<UpdateEventParticipant> _selectedParticipants = [];
   late ClubService _clubService;
   bool _isButtonEnabled = false;
   final Map<String, LatLng> _locationCoordinates = {
@@ -59,17 +62,33 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
     _startTimeController.text = widget.event.startDateTime.toLocal().toIso8601String().split('T').last;
     _endDateController.text = widget.event.endDateTime.toLocal().toIso8601String().split('T').first;
     _selectedLocation = _parseLocation(widget.event.location);
-    _selectedGameMode = GameMode.values.firstWhere((mode) => mode.value == widget.event.gameMode);
-    _selectedParticipants = widget.event.participants.map((participant) {
-      final member = participant.member;
-      return ClubMemberProfile(
-        memberId: member?.id ?? 0,
-        name: member?.name ?? 'Unknown',
-        profileImage: member?.profileImage ?? 'assets/images/user_default.png',
-        role: member?.role ?? 'member',
+    // Participant 리스트를 EventParticipant 리스트로 변환
+    // UpdateEventParticipant 리스트를 Participant 리스트로 변환
+    _selectedParticipants = widget.event.toUpdateEventParticipantList();
+  }
+
+  List<Participant> convertToParticipantList(List<UpdateEventParticipant> updateParticipants) {
+    return updateParticipants.map((updateParticipant) {
+      return Participant(
+        participantId: updateParticipant.participantId,
+        statusType: updateParticipant.statusType,
+        teamType: updateParticipant.teamType,
+        holeNumber: updateParticipant.holeNumber,
+        groupType: updateParticipant.groupType,
+        sumScore: updateParticipant.sumScore,
+        rank: updateParticipant.rank,
+        handicapRank: updateParticipant.handicapRank,
+        handicapScore: updateParticipant.handicapScore,
+        member: Member(
+          memberId: updateParticipant.memberId,
+          name: updateParticipant.name,
+          role: updateParticipant.role,
+          profileImage: updateParticipant.profileImage,
+        ),
       );
     }).toList();
   }
+
 
   LatLng? _parseLocation(String? location) {
     if (location == null) {
@@ -215,18 +234,26 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
     showDialog(
       context: context,
       builder: (context) => ParticipantDialog(
-        selectedParticipants: _selectedParticipants,
+        selectedParticipants: _selectedParticipants.map((p) => ClubMemberProfile(
+          memberId: p.memberId,
+          name: p.name,
+          profileImage: p.profileImage,
+          role: p.role,
+        )).toList(),
         clubId: _selectedClub?.id ?? 0,
       ),
     ).then((result) {
       if (result != null) {
         setState(() {
-          _selectedParticipants = List<ClubMemberProfile>.from(result);
+          _selectedParticipants = result.map<UpdateEventParticipant>((profile) {
+            return UpdateEventParticipant.fromClubMemberProfile(profile);
+          }).toList();
         });
         _validateForm();
       }
     });
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -443,11 +470,15 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                     final DateTime startDateTime = _combineDateAndTime(startDate, startTime);
                     final DateTime endDateTime = _combineDateAndTime(DateTime.parse(_endDateController.text), TimeOfDay(hour: 23, minute: 59));
 
+                    // UpdateEventParticipant 리스트를 Participant 리스트로 변환
+                    // List<Participant> participants = _selectedParticipants.map((p) => p.toParticipant()).toList();
+
                     // 업데이트할 이벤트 데이터를 EventsUpdate2로 전달
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => EventsUpdate2(
+                          eventId: widget.event.eventId,
                           title: _titleController.text,
                           selectedClub: _selectedClub!,
                           selectedLocation: _selectedLocation!,
