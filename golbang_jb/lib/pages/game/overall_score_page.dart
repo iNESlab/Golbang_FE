@@ -164,27 +164,27 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
                 ),
                 SizedBox(width: 8),
                 Column(
-                  children: [
-                    Text('${_formattedDate(widget.event.startDateTime)}', style: TextStyle(color: Colors.white, fontSize: 14)),
-                    SizedBox(height: 8),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
+                    children: [
+                      Text('${_formattedDate(widget.event.startDateTime)}', style: TextStyle(color: Colors.white, fontSize: 14)),
+                      SizedBox(height: 8),
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                        ),
+                        child: Text('스코어카드 가기', style: TextStyle(color: Colors.grey, fontSize: 16)),
                       ),
-                      child: Text('스코어카드 가기', style: TextStyle(color: Colors.grey, fontSize: 16)),
-                    ),
-                  ]
+                    ]
                 ),
                 SizedBox(width: 8),
                 //Column(
                 //  children: [
-                    _buildRankIndicator('My Rank', _getPlayerRank(), Colors.red),
-                    SizedBox(width: 8),
-                    _buildHandicapToggle(),
-               //  ],
+                _buildRankIndicator('My Rank', _getPlayerRank(), Colors.red),
+                SizedBox(width: 8),
+                _buildHandicapToggle(),
+                //  ],
                 //)
               ],
             ),

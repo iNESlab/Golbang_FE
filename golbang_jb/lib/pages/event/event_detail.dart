@@ -3,10 +3,9 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:golbang/pages/event/event_result.dart';
 import '../../models/event.dart';
 import '../../models/participant.dart';
-import '../game/score_card_page.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/event_service.dart';
-import 'event_create1.dart';
+import '../game/score_card_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'event_update1.dart';
@@ -23,11 +22,14 @@ class EventDetailPage extends ConsumerStatefulWidget {
 class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   List<bool> _isExpandedList = [false, false, false, false];
   LatLng? _selectedLocation;
+  String? myGroupType;
 
   @override
   void initState() {
     super.initState();
     _selectedLocation = _parseLocation(widget.event.location);
+    myGroupType = widget.event.memberGroup; // initState에서 초기화
+
   }
 
   LatLng? _parseLocation(String? location) {
@@ -222,8 +224,6 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
-        // 여기에 `child: _buildBottomButtons(),` 부분이 있었습니다.
-        // child 매개변수를 삭제하고 `_buildBottomButtons()` 함수만 남깁니다.
         child: _buildBottomButtons(),
       ),
     );
