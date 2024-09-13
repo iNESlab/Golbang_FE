@@ -12,7 +12,7 @@ import 'event_create1.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 >>>>>>> 90a90bc (feat(event): 이벤트 수정, 삭제 버튼 클릭시 발생하는 이벤트 함수 구현)
 
-import 'event_update.dart';
+import 'event_update1.dart';
 
 class EventDetailPage extends ConsumerStatefulWidget {
   final Event event;
@@ -399,7 +399,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EventEditPage(event: widget.event), // 이벤트 데이터 자체를 전달
+        builder: (context) => EventsUpdate1(event: widget.event), // 이벤트 데이터 자체를 전달
       ),
     ).then((updatedEvent) {
       if (updatedEvent != null) {
