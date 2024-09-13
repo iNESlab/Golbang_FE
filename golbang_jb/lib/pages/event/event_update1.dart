@@ -26,13 +26,21 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
   final TextEditingController _startDateController = TextEditingController();
   final TextEditingController _startTimeController = TextEditingController();
   final TextEditingController _endDateController = TextEditingController();
-  LatLng? _selectedLocation;
   List<Club> _clubs = [];
   Club? _selectedClub;
   GameMode? _selectedGameMode;
   List<ClubMemberProfile> _selectedParticipants = [];
   late ClubService _clubService;
   bool _isButtonEnabled = false;
+  final Map<String, LatLng> _locationCoordinates = {
+    "Jeju Nine Bridges": LatLng(33.431441, 126.875828),
+    "Seoul Tower": LatLng(37.5511694, 126.9882266),
+    "Busan Haeundae Beach": LatLng(35.158697, 129.160384),
+    "Incheon Airport": LatLng(37.4602, 126.4407),
+  };
+
+  LatLng? _selectedLocation;
+  String? _selectedLocationName;  // 선택된 장소의 이름을 저장하는 변수
 
   @override
   void initState() {
@@ -125,21 +133,21 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
       context: context,
       builder: (context) => LocationSearchDialog(
         locationController: _locationController,
-        locationCoordinates: {
-          "Jeju Nine Bridges": LatLng(33.431441, 126.875828),
-          "Seoul Tower": LatLng(37.5511694, 126.9882266),
-          "Busan Haeundae Beach": LatLng(35.158697, 129.160384),
-          "Incheon Airport": LatLng(37.4602, 126.4407),
-        },
+        locationCoordinates: _locationCoordinates,
         onLocationSelected: (LatLng location) {
           setState(() {
             _selectedLocation = location;
+            _selectedLocationName = _locationCoordinates.entries
+                .firstWhere((entry) => entry.value == location)
+                .key;
+            _locationController.text = _selectedLocationName ?? '';
             _validateForm();
           });
         },
       ),
     );
   }
+
 
   Future<void> _selectDate(BuildContext context, bool isStartDate) async {
     final DateTime? pickedDate = await showDatePicker(
