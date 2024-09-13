@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
-import '../models/user_profile.dart';
+import '../models/profile/user_profile.dart';
 import '../repoisitory/secure_storage.dart';
 
 class UserService {

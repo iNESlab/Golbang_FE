@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../models/member_profile.dart';
+import '../../../models/profile/member_profile.dart';
 import '../../../repoisitory/secure_storage.dart';
 import '../../../services/club_member_service.dart';
 

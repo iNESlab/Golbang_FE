@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:golbang/global_config.dart';
 
-import '../../models/user_profile.dart';
+import '../../models/profile/user_profile.dart';
 
 class MemberInvite extends StatelessWidget {
   final List<UserProfile> selectedMembers;

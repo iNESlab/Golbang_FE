@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:golbang/pages/game/score_card_page.dart';
 import 'package:golbang/pages/event/event_result.dart';
 import '../../models/event.dart';
 import '../../models/participant.dart';
+import '../game/score_card_page.dart';
 
 class EventDetailPage extends StatefulWidget {
   final Event event;
@@ -47,9 +47,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final myGroupType = widget.event.participants
-        .firstWhere((p) => p.participantId == widget.event.myParticipantId)
-        .groupType;
+    final myGroupType = widget.event.memberGroup;
 
     // 더미 데이터
     final courseName = "더미 코스 이름";
@@ -226,7 +224,7 @@ class _EventDetailPageState extends State<EventDetailPage> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ScoreCardPage(),
+                      builder: (context) => ScoreCardPage(event: widget.event),
                     ),
                   );
                 },

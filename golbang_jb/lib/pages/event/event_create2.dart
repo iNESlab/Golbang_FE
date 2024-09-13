@@ -9,7 +9,7 @@ import '../../models/club.dart';
 import '../../models/create_event.dart';
 import '../../models/create_participant.dart';
 import '../../models/enum/event.dart';
-import '../../models/member_profile.dart';
+import '../../models/profile/member_profile.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/event_service.dart';
 

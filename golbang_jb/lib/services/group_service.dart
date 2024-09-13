@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:golbang/models/user_profile.dart';
+import 'package:golbang/models/profile/user_profile.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart'; // basename을 사용하기 위해 필요
 import '../repoisitory/secure_storage.dart';
