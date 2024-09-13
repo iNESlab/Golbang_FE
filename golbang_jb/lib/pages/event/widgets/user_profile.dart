@@ -3,6 +3,7 @@
 **/
 import 'package:flutter/material.dart';
 import '../../../models/profile/user_profile.dart';
+import '../../../models/profile/user_profile.dart';
 
 class UserProfileWidget extends StatelessWidget {
   final UserProfile userProfile;

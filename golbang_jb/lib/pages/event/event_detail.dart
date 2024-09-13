@@ -241,6 +241,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
             context,
             MaterialPageRoute(
               builder: (context) => ScoreCardPage(event: widget.event),
+
             ),
           );
         },
@@ -389,6 +390,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
       );
     }
   }
+
 
   void _deleteEvent() async {
     // ref.watch를 이용하여 storage 인스턴스를 얻고 이를 EventService에 전달

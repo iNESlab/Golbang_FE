@@ -9,6 +9,7 @@ import 'package:golbang/pages/event/widgets/ranking_list.dart';
 
 import '../../models/participant.dart';
 import '../../models/profile/user_profile.dart';
+import '../../models/profile/user_profile.dart';
 import '../../repoisitory/secure_storage.dart';
 
 class EventResultPage extends ConsumerStatefulWidget {
