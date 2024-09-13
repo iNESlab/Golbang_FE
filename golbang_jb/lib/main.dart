@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         useMaterial3: true,
       ),
-      // home : ScoreCardPage(),
+
       home: const HiScreen(),
 
       routes: {
