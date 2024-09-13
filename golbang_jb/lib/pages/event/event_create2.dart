@@ -270,7 +270,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                         numberOfGroups = newValue!;
                       });
                     },
-                    items: ['8개', '7개', '6개', '5개', '4개'].map((number) {
+                    items: ['8개', '7개', '6개', '5개', '4개', '3개', '2개', '1개'].map((number) {
                       return DropdownMenuItem<String>(
                         value: number,
                         child: Text(number),
