@@ -44,7 +44,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
     super.initState();
     this._myParticipantId = widget.event.myParticipantId;
     this._myGroupParticipants = widget.event.participants.where((p)=>
-        p.groupType==widget.event.memberGroup).toList();
+    p.groupType==widget.event.memberGroup).toList();
     this._clubProfile = widget.event.club!;
     _initTeamMembers();
     _initWebSocket();
@@ -219,9 +219,9 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
         ),
         actions: [
           IconButton(
-              icon: Icon(Icons.refresh),
-              color: Colors.white,
-              onPressed: _handleRefresh,
+            icon: Icon(Icons.refresh),
+            color: Colors.white,
+            onPressed: _handleRefresh,
           )
         ],
       ),

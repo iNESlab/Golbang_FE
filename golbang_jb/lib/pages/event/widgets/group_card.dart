@@ -9,7 +9,7 @@ class GroupCard extends StatelessWidget {
   GroupCard({
     required this.groupName,
     required this.members,
-    required this.onAddParticipant,
+    required this.onAddParticipant, required TextStyle buttonTextStyle,
   });
 
   @override
@@ -36,6 +36,7 @@ class GroupCard extends StatelessWidget {
             icon: Icon(Icons.add),
             label: Text('추가'),
             style: ElevatedButton.styleFrom(
+              iconColor: Colors.white,
               backgroundColor: Colors.teal,
               minimumSize: Size(100, 40),
             ),

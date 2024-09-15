@@ -4,16 +4,16 @@ import 'package:golbang/pages/event/widgets/group_card.dart';
 import 'package:golbang/pages/event/widgets/no_api_participant_dialog.dart';
 import 'package:golbang/pages/event/widgets/toggle_bottons.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-
 import '../../models/club.dart';
-import '../../models/create_event.dart';
 import '../../models/create_participant.dart';
 import '../../models/enum/event.dart';
+import '../../models/profile/member_profile.dart';
 import '../../models/profile/member_profile.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/event_service.dart';
 
-class EventsCreate2 extends ConsumerStatefulWidget {
+class EventsUpdate2 extends ConsumerStatefulWidget {
+  final int eventId;
   final String title;
   final Club? selectedClub;
   final LatLng? selectedLocation;
@@ -22,7 +22,8 @@ class EventsCreate2 extends ConsumerStatefulWidget {
   final List<ClubMemberProfile> selectedParticipants;
   final GameMode selectedGameMode;
 
-  EventsCreate2({
+  EventsUpdate2({
+    required this.eventId,
     required this.title,
     required this.selectedClub,
     required this.selectedLocation,
@@ -33,10 +34,10 @@ class EventsCreate2 extends ConsumerStatefulWidget {
   });
 
   @override
-  _EventsCreate2State createState() => _EventsCreate2State();
+  _EventsUpdate2State createState() => _EventsUpdate2State();
 }
 
-class _EventsCreate2State extends ConsumerState<EventsCreate2> {
+class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
   GameMode gameMode = GameMode.STROKE;
   TeamConfig teamConfig = TeamConfig.NONE;
   String groupSetting = '직접 설정';
@@ -56,9 +57,11 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
     super.initState();
     _eventService = EventService(ref.read(secureStorageProvider));
     _initializeParticipants();
+    gameMode = widget.selectedGameMode; // 기존에 설정된 게임 모드 초기화
   }
 
   void _initializeParticipants() {
+    // 기존 참가자 정보를 CreateParticipant로 변환하여 초기화
     _selectedParticipants = widget.selectedParticipants.map((participant) {
       return CreateParticipant(
         memberId: participant.memberId,
@@ -141,33 +144,27 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
   }
 
   Future<void> _onCompletePressed() async {
-    // 이벤트 데이터 생성
-    final event = CreateEvent(
-      eventId: 0, // 이벤트 ID는 새로 생성 시 0 또는 null로 설정
-      eventTitle: widget.title,
-      location: widget.selectedLocation?.toString() ?? "Unknown Location",
-      startDateTime: widget.startDate,
-      endDateTime: widget.endDate,
-      repeatType: "NONE",
-      gameMode: gameMode.value,
-      alertDateTime: "", //TODO: 임시 조치
-    );
+    final eventData = {
+      "event_title": widget.title,
+      "location": widget.selectedLocation?.toString() ?? "Unknown Location",
+      "start_date_time": widget.startDate.toIso8601String(),
+      "end_date_time": widget.endDate.toIso8601String(),
+      "game_mode": widget.selectedGameMode.value,
+      "participants": _selectedParticipants.map((p) => p.toJson()).toList(),
+    };
 
-    // API 호출
-    bool success = await _eventService.postEvent(
-        clubId: widget.selectedClub!.id,
-        event: event,
-        participants: _selectedParticipants);
+    bool success = await _eventService.updateEvent(widget.eventId, eventData);
 
-    // 결과에 따라 처리
     if (success) {
-      Navigator.of(context).pop(); // 성공 시 페이지 닫기
-      Navigator.of(context).pop(); // 성공 시 페이지 닫기
-      // Navigator.popUntil(context, ModalRoute.withName('/eventMain'));
-    } else {
-      // 실패 시 기본 에러 메시지 표시
+      Navigator.of(context).pop(true);
+      Navigator.of(context).pop(true);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('이벤트 생성에 실패했습니다. 나중에 다시 시도해주세요.')),
+
+        SnackBar(content: Text('이벤트가 성공적으로 수정되었습니다.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('이벤트 수정에 실패했습니다.')),
       );
     }
   }
@@ -182,7 +179,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
             Navigator.of(context).pop();
           },
         ),
-        title: Text('이벤트 생성'),
+        title: Text('이벤트 수정'),
         actions: [
           TextButton(
             onPressed: (hasDuplicateParticipants || !allParticipantsAssigned)
@@ -213,7 +210,12 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                 border: OutlineInputBorder(),
               ),
               value: gameMode,
-              onChanged: null,
+              onChanged: (newValue) {
+                setState(() {
+                  gameMode = newValue!;
+                  _validateForm();
+                });
+              },
               items: GameMode.values.map((mode) {
                 return DropdownMenuItem<GameMode>(
                   value: mode,

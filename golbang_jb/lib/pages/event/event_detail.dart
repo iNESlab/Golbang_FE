@@ -3,9 +3,14 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:golbang/pages/event/event_result.dart';
 import '../../models/event.dart';
 import '../../models/participant.dart';
+import '../../repoisitory/secure_storage.dart';
+import '../../services/event_service.dart';
 import '../game/score_card_page.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class EventDetailPage extends StatefulWidget {
+import 'event_update1.dart';
+
+class EventDetailPage extends ConsumerStatefulWidget {
   final Event event;
 
   EventDetailPage({required this.event});
@@ -14,14 +19,17 @@ class EventDetailPage extends StatefulWidget {
   _EventDetailPageState createState() => _EventDetailPageState();
 }
 
-class _EventDetailPageState extends State<EventDetailPage> {
+class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   List<bool> _isExpandedList = [false, false, false, false];
   LatLng? _selectedLocation;
+  String? myGroupType;
 
   @override
   void initState() {
     super.initState();
     _selectedLocation = _parseLocation(widget.event.location);
+    myGroupType = widget.event.memberGroup; // initState에서 초기화
+
   }
 
   LatLng? _parseLocation(String? location) {
@@ -216,57 +224,61 @@ class _EventDetailPageState extends State<EventDetailPage> {
       ),
       bottomNavigationBar: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Row(
-          children: [
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ScoreCardPage(event: widget.event),
-                    ),
-                  );
-                },
-                child: Text('게임 시작'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                  minimumSize: Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                ),
-              ),
-            ),
-            SizedBox(width: 10),
-            Expanded(
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EventResultPage(eventId: widget.event.eventId),
-                    ),
-                  );
-                },
-                child: Text('결과 조회'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                  minimumSize: Size(double.infinity, 50),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
+        child: _buildBottomButtons(),
       ),
     );
+  }
+
+  Widget _buildBottomButtons() {
+    final DateTime currentDate = DateTime.now();
+    final DateTime eventDate = widget.event.endDateTime;
+
+    if (currentDate.isBefore(eventDate)) {
+      // 현재 날짜가 이벤트 날짜보다 이전인 경우 "게임 시작" 버튼만 표시
+      return ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ScoreCardPage(event: widget.event),
+
+            ),
+          );
+        },
+        child: Text('게임 시작'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.green,
+          foregroundColor: Colors.white,
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          minimumSize: Size(double.infinity, 50),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+        ),
+      );
+    } else {
+      // 현재 날짜가 이벤트 날짜보다 이후인 경우 "결과 조회" 버튼만 표시
+      return ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EventResultPage(eventId: widget.event.eventId),
+            ),
+          );
+        },
+        child: Text('결과 조회'),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          minimumSize: Size(double.infinity, 50),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+        ),
+      );
+    }
   }
 
   ExpansionPanel _buildParticipantPanel(String title, List<Participant> participants, String statusType, Color backgroundColor, int index) {
@@ -335,10 +347,71 @@ class _EventDetailPageState extends State<EventDetailPage> {
   }
 
   void _editEvent() {
-    print('수정 버튼이 눌렸습니다.');
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EventsUpdate1(event: widget.event), // 이벤트 데이터 자체를 전달
+      ),
+    ).then((updatedEvent) {
+      if (updatedEvent != null) {
+        // 수정된 이벤트 데이터를 받아서 API 호출
+        _updateEvent(updatedEvent);
+      }
+    });
   }
 
-  void _deleteEvent() {
-    print('삭제 버튼이 눌렸습니다.');
+  void _updateEvent(Event updatedEvent) async {
+    // ref.watch를 이용하여 storage 인스턴스를 얻고 이를 EventService에 전달
+    final storage = ref.watch(secureStorageProvider);
+    final eventService = EventService(storage);
+
+    final eventData = {
+      "event_title": updatedEvent.eventTitle,
+      "location": updatedEvent.location,
+      "start_date_time": updatedEvent.startDateTime.toIso8601String(),
+      "end_date_time": updatedEvent.endDateTime.toIso8601String(),
+      "game_mode": updatedEvent.gameMode.toString(),
+      // 필요한 다른 필드들 추가
+    };
+
+    final success = await eventService.updateEvent(widget.event.eventId, eventData);
+
+    if (success) {
+      // 성공 알림 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('성공적으로 수정되었습니다')),
+      );
+      // 이벤트 상세 페이지로 돌아오기
+      Navigator.of(context).pop(); // 생성 페이지에서 상세 페이지로 돌아오기
+    } else {
+      // 실패 알림 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('이벤트 수정에 실패했습니다.')),
+      );
+    }
+  }
+
+
+  void _deleteEvent() async {
+    // ref.watch를 이용하여 storage 인스턴스를 얻고 이를 EventService에 전달
+    final storage = ref.watch(secureStorageProvider);
+    final eventService = EventService(storage);
+
+    final success = await eventService.deleteEvent(widget.event.eventId);
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('성공적으로 삭제되었습니다')),
+      );
+      Navigator.of(context).pop(); // 삭제 후 페이지를 나가기
+    } else if(success == 403) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('관리자가 아닙니다. 관리자만 삭제할 수 있습니다.')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('이벤트 삭제에 실패했습니다.')),
+      );
+    }
   }
 }
