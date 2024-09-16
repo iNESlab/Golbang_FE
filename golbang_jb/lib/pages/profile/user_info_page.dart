@@ -1,20 +1,30 @@
-import 'dart:io'; // 추가
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
-import '../../models/user_account.dart'; // models/user_account.dart에서 UserAccount 클래스를 가져옵니다.
+import '../../models/user_account.dart';
+import '../../services/user_service.dart';
+import '../../services/user_service_provider.dart';
 
-class UserInfoPage extends StatefulWidget {
-  final UserAccount userAccount;
+class UserInfoPage extends ConsumerStatefulWidget {
+  final UserAccount initialUserAccount;
 
-  UserInfoPage({required this.userAccount});
+  UserInfoPage({required this.initialUserAccount});
 
   @override
   _UserInfoPageState createState() => _UserInfoPageState();
 }
 
-class _UserInfoPageState extends State<UserInfoPage> {
+class _UserInfoPageState extends ConsumerState<UserInfoPage> {
   final ImagePicker _picker = ImagePicker();
   XFile? _imageFile;
+  late UserAccount _userAccount; // 상태로 관리하는 UserAccount
+
+  @override
+  void initState() {
+    super.initState();
+    _userAccount = widget.initialUserAccount; // 초기 상태 설정
+  }
 
   Future<void> _pickImage() async {
     final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -22,6 +32,32 @@ class _UserInfoPageState extends State<UserInfoPage> {
       setState(() {
         _imageFile = pickedFile;
       });
+    }
+  }
+
+  Future<void> _updateUserInfo({String? field, String? value}) async {
+    try {
+      final userService = ref.watch(userServiceProvider);
+      UserAccount updatedUser = await userService.updateUserInfo(
+        userId: _userAccount.userId,
+        name: field == '이름' ? value : _userAccount.name,
+        email: field == '이메일' ? value : _userAccount.email,
+        phoneNumber: field == '연락처' ? value : _userAccount.phoneNumber,
+        handicap: field == '핸디캡' ? int.tryParse(value ?? _userAccount.handicap.toString()) : _userAccount.handicap,
+        address: field == '집 주소' ? value : _userAccount.address,
+        dateOfBirth: field == '생일' ? value : _userAccount.dateOfBirth?.toString(),
+        studentId: field == '학번' ? value : _userAccount.studentId,
+        profileImage: _imageFile != null ? File(_imageFile!.path) : null,
+      );
+
+      setState(() {
+        _userAccount = updatedUser; // 업데이트된 UserAccount를 상태로 설정
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$field 업데이트 완료')));
+    } catch (e) {
+      print('Failed to update $field: $e');
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$field 업데이트 실패')));
     }
   }
 
@@ -33,7 +69,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
         actions: [
           TextButton(
             onPressed: () {
-              // 확인 버튼을 눌렀을 때의 동작
+              if (_imageFile != null) {
+                _updateUserInfo(field: '프로필 이미지');
+              }
             },
             child: const Text(
               '확인',
@@ -47,16 +85,16 @@ class _UserInfoPageState extends State<UserInfoPage> {
           const SizedBox(height: 10),
           Center(
             child: GestureDetector(
-              onTap: _pickImage, // 프로필 이미지를 클릭하면 이미지 선택창이 열림
+              onTap: _pickImage,
               child: CircleAvatar(
                 radius: 50,
                 backgroundColor: Colors.transparent,
                 backgroundImage: _imageFile != null
                     ? FileImage(File(_imageFile!.path))
-                    : (widget.userAccount.profileImage != null
-                    ? NetworkImage(widget.userAccount.profileImage!) as ImageProvider
+                    : (_userAccount.profileImage != null
+                    ? NetworkImage(_userAccount.profileImage!) as ImageProvider
                     : AssetImage('assets/default_profile.png')),
-                child: _imageFile == null && widget.userAccount.profileImage == null
+                child: _imageFile == null && _userAccount.profileImage == null
                     ? Icon(Icons.person, size: 50, color: Colors.white)
                     : null,
               ),
@@ -65,7 +103,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
           const SizedBox(height: 5),
           Center(
             child: TextButton(
-              onPressed: _pickImage, // "프로필 이미지 변경" 텍스트를 누르면 이미지 선택창이 열림
+              onPressed: _pickImage,
               child: const Text(
                 '프로필 이미지 변경',
                 style: TextStyle(color: Colors.blue),
@@ -73,68 +111,19 @@ class _UserInfoPageState extends State<UserInfoPage> {
             ),
           ),
           const SizedBox(height: 10),
-          ListTile(
-            title: const Text('아이디'),
-            subtitle: Text(widget.userAccount.userId),
-          ),
-          ListTile(
-            title: const Text('이름'),
-            subtitle: Text(widget.userAccount.name),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              _showEditDialog(context, '이름', widget.userAccount.name);
-            },
-          ),
-          ListTile(
-            title: const Text('이메일'),
-            subtitle: Text(widget.userAccount.email),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              _showEditDialog(context, '이메일', widget.userAccount.email);
-            },
-          ),
-          ListTile(
-            title: const Text('연락처'),
-            subtitle: Text(widget.userAccount.phoneNumber),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              _showEditDialog(context, '연락처', widget.userAccount.phoneNumber);
-            },
-          ),
-          ListTile(
-            title: const Text('핸디캡'),
-            subtitle: Text(widget.userAccount.handicap.toString()),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              _showEditDialog(context, '핸디캡', widget.userAccount.handicap.toString());
-            },
-          ),
-          ListTile(
-            title: const Text('집 주소'),
-            subtitle: Text(widget.userAccount.address),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              _showEditDialog(context, '집 주소', widget.userAccount.address);
-            },
-          ),
-          ListTile(
-            title: const Text('생일'),
-            subtitle: Text(widget.userAccount.dateOfBirth != null
-                ? '${widget.userAccount.dateOfBirth!.year}년 ${widget.userAccount.dateOfBirth!.month}월 ${widget.userAccount.dateOfBirth!.day}일'
-                : '입력되지 않음'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              _showDatePicker(context, '생일', widget.userAccount.dateOfBirth);
-            },
-          ),
-          ListTile(
-            title: const Text('학번'),
-            subtitle: Text(widget.userAccount.studentId ?? '입력되지 않음'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              _showEditDialog(context, '학번', widget.userAccount.studentId ?? '');
-            },
-          ),
+          _buildEditableListTile('아이디', _userAccount.userId, false),
+          _buildEditableListTile('이름', _userAccount.name, true),
+          _buildEditableListTile('이메일', _userAccount.email, true),
+          _buildEditableListTile('연락처', _userAccount.phoneNumber, true),
+          _buildEditableListTile('핸디캡', _userAccount.handicap.toString(), true),
+          _buildEditableListTile('집 주소', _userAccount.address, true),
+          _buildEditableListTile(
+              '생일',
+              _userAccount.dateOfBirth != null
+                  ? '${_userAccount.dateOfBirth!.year}년 ${_userAccount.dateOfBirth!.month}월 ${_userAccount.dateOfBirth!.day}일'
+                  : '입력되지 않음',
+              true),
+          _buildEditableListTile('학번', _userAccount.studentId ?? '입력되지 않음', true),
           const Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
@@ -144,18 +133,35 @@ class _UserInfoPageState extends State<UserInfoPage> {
           ),
         ],
       ),
-      // bottomNavigationBar 설정 삭제
+    );
+  }
+
+  Widget _buildEditableListTile(String title, String value, bool editable) {
+    return ListTile(
+      title: Text(title),
+      subtitle: Text(value),
+      trailing: editable ? Icon(Icons.chevron_right) : null,
+      onTap: editable
+          ? () {
+        if (title == '생일') {
+          _showDatePicker(context, title, _userAccount.dateOfBirth);
+        } else {
+          _showEditDialog(context, title, value);
+        }
+      }
+          : null,
     );
   }
 
   void _showEditDialog(BuildContext context, String field, String value) {
+    TextEditingController controller = TextEditingController(text: value);
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: Text('$field 수정'),
           content: TextField(
-            controller: TextEditingController(text: value),
+            controller: controller,
             decoration: InputDecoration(hintText: '새로운 $field 입력'),
           ),
           actions: [
@@ -167,7 +173,7 @@ class _UserInfoPageState extends State<UserInfoPage> {
             ),
             TextButton(
               onPressed: () {
-                // 새로운 값을 저장하는 로직
+                _updateUserInfo(field: field, value: controller.text);
                 Navigator.of(context).pop();
               },
               child: const Text('저장'),
@@ -186,8 +192,9 @@ class _UserInfoPageState extends State<UserInfoPage> {
       lastDate: DateTime.now(),
     ).then((pickedDate) {
       if (pickedDate != null) {
-        // 생일을 저장하는 로직 추가
-        print('Selected date: $pickedDate');
+        String formattedDate =
+            '${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}';
+        _updateUserInfo(field: field, value: formattedDate);
       }
     });
   }

@@ -90,7 +90,7 @@ class ProfileScreen extends ConsumerWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => UserInfoPage(userAccount: userAccount),
+                builder: (context) => UserInfoPage(initialUserAccount: userAccount),
               ),
             );
           }

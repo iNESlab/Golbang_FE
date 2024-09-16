@@ -117,6 +117,7 @@ class UserService {
   Future<UserAccount> updateUserInfo({
     required String userId,
     String? name,
+    String? email,
     String? phoneNumber,
     int? handicap,
     String? dateOfBirth,
@@ -141,14 +142,15 @@ class UserService {
       var request = http.MultipartRequest('PATCH', uri);
       request.headers.addAll(headers);
 
-      // JSON 필드 추가
+      // JSON 필드 추가 (변경된 값만 추가)
       Map<String, String> fields = {};
-      if (name != null) fields['name'] = name;
-      if (phoneNumber != null) fields['phone_number'] = phoneNumber;
+      if (name != null && name.isNotEmpty) fields['name'] = name;
+      if (email != null && email.isNotEmpty) fields['email'] = email;
+      if (phoneNumber != null && phoneNumber.isNotEmpty) fields['phone_number'] = phoneNumber;
       if (handicap != null) fields['handicap'] = handicap.toString();
-      if (dateOfBirth != null) fields['date_of_birth'] = dateOfBirth;
-      if (address != null) fields['address'] = address;
-      if (studentId != null) fields['student_id'] = studentId;
+      if (dateOfBirth != null && dateOfBirth.isNotEmpty) fields['date_of_birth'] = dateOfBirth;
+      if (address != null && address.isNotEmpty) fields['address'] = address;
+      if (studentId != null && studentId.isNotEmpty) fields['student_id'] = studentId;
 
       request.fields.addAll(fields);
 
@@ -172,6 +174,8 @@ class UserService {
         print("===============내정보 수정 성공===============json: ${jsonData}");
         return UserAccount.fromJson(jsonData);
       } else {
+        var responseData = await response.stream.bytesToString();
+        print('Failed to update user info: ${response.statusCode}, ${responseData}');
         throw Exception('Failed to update user info');
       }
     } catch (e) {
