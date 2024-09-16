@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
@@ -110,6 +111,72 @@ class UserService {
       print('Error decoding token: $e');
       // 예외를 다시 던져서 함수가 항상 반환값을 가지도록 함
       throw Exception('Error decoding token: $e');
+    }
+  }
+
+  Future<UserAccount> updateUserInfo({
+    required String userId,
+    String? name,
+    String? phoneNumber,
+    int? handicap,
+    String? dateOfBirth,
+    String? address,
+    String? studentId,
+    File? profileImage, // 이미지 파일
+  }) async {
+    try {
+      // 액세스 토큰 불러오기
+      final accessToken = await storage.readAccessToken();
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(accessToken);
+      String userId = decodedToken['user_id'].toString(); // payload에서 user_id 추출
+
+      var uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/users/info/$userId/");
+
+      // 요청 헤더 설정
+      Map<String, String> headers = {
+        "Authorization": "Bearer $accessToken"
+      };
+
+      // Multipart 요청을 위한 객체 생성
+      var request = http.MultipartRequest('PATCH', uri);
+      request.headers.addAll(headers);
+
+      // JSON 필드 추가
+      Map<String, String> fields = {};
+      if (name != null) fields['name'] = name;
+      if (phoneNumber != null) fields['phone_number'] = phoneNumber;
+      if (handicap != null) fields['handicap'] = handicap.toString();
+      if (dateOfBirth != null) fields['date_of_birth'] = dateOfBirth;
+      if (address != null) fields['address'] = address;
+      if (studentId != null) fields['student_id'] = studentId;
+
+      request.fields.addAll(fields);
+
+      // 프로필 이미지 파일 추가
+      if (profileImage != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'profile_image',
+            profileImage.path,
+          ),
+        );
+      }
+
+      // 요청 전송
+      var response = await request.send();
+
+      // 응답 처리
+      if (response.statusCode == 200) {
+        var responseData = await response.stream.bytesToString();
+        var jsonData = json.decode(responseData)['data'];
+        print("===============내정보 수정 성공===============json: ${jsonData}");
+        return UserAccount.fromJson(jsonData);
+      } else {
+        throw Exception('Failed to update user info');
+      }
+    } catch (e) {
+      print('Error updating user info: $e');
+      throw Exception('Error updating user info: $e');
     }
   }
 
