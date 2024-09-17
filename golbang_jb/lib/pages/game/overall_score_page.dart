@@ -57,7 +57,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
 
     // WebSocket 데이터 수신 처리
     _channel.stream.listen((data) {
-      print('WebSocket 데이터 수신: $data');
+      print('WebSocket 데이터 수신');
       _handleWebSocketData(data);
     }, onError: (error) {
       print('WebSocket 오류 발생: $error');
@@ -71,20 +71,37 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
     var parsedData = jsonDecode(data);
     List<dynamic> rankingsJson = parsedData['rankings'];
 
-    setState(() {
-      // 수신된 데이터를 Rank 객체로 변환하여 _players 리스트에 저장
-      _players = rankingsJson.map((json) => Rank.fromJson(json)).toList();
-    });
+    if (rankingsJson.isNotEmpty) {
+      setState(() {
+        // 수신된 데이터를 Rank 객체로 변환하여 _players 리스트에 저장
+        _players = rankingsJson.map((json) => Rank.fromJson(json)).toList();
+        for (var p in _players)
+          print('_players: $p');
+      });
+    }
   }
 
-  String _getPlayerRank() {
-    final player = _players.firstWhere(
-          (p) => p.participantId == _myParticipantId,
-    );
-    if (_handicapOn)
+  String _getMyRank() {
+    Rank? player;
+    try {
+      player = _players.firstWhere(
+            (p) => p.participantId == _myParticipantId,
+      );
+    } catch (e) {
+      player = null;  // 참가자가 없을 경우 null을 할당
+    }// _players가 비어있는 경우 null 반환
+
+    print('player: $player');
+
+    // 참가자가 없으면 '-' 반환
+    if (player == null)
+      return 'N/A';
+    // 핸디캡 여부에 따라 랭크 반환
+    else if (_handicapOn) {
       return player.handicapRank;
-    else
+    } else {
       return player.rank;
+    }
   }
 
   // 서버에 새로고침 요청을 보내는 함수
@@ -119,24 +136,34 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
         ),
       ),
       backgroundColor: Colors.black,
-      body: Column(
-        children: [
-          _buildHeader(),
-          Expanded(
-            child: ListView.builder(
-              itemCount: _players.length,
-              itemBuilder: (context, index) {
-                return _buildPlayerItem(_players[index]);
-              },
+      body: _players.isEmpty
+          ? Center(
+              child: Text(
+                  '스코어를 기록한 참가자가 없습니다.',
+                  style: TextStyle(color: Colors.white)
+              )
+            )
+          : Column(
+              children: [
+                _buildHeader(),
+                Expanded(
+                  child: ListView.builder(
+                    itemCount: _players.length,
+                    itemBuilder: (context, index) {
+                      return _buildPlayerItem(_players[index]);
+                    },
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 
   String _formattedDate(DateTime dateTime) {
-    return dateTime.toIso8601String().split('T').first; // T 문자로 나누고 첫 번째 부분만 가져옴
+    return dateTime
+        .toIso8601String()
+        .split('T')
+        .first; // T 문자로 나누고 첫 번째 부분만 가져옴
   }
 
   Widget _buildHeader() {
@@ -145,49 +172,59 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
       color: Colors.black,
       child: Row(
         children: [
-          SizedBox(width: 10),
+          // 왼쪽 Column
           Expanded(
-            child: Row(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    CircleAvatar(
-                      // backgroundImage: NetworkImage(),
-                      backgroundImage: _clubProfile.image.startsWith('http')
-                          ? NetworkImage(_clubProfile.image)
-                          : AssetImage(_clubProfile.image) as ImageProvider,
-                    ),
-                    SizedBox(width: 10),
-                    Text('${widget.event.club!.name}', style: TextStyle(color: Colors.white, fontSize: 16)),
-                  ],
+                CircleAvatar(
+                  backgroundImage: _clubProfile.image.startsWith('http')
+                      ? NetworkImage(_clubProfile.image)
+                      : AssetImage(_clubProfile.image) as ImageProvider,
                 ),
-                SizedBox(width: 8),
-                Column(
-                    children: [
-                      Text('${_formattedDate(widget.event.startDateTime)}', style: TextStyle(color: Colors.white, fontSize: 14)),
-                      SizedBox(height: 8),
-                      ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.white,
-                        ),
-                        child: Text('스코어카드 가기', style: TextStyle(color: Colors.grey, fontSize: 16)),
-                      ),
-                    ]
+                SizedBox(height: 8),
+                Text(
+                  '${widget.event.club!.name}',
+                  style: TextStyle(color: Colors.white, fontSize: 16),
                 ),
-                SizedBox(width: 8),
-                //Column(
-                //  children: [
-                _buildRankIndicator('My Rank', _getPlayerRank(), Colors.red),
-                SizedBox(width: 8),
-                _buildHandicapToggle(),
-                //  ],
-                //)
               ],
             ),
+          ),
+          // 중간 Column
+          Column(
+            children: [
+              Text(
+                '${_formattedDate(widget.event.startDateTime)}',
+                style: TextStyle(color: Colors.white, fontSize: 14),
+              ),
+              SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.white,
+                ),
+                child: Text(
+                  '스코어카드 가기',
+                  style: TextStyle(color: Colors.grey, fontSize: 14),
+                ),
+              ),
+            ],
+          ),
+          SizedBox(width: 16), // 간격 추가
+          // Rank Indicator
+          Column(
+            children: [
+              _buildRankIndicator('My Rank', _getMyRank(), Colors.red),
+            ],
+          ),
+          SizedBox(width: 16), // 간격 추가
+          // Handicap Toggle
+          Column(
+            children: [
+              _buildHandicapToggle(),
+            ],
           ),
         ],
       ),
@@ -241,6 +278,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
   }
 
   Widget _buildPlayerItem(Rank player) {
+    // TODO: 이벤트 게임 결과 UI 참고해서 최종 완성하기
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 12.0),
       child: Container(
@@ -252,7 +290,6 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
         child: Row(
           children: [
             CircleAvatar(
-              // backgroundImage: NetworkImage(),
               backgroundImage: player.profileImage.startsWith('http')
                   ? NetworkImage(player.profileImage)
                   : AssetImage(player.profileImage) as ImageProvider,
@@ -263,7 +300,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${player.rank ?? ''} ${player.userName}',
+                    '${_handicapOn ? player.handicapRank : player.rank} ${player.userName}',
                     style: TextStyle(color: Colors.white, fontSize: 16),
                   ),
                   Text(
@@ -287,7 +324,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
               ),
             Spacer(),
             Text(
-              '+${player.lastScore} (${player.sumScore})',
+              '+${player.lastScore} (${_handicapOn ? player.handicapScore : player.sumScore})',
               style: TextStyle(color: Colors.white, fontSize: 16),
             ),
           ],
