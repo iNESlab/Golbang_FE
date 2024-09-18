@@ -45,7 +45,8 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
         phoneNumber: field == '연락처' ? value : _userAccount.phoneNumber,
         handicap: field == '핸디캡' ? int.tryParse(value ?? _userAccount.handicap.toString()) : _userAccount.handicap,
         address: field == '집 주소' ? value : _userAccount.address,
-        dateOfBirth: field == '생일' ? value : _userAccount.dateOfBirth?.toString(),
+        // 생일은 DateTime 형식으로 변환 후 전달
+        dateOfBirth: field == '생일' ? DateTime.parse(value!) : _userAccount.dateOfBirth,
         studentId: field == '학번' ? value : _userAccount.studentId,
         profileImage: _imageFile != null ? File(_imageFile!.path) : null,
       );

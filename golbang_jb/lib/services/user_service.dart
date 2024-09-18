@@ -120,7 +120,7 @@ class UserService {
     String? email,
     String? phoneNumber,
     int? handicap,
-    String? dateOfBirth,
+    DateTime? dateOfBirth, // DateTime 형식
     String? address,
     String? studentId,
     File? profileImage, // 이미지 파일
@@ -129,13 +129,13 @@ class UserService {
       // 액세스 토큰 불러오기
       final accessToken = await storage.readAccessToken();
       Map<String, dynamic> decodedToken = JwtDecoder.decode(accessToken);
-      String userId = decodedToken['user_id'].toString(); // payload에서 user_id 추출
+      String userId = decodedToken['user_id'].toString();
 
       var uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/users/info/$userId/");
 
       // 요청 헤더 설정
       Map<String, String> headers = {
-        "Authorization": "Bearer $accessToken"
+        "Authorization": "Bearer $accessToken",
       };
 
       // Multipart 요청을 위한 객체 생성
@@ -148,7 +148,13 @@ class UserService {
       if (email != null && email.isNotEmpty) fields['email'] = email;
       if (phoneNumber != null && phoneNumber.isNotEmpty) fields['phone_number'] = phoneNumber;
       if (handicap != null) fields['handicap'] = handicap.toString();
-      if (dateOfBirth != null && dateOfBirth.isNotEmpty) fields['date_of_birth'] = dateOfBirth;
+
+      // 날짜 포맷팅 추가
+      if (dateOfBirth != null) {
+        String formattedDate = "${dateOfBirth.year.toString().padLeft(4, '0')}-${dateOfBirth.month.toString().padLeft(2, '0')}-${dateOfBirth.day.toString().padLeft(2, '0')}";
+        fields['date_of_birth'] = formattedDate;
+      }
+
       if (address != null && address.isNotEmpty) fields['address'] = address;
       if (studentId != null && studentId.isNotEmpty) fields['student_id'] = studentId;
 
