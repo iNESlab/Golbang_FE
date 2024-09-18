@@ -4,7 +4,7 @@ import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
-import '../models/profile/user_profile.dart';
+import '../models/profile/get_event_result_participants_ranks.dart';
 import '../models/user_account.dart';
 import '../repoisitory/secure_storage.dart';
 
@@ -13,7 +13,7 @@ class UserService {
 
   UserService(this.storage);
 
-  Future<List<UserProfile>> getUserProfileList() async {
+  Future<List<GetEventResultParticipantsRanks>> getUserProfileList() async {
     // 액세스 토큰 불러오기
     final accessToken = await storage.readAccessToken();
 
@@ -37,7 +37,7 @@ class UserService {
       print("json: ${jsonData['data']}");
 
       return (jsonData['data'] as List)
-          .map((json) => UserProfile.fromJson(json))
+          .map((json) => GetEventResultParticipantsRanks.fromJson(json))
           .toList();
 
     } else {
@@ -46,7 +46,7 @@ class UserService {
     }
   }
 
-  Future<UserProfile> getUserProfile() async {
+  Future<GetEventResultParticipantsRanks> getUserProfile() async {
     try {
       // 액세스 토큰 불러오기
       final accessToken = await storage.readAccessToken();
@@ -69,7 +69,7 @@ class UserService {
         var jsonData = json.decode(utf8.decode(response.bodyBytes))['data'];
         print("==============================json: ${jsonData}");
         // 이유는 모르나 code / message /data 형태로 반환이 안됨. data만 반환됨 => 해결완료
-        return UserProfile.fromJson(jsonData);
+        return GetEventResultParticipantsRanks.fromJson(jsonData);
       } else {
         throw Exception('Failed to load user profiles');
       }

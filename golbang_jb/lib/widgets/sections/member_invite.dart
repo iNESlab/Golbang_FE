@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../models/profile/user_profile.dart';
+import '../../models/profile/get_event_result_participants_ranks.dart';
 
 class MemberInvite extends StatelessWidget {
-  final List<UserProfile> selectedMembers;
+  final List<GetEventResultParticipantsRanks> selectedMembers;
 
   MemberInvite({required this.selectedMembers});
 

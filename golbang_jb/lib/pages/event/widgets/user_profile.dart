@@ -1,12 +1,12 @@
-/* pages/models/user_profile.dart
+/* pages/models/get_event_result_participants_ranks.dart
 * 이벤트 결과 조회 시 사용자 정보 (이름, 이미지, 스코어, 랭킹)
 **/
 import 'package:flutter/material.dart';
-import '../../../models/profile/user_profile.dart';
-import '../../../models/profile/user_profile.dart';
+import '../../../models/profile/get_event_result_participants_ranks.dart';
+import '../../../models/profile/get_event_result_participants_ranks.dart';
 
 class UserProfileWidget extends StatelessWidget {
-  final UserProfile userProfile;
+  final GetEventResultParticipantsRanks userProfile;
 
   const UserProfileWidget({Key? key, required this.userProfile}) : super(key: key);
 
