@@ -67,7 +67,7 @@ class ProfileScreen extends ConsumerWidget {
                 childAspectRatio: 1.8,
                 children: [
                   _buildActionButton('내 정보', Icons.person, context, userAccount),
-                  _buildActionButton('지난 기록', Icons.history, context, userAccount),
+                  //_buildActionButton('지난 기록', Icons.history, context, userAccount),
                   _buildActionButton('통계', Icons.bar_chart, context, userAccount),
                   _buildActionButton('소속된 그룹', Icons.group, context, userAccount),
                   _buildActionButton('관리 그룹', Icons.admin_panel_settings, context, userAccount),
