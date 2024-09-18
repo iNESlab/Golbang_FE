@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:golbang/pages/profile/statistics_page.dart';
+import 'statistics_page.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -30,10 +32,24 @@ class ProfileScreen extends StatelessWidget {
               crossAxisSpacing: 12,
               childAspectRatio: 1.8, // 조정된 비율
               children: [
-                _buildActionButton('지난 기록', Icons.history),
-                _buildActionButton('통계', Icons.bar_chart),
-                _buildActionButton('소속된 그룹', Icons.group),
-                _buildActionButton('관리 그룹', Icons.admin_panel_settings),
+                _buildActionButton(context, '지난 기록', Icons.history, () {
+                  // 지난 기록 버튼 클릭시 동작 추가
+                }),
+                _buildActionButton(context, '통계', Icons.bar_chart, () {
+                  // 통계 버튼 클릭 시 StatisticsPage로 이동
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => StatisticsPage(), // StatisticsPage로 수정
+                    ),
+                  );
+                }),
+                _buildActionButton(context, '소속된 그룹', Icons.group, () {
+                  // 소속된 그룹 버튼 클릭시 동작 추가
+                }),
+                _buildActionButton(context, '관리 그룹', Icons.admin_panel_settings, () {
+                  // 관리 그룹 버튼 클릭시 동작 추가
+                }),
               ],
             ),
           ),
@@ -42,12 +58,13 @@ class ProfileScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(String title, IconData icon) {
+  Widget _buildActionButton(
+      BuildContext context, String title, IconData icon, VoidCallback onTap) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       color: Colors.green,
       child: InkWell(
-        onTap: () {},
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Column(
