@@ -236,9 +236,6 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
     );
   }
 
-
-
-
   void _showEditDialog(BuildContext context, String field, String value) {
     TextEditingController controller = TextEditingController(text: value);
     showDialog(
@@ -248,23 +245,41 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
           title: Text('$field 수정'),
           content: TextField(
             controller: controller,
-            decoration: InputDecoration(hintText: '새로운 $field 입력'),
+            decoration: InputDecoration(
+              hintText: '새로운 $field 입력',
+              enabledBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Color(0xFF2DC653)), // 입력창 밑줄 색상 설정
+              ),
+              focusedBorder: UnderlineInputBorder(
+                borderSide: BorderSide(color: Color(0xFF2DC653)), // 포커스 시 밑줄 색상 설정
+              ),
+            ),
           ),
           actions: [
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('취소'),
+              child: const Text(
+                '취소',
+                style: TextStyle(color: Colors.black54), // 메인 컬러로 설정
+              ),
             ),
             TextButton(
               onPressed: () {
                 _updateUserInfo(field: field, value: controller.text);
                 Navigator.of(context).pop();
               },
-              child: const Text('저장'),
+              child: const Text(
+                '저장',
+                style: TextStyle(color: Color(0xFF2DC653)), // 메인 컬러로 설정
+              ),
             ),
           ],
+          backgroundColor: Color(0xFFF6F6F6), // 다이얼로그 배경색 설정
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20), // 모서리를 둥글게 설정
+          ),
         );
       },
     );
@@ -276,6 +291,17 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
       initialDate: initialDate ?? DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
+      builder: (BuildContext context, Widget? child) {
+        return Theme(
+          data: ThemeData.light().copyWith(
+            primaryColor: Color(0xFF2DC653), // 달력의 메인 컬러 설정
+            hintColor: Color(0xFF2DC653), // 선택된 날짜의 컬러 설정
+            colorScheme: ColorScheme.light(primary: Color(0xFF2DC653)),
+            buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
+          ),
+          child: child!,
+        );
+      },
     ).then((pickedDate) {
       if (pickedDate != null) {
         String formattedDate =
