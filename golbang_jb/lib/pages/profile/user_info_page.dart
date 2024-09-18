@@ -71,8 +71,20 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
         actions: [
           TextButton(
             onPressed: () {
+              // 프로필 이미지가 선택되었거나 기존 상태가 변경되었는지 확인
               if (_imageFile != null) {
-                _updateUserInfo(field: '프로필 이미지');
+                // 프로필 이미지가 변경된 경우 API 호출
+                _updateUserInfo(
+                  field: '프로필 이미지',
+                  value: _imageFile!.path,
+                );
+              } else {
+                // 기존 상태 변경 확인 후 API 호출
+                _updateUserInfo(
+                  field: '이름',
+                  value: _userAccount.name,
+                );
+                // 필요한 다른 필드들도 동일한 방식으로 API 호출 가능
               }
             },
             child: const Text(
