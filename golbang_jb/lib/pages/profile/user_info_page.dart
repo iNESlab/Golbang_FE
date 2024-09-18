@@ -37,6 +37,13 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
     }
   }
 
+  Future<void> _removeImage() async {
+    setState(() {
+      _imageFile = null; // 이미지 파일을 null로 설정하여 제거
+    });
+    _updateUserInfo(); // 이미지 제거 시 업데이트
+  }
+
   Future<void> _updateUserInfo({String? field, String? value}) async {
     try {
       final userService = ref.watch(userServiceProvider);
@@ -68,31 +75,6 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('내 정보'),
-        actions: [
-          TextButton(
-            onPressed: () {
-              // 프로필 이미지가 선택되었거나 기존 상태가 변경되었는지 확인
-              if (_imageFile != null) {
-                // 프로필 이미지가 변경된 경우 API 호출
-                _updateUserInfo(
-                  field: '프로필 이미지',
-                  value: _imageFile!.path,
-                );
-              } else {
-                // 기존 상태 변경 확인 후 API 호출
-                _updateUserInfo(
-                  field: '이름',
-                  value: _userAccount.name,
-                );
-                // 필요한 다른 필드들도 동일한 방식으로 API 호출 가능
-              }
-            },
-            child: const Text(
-              '확인',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
       ),
       body: ListView(
         children: [
@@ -102,15 +84,15 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
               onTap: _pickImage,
               child: CircleAvatar(
                 radius: 50,
-                backgroundColor: Colors.transparent,
+                backgroundColor: Colors.grey[300], // 배경색을 회색으로 설정
                 backgroundImage: _imageFile != null
-                    ? FileImage(File(_imageFile!.path))
+                    ? FileImage(File(_imageFile!.path)) // 새로 선택된 이미지
                     : (_userAccount.profileImage != null
                     ? NetworkImage(_userAccount.profileImage!) as ImageProvider
-                    : AssetImage('assets/default_profile.png')),
+                    : null), // 서버에서 가져온 이미지가 없으면 배경 이미지 null
                 child: _imageFile == null && _userAccount.profileImage == null
-                    ? Icon(Icons.person, size: 50, color: Colors.white)
-                    : null,
+                    ? Icon(Icons.person, size: 50, color: Colors.white) // 이미지가 없을 때 아이콘 표시
+                    : null, // 이미지가 있으면 아무것도 표시하지 않음
               ),
             ),
           ),
@@ -123,6 +105,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
                 style: TextStyle(color: Colors.blue),
               ),
             ),
+
           ),
           const SizedBox(height: 10),
           _buildEditableListTile('아이디', _userAccount.userId, false),
