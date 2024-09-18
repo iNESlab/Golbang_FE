@@ -7,7 +7,7 @@ import 'package:golbang/models/update_event_participant.dart';
 class Event {
   final ClubProfile? club;
   final int eventId;
-  final String? memberGroup;
+  final int memberGroup;
   final String eventTitle;
   final String? location;
   final DateTime startDateTime;
@@ -26,7 +26,7 @@ class Event {
   Event({
     this.club,
     required this.eventId,
-    this.memberGroup,
+    required this.memberGroup,
     required this.eventTitle,
     this.location,
     required this.startDateTime,
@@ -48,7 +48,7 @@ class Event {
     return Event(
       club: json['club'] != null ? ClubProfile.fromJson(json['club']) : null,
       eventId: json['event_id'],
-      memberGroup: json['memberGroup'] ?? "",
+      memberGroup: json['member_group'],
       eventTitle: json['event_title'],
       location: json['location'],
       startDateTime: DateTime.parse(json['start_date_time']),

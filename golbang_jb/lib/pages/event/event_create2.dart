@@ -65,7 +65,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
         name: participant.name,
         profileImage: participant.profileImage,
         teamType: teamConfig,
-        groupType: groupSetting,
+        groupType: 0,
       );
     }).toList();
   }

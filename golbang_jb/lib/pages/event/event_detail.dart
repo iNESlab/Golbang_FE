@@ -22,13 +22,13 @@ class EventDetailPage extends ConsumerStatefulWidget {
 class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   List<bool> _isExpandedList = [false, false, false, false];
   LatLng? _selectedLocation;
-  String? myGroupType;
+  int? _myGroup;
 
   @override
   void initState() {
     super.initState();
     _selectedLocation = _parseLocation(widget.event.location);
-    myGroupType = widget.event.memberGroup; // initState에서 초기화
+    _myGroup = widget.event.memberGroup; // initState에서 초기화
 
   }
 
@@ -55,7 +55,6 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final myGroupType = widget.event.memberGroup;
 
     // 더미 데이터
     final courseName = "더미 코스 이름";
@@ -157,7 +156,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                     ),
                     padding: EdgeInsets.symmetric(horizontal: 4),
                     child: Text(
-                      '$myGroupType',
+                      '$_myGroup',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -309,8 +308,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: filteredParticipants.map((participant) {
             final member = participant.member;
-            final isSameGroup = participant.groupType == widget.event.participants.firstWhere((p) => p.participantId == widget.event.myParticipantId).groupType;
-
+            final isSameGroup = participant.groupType == _myGroup;
             return Padding(
               padding: const EdgeInsets.only(bottom: 10.0),
               child: Row(

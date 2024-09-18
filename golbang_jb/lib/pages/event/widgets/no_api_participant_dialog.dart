@@ -44,7 +44,7 @@ class _ParticipantSelectionDialogState
                 (selected) => selected.memberId == participant.memberId);
       } else {
         // 선택되지 않은 경우 리스트에 추가 (기존 객체 사용)
-        participant.groupType = widget.groupName.substring(1); // groupType 설정
+        participant.groupType = int.parse(widget.groupName.substring(1)); // groupType 설정
         _currentSelectedParticipants.add(participant);
       }
     });

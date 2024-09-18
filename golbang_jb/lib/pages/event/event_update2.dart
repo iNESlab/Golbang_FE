@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:golbang/models/profile/member_profile.dart';
 import 'package:golbang/pages/event/widgets/group_card.dart';
 import 'package:golbang/pages/event/widgets/no_api_participant_dialog.dart';
 import 'package:golbang/pages/event/widgets/toggle_bottons.dart';
@@ -7,8 +8,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../models/club.dart';
 import '../../models/create_participant.dart';
 import '../../models/enum/event.dart';
-import '../../models/profile/member_profile.dart';
-import '../../models/profile/member_profile.dart';
+import '../../models/participant.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/event_service.dart';
 
@@ -20,6 +20,7 @@ class EventsUpdate2 extends ConsumerStatefulWidget {
   final DateTime startDate;
   final DateTime endDate;
   final List<ClubMemberProfile> selectedParticipants;
+  final List<Participant> existingParticipants;
   final GameMode selectedGameMode;
 
   EventsUpdate2({
@@ -30,6 +31,7 @@ class EventsUpdate2 extends ConsumerStatefulWidget {
     required this.startDate,
     required this.endDate,
     required this.selectedParticipants,
+    required this.existingParticipants,
     required this.selectedGameMode,
   });
 
@@ -57,20 +59,74 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
     super.initState();
     _eventService = EventService(ref.read(secureStorageProvider));
     _initializeParticipants();
+    _initializeGroups();
     gameMode = widget.selectedGameMode; // 기존에 설정된 게임 모드 초기화
   }
 
   void _initializeParticipants() {
-    // 기존 참가자 정보를 CreateParticipant로 변환하여 초기화
+    // 기존 참가자 정보에서 groupType을 찾아 매핑
     _selectedParticipants = widget.selectedParticipants.map((participant) {
+      // existingParticipants에서 해당 참가자의 그룹 정보를 찾음
+      Participant? existingParticipant;
+      try {
+        // existingParticipants에서 해당 참가자의 그룹 정보를 찾음
+        existingParticipant = widget.existingParticipants.firstWhere(
+              (existing) => existing.member!.memberId == participant.memberId,
+        );
+      } catch (e) {
+        // 참가자를 찾지 못하면 null로 설정
+        existingParticipant = null;
+      }
+
+      // groupType을 가져오고, 없으면 null로 설정
+      int groupType = existingParticipant?.groupType ?? 0;
+
       return CreateParticipant(
         memberId: participant.memberId,
         name: participant.name,
         profileImage: participant.profileImage,
         teamType: teamConfig,
-        groupType: groupSetting,
+        groupType: groupType, // 기존 참가자의 groupType 적용
       );
     }).toList();
+  }
+
+
+  void _initializeGroups() {
+    setState(() {
+      // 먼저 groups 리스트를 초기화합니다.
+      groups.clear();
+
+      List<CreateParticipant> existParticipants = widget.existingParticipants.map((participant) {
+        return CreateParticipant(
+          memberId: participant.member!.memberId,
+          name: participant.member!.name,
+          profileImage: participant.member!.profileImage??'assets/images/user_default.png',
+          teamType: teamConfig,
+          groupType: participant.groupType,
+        );
+      }).toList();
+
+      // 모든 참가자에 대해 그룹을 설정
+      for (CreateParticipant createParticipant in existParticipants) {
+        String groupName = '조${createParticipant.groupType}';
+
+        // 그룹이 이미 존재하는지 확인
+        var existingGroup = groups.firstWhere(
+                (group) => group.keys.contains(groupName),
+            orElse: () => {}
+        );
+
+        // 그룹이 존재하면 해당 그룹에 참가자를 추가하고, 없으면 새로운 그룹을 생성하여 추가
+        if (existingGroup.isNotEmpty) {
+          existingGroup[groupName]!.add(createParticipant);
+        } else {
+          groups.add({
+            groupName: [createParticipant]
+          });
+        }
+      }
+    });
   }
 
   void _createGroups() {

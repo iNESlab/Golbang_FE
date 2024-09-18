@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../models/club.dart';
 import '../../models/enum/event.dart';
 import '../../models/event.dart';
+import '../../models/member.dart';
 import '../../models/profile/member_profile.dart';
 import '../../models/profile/member_profile.dart';
 import '../../repoisitory/secure_storage.dart';
@@ -456,6 +457,14 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                           startDate: startDateTime,
                           endDate: endDateTime,
                           selectedParticipants: _selectedParticipants,
+                          existingParticipants: widget.event.participants.where((p) {
+                            Member member = p.member!;
+
+                            // selectedParticipants에 해당 memberId가 있는지 확인
+                            return _selectedParticipants.any((participant) =>
+                            participant.memberId == member.memberId
+                            );
+                          }).toList(),
                           selectedGameMode: _selectedGameMode!,
                         ),
                       ),
