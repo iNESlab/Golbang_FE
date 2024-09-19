@@ -10,7 +10,7 @@ class UserAccount {
   final DateTime? dateOfBirth;
   final int handicap;
   final String? studentId; // Nullable 처리
-  final String? profileImage; // Nullable 처리
+  String? profileImage; // Nullable 처리
 
   UserAccount({
     required this.userId,

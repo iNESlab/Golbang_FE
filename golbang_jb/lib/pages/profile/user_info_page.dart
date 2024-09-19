@@ -42,11 +42,18 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
 
 
   Future<void> _removeImage() async {
+    print("프로필 이미지 제거하기 전: $_imageFile");
+
     setState(() {
-      _imageFile = null; // 이미지 파일을 null로 설정하여 제거
+      _imageFile = null; // UI에서 프로필 이미지 제거
+      _userAccount.profileImage = null; // 사용자 상태에서도 프로필 이미지 제거
     });
-    _updateUserInfo(field: '프로필 이미지');
+
+    print("프로필 이미지 제거 후: $_imageFile");
+    // 프로필 이미지가 제거되었음을 명확하게 API에 전달 (null로 설정)
+    await _updateUserInfo(field: '프로필 이미지', value: null);
   }
+
 
   Future<void> _updateUserInfo({String? field, String? value}) async {
     try {
@@ -65,9 +72,8 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
 
       setState(() {
         _userAccount = updatedUser; // 업데이트된 UserAccount를 상태로 설정
-        _imageFile = null; // 프로필 이미지가 변경된 후 _imageFile을 초기화하여 반영
-
       });
+      print("profile Image : $_imageFile");
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$field 업데이트 완료')));
     } catch (e) {

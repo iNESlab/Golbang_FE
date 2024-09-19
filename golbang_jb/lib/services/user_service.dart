@@ -158,17 +158,21 @@ class UserService {
       if (address != null && address.isNotEmpty) fields['address'] = address;
       if (studentId != null && studentId.isNotEmpty) fields['student_id'] = studentId;
 
+      // 프로필 이미지가 없을 경우 명시적으로 빈 값을 전달
+      if (profileImage == null) {
+        fields['profile_image'] = ''; // 빈 문자열을 서버에 전달하여 이미지를 제거
+      }
+
       request.fields.addAll(fields);
 
-      // 프로필 이미지 파일 추가
+      // 프로필 이미지 파일 추가: 파일이 있으면 전송, 없으면 건너뜀
       if (profileImage != null) {
         request.files.add(
-          await http.MultipartFile.fromPath(
-            'profile_image',
-            profileImage.path,
-          ),
+          await http.MultipartFile.fromPath('profile_image', profileImage.path),
         );
       }
+
+
 
       // 요청 전송
       var response = await request.send();

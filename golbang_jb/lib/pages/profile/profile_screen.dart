@@ -39,14 +39,22 @@ class UserAccountNotifier extends StateNotifier<UserAccount?> {
 
   // 새로운 값과 현재 상태를 비교하는 메서드
   bool _hasUserAccountChanged(UserAccount? newUserAccount) {
-    if (state == null && newUserAccount != null) return true; // 상태가 null인 경우
-    if (state == null || newUserAccount == null) return false; // 둘 중 하나가 null이면 변경 없음
+    if (state == null && newUserAccount != null) return true;  // 기존 상태가 null인 경우
+    if (state == null || newUserAccount == null) return false;  // 둘 중 하나가 null이면 변경 없음
 
-    // 필요한 필드들을 비교하여 다를 경우 true 반환
+    // 프로필 이미지가 null이 되었는지, 다른 필드가 변경되었는지 비교
     return state!.name != newUserAccount.name ||
         state!.email != newUserAccount.email ||
-        state!.profileImage != newUserAccount.profileImage;
+        _profileImageChanged(state!.profileImage, newUserAccount.profileImage);  // 프로필 이미지 변화 감지
   }
+
+// 프로필 이미지가 null에서 null이 아닌 상태로, 또는 그 반대로 변경된 경우를 감지
+  bool _profileImageChanged(String? oldImage, String? newImage) {
+    if (oldImage == null && newImage != null) return true;  // 기존에 없었는데 새로 생긴 경우
+    if (oldImage != null && newImage == null) return true;  // 기존에 있었는데 사라진 경우
+    return oldImage != newImage;  // 그 외의 경우 단순 비교
+  }
+
 }
 
 class ProfileScreen extends ConsumerWidget {
