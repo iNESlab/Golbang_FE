@@ -52,7 +52,6 @@ class MyApp extends StatelessWidget {
         '/signupComplete': (context) => const SignupComplete(),
         // 추가적인 라우트를 여기에 추가할 수 있습니다.
       },
-
     );
   }
 }

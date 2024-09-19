@@ -4,6 +4,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:golbang/models/profile/user_profile.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart'; // basename을 사용하기 위해 필요
+import '../models/get_statistics_ranks.dart';
 import '../repoisitory/secure_storage.dart';
 import 'package:golbang/models/group.dart';
 
@@ -130,5 +131,27 @@ class GroupService {
       print('Error: $e');
       return []; // 예외 발생 시 빈 리스트 반환
     }
+  }
+  Future<ClubStatistics?> fetchGroupRanking(int groupId) async {
+    try {
+      final accessToken = await storage.readAccessToken();
+      var uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/clubs/statistics/ranks/?club_id=$groupId");
+
+      Map<String, String> headers = {
+        "Content-type": "application/json",
+        "Authorization": "Bearer $accessToken"
+      };
+
+      var response = await http.get(uri, headers: headers);
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(utf8.decode(response.bodyBytes))['data'];
+        if (jsonData != null) {
+          return ClubStatistics.fromJson(jsonData);
+        }
+      }
+    } catch (e) {
+      print('Failed to load club ranking: $e');
+    }
+    return null;
   }
 }
