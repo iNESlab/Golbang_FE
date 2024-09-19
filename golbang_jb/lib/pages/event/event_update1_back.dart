@@ -1,3 +1,4 @@
+/*
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -135,20 +136,16 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
       context: context,
       builder: (context) => LocationSearchDialog(
         locationController: _locationController,
-        locationCoordinates: _locationCoordinates,
         onLocationSelected: (LatLng location) {
           setState(() {
             _selectedLocation = location;
-            _selectedLocationName = _locationCoordinates.entries
-                .firstWhere((entry) => entry.value == location)
-                .key;
-            _locationController.text = _selectedLocationName ?? '';
             _validateForm();
           });
         },
       ),
     );
   }
+
 
 
   Future<void> _selectDate(BuildContext context, bool isStartDate) async {
@@ -484,3 +481,4 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
     );
   }
 }
+ */

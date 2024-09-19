@@ -1,97 +1,43 @@
+/*
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../models/club.dart';
 import '../../models/enum/event.dart';
-import '../../models/event.dart';
-import '../../models/member.dart';
-import '../../models/profile/member_profile.dart';
-import '../../models/profile/member_profile.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/club_service.dart';
+import 'event_create2.dart';
 import 'widgets/location_search_dialog.dart';
 import 'widgets/participant_dialog.dart';
-import 'event_update2.dart';
+import '../../models/profile/member_profile.dart';
 
-class EventsUpdate1 extends ConsumerStatefulWidget {
-  final Event event; // 기존 이벤트 데이터를 받아오기 위한 필드
-
-  EventsUpdate1({required this.event});
-
+class EventsCreate1 extends ConsumerStatefulWidget {
   @override
-  _EventsUpdate1State createState() => _EventsUpdate1State();
+  _EventsCreate1State createState() => _EventsCreate1State();
 }
 
-class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
+class _EventsCreate1State extends ConsumerState<EventsCreate1> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _startDateController = TextEditingController();
-  final TextEditingController _startTimeController = TextEditingController();
+  final TextEditingController _startTimeController = TextEditingController(text: "11:00 AM");
   final TextEditingController _endDateController = TextEditingController();
+  LatLng? _selectedLocation;
   List<Club> _clubs = [];
   Club? _selectedClub;
   GameMode? _selectedGameMode;
   List<ClubMemberProfile> _selectedParticipants = [];
   late ClubService _clubService;
   bool _isButtonEnabled = false;
-  final Map<String, LatLng> _locationCoordinates = {
-    "Jeju Nine Bridges": LatLng(33.431441, 126.875828),
-    "Seoul Tower": LatLng(37.5511694, 126.9882266),
-    "Busan Haeundae Beach": LatLng(35.158697, 129.160384),
-    "Incheon Airport": LatLng(37.4602, 126.4407),
-  };
 
-  LatLng? _selectedLocation;
-  String? _selectedLocationName;  // 선택된 장소의 이름을 저장하는 변수
+  final TimeOfDay _fixedTime = TimeOfDay(hour: 23, minute: 59);
 
   @override
   void initState() {
     super.initState();
     _clubService = ClubService(ref.read(secureStorageProvider));
     _fetchClubs();
-    _setupInitialValues(); // 전달받은 이벤트 데이터를 초기화하는 메서드
     _setupListeners();
-  }
-
-  void _setupInitialValues() {
-    // 전달받은 이벤트 데이터를 각 컨트롤러와 변수에 초기화
-    _titleController.text = widget.event.eventTitle;
-    _locationController.text = widget.event.location ?? '';
-    _startDateController.text = widget.event.startDateTime.toLocal().toIso8601String().split('T').first;
-    _startTimeController.text = widget.event.startDateTime.toLocal().toIso8601String().split('T').last;
-    _endDateController.text = widget.event.endDateTime.toLocal().toIso8601String().split('T').first;
-    _selectedLocation = _parseLocation(widget.event.location);
-    _selectedGameMode = GameMode.values.firstWhere((mode) => mode.value == widget.event.gameMode);
-    _selectedParticipants = widget.event.participants.map((participant) {
-      final member = participant.member;
-      return ClubMemberProfile(
-        memberId: member?.memberId ?? 0,
-        name: member?.name ?? 'Unknown',
-        profileImage: member?.profileImage ?? 'assets/images/user_default.png',
-        role: member?.role ?? 'member',
-      );
-    }).toList();
-  }
-
-  LatLng? _parseLocation(String? location) {
-    if (location == null) {
-      return null;
-    }
-
-    try {
-      if (location.startsWith('LatLng')) {
-        final coords = location
-            .substring(7, location.length - 1)
-            .split(',')
-            .map((e) => double.parse(e.trim()))
-            .toList();
-        return LatLng(coords[0], coords[1]);
-      } else {
-        return null;
-      }
-    } catch (e) {
-      return null;
-    }
   }
 
   void _setupListeners() {
@@ -120,10 +66,6 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
       List<Club> clubs = await _clubService.getClubList();
       setState(() {
         _clubs = clubs;
-        _selectedClub = clubs.firstWhere(
-              (club) => club.id == widget.event.memberGroup,
-          orElse: () => clubs.first,
-        );
       });
     } catch (e) {
       print("Failed to load clubs: $e");
@@ -135,14 +77,9 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
       context: context,
       builder: (context) => LocationSearchDialog(
         locationController: _locationController,
-        locationCoordinates: _locationCoordinates,
         onLocationSelected: (LatLng location) {
           setState(() {
             _selectedLocation = location;
-            _selectedLocationName = _locationCoordinates.entries
-                .firstWhere((entry) => entry.value == location)
-                .key;
-            _locationController.text = _selectedLocationName ?? '';
             _validateForm();
           });
         },
@@ -179,6 +116,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
     if (pickedTime != null) {
       setState(() {
         _startTimeController.text = pickedTime.format(context);
+        print('startTime: ${_startTimeController.text}');
       });
     }
   }
@@ -188,30 +126,14 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
   }
 
   TimeOfDay _parseTimeOfDay(String time) {
-    try {
-      // 시간 문자열이 "11:00 AM"과 같은 형식이라고 가정합니다.
-      final timeParts = time.split(' ');
-      if (timeParts.length < 2) {
-        throw FormatException("Invalid time format");
-      }
+    final timeParts = time.split(' ');
+    final timeOfDayParts = timeParts[0].split(':');
+    final hour = int.parse(timeOfDayParts[0]);
+    final minute = int.parse(timeOfDayParts[1]);
+    final isPM = timeParts[1].toLowerCase() == 'pm';
 
-      final timeOfDayParts = timeParts[0].split(':');
-      if (timeOfDayParts.length < 2) {
-        throw FormatException("Invalid time parts");
-      }
-
-      final hour = int.parse(timeOfDayParts[0]);
-      final minute = int.parse(timeOfDayParts[1]);
-      final isPM = timeParts[1].toLowerCase() == 'pm';
-
-      return TimeOfDay(hour: isPM && hour < 12 ? hour + 12 : hour, minute: minute);
-    } catch (e) {
-      // 파싱 실패 시 기본값 반환
-      print('Error parsing time: $e');
-      return TimeOfDay(hour: 0, minute: 0);
-    }
+    return TimeOfDay(hour: isPM && hour < 12 ? hour + 12 : hour, minute: minute);
   }
-
 
   void _showParticipantDialog() {
     showDialog(
@@ -234,7 +156,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('이벤트 수정'),
+        title: Text('이벤트 생성'),
         leading: IconButton(
           icon: Icon(Icons.arrow_back),
           onPressed: () {
@@ -443,28 +365,18 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                     final DateTime startDate = DateTime.parse(_startDateController.text);
                     final TimeOfDay startTime = _parseTimeOfDay(_startTimeController.text);
                     final DateTime startDateTime = _combineDateAndTime(startDate, startTime);
-                    final DateTime endDateTime = _combineDateAndTime(DateTime.parse(_endDateController.text), TimeOfDay(hour: 23, minute: 59));
+                    final DateTime endDateTime = _combineDateAndTime(DateTime.parse(_endDateController.text), _fixedTime);
 
-                    // 업데이트할 이벤트 데이터를 EventsUpdate2로 전달
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => EventsUpdate2(
-                          eventId: widget.event.eventId,
+                        builder: (context) => EventsCreate2(
                           title: _titleController.text,
                           selectedClub: _selectedClub!,
                           selectedLocation: _selectedLocation!,
                           startDate: startDateTime,
                           endDate: endDateTime,
                           selectedParticipants: _selectedParticipants,
-                          existingParticipants: widget.event.participants.where((p) {
-                            Member member = p.member!;
-
-                            // selectedParticipants에 해당 memberId가 있는지 확인
-                            return _selectedParticipants.any((participant) =>
-                            participant.memberId == member.memberId
-                            );
-                          }).toList(),
                           selectedGameMode: _selectedGameMode!,
                         ),
                       ),
@@ -484,3 +396,4 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
     );
   }
 }
+*/

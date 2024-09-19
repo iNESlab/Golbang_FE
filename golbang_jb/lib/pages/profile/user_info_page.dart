@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:golbang/pages/profile/profile_screen.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../models/user_account.dart';
 import '../../services/user_service.dart';
@@ -26,6 +27,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
   void initState() {
     super.initState();
     _userAccount = widget.initialUserAccount; // 초기 상태 설정
+
   }
 
   Future<void> _pickImage() async {
@@ -34,6 +36,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
       setState(() {
         _imageFile = pickedFile;
       });
+      _updateUserInfo(field: '프로필 이미지');
     }
   }
 
@@ -42,7 +45,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
     setState(() {
       _imageFile = null; // 이미지 파일을 null로 설정하여 제거
     });
-    _updateUserInfo(); // 이미지 제거 시 업데이트
+    _updateUserInfo(field: '프로필 이미지');
   }
 
   Future<void> _updateUserInfo({String? field, String? value}) async {
@@ -57,11 +60,13 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
         address: field == '집 주소' ? value : _userAccount.address,
         dateOfBirth: field == '생일' ? DateTime.parse(value!) : _userAccount.dateOfBirth,
         studentId: field == '학번' ? value : _userAccount.studentId,
-        profileImage: _imageFile != null ? File(_imageFile!.path) : null,
+        profileImage: _imageFile != null ? File(_imageFile!.path) : null,  // 이미지 파일 전송
       );
 
       setState(() {
         _userAccount = updatedUser; // 업데이트된 UserAccount를 상태로 설정
+        _imageFile = null; // 프로필 이미지가 변경된 후 _imageFile을 초기화하여 반영
+
       });
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$field 업데이트 완료')));

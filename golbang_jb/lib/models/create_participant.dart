@@ -5,7 +5,7 @@ class CreateParticipant {
   final String name;
   final String profileImage;
   TeamConfig teamType;
-  String groupType;
+  int groupType;
 
   CreateParticipant({
     required this.memberId,

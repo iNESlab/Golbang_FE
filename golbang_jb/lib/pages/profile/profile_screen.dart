@@ -4,6 +4,8 @@ import '../../models/user_account.dart'; // 이 파일에서 모든 UserAccount�
 import '../../repoisitory/secure_storage.dart';
 import 'user_info_page.dart';
 import '../../services/user_service.dart';
+import 'package:golbang/pages/profile/statistics_page.dart';
+import 'statistics_page.dart';
 
 // UserAccount 상태를 관리하는 Provider 정의
 final userAccountProvider = StateNotifierProvider<UserAccountNotifier, UserAccount?>((ref) {
@@ -15,16 +17,35 @@ class UserAccountNotifier extends StateNotifier<UserAccount?> {
   final UserService _userService;
 
   UserAccountNotifier(this._userService) : super(null) {
-    loadUserAccount();
+    loadUserAccount();  // 초기 로드
   }
 
+  // 사용자 정보를 처음 로드하거나 강제 리로드 시 사용하는 메서드
   Future<void> loadUserAccount() async {
     try {
-      final userAccount = await _userService.getUserInfo();
-      state = userAccount as UserAccount?;
+      final newUserAccount = await _userService.getUserInfo();
+
+      // 기존 상태와 새로 불러온 사용자 정보를 비교
+      if (_hasUserAccountChanged(newUserAccount)) {
+        state = newUserAccount;  // 변경된 값이 있을 경우에만 상태 업데이트
+        print("UserAccount updated: $newUserAccount");
+      } else {
+        print("UserAccount has not changed");
+      }
     } catch (e) {
       print('Failed to load user profile: $e');
     }
+  }
+
+  // 새로운 값과 현재 상태를 비교하는 메서드
+  bool _hasUserAccountChanged(UserAccount? newUserAccount) {
+    if (state == null && newUserAccount != null) return true; // 상태가 null인 경우
+    if (state == null || newUserAccount == null) return false; // 둘 중 하나가 null이면 변경 없음
+
+    // 필요한 필드들을 비교하여 다를 경우 true 반환
+    return state!.name != newUserAccount.name ||
+        state!.email != newUserAccount.email ||
+        state!.profileImage != newUserAccount.profileImage;
   }
 }
 
@@ -33,8 +54,14 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // userAccount 상태를 감지하여 UI 갱신
     final userAccount = ref.watch(userAccountProvider);
     final isLoading = userAccount == null;
+
+    // 처음 로드될 때 loadUserAccount 호출
+    if (isLoading) {
+      ref.read(userAccountProvider.notifier).loadUserAccount(); // 처음 로드 시 정보 불러오기
+    }
 
     return Scaffold(
       body: isLoading
@@ -56,7 +83,10 @@ class ProfileScreen extends ConsumerWidget {
             const SizedBox(height: 10),
             Text(
               userAccount?.name ?? '사용자',
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold
+              ),
             ),
             const SizedBox(height: 30),
             Expanded(
@@ -66,11 +96,33 @@ class ProfileScreen extends ConsumerWidget {
                 crossAxisSpacing: 12,
                 childAspectRatio: 1.8,
                 children: [
-                  _buildActionButton('내 정보', Icons.person, context, userAccount),
-                  //_buildActionButton('지난 기록', Icons.history, context, userAccount),
-                  _buildActionButton('통계', Icons.bar_chart, context, userAccount),
-                  _buildActionButton('소속된 그룹', Icons.group, context, userAccount),
-                  _buildActionButton('관리 그룹', Icons.admin_panel_settings, context, userAccount),
+                  _buildActionButton('내 정보', Icons.person, context, userAccount, () {
+                    if (userAccount != null) {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => UserInfoPage(initialUserAccount: userAccount),
+                        ),
+                      ).then((_) {
+                        // 돌아왔을 때 정보 업데이트
+                        ref.read(userAccountProvider.notifier).loadUserAccount();
+                      });
+                    }
+                  }),
+                  _buildActionButton('통계', Icons.bar_chart, context, userAccount, () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => StatisticsPage(),
+                      ),
+                    );
+                  }),
+                  _buildActionButton('소속된 그룹', Icons.group, context, userAccount, () {
+                    // 소속된 그룹 버튼 동작 추가
+                  }),
+                  _buildActionButton('관리 그룹', Icons.admin_panel_settings, context, userAccount, () {
+                    // 관리 그룹 버튼 동작 추가
+                  }),
                 ],
               ),
             ),
@@ -80,21 +132,12 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionButton(String title, IconData icon, BuildContext context, UserAccount? userAccount) {
+  Widget _buildActionButton(String title, IconData icon, BuildContext context, UserAccount? userAccount, VoidCallback onTap) {
     return Card(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       color: Colors.green,
       child: InkWell(
-        onTap: () {
-          if (title == '내 정보' && userAccount != null) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => UserInfoPage(initialUserAccount: userAccount),
-              ),
-            );
-          }
-        },
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Column(
@@ -107,7 +150,8 @@ class ProfileScreen extends ConsumerWidget {
                 style: const TextStyle(
                     color: Colors.white,
                     fontSize: 15,
-                    fontWeight: FontWeight.bold),
+                    fontWeight: FontWeight.bold
+                ),
               ),
             ],
           ),

@@ -101,7 +101,7 @@ class UserService {
       if (response.statusCode == 200) {
         // JSON 데이터 파싱
         var jsonData = json.decode(utf8.decode(response.bodyBytes))['data'];
-        print("==============================json: ${jsonData}");
+        print("=================user정보조회=============json: ${jsonData}");
         // 이유는 모르나 code / message /data 형태로 반환이 안됨. data만 반환됨 => 해결완료
         return UserAccount.fromJson(jsonData);
       } else {
