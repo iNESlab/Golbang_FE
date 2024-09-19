@@ -215,4 +215,36 @@ class EventService {
     }
   }
 
+  // 이벤트 스코어카드 결과 조회 메서드
+  Future<Map<String, dynamic>?> getScoreData(int eventId) async {
+    try {
+      // API URL 설정
+      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/scores/');
+      final accessToken = await storage.readAccessToken(); // 저장소에서 액세스 토큰 가져오기
+
+      // API 요청
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken', // 액세스 토큰을 헤더에 포함
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // 응답이 200이면 데이터를 파싱하여 반환
+        final jsonData = jsonDecode(utf8.decode(response.bodyBytes))['data'];
+        print("========스코어카드 데이터 조회 성공: $jsonData");
+        return jsonData;
+      } else {
+        // 오류 발생 시 로그 출력
+        print('스코어카드 조회 실패: ${response.statusCode} - ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      // 예외 처리
+      print('Error occurred while fetching score data: $e');
+      return null;
+    }
+  }
 }

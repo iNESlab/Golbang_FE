@@ -144,6 +144,7 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
               scorecard: _isHandicapEnabled && _eventData!['user']['handicap_scorecard'] != null
                   ? List<int>.from(_eventData!['user']['handicap_scorecard'])
                   : _userProfile!.scorecard,
+              eventId: widget.eventId,
             ),
             SizedBox(height: 10),
             RankingList(
