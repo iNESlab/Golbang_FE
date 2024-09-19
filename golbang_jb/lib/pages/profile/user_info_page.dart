@@ -37,6 +37,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
     }
   }
 
+
   Future<void> _removeImage() async {
     setState(() {
       _imageFile = null; // 이미지 파일을 null로 설정하여 제거
@@ -80,20 +81,34 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
         children: [
           const SizedBox(height: 10),
           Center(
-            child: GestureDetector(
-              onTap: _pickImage,
-              child: CircleAvatar(
-                radius: 50,
-                backgroundColor: Colors.grey[300], // 배경색을 회색으로 설정
-                backgroundImage: _imageFile != null
-                    ? FileImage(File(_imageFile!.path)) // 새로 선택된 이미지
-                    : (_userAccount.profileImage != null
-                    ? NetworkImage(_userAccount.profileImage!) as ImageProvider
-                    : null), // 서버에서 가져온 이미지가 없으면 배경 이미지 null
-                child: _imageFile == null && _userAccount.profileImage == null
-                    ? Icon(Icons.person, size: 50, color: Colors.white) // 이미지가 없을 때 아이콘 표시
-                    : null, // 이미지가 있으면 아무것도 표시하지 않음
-              ),
+            child: Stack(
+              children: [
+                CircleAvatar(
+                  radius: 50,
+                  backgroundColor: Colors.grey[300],
+                  backgroundImage: _imageFile != null
+                      ? FileImage(File(_imageFile!.path))
+                      : (_userAccount.profileImage != null
+                      ? NetworkImage(_userAccount.profileImage!) as ImageProvider
+                      : null),
+                  child: _imageFile == null && _userAccount.profileImage == null
+                      ? Icon(Icons.person, size: 50, color: Colors.white)
+                      : null,
+                ),
+                // 오른쪽 위에 [x] 아이콘 추가
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: GestureDetector(
+                    onTap: _removeImage, // 이미지를 제거하는 함수
+                    child: CircleAvatar(
+                      backgroundColor: Colors.red,
+                      radius: 12,
+                      child: Icon(Icons.close, color: Colors.white, size: 15),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 5),
