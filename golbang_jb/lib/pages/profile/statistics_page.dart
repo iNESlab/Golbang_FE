@@ -343,8 +343,11 @@ class _StatisticsPageState extends State<StatisticsPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: _selectedEvents.map((event) {
-        double fillPercentage = event.points / event.totalParticipants;
-        Color barColor = Color.lerp(Colors.green, Colors.lightGreen[200], fillPercentage)!;
+        double fillPercentage = (event.points - 2) / event.totalParticipants ;
+
+        print("fillPercentage: $fillPercentage");
+
+        Color barColor = Color.lerp(Colors.yellow, Colors.green, fillPercentage)!;
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8.0),
@@ -355,19 +358,21 @@ class _StatisticsPageState extends State<StatisticsPage> {
               const SizedBox(height: 8),
               Stack(
                 children: [
+                  // 전체 배경
                   Container(
                     height: 20,
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: Colors.grey[300],  // 전체 배경 색
                       borderRadius: BorderRadius.circular(5),
                     ),
                   ),
+                  // 채워지는 부분
                   FractionallySizedBox(
-                    widthFactor: fillPercentage,
+                    widthFactor: fillPercentage,  // fillPercentage만큼 너비 조절 (0.0 ~ 1.0)
                     child: Container(
                       height: 20,
                       decoration: BoxDecoration(
-                        color: barColor,
+                        color: barColor,  // fillPercentage에 따른 색상
                         borderRadius: BorderRadius.circular(5),
                       ),
                     ),
