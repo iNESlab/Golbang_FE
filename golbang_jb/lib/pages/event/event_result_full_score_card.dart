@@ -1,11 +1,10 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:golbang/services/event_service.dart';
-import 'package:golbang/repoisitory/secure_storage.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart'; // Riverpod 관련 패키지
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../repoisitory/secure_storage.dart'; // Riverpod 관련 패키지
 
-class EventResultFullScoreCard extends ConsumerStatefulWidget { // ConsumerStatefulWidget으로 변경
-  final int eventId; // 이벤트 ID
+class EventResultFullScoreCard extends ConsumerStatefulWidget {
+  final int eventId;
 
   EventResultFullScoreCard({required this.eventId});
 
@@ -13,34 +12,32 @@ class EventResultFullScoreCard extends ConsumerStatefulWidget { // ConsumerState
   _EventResultFullScoreCardState createState() => _EventResultFullScoreCardState();
 }
 
-class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreCard> { // ConsumerState로 변경
-  List<dynamic> participants = []; // 참가자 데이터를 저장할 리스트
-  Map<String, dynamic>? teamAScores; // 팀 A 점수
-  Map<String, dynamic>? teamBScores; // 팀 B 점수
-  bool isLoading = true; // 로딩 상태 표시
+class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreCard> {
+  List<dynamic> participants = [];
+  Map<String, dynamic>? teamAScores;
+  Map<String, dynamic>? teamBScores;
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      fetchScores(); // 페이지 로딩 시 점수 데이터를 불러옴
-    });  }
+      fetchScores();
+    });
+  }
 
-  // EventService를 통해 API에서 점수 데이터를 가져오는 함수
   Future<void> fetchScores() async {
-    // ref.watch를 사용하여 SecureStorage 인스턴스를 가져옴
     final storage = ref.watch(secureStorageProvider);
-    final eventService = EventService(storage); // SecureStorage를 EventService에 전달
+    final eventService = EventService(storage);
 
     try {
-      final response = await eventService.getScoreData(widget.eventId); // EventService에서 getScoreData 호출
+      final response = await eventService.getScoreData(widget.eventId);
       if (response != null) {
-        // API에서 받아온 데이터를 상태에 저장
         setState(() {
           participants = response['participants'];
           teamAScores = response['team_a_scores'];
           teamBScores = response['team_b_scores'];
-          isLoading = false; // 로딩 완료
+          isLoading = false;
         });
       } else {
         print('Failed to load scores: response is null');
@@ -54,62 +51,76 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Scorecard'),
+        title: Text('스코어카드'),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator()) // 로딩 중일 때 로딩 표시
+          ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
         child: Column(
           children: [
-            if (teamAScores != null && teamBScores != null) ...[
-              buildTeamScoreTable('Team A', teamAScores!), // 팀 A 점수 테이블
-              buildTeamScoreTable('Team B', teamBScores!), // 팀 B 점수 테이블
-            ],
-            buildParticipantTable(), // 참가자 점수 테이블
+            buildParticipantScoreTable(), // 참가자별 홀 점수 테이블
+            buildScoreTable(), // 팀 점수와 참가자 점수 테이블
           ],
         ),
       ),
     );
   }
 
-  // 팀 점수를 표시하는 테이블 위젯
-  Widget buildTeamScoreTable(String teamName, Map<String, dynamic> teamScores) {
+  // 팀 및 참가자 점수를 표시하는 테이블 위젯
+  Widget buildScoreTable() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Table(
         border: TableBorder.all(),
         children: [
+          // 헤더
           TableRow(
             children: [
-              Text('$teamName Front 9'),
-              Text('${teamScores['front_nine_score']}'),
+              buildTableCell(' '),
+              buildTableCell('전반전'),
+              buildTableCell('후반전'),
+              buildTableCell('전체 스코어'),
+              buildTableCell('핸디캡 스코어'),
             ],
           ),
+          // Team A Scores
           TableRow(
             children: [
-              Text('$teamName Back 9'),
-              Text('${teamScores['back_nine_score']}'),
+              buildTableCell('Team A'),
+              buildTableCell('${teamAScores?['front_nine_score'] ?? ''}'),
+              buildTableCell('${teamAScores?['back_nine_score'] ?? ''}'),
+              buildTableCell('${teamAScores?['total_score'] ?? ''}'),
+              buildTableCell('${teamAScores?['handicap_score'] ?? ''}'),
             ],
           ),
+          // Team B Scores
           TableRow(
             children: [
-              Text('$teamName Total Score'),
-              Text('${teamScores['total_score']}'),
+              buildTableCell('Team B'),
+              buildTableCell('${teamBScores?['front_nine_score'] ?? ''}'),
+              buildTableCell('${teamBScores?['back_nine_score'] ?? ''}'),
+              buildTableCell('${teamBScores?['total_score'] ?? ''}'),
+              buildTableCell('${teamBScores?['handicap_score'] ?? ''}'),
             ],
           ),
-          TableRow(
-            children: [
-              Text('$teamName Handicap Score'),
-              Text('${teamScores['handicap_score']}'),
-            ],
-          ),
+          // 참가자별 점수
+          for (var participant in participants)
+            TableRow(
+              children: [
+                buildTableCell('${participant['participant_name']}'),
+                buildTableCell('${participant['front_nine_score']}'),
+                buildTableCell('${participant['back_nine_score']}'),
+                buildTableCell('${participant['total_score']}'),
+                buildTableCell('${participant['handicap_score']}'),
+              ],
+            ),
         ],
       ),
     );
   }
 
-  // 참가자 점수를 표시하는 테이블 위젯
-  Widget buildParticipantTable() {
+  // 참가자들의 홀별 점수를 표시하는 테이블
+  Widget buildParticipantScoreTable() {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Table(
@@ -118,21 +129,18 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
           // 테이블 헤더
           TableRow(
             children: [
-              buildTableCell('Participant'),
-              buildTableCell('Front 9'),
-              buildTableCell('Back 9'),
-              buildTableCell('Total Score'),
-              buildTableCell('Handicap Score'),
+              buildTableHeaderCell('홀'),
+              for (var participant in participants)
+                buildTableHeaderCell(participant['participant_name']),
             ],
           ),
-          // 참가자 데이터를 테이블에 추가
-          for (var participant in participants) TableRow(
+          // 각 홀별 점수
+          for (int hole = 1; hole <= 18; hole++) TableRow(
             children: [
-              buildTableCell('${participant['participant_name']}'),
-              buildTableCell('${participant['front_nine_score']}'),
-              buildTableCell('${participant['back_nine_score']}'),
-              buildTableCell('${participant['total_score']}'),
-              buildTableCell('${participant['handicap_score']}'),
+              buildTableCell(hole.toString()), // 홀 번호
+              for (var participant in participants)
+                buildTableCell(
+                    participant['scorecard'].length >= hole ? participant['scorecard'][hole - 1].toString() : '-'), // 각 참가자의 홀별 점수
             ],
           ),
         ],
@@ -144,7 +152,26 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
   Widget buildTableCell(String text) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Text(text, textAlign: TextAlign.center),
+      child: Center(
+        child: Text(
+          text,
+          textAlign: TextAlign.center,
+        ),
+      ),
+    );
+  }
+
+  // 테이블 헤더 셀을 만드는 함수
+  Widget buildTableHeaderCell(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 2.0),
+      child: Center(
+        child: Text(
+          title,
+          style: TextStyle(fontWeight: FontWeight.bold),
+          textAlign: TextAlign.center,
+        ),
+      ),
     );
   }
 }
