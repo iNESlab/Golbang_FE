@@ -1,6 +1,6 @@
 // event.dart
 class CreateEvent {
-  final int eventId;
+  final int? eventId;
   final String? memberGroup;
   final String eventTitle;
   final String? location;
@@ -11,7 +11,7 @@ class CreateEvent {
   final String? alertDateTime;
 
   CreateEvent({
-    required this.eventId,
+    this.eventId,
     this.memberGroup,
     required this.eventTitle,
     this.location,

@@ -1,13 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:golbang/models/enum/event.dart';
 import '../../../models/create_participant.dart'; // CreateParticipant 모델 임포트
 
 class ParticipantSelectionDialog extends StatefulWidget {
+  final bool isTeam;
   final String groupName;
   final List<CreateParticipant> participants; // 전체 참여자 리스트
   final List<CreateParticipant> selectedParticipants; // 선택된 참여자 리스트
   final Function(List<CreateParticipant>) onSelectionComplete; // 완료 콜백
 
   ParticipantSelectionDialog({
+    required this.isTeam,
     required this.groupName,
     required this.participants,
     required this.selectedParticipants,
@@ -44,7 +47,18 @@ class _ParticipantSelectionDialogState
                 (selected) => selected.memberId == participant.memberId);
       } else {
         // 선택되지 않은 경우 리스트에 추가 (기존 객체 사용)
-        participant.groupType = int.parse(widget.groupName.substring(1)); // groupType 설정
+        participant.groupType = int.parse(widget.groupName.substring(1,2)); // groupType 설정
+        print('groupType: ${participant.groupType}');
+
+        if(widget.isTeam){
+          String team = widget.groupName.substring(3);
+          print('team: ${team}');
+
+          participant.teamType = ( team == 'A') ? TeamConfig.TEAM_A
+              : ( team == 'B') ? TeamConfig.TEAM_B
+              : TeamConfig.NONE;
+        }
+
         _currentSelectedParticipants.add(participant);
       }
     });
@@ -77,6 +91,12 @@ class _ParticipantSelectionDialogState
         ),
       ),
       actions: [
+        TextButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          child: Text('취소'),
+        ),
         TextButton(
           onPressed: () {
             widget.onSelectionComplete(_currentSelectedParticipants); // 선택 완료 시 콜백

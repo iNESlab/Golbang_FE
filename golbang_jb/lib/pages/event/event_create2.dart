@@ -40,7 +40,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
   GameMode gameMode = GameMode.STROKE;
   TeamConfig teamConfig = TeamConfig.NONE;
   String groupSetting = '직접 설정';
-  String numberOfGroups = '8개';
+  String numberOfGroups = '4개';
   String numberOfPlayers = '4명';
   bool isAutoMatching = false;
   bool isTeam = false;
@@ -68,19 +68,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
         groupType: 0,
       );
     }).toList();
-  }
 
-  void _createGroups() {
-    int numGroups = int.parse(numberOfGroups.replaceAll('개', ''));
-    setState(() {
-      groups = List.generate(
-        numGroups,
-            (index) => {
-          '조${index + 1}': [],
-        },
-      );
-      _validateForm();
-    });
   }
 
   bool _checkForDuplicateParticipants() {
@@ -116,6 +104,27 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
     });
   }
 
+  void _createGroups() {
+    int numGroups = int.parse(numberOfGroups.replaceAll('개', ''));
+    setState(() {
+      groups = isTeam
+          ? List.generate(
+        numGroups,
+            (index) => {
+          '조${index + 1} A': [],
+          '조${index + 1} B': [],
+        },
+      )
+          : List.generate(
+        numGroups,
+            (index) => {
+          '조${index + 1}': [],
+        },
+      );
+      _validateForm();
+    });
+  }
+
   void _showParticipantSelectionDialog(String groupName) {
     List<CreateParticipant> groupParticipants =
     groups.firstWhere((group) => group.keys.first == groupName)[groupName]!;
@@ -124,13 +133,13 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
       context: context,
       builder: (context) {
         return ParticipantSelectionDialog(
+          isTeam: isTeam,
           groupName: groupName,
-          participants: _selectedParticipants,
-          selectedParticipants: groupParticipants,
+          participants: _selectedParticipants,  // 모든 참가자 리스트
+          selectedParticipants: groupParticipants,  // 현재 그룹에 선택된 참가자
           onSelectionComplete: (List<CreateParticipant> updatedParticipants) {
             setState(() {
-              groups
-                  .firstWhere((group) => group.keys.first == groupName)[groupName] =
+              groups.firstWhere((group) => group.keys.contains(groupName))[groupName] =
                   updatedParticipants;
               _validateForm();
             });
@@ -141,31 +150,25 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
   }
 
   Future<void> _onCompletePressed() async {
-    // 이벤트 데이터 생성
     final event = CreateEvent(
-      eventId: 0, // 이벤트 ID는 새로 생성 시 0 또는 null로 설정
       eventTitle: widget.title,
       location: widget.selectedLocation?.toString() ?? "Unknown Location",
       startDateTime: widget.startDate,
       endDateTime: widget.endDate,
       repeatType: "NONE",
       gameMode: gameMode.value,
-      alertDateTime: "", //TODO: 임시 조치
+      alertDateTime: "",
     );
 
-    // API 호출
     bool success = await _eventService.postEvent(
         clubId: widget.selectedClub!.id,
         event: event,
         participants: _selectedParticipants);
 
-    // 결과에 따라 처리
     if (success) {
       Navigator.of(context).pop(); // 성공 시 페이지 닫기
       Navigator.of(context).pop(); // 성공 시 페이지 닫기
-      // Navigator.popUntil(context, ModalRoute.withName('/eventMain'));
     } else {
-      // 실패 시 기본 에러 메시지 표시
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('이벤트 생성에 실패했습니다. 나중에 다시 시도해주세요.')),
       );
@@ -233,6 +236,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
               onSelectedTeamType: (int index) {
                 setState(() {
                   isTeam = index == 1;
+                  groups.clear(); // Clear groups when toggling between team and individual
                 });
               },
             ),
@@ -321,17 +325,37 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start, // 상단 정렬 설정
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: groups.map((group) {
-                          String groupName = group.keys.first;
-                          List<CreateParticipant> members = group[groupName]!;
+                          // 첫 번째 키와 마지막 키를 각각 변수로 저장
+                          String groupNameA = group.keys.first;
+                          String groupNameB = group.keys.last;
 
-                          return GroupCard(
-                            groupName: groupName,
-                            members: members,
-                            onAddParticipant: () {
-                              _showParticipantSelectionDialog(groupName);
-                            }, buttonTextStyle: TextStyle(color: Colors.white),
+                          // 첫 번째 키와 마지막 키에 해당하는 멤버 리스트 추출
+                          List<CreateParticipant> membersA = group[groupNameA]!;
+                          List<CreateParticipant> membersB = group[groupNameB]!;
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              GroupCard(
+                                groupName: groupNameA,
+                                members: membersA,
+                                onAddParticipant: () {
+                                  _showParticipantSelectionDialog(groupNameA);
+                                },
+                                buttonTextStyle: TextStyle(color: Colors.white),
+                              ),
+                              if (isTeam)
+                                GroupCard(
+                                  groupName: groupNameB,
+                                  members: membersB,
+                                  onAddParticipant: () {
+                                    _showParticipantSelectionDialog(groupNameB); // Same dialog for B team
+                                  },
+                                  buttonTextStyle: TextStyle(color: Colors.white),
+                                ),
+                            ],
                           );
                         }).toList(),
                       ),
