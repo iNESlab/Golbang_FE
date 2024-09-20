@@ -80,6 +80,13 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
           return true;
         }
       }
+      if(isTeam)
+        for (var participant in group.values.last) {
+          if (!allParticipants.add(participant.memberId)) {
+            print('참가자 중복입니다.true');
+            return true;
+          }
+        }
     }
     print('참가자 중복이 아닙니다.false');
     return false;
@@ -91,6 +98,10 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
       for (var participant in group.values.first) {
         assignedParticipants.add(participant.memberId);
       }
+      if(isTeam)
+        for (var participant in group.values.last) {
+          assignedParticipants.add(participant.memberId);
+        }
     }
     print('참가자 할당여부 ${assignedParticipants.length == _selectedParticipants.length}');
     return assignedParticipants.length == _selectedParticipants.length;
@@ -127,7 +138,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
 
   void _showParticipantSelectionDialog(String groupName) {
     List<CreateParticipant> groupParticipants =
-    groups.firstWhere((group) => group.keys.first == groupName)[groupName]!;
+    groups.firstWhere((group) => group.keys.first == groupName || group.keys.last == groupName)[groupName]!;
 
     showDialog(
       context: context,
