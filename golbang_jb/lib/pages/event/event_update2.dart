@@ -183,6 +183,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
       context: context,
       builder: (context) {
         return ParticipantSelectionDialog(
+          isTeam: isTeam,
           groupName: groupName,
           participants: _selectedParticipants,
           selectedParticipants: groupParticipants,
