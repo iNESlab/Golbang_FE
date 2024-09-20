@@ -89,8 +89,8 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
                 DataColumn(label: Text('핸디캡 스코어')),
               ],
               rows: [
-                buildTeamDataRow('Team A', teamAScores),
-                buildTeamDataRow('Team B', teamBScores),
+                if (teamAScores != null) buildTeamDataRow('Team A', teamAScores), // teamAScores가 null이 아니면 표시
+                if (teamBScores != null) buildTeamDataRow('Team B', teamBScores), // teamBScores가 null이 아니면 표시
                 for (var participant in participants) buildParticipantDataRow(participant),
               ],
             ),
