@@ -6,6 +6,7 @@ import '../repoisitory/secure_storage.dart';
 import '../models/get_statistics_overall.dart';
 import '../models/get_statistics_yearly.dart';
 import '../models/get_statistics_ranks.dart';
+import '../models/get_statistics_period.dart';
 
 class StatisticsService {
   final SecureStorage storage;
@@ -86,6 +87,30 @@ class StatisticsService {
       }
     } catch (e) {
       print('Failed to load year statistics for $year: $e');
+    }
+    return null;
+  }
+
+  Future<PeriodStatistics?> fetchPeriodStatistics(String startDate, String endDate) async {
+    try {
+      final accessToken = await storage.readAccessToken();
+      var uri = Uri.parse(
+          "${dotenv.env['API_HOST']}/api/v1/participants/statistics/period/?start_date=$startDate&end_date=$endDate");
+
+      Map<String, String> headers = {
+        "Content-type": "application/json",
+        "Authorization": "Bearer $accessToken"
+      };
+
+      var response = await http.get(uri, headers: headers);
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(utf8.decode(response.bodyBytes))['data'];
+        if (jsonData != null) {
+          return PeriodStatistics.fromJson(jsonData);
+        }
+      }
+    } catch (e) {
+      print('Failed to load period statistics: $e');
     }
     return null;
   }
