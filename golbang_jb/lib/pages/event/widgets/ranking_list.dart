@@ -8,6 +8,15 @@ class RankingList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 참가자 중 하나라도 유효한 sumScore가 있는지 확인 (N/A이면 데이터 없음 처리)
+    bool hasValidScores = participants.any((participant) {
+      return participant.sumScore != null && participant.sumScore != 'N/A';
+    });
+
+    if (!hasValidScores) {
+      return _buildNoRankingData(); // 유효한 점수가 없으면 데이터 없음 메시지 출력
+    }
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -136,6 +145,18 @@ class RankingList extends StatelessWidget {
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
+        ),
+      ),
+    );
+  }
+  // Ranking 데이터가 없을 때 보여줄 메시지 위젯
+  Widget _buildNoRankingData() {
+    return Center(
+      child: Text(
+        "Ranking data is not available.",
+        style: TextStyle(
+          fontSize: 16,
+          color: Colors.grey,
         ),
       ),
     );

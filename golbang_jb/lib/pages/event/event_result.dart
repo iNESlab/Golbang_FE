@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/event/widgets/team_result.dart';
@@ -8,7 +10,6 @@ import 'package:golbang/pages/event/widgets/mini_score_card.dart';
 import 'package:golbang/pages/event/widgets/ranking_list.dart';
 
 import '../../models/participant.dart';
-import '../../models/profile/get_event_result_participants_ranks.dart';
 import '../../models/profile/get_event_result_participants_ranks.dart';
 import '../../repoisitory/secure_storage.dart';
 
@@ -141,7 +142,7 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
             ],
             SizedBox(height: 10),
             MiniScoreCard(
-              scorecard: _isHandicapEnabled && _eventData!['user']['handicap_scorecard'] != null
+              scorecard: _isHandicapEnabled && _eventData!['user']['handicap_scorecard'] != []
                   ? List<int>.from(_eventData!['user']['handicap_scorecard'])
                   : _userProfile!.scorecard,
               eventId: widget.eventId,

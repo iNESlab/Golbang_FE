@@ -17,6 +17,10 @@ class MiniScoreCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (scorecard.isEmpty) {
+      return _buildNoScorecardData(); // Display message when scorecard is empty
+    }
+
     return Container(
       // margin: EdgeInsets.symmetric(vertical: 10),
       padding: EdgeInsets.all(16),
@@ -165,4 +169,18 @@ class MiniScoreCard extends StatelessWidget {
       ),
     );
   }
+
+  // A widget to show when there is no scorecard data
+  Widget _buildNoScorecardData() {
+    return Center(
+      child: Text(
+        "Scorecard data is not available.",
+        style: TextStyle(
+          fontSize: 16,
+          color: Colors.grey,
+        ),
+      ),
+    );
+  }
+
 }
