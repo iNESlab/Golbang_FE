@@ -142,9 +142,9 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
             ],
             SizedBox(height: 10),
             MiniScoreCard(
-              scorecard: _isHandicapEnabled && _eventData!['user']['handicap_scorecard'] != []
-                  ? List<int>.from(_eventData!['user']['handicap_scorecard'])
-                  : _userProfile!.scorecard,
+              scorecard: _isHandicapEnabled && _eventData!['user']['handicap_scorecard'] != null
+                  ? List<int>.from(_eventData!['user']['handicap_scorecard'] ?? []) // null 체크 추가
+                  : _userProfile?.scorecard ?? [], // null 체크 추가
               eventId: widget.eventId,
             ),
             SizedBox(height: 10),
