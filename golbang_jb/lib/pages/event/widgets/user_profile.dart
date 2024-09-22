@@ -3,7 +3,6 @@
 **/
 import 'package:flutter/material.dart';
 import '../../../models/profile/get_event_result_participants_ranks.dart';
-import '../../../models/profile/get_event_result_participants_ranks.dart';
 
 class UserProfileWidget extends StatelessWidget {
   final GetEventResultParticipantsRanks userProfile;
@@ -30,9 +29,9 @@ class UserProfileWidget extends StatelessWidget {
         children: [
           // 프로필 이미지
           CircleAvatar(
-            backgroundImage: userProfile.profileImage != null && userProfile.profileImage.isNotEmpty
+            backgroundImage: userProfile.profileImage.startsWith('http')
                 ? NetworkImage(userProfile.profileImage)
-                : AssetImage('assets/images/user_default.png') as ImageProvider,
+                : AssetImage(userProfile.profileImage) as ImageProvider,
             radius: 30,
             backgroundColor: Colors.transparent, // 배경을 투명하게 설정
           ),

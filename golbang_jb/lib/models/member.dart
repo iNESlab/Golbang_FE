@@ -30,7 +30,7 @@ class Member {
         'id': memberId,
         'name': name,
         'role': role,
-        'profile_image': profileImage,
+        // 'profile_image': profileImage,
         'description': description,
     };
   }
