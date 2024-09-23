@@ -350,45 +350,13 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
       MaterialPageRoute(
         builder: (context) => EventsUpdate1(event: widget.event), // 이벤트 데이터 자체를 전달
       ),
-    ).then((updatedEvent) {
-      if (updatedEvent != null) {
-        // 수정된 이벤트 데이터를 받아서 API 호출
-        _updateEvent(updatedEvent);
+    ).then((result) {
+      if(result){
+        // TODO: 이벤트 단건 조회 API 사용
+
       }
     });
   }
-
-  void _updateEvent(Event updatedEvent) async {
-    // ref.watch를 이용하여 storage 인스턴스를 얻고 이를 EventService에 전달
-    final storage = ref.watch(secureStorageProvider);
-    final eventService = EventService(storage);
-
-    final eventData = {
-      "event_title": updatedEvent.eventTitle,
-      "location": updatedEvent.location,
-      "start_date_time": updatedEvent.startDateTime.toIso8601String(),
-      "end_date_time": updatedEvent.endDateTime.toIso8601String(),
-      "game_mode": updatedEvent.gameMode.toString(),
-      // 필요한 다른 필드들 추가
-    };
-
-    final success = await eventService.updateEvent(widget.event.eventId, eventData);
-
-    if (success) {
-      // 성공 알림 표시
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('성공적으로 수정되었습니다')),
-      );
-      // 이벤트 상세 페이지로 돌아오기
-      Navigator.of(context).pop(); // 생성 페이지에서 상세 페이지로 돌아오기
-    } else {
-      // 실패 알림 표시
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('이벤트 수정에 실패했습니다.')),
-      );
-    }
-  }
-
 
   void _deleteEvent() async {
     // ref.watch를 이용하여 storage 인스턴스를 얻고 이를 EventService에 전달
