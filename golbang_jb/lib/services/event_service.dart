@@ -91,10 +91,24 @@ class EventService {
   }
 
   // 이벤트 수정 메서드
-  Future<bool> updateEvent(int eventId, Map<String, dynamic> eventData) async {
+  Future<bool> updateEvent({
+    required CreateEvent event,
+    required List<CreateParticipant> participants,
+  }) async {
     try {
-      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/');
+      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/${event.eventId}/');
       final accessToken = await storage.readAccessToken();
+
+      // Event의 JSON과 참가자 리스트의 JSON을 각각 생성
+      Map<String, dynamic> eventJson = event.toJson();
+      List<Map<String, dynamic>> participantsJson =
+      participants.map((p) => p.toJson()).toList();
+
+      // 두 개의 데이터를 하나의 Map으로 병합
+      Map<String, dynamic> requestBody = {
+        ...eventJson, // Event의 데이터를 추가
+        'participants': participantsJson, // 참가자 데이터를 추가
+      };
 
       final response = await http.put(
         url,
@@ -102,7 +116,7 @@ class EventService {
           'Content-Type': 'application/json',
           'Authorization': 'Bearer $accessToken',
         },
-        body: jsonEncode(eventData),
+        body: jsonEncode(requestBody),
       );
 
       if (response.statusCode == 200) {
