@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:golbang/models/profile/user_profile.dart';
+import 'package:golbang/models/profile/get_event_result_participants_ranks.dart';
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart'; // basename을 사용하기 위해 필요
 import '../models/get_statistics_ranks.dart';
@@ -16,8 +16,8 @@ class GroupService {
   Future<bool> saveGroup({
     required String name,
     required String description,
-    required List<UserProfile> members,
-    required List<UserProfile> admins,
+    required List<GetEventResultParticipantsRanks> members,
+    required List<GetEventResultParticipantsRanks> admins,
     required File? imageFile, // 이미지 파일 추가
   }) async {
     try {

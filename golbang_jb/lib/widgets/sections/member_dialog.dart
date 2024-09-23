@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:golbang/models/profile/user_profile.dart';
+import 'package:golbang/models/profile/get_event_result_participants_ranks.dart';
 
 import '../../repoisitory/secure_storage.dart';
 import '../../services/user_service.dart';
 
 class MemberDialog extends ConsumerStatefulWidget {
-  final List<UserProfile> selectedMembers;
-  final ValueChanged<List<UserProfile>> onMembersSelected;
+  final List<GetEventResultParticipantsRanks> selectedMembers;
+  final ValueChanged<List<GetEventResultParticipantsRanks>> onMembersSelected;
 
   MemberDialog({
     required this.selectedMembers,
@@ -19,7 +19,7 @@ class MemberDialog extends ConsumerStatefulWidget {
 }
 
 class _MemberDialogState extends ConsumerState<MemberDialog> {
-  late List<UserProfile> tempSelectedMembers;
+  late List<GetEventResultParticipantsRanks> tempSelectedMembers;
 
   @override
   void initState() {
@@ -64,7 +64,7 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
       content: Container(
         color: Colors.white,
         width: MediaQuery.of(context).size.width * 0.9,
-        child: FutureBuilder<List<UserProfile>>(
+        child: FutureBuilder<List<GetEventResultParticipantsRanks>>(
           future: userService.getUserProfileList(), // 이 메서드가 위젯 생성 시 자동으로 호출됩니다.
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {

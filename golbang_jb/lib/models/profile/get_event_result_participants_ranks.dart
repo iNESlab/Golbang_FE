@@ -1,7 +1,7 @@
-/* pages/models/user_profile.dart
+/* pages/models/get_event_result_participants_ranks.dart
 * 이벤트 결과 조회 시 사용자 정보 (이름, 이미지, 스코어, 랭킹)
 **/
-class UserProfile {
+class GetEventResultParticipantsRanks {
   final String userId;
   final String name;
   final String profileImage;
@@ -11,7 +11,7 @@ class UserProfile {
   final String handicapRank;
   final List<int> scorecard;
 
-  UserProfile({
+  GetEventResultParticipantsRanks({
     required this.userId,
     required this.name,
     required this.profileImage,
@@ -22,8 +22,8 @@ class UserProfile {
     required this.scorecard,
   });
 
-  factory UserProfile.fromJson(Map<String, dynamic> json) {
-    return UserProfile(
+  factory GetEventResultParticipantsRanks.fromJson(Map<String, dynamic> json) {
+    return GetEventResultParticipantsRanks(
       userId: json['user_id'],
       name: json['name'],
       profileImage: json['profile_image'] ?? 'assets/images/user_default.png',

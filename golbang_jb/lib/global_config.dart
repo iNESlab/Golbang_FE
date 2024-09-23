@@ -7,7 +7,7 @@ import 'models/post.dart';
 import 'models/user.dart';
 
 // 민정 사용 로직:
-import 'models/users.dart';
+import 'models/user_account.dart';
 import 'models/club.dart';
 import 'models/club_member.dart';
 import 'models/participant.dart';

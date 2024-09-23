@@ -8,7 +8,7 @@ import 'package:golbang/widgets/sections/member_dialog.dart';
 import 'package:golbang/widgets/sections/member_invite.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../models/profile/user_profile.dart';
+import '../../models/profile/get_event_result_participants_ranks.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/group_service.dart';
 
@@ -18,8 +18,8 @@ class GroupCreatePage extends ConsumerStatefulWidget {
 }
 
 class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
-  List<UserProfile> selectedAdmins = [];
-  List<UserProfile> selectedMembers = [];
+  List<GetEventResultParticipantsRanks> selectedAdmins = [];
+  List<GetEventResultParticipantsRanks> selectedMembers = [];
   TextEditingController _groupNameController = TextEditingController();
   TextEditingController _groupDescriptionController = TextEditingController();
   XFile? _imageFile;
@@ -34,13 +34,13 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
   }
 
 
-  void _showMemberDialog(List<UserProfile> users) {
-    showDialog<List<UserProfile>>(
+  void _showMemberDialog(List<GetEventResultParticipantsRanks> users) {
+    showDialog<List<GetEventResultParticipantsRanks>>(
       context: context,
       builder: (BuildContext context) {
         return MemberDialog(
           selectedMembers: users,
-          onMembersSelected: (List<UserProfile> members) {
+          onMembersSelected: (List<GetEventResultParticipantsRanks> members) {
             setState(() {
               selectedMembers = members;
             });
@@ -153,7 +153,7 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
                 '내 프로필',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              FutureBuilder<UserProfile>(
+              FutureBuilder<GetEventResultParticipantsRanks>(
                 future: userService.getUserProfile(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {

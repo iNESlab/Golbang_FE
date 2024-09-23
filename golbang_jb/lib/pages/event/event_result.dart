@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/event/widgets/team_result.dart';
@@ -8,8 +10,7 @@ import 'package:golbang/pages/event/widgets/mini_score_card.dart';
 import 'package:golbang/pages/event/widgets/ranking_list.dart';
 
 import '../../models/participant.dart';
-import '../../models/profile/user_profile.dart';
-import '../../models/profile/user_profile.dart';
+import '../../models/profile/get_event_result_participants_ranks.dart';
 import '../../repoisitory/secure_storage.dart';
 
 class EventResultPage extends ConsumerStatefulWidget {
@@ -22,7 +23,7 @@ class EventResultPage extends ConsumerStatefulWidget {
 }
 
 class _EventResultPageState extends ConsumerState<EventResultPage> {
-  UserProfile? _userProfile;
+  GetEventResultParticipantsRanks? _userProfile;
   Map<String, dynamic>? _eventData;
   Map<String, dynamic>? _teamResultData;
   bool _isLoading = true;
@@ -53,7 +54,7 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
       _isTeamEvent = individualData['participants'].any((participant) => participant['team_type'] != 'NONE');
 
       setState(() {
-        _userProfile = UserProfile.fromJson(individualData['user']);
+        _userProfile = GetEventResultParticipantsRanks.fromJson(individualData['user']);
         _eventData = individualData;
         _teamResultData = teamData;
         _isLoading = false;
@@ -109,7 +110,7 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
             SizedBox(height: 10),
             UserProfileWidget(
               userProfile: _isHandicapEnabled
-                  ? UserProfile.fromJson({
+                  ? GetEventResultParticipantsRanks.fromJson({
                 ..._eventData!['user'],
                 'sum_score': _eventData!['user']['handicap_score'] ?? _eventData!['user']['sum_score'], // null 체크 추가
                 'rank': _eventData!['user']['handicap_rank'] ?? _eventData!['user']['rank'], // null 체크 추가
@@ -142,8 +143,9 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
             SizedBox(height: 10),
             MiniScoreCard(
               scorecard: _isHandicapEnabled && _eventData!['user']['handicap_scorecard'] != null
-                  ? List<int>.from(_eventData!['user']['handicap_scorecard'])
-                  : _userProfile!.scorecard,
+                  ? List<int>.from(_eventData!['user']['handicap_scorecard'] ?? []) // null 체크 추가
+                  : _userProfile?.scorecard ?? [], // null 체크 추가
+              eventId: widget.eventId,
             ),
             SizedBox(height: 10),
             RankingList(
