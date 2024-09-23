@@ -118,6 +118,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
   void _createGroups() {
     int numGroups = int.parse(numberOfGroups.replaceAll('개', ''));
     setState(() {
+      groups.clear(); // Clear groups when toggling between team and individual
       groups = isTeam
           ? List.generate(
         numGroups,
@@ -239,6 +240,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
             ),
             SizedBox(height: 20),
             ToggleButtonsWidget(
+              isTeam: isTeam,
               onSelectedMatchingType: (int index) {
                 setState(() {
                   isAutoMatching = index == 0;
@@ -247,7 +249,10 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
               onSelectedTeamType: (int index) {
                 setState(() {
                   isTeam = index == 1;
-                  groups.clear(); // Clear groups when toggling between team and individual
+                  groups.clear();
+                  //TODO: 지금 조 생성을 안눌러도 팀 토글 선택시 isTeam이 변경되어 참가자가 이상하게 표시됨
+                  //TODO: 임시로 토글 선택시 groups.clear
+
                 });
               },
             ),
