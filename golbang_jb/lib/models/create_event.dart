@@ -39,6 +39,7 @@ class CreateEvent {
 
   Map<String, dynamic> toJson() {
     return {
+      'event_id': eventId,
       'event_title': eventTitle,
       'location': location,
       'start_date_time': startDateTime.toIso8601String(),
