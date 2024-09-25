@@ -6,6 +6,7 @@ import 'package:golbang/pages/event/widgets/no_api_participant_dialog.dart';
 import 'package:golbang/pages/event/widgets/toggle_bottons.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../models/club.dart';
+import '../../models/create_event.dart';
 import '../../models/create_participant.dart';
 import '../../models/enum/event.dart';
 import '../../models/participant.dart';
@@ -59,26 +60,22 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
     super.initState();
     _eventService = EventService(ref.read(secureStorageProvider));
     _initializeParticipants();
+    isTeam = widget.existingParticipants.first.teamType != TeamConfig.NONE.value;// 기존에 설정된 게임 모드 초기화
     _initializeGroups();
     gameMode = widget.selectedGameMode; // 기존에 설정된 게임 모드 초기화
   }
 
   void _initializeParticipants() {
-    // 기존 참가자 정보에서 groupType을 찾아 매핑
     _selectedParticipants = widget.selectedParticipants.map((participant) {
-      // existingParticipants에서 해당 참가자의 그룹 정보를 찾음
       Participant? existingParticipant;
       try {
-        // existingParticipants에서 해당 참가자의 그룹 정보를 찾음
         existingParticipant = widget.existingParticipants.firstWhere(
               (existing) => existing.member!.memberId == participant.memberId,
         );
       } catch (e) {
-        // 참가자를 찾지 못하면 null로 설정
         existingParticipant = null;
       }
 
-      // groupType을 가져오고, 없으면 null로 설정
       int groupType = existingParticipant?.groupType ?? 0;
 
       return CreateParticipant(
@@ -86,44 +83,57 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
         name: participant.name,
         profileImage: participant.profileImage,
         teamType: teamConfig,
-        groupType: groupType, // 기존 참가자의 groupType 적용
+        groupType: groupType,
       );
     }).toList();
   }
 
-
   void _initializeGroups() {
     setState(() {
-      // 먼저 groups 리스트를 초기화합니다.
       groups.clear();
 
       List<CreateParticipant> existParticipants = widget.existingParticipants.map((participant) {
+        print("${participant.member!.name} teamType: ${participant.teamType} groupType: ${participant.groupType}");
         return CreateParticipant(
           memberId: participant.member!.memberId,
           name: participant.member!.name,
-          profileImage: participant.member!.profileImage??'assets/images/user_default.png',
-          teamType: teamConfig,
+          profileImage: participant.member!.profileImage ?? 'assets/images/user_default.png',
+          teamType: participant.teamType == "NONE" ? TeamConfig.NONE
+              : participant.teamType == "A" ? TeamConfig.TEAM_A
+              : TeamConfig.TEAM_B,
           groupType: participant.groupType,
         );
       }).toList();
 
-      // 모든 참가자에 대해 그룹을 설정
       for (CreateParticipant createParticipant in existParticipants) {
         String groupName = '조${createParticipant.groupType}';
+        if (isTeam) groupName += ' ${createParticipant.teamType.value}'; // A, B 팀을 추가함
+        print("=================");
+        print("name : ${createParticipant.name}");
+        print("isTeam: $isTeam");
+        print("groupName: $groupName");
 
-        // 그룹이 이미 존재하는지 확인
-        var existingGroup = groups.firstWhere(
-                (group) => group.keys.contains(groupName),
-            orElse: () => {}
-        );
+        // 그룹의 인덱스를 찾음
+        int groupIndex = groups.indexWhere((group) => group.keys.contains(groupName));
+        print("groupIndex: $groupIndex");
 
-        // 그룹이 존재하면 해당 그룹에 참가자를 추가하고, 없으면 새로운 그룹을 생성하여 추가
-        if (existingGroup.isNotEmpty) {
-          existingGroup[groupName]!.add(createParticipant);
+        if (groupIndex != -1) {
+          // 해당 그룹이 존재할 경우, 참가자를 추가
+          groups[groupIndex][groupName]!.add(createParticipant);
         } else {
-          groups.add({
-            groupName: [createParticipant]
-          });
+          // 해당 그룹이 없으면 새로운 그룹을 생성하여 추가
+          isTeam ? createParticipant.teamType.value == "A"
+              ? groups.add({ // A팀에 속할 때
+                  "조${createParticipant.groupType} A": [createParticipant],
+                  "조${createParticipant.groupType} B": [],
+                })
+              : groups.add({ // B팀에 속할 때
+                  "조${createParticipant.groupType} A": [],
+                  "조${createParticipant.groupType} B": [createParticipant],
+                })
+              : groups.add({ // 개인전일 때
+                  groupName : [createParticipant],
+                });
         }
       }
     });
@@ -132,7 +142,16 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
   void _createGroups() {
     int numGroups = int.parse(numberOfGroups.replaceAll('개', ''));
     setState(() {
-      groups = List.generate(
+      groups.clear();
+      groups = isTeam
+          ? List.generate(
+        numGroups,
+            (index) => {
+          '조${index + 1} A': [],
+          '조${index + 1} B': [],
+        },
+      )
+          : List.generate(
         numGroups,
             (index) => {
           '조${index + 1}': [],
@@ -151,6 +170,13 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
           return true;
         }
       }
+      if(isTeam)
+        for (var participant in group.values.last) {
+          if (!allParticipants.add(participant.memberId)) {
+            print('참가자 중복입니다.true');
+            return true;
+          }
+        }
     }
     print('참가자 중복이 아닙니다.false');
     return false;
@@ -162,6 +188,10 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
       for (var participant in group.values.first) {
         assignedParticipants.add(participant.memberId);
       }
+      if(isTeam)
+        for (var participant in group.values.last) {
+          assignedParticipants.add(participant.memberId);
+        }
     }
     print('참가자 할당여부 ${assignedParticipants.length == _selectedParticipants.length}');
     return assignedParticipants.length == _selectedParticipants.length;
@@ -177,7 +207,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
 
   void _showParticipantSelectionDialog(String groupName) {
     List<CreateParticipant> groupParticipants =
-    groups.firstWhere((group) => group.keys.first == groupName)[groupName]!;
+    groups.firstWhere((group) => group.keys.first == groupName || group.keys.last == groupName)[groupName]!;
 
     showDialog(
       context: context,
@@ -189,8 +219,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
           selectedParticipants: groupParticipants,
           onSelectionComplete: (List<CreateParticipant> updatedParticipants) {
             setState(() {
-              groups
-                  .firstWhere((group) => group.keys.first == groupName)[groupName] =
+              groups.firstWhere((group) => group.keys.contains(groupName))[groupName] =
                   updatedParticipants;
               _validateForm();
             });
@@ -201,22 +230,26 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
   }
 
   Future<void> _onCompletePressed() async {
-    final eventData = {
-      "event_title": widget.title,
-      "location": widget.selectedLocation?.toString() ?? "Unknown Location",
-      "start_date_time": widget.startDate.toIso8601String(),
-      "end_date_time": widget.endDate.toIso8601String(),
-      "game_mode": widget.selectedGameMode.value,
-      "participants": _selectedParticipants.map((p) => p.toJson()).toList(),
-    };
+    final eventData = CreateEvent(
+      eventId: widget.eventId,
+      eventTitle: widget.title,
+      location: widget.selectedLocation?.toString() ?? "Unknown Location",
+      startDateTime: widget.startDate,
+      endDateTime: widget.endDate,
+      repeatType: "NONE",
+      gameMode: gameMode.value,
+      alertDateTime: "",
+    );
 
-    bool success = await _eventService.updateEvent(widget.eventId, eventData);
+    bool success = await _eventService.updateEvent(
+      event: eventData,
+      participants: _selectedParticipants,
+    );
 
     if (success) {
       Navigator.of(context).pop(true);
       Navigator.of(context).pop(true);
       ScaffoldMessenger.of(context).showSnackBar(
-
         SnackBar(content: Text('이벤트가 성공적으로 수정되었습니다.')),
       );
     } else {
@@ -256,10 +289,9 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
         elevation: 0,
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16.0),
           children: [
             DropdownButtonFormField<GameMode>(
               decoration: InputDecoration(
@@ -284,6 +316,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
             ),
             SizedBox(height: 20),
             ToggleButtonsWidget(
+              isTeam: isTeam,
               onSelectedMatchingType: (int index) {
                 setState(() {
                   isAutoMatching = index == 0;
@@ -380,17 +413,35 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start, // 상단 정렬 설정
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: groups.map((group) {
-                          String groupName = group.keys.first;
-                          List<CreateParticipant> members = group[groupName]!;
+                          String groupNameA = group.keys.first;
+                          String groupNameB = group.keys.last;
 
-                          return GroupCard(
-                            groupName: groupName,
-                            members: members,
-                            onAddParticipant: () {
-                              _showParticipantSelectionDialog(groupName);
-                            }, buttonTextStyle: TextStyle(color: Colors.white),
+                          List<CreateParticipant> membersA = group[groupNameA]!;
+                          List<CreateParticipant> membersB = group[groupNameB]!;
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              GroupCard(
+                                groupName: groupNameA,
+                                members: membersA,
+                                onAddParticipant: () {
+                                  _showParticipantSelectionDialog(groupNameA);
+                                },
+                                buttonTextStyle: TextStyle(color: Colors.white),
+                              ),
+                              if (isTeam)
+                                GroupCard(
+                                  groupName: groupNameB,
+                                  members: membersB,
+                                  onAddParticipant: () {
+                                    _showParticipantSelectionDialog(groupNameB);
+                                  },
+                                  buttonTextStyle: TextStyle(color: Colors.white),
+                                ),
+                            ],
                           );
                         }).toList(),
                       ),

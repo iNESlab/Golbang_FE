@@ -3,8 +3,13 @@ import 'package:flutter/material.dart';
 class ToggleButtonsWidget extends StatefulWidget {
   final Function(int) onSelectedMatchingType;
   final Function(int) onSelectedTeamType;
+  final bool isTeam; //
 
-  ToggleButtonsWidget({required this.onSelectedMatchingType, required this.onSelectedTeamType});
+  ToggleButtonsWidget({
+    required this.onSelectedMatchingType,
+    required this.onSelectedTeamType,
+    required this.isTeam,
+  });
 
   @override
   _ToggleButtonsWidgetState createState() => _ToggleButtonsWidgetState();
@@ -14,6 +19,12 @@ class _ToggleButtonsWidgetState extends State<ToggleButtonsWidget> {
   List<bool> isSelectedMatching = [true, false]; // 기본값은 '자동'
   List<bool> isSelectedTeam = [true, false]; // 기본값은 '개인'
 
+  @override
+  void initState() {
+    super.initState();
+    bool _isTeam = widget.isTeam == true;
+    if (_isTeam) isSelectedTeam = [false, true];
+  }
   @override
   Widget build(BuildContext context) {
     return Row(
