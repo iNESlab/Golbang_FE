@@ -2,7 +2,8 @@
 // 사용자 정보 조회 시 사용되는 모델
 
 class UserAccount {
-  final String userId;
+  final int id; //  기본키
+  final String userId; // 사용자 아이디
   final String name;
   final String email;
   final String phoneNumber;
@@ -13,6 +14,7 @@ class UserAccount {
   String? profileImage; // Nullable 처리
 
   UserAccount({
+    required this.id,
     required this.userId,
     required this.name,
     required this.email,
@@ -26,6 +28,7 @@ class UserAccount {
 
   factory UserAccount.fromJson(Map<String, dynamic> json) {
     return UserAccount(
+      id: json['id'],
       userId: json['user_id'],
       name: json['name'],
       email: json['email'],

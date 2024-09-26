@@ -13,6 +13,7 @@ import '../../models/profile/get_all_user_profile.dart';
 import '../../provider/club/club_state_provider.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/group_service.dart';
+import '../profile/profile_screen.dart';
 
 class GroupCreatePage extends ConsumerStatefulWidget {
   @override
@@ -34,6 +35,16 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
       _imageFile = pickedFile;
     });
   }
+
+  @override
+  void initState() {
+    super.initState();
+    // 로그인된 사용자 정보를 로드
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(userAccountProvider.notifier).loadUserAccount();  // 상태 업데이트만 진행
+    });
+  }
+
 
   // `GetAllUserProfile`을 사용하는 멤버 다이얼로그
   void _showMemberDialog(bool isAdminMode) {
@@ -102,6 +113,33 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
     final storage = ref.watch(secureStorageProvider);
     final UserService userService = UserService(storage);
 
+    final userAccount = ref.watch(userAccountProvider);  // userAccount 상태를 감시
+
+    if (userAccount == null) {
+      return const Center(child: CircularProgressIndicator());  // 로딩 중일 때
+    }
+    print("=====userAccount1: $userAccount");
+
+    // 사용자 정보를 멤버와 관리자에 추가
+    if (!selectedMembers.any((member) => member.userId == userAccount.userId)) {
+      selectedMembers.add(GetAllUserProfile(
+        id: userAccount.id,
+        userId: userAccount.userId,
+        profileImage: userAccount.profileImage ?? '',
+        name: userAccount.name,
+      ));
+
+      selectedAdmins.add(GetAllUserProfile(
+        id: userAccount.id,
+        userId: userAccount.userId,
+        profileImage: userAccount.profileImage ?? '',
+        name: userAccount.name,
+      ));
+    }
+
+    print("=====userAccount2: $userAccount");
+
+    // 화면 렌더링
     return Scaffold(
       appBar: AppBar(
         title: Text('모임 생성'),
@@ -174,9 +212,12 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
               ],
 
               SizedBox(height: 20),
-
               const Text(
-                '모임명, 소개 문구, 멤버, 관리자를 모두 설정한 후 완료 버튼을 눌러주세요',
+                '※ 모임을 생성하는 사람은 모임 멤버이자 관리자로 설정됩니다.',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
+              const Text(
+                '※ 모임명, 소개 문구, 멤버, 관리자를 모두 설정한 후 완료 버튼을 눌러주세요',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 20),
