@@ -84,7 +84,6 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
                   ? widget.selectedMembers.where((member) => users.contains(member)).toList()
                   : users;
 
-              // 추가할 멤버가 없을 경우 메시지 표시
               if (selectableUsers.isEmpty) {
                 return Center(
                   child: Text(widget.isAdminMode
@@ -97,26 +96,34 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
                 shrinkWrap: true,
                 itemCount: selectableUsers.length,
                 itemBuilder: (BuildContext context, int index) {
+                  final user = selectableUsers[index];
+                  final profileImage = user.profileImage;
+
                   return ListTile(
                     leading: CircleAvatar(
-                      backgroundImage: selectableUsers[index].profileImage.startsWith('http')
-                          ? NetworkImage(selectableUsers[index].profileImage)
-                          : AssetImage(selectableUsers[index].profileImage) as ImageProvider,
+                      backgroundColor: Colors.white, // 흰색 배경
+                      backgroundImage: profileImage.isNotEmpty && profileImage.startsWith('http')
+                          ? NetworkImage(profileImage)
+                          : null, // 기본 이미지를 제공하지 않을 때 null로 설정
+                      child: profileImage.isEmpty || !profileImage.startsWith('http')
+                          ? Icon(Icons.person, color: Colors.grey) // 기본 사람 아이콘
+                          : null, // 이미 이미지가 있으면 child를 null로 설정
                     ),
-                    title: Text(selectableUsers[index].name),
+                    title: Text(user.name),
                     trailing: Checkbox(
-                      value: tempSelectedMembers.contains(selectableUsers[index]),
+                      value: tempSelectedMembers.contains(user),
                       onChanged: (bool? value) {
                         setState(() {
                           if (value != null && value) {
-                            tempSelectedMembers.add(selectableUsers[index]);
+                            tempSelectedMembers.add(user);
                           } else {
-                            tempSelectedMembers.remove(selectableUsers[index]);
+                            tempSelectedMembers.remove(user);
                           }
                         });
                       },
                     ),
                   );
+
                 },
               );
             }
