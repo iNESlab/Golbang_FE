@@ -1,7 +1,6 @@
 // event.dart
 class CreateEvent {
   final int? eventId;
-  final int clubId;
   final String? memberGroup;
   final String eventTitle;
   final String? location;
@@ -13,7 +12,6 @@ class CreateEvent {
 
   CreateEvent({
     this.eventId,
-    required this.clubId,
     this.memberGroup,
     required this.eventTitle,
     this.location,
@@ -28,7 +26,6 @@ class CreateEvent {
 
     return CreateEvent(
       eventId: json['event_id'],
-      clubId: json['club_id'],
       memberGroup: json['memberGroup'] ?? "",
       eventTitle: json['event_title'],
       location: json['location'],
@@ -43,7 +40,6 @@ class CreateEvent {
   Map<String, dynamic> toJson() {
     return {
       'event_id': eventId,
-      'club_id': clubId,
       'event_title': eventTitle,
       'location': location,
       'start_date_time': startDateTime.toIso8601String(),

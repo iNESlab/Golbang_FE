@@ -4,12 +4,19 @@ import '../../models/create_event.dart';
 import '../../models/create_participant.dart';
 import '../../models/event.dart';
 import '../../services/event_service.dart';
+import 'event_service_provider.dart';
 import 'event_state_provider.dart';
 
-class EventStateNotifier extends StateNotifier<EventState> {
+// EventStateNotifierProvider 정의
+final eventStateNotifierProvider = StateNotifierProvider<EventStateNotifierProvider, EventState>((ref) {
+  final eventService = ref.read(eventServiceProvider);
+  return EventStateNotifierProvider(eventService);
+});
+
+class EventStateNotifierProvider extends StateNotifier<EventState> {
   final EventService _eventService;
 
-  EventStateNotifier(this._eventService) : super(EventState());
+  EventStateNotifierProvider(this._eventService) : super(EventState());
 
   // 이벤트 목록을 불러오는 함수
   Future<void> fetchEvents() async {
@@ -22,9 +29,9 @@ class EventStateNotifier extends StateNotifier<EventState> {
   }
 
   // 이벤트 생성
-  Future<void> createEvent(CreateEvent event, List<CreateParticipant> participants) async {
+  Future<void> createEvent(CreateEvent event, List<CreateParticipant> participants, String clubId) async {
     try {
-      final success = await _eventService.postEvent(clubId: event.clubId, event: event, participants: participants);
+      final success = await _eventService.postEvent(clubId: int.parse(clubId), event: event, participants: participants);
       if (success) {
         await fetchEvents();
       } else {
@@ -34,6 +41,8 @@ class EventStateNotifier extends StateNotifier<EventState> {
       state = state.copyWith(errorMessage: '이벤트 생성 중 오류 발생');
     }
   }
+
+
 
   // 이벤트 수정
   Future<void> updateEvent(CreateEvent updatedEvent, List<CreateParticipant> participants) async {

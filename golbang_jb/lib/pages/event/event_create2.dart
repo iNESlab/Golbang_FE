@@ -10,8 +10,7 @@ import '../../models/create_event.dart';
 import '../../models/create_participant.dart';
 import '../../models/enum/event.dart';
 import '../../models/profile/member_profile.dart';
-import '../../repoisitory/secure_storage.dart';
-import '../../services/event_service.dart';
+import '../../provider/event/event_state_notifier_provider.dart';
 
 class EventsCreate2 extends ConsumerStatefulWidget {
   final String title;
@@ -49,12 +48,10 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
   bool hasDuplicateParticipants = false;
   bool areGroupsEmpty = true;
   bool allParticipantsAssigned = false;
-  late EventService _eventService;
 
   @override
   void initState() {
     super.initState();
-    _eventService = EventService(ref.read(secureStorageProvider));
     _initializeParticipants();
   }
 
@@ -68,7 +65,6 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
         groupType: 0,
       );
     }).toList();
-
   }
 
   bool _checkForDuplicateParticipants() {
@@ -80,13 +76,14 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
           return true;
         }
       }
-      if(isTeam)
+      if (isTeam) {
         for (var participant in group.values.last) {
           if (!allParticipants.add(participant.memberId)) {
             print('참가자 중복입니다.true');
             return true;
           }
         }
+      }
     }
     print('참가자 중복이 아닙니다.false');
     return false;
@@ -98,10 +95,11 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
       for (var participant in group.values.first) {
         assignedParticipants.add(participant.memberId);
       }
-      if(isTeam)
+      if (isTeam) {
         for (var participant in group.values.last) {
           assignedParticipants.add(participant.memberId);
         }
+      }
     }
     print('참가자 할당여부 ${assignedParticipants.length == _selectedParticipants.length}');
     return assignedParticipants.length == _selectedParticipants.length;
@@ -138,8 +136,8 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
   }
 
   void _showParticipantSelectionDialog(String groupName) {
-    List<CreateParticipant> groupParticipants =
-    groups.firstWhere((group) => group.keys.first == groupName || group.keys.last == groupName)[groupName]!;
+    List<CreateParticipant> groupParticipants = groups
+        .firstWhere((group) => group.keys.first == groupName || group.keys.last == groupName)[groupName]!;
 
     showDialog(
       context: context,
@@ -147,12 +145,11 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
         return ParticipantSelectionDialog(
           isTeam: isTeam,
           groupName: groupName,
-          participants: _selectedParticipants,  // 모든 참가자 리스트
-          selectedParticipants: groupParticipants,  // 현재 그룹에 선택된 참가자
+          participants: _selectedParticipants, // 모든 참가자 리스트
+          selectedParticipants: groupParticipants, // 현재 그룹에 선택된 참가자
           onSelectionComplete: (List<CreateParticipant> updatedParticipants) {
             setState(() {
-              groups.firstWhere((group) => group.keys.contains(groupName))[groupName] =
-                  updatedParticipants;
+              groups.firstWhere((group) => group.keys.contains(groupName))[groupName] = updatedParticipants;
               _validateForm();
             });
           },
@@ -172,23 +169,16 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
       alertDateTime: "",
     );
 
-    bool success = await _eventService.postEvent(
-        clubId: widget.selectedClub!.id,
-        event: event,
-        participants: _selectedParticipants);
-
-    if (success) {
-      Navigator.of(context).pop(); // 성공 시 페이지 닫기
-      Navigator.of(context).pop(); // 성공 시 페이지 닫기
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('이벤트 생성에 실패했습니다. 나중에 다시 시도해주세요.')),
-      );
-    }
+    // 상태 노티파이어를 사용하여 이벤트 생성
+    await ref
+        .read(eventStateNotifierProvider.notifier)
+        .createEvent(event, _selectedParticipants, widget.selectedClub!.id.toString());
   }
 
   @override
   Widget build(BuildContext context) {
+    final eventState = ref.watch(eventStateNotifierProvider);
+
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -250,9 +240,6 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                 setState(() {
                   isTeam = index == 1;
                   groups.clear();
-                  //TODO: 지금 조 생성을 안눌러도 팀 토글 선택시 isTeam이 변경되어 참가자가 이상하게 표시됨
-                  //TODO: 임시로 토글 선택시 groups.clear
-
                 });
               },
             ),
@@ -343,11 +330,9 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: groups.map((group) {
-                          // 첫 번째 키와 마지막 키를 각각 변수로 저장
                           String groupNameA = group.keys.first;
                           String groupNameB = group.keys.last;
 
-                          // 첫 번째 키와 마지막 키에 해당하는 멤버 리스트 추출
                           List<CreateParticipant> membersA = group[groupNameA]!;
                           List<CreateParticipant> membersB = group[groupNameB]!;
 
