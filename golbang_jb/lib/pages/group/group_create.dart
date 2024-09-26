@@ -36,28 +36,32 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
   }
 
   // `GetAllUserProfile`을 사용하는 멤버 다이얼로그
-  void _showMemberDialog(List<GetAllUserProfile> users) {
+  void _showMemberDialog(bool isAdminMode) {
     showDialog<List<GetAllUserProfile>>(
       context: context,
       builder: (BuildContext context) {
         return MemberDialog(
-          selectedMembers: users,
+          selectedMembers: isAdminMode ? selectedAdmins : selectedMembers,
           onMembersSelected: (List<GetAllUserProfile> members) {
             setState(() {
-              selectedMembers = members;
+              if (isAdminMode) {
+                selectedAdmins = members;
+              } else {
+                selectedMembers = members;
+              }
             });
           },
+          isAdminMode: isAdminMode,
+          selectedAdmins: selectedAdmins,
         );
       },
     ).then((result) {
       if (result != null) {
         setState(() {
-          if (users == selectedMembers) {
-            selectedMembers = result;
-            selectedAdmins.removeWhere((admin) => selectedMembers.contains(admin));
-          } else if (users == selectedAdmins) {
+          if (isAdminMode) {
             selectedAdmins = result;
-            selectedMembers.removeWhere((member) => selectedAdmins.contains(member));
+          } else {
+            selectedMembers = result;
           }
         });
       }
@@ -167,7 +171,7 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
                       title: Text(userProfile.name),
                       trailing: IconButton(
                         icon: Icon(Icons.arrow_forward_ios, color: Colors.green),
-                        onPressed: () => _showMemberDialog(selectedMembers),
+                        onPressed: () => _showMemberDialog(false),
                       ),
                     );
                   } else {
@@ -176,25 +180,21 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
                 },
               ),
               Row(
-
                 children: [
                   Expanded(
-                    child: MemberAddButton(onPressed: () => _showMemberDialog(selectedMembers)),
+                    child: MemberAddButton(onPressed: () => _showMemberDialog(false)),
                   ),
                   SizedBox(width: 10),
                   Expanded(
-                    child: AdminAddButton(onPressed: () => _showMemberDialog(selectedAdmins)),
+                    child: AdminAddButton(onPressed: () => _showMemberDialog(true)),
                   ),
-                  // Expanded(
-                  //   child: MemberInvite(selectedMembers: selectedAdmins),
-                  // ),
                 ],
               ),
               MemberInvite(selectedMembers: selectedMembers),
               SizedBox(height: 20),
               const Text(
-              '모임명, 소개 문구, 멤버, 관리자를 모두 설정한 후 완료 버튼을 눌러주세요',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                '모임명, 소개 문구, 멤버, 관리자를 모두 설정한 후 완료 버튼을 눌러주세요',
+                style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 20),
               Center(
