@@ -82,7 +82,8 @@ class GroupService {
         print('Success! Group created.');
         return true;
       } else {
-        print('Failed to create group. Status code: ${response.statusCode}');
+        var responseData = await response.stream.bytesToString();
+        print('Failed to create group. ${response.statusCode}, ${responseData}');
         return false;
       }
     } catch (e) {
