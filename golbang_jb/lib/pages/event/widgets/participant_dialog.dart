@@ -118,7 +118,6 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
                         backgroundImage: participant.profileImage.startsWith('http')
                             ? NetworkImage(participant.profileImage)
                             : AssetImage(participant.profileImage) as ImageProvider,
-                        child: Text(participant.name),
                       ),
                       title: Text(participant.name),
                       trailing: Checkbox(
