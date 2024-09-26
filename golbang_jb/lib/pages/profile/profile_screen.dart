@@ -45,6 +45,11 @@ class UserAccountNotifier extends StateNotifier<UserAccount?> {
     // 프로필 이미지가 null이 되었는지, 다른 필드가 변경되었는지 비교
     return state!.name != newUserAccount.name ||
         state!.email != newUserAccount.email ||
+        state!.phoneNumber != newUserAccount.phoneNumber ||
+        state!.handicap != newUserAccount.handicap ||
+        state!.address != newUserAccount.address ||
+        state!.dateOfBirth != newUserAccount.dateOfBirth ||
+        state!.studentId != newUserAccount.studentId ||
         _profileImageChanged(state!.profileImage, newUserAccount.profileImage);  // 프로필 이미지 변화 감지
   }
 

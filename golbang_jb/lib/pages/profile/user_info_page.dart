@@ -46,32 +46,30 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
 
     setState(() {
       _imageFile = null; // UI에서 프로필 이미지 제거
-      _userAccount.profileImage = null;  // 삭제된 이미지를 null로 설정
+      _userAccount.profileImage = '';  // 삭제된 이미지를 null로 설정
     });
 
     print("프로필 이미지 제거 후: $_imageFile");
 
     // 별도의 API를 호출해 이미지 삭제
-    await deleteProfileImage();
+    _updateUserInfo(field: '프로필 이미지', value: '');
   }
 
-  Future<void> deleteProfileImage() async {
-    try {
-      final userService = ref.watch(userServiceProvider);
-      await userService.deleteProfileImage(userId: _userAccount.userId);
-
-      setState(() {
-        _userAccount.profileImage = null;  // UI에서 프로필 이미지 제거
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('프로필 이미지 삭제 완료')));
-    } catch (e) {
-      print('Failed to delete profile image: $e');
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('프로필 이미지 삭제 실패')));
-    }
-  }
-
-
+  // Future<void> deleteProfileImage() async {
+  //   try {
+  //     final userService = ref.watch(userServiceProvider);
+  //     await userService.updateUserInfo(userId: _userAccount.userId);
+  //
+  //     setState(() {
+  //       _userAccount.profileImage = null;  // UI에서 프로필 이미지 제거
+  //     });
+  //
+  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('프로필 이미지 삭제 완료')));
+  //   } catch (e) {
+  //     print('Failed to delete profile image: $e');
+  //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('프로필 이미지 삭제 실패')));
+  //   }
+  // }
 
 
   Future<void> _updateUserInfo({String? field, String? value}) async {
@@ -86,6 +84,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
         address: field == '집 주소' ? value : _userAccount.address,
         dateOfBirth: field == '생일' ? DateTime.parse(value!) : _userAccount.dateOfBirth,
         studentId: field == '학번' ? value : _userAccount.studentId,
+        profileImage: _imageFile != null ? File(_imageFile!.path) : null,
       );
 
       setState(() {
@@ -116,12 +115,12 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
                   radius: 50,
                   backgroundColor: Colors.grey[300],
                   backgroundImage: _imageFile != null
-                      ? FileImage(File(_imageFile!.path))  // 로컬에서 선택한 이미지가 있으면 그 이미지 사용
-                      : (_userAccount.profileImage != null && _userAccount.profileImage!.isNotEmpty  // 프로필 이미지가 존재하는지 확인
-                      ? NetworkImage(_userAccount.profileImage!) as ImageProvider  // 프로필 이미지가 있으면 네트워크 이미지를 사용
-                      : null),  // 프로필 이미지가 없으면 null
-                  child: _imageFile == null && (_userAccount.profileImage == null || _userAccount.profileImage!.isEmpty)
-                      ? Icon(Icons.person, size: 50, color: Colors.white)  // 이미지가 없으면 기본 아이콘 표시
+                      ? FileImage(File(_imageFile!.path))
+                      : (_userAccount.profileImage != null && _userAccount.profileImage!.isNotEmpty
+                      ? NetworkImage(_userAccount.profileImage!) as ImageProvider
+                      : null),
+                  child: (_imageFile == null && (_userAccount.profileImage == null || _userAccount.profileImage!.isEmpty))
+                      ? Icon(Icons.person, size: 50, color: Colors.white)
                       : null,
                 ),
 

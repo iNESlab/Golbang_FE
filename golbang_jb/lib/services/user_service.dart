@@ -124,7 +124,7 @@ class UserService {
     DateTime? dateOfBirth, // DateTime 형식
     String? address,
     String? studentId,
-    //File? profileImage, // 이미지 파일
+    File? profileImage, // 이미지 파일
   }) async {
     try {
       // 액세스 토큰 불러오기
@@ -159,17 +159,17 @@ class UserService {
       if (address != null && address.isNotEmpty) fields['address'] = address;
       if (studentId != null && studentId.isNotEmpty) fields['student_id'] = studentId;
 
-      request.fields.addAll(fields);
+      if (profileImage != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath('profile_image', profileImage.path),
+        );
+      } else {
+        // 이미지가 없는 경우, 빈 문자열을 서버에 전송
+        print("----이미지 삭제2---");
+        fields['profile_image'] = '';  // 서버가 이 값을 보고 이미지 삭제 처리
+      }
 
-      // // 프로필 이미지 처리: 이미지가 있으면 파일 전송, 없으면 빈 문자열 전송
-      // if (profileImage != null) {
-      //   request.files.add(
-      //     await http.MultipartFile.fromPath('profile_image', profileImage.path),
-      //   );
-      // } else {
-      //   // 이미지가 없는 경우, 빈 문자열을 서버에 전송
-      //   fields['profile_image'] = '';  // 서버가 이 값을 보고 이미지 삭제 처리
-      // }
+      request.fields.addAll(fields);
 
       // 요청 전송
       var response = await request.send();
@@ -193,33 +193,34 @@ class UserService {
     }
   }
 
-  Future<void> deleteProfileImage({required String userId}) async {
-    final accessToken = await storage.readAccessToken();
-    Map<String, dynamic> decodedToken = JwtDecoder.decode(accessToken);
-    String userId = decodedToken['user_id'].toString();
-
-    final uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/users/info/$userId/delete-profile-image/");
-
-    final response = await http.delete(
-      uri,
-      headers: {
-        "Authorization": "Bearer $accessToken",
-      },
-    );
-    if (response.statusCode == 204) {
-      if (response.body.isNotEmpty) {
-        print("Response body: ${response.body}");
-        print("===============프로필 사진 제거 성공==============");
-
-      } else {
-        print("No content in response");
-      }
-
-    }
-    else {
-      throw Exception('Failed to delete profile image');
-    }
-  }
+  // TODO: 추후 S3 삭제가 정상적으로 될 경우 아래 로직을 이용할 예정
+  // Future<void> deleteProfileImage({required String userId}) async {
+  //   final accessToken = await storage.readAccessToken();
+  //   Map<String, dynamic> decodedToken = JwtDecoder.decode(accessToken);
+  //   String userId = decodedToken['user_id'].toString();
+  //
+  //   final uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/users/info/$userId/delete-profile-image/");
+  //
+  //   final response = await http.delete(
+  //     uri,
+  //     headers: {
+  //       "Authorization": "Bearer $accessToken",
+  //     },
+  //   );
+  //   if (response.statusCode == 204) {
+  //     if (response.body.isNotEmpty) {
+  //       print("Response body: ${response.body}");
+  //       print("===============프로필 사진 제거 성공==============");
+  //
+  //     } else {
+  //       print("No content in response");
+  //     }
+  //
+  //   }
+  //   else {
+  //     throw Exception('Failed to delete profile image');
+  //   }
+  // }
 
 
   static Future<http.Response> saveUser({
