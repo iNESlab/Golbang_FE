@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
-class AdminAddButton extends StatelessWidget {
+class MemberAddButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   // onPressed를 외부에서 주입받기 위한 생성자
-  AdminAddButton({required this.onPressed});
+  MemberAddButton({required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,7 @@ class AdminAddButton extends StatelessWidget {
           color: Colors.green,
         ),
         label: Text(
-          '관리자 추가',
+          '멤버 추가',
           style: TextStyle(
             color: Colors.green,
           ),

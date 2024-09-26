@@ -3,13 +3,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/group/widgets/admin_button_widget.dart';
+import 'package:golbang/pages/group/widgets/member_button_widget.dart';
 import 'package:golbang/services/user_service.dart';
 import 'package:golbang/widgets/sections/member_dialog.dart';
 import 'package:golbang/widgets/sections/member_invite.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../models/profile/get_all_user_profile.dart';
-import '../../models/profile/get_event_result_participants_ranks.dart';
 import '../../provider/club/club_state_provider.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/group_service.dart';
@@ -176,16 +176,26 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
                 },
               ),
               Row(
+
                 children: [
+                  Expanded(
+                    child: MemberAddButton(onPressed: () => _showMemberDialog(selectedMembers)),
+                  ),
+                  SizedBox(width: 10),
                   Expanded(
                     child: AdminAddButton(onPressed: () => _showMemberDialog(selectedAdmins)),
                   ),
-                  Expanded(
-                    child: MemberInvite(selectedMembers: selectedAdmins),
-                  ),
+                  // Expanded(
+                  //   child: MemberInvite(selectedMembers: selectedAdmins),
+                  // ),
                 ],
               ),
               MemberInvite(selectedMembers: selectedMembers),
+              SizedBox(height: 20),
+              const Text(
+              '모임명, 소개 문구, 멤버, 관리자를 모두 설정한 후 완료 버튼을 눌러주세요',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+              ),
               SizedBox(height: 20),
               Center(
                 child: ElevatedButton(
