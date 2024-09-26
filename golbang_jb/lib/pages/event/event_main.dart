@@ -5,6 +5,7 @@ import 'package:golbang/repoisitory/secure_storage.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'dart:collection';
 import '../../models/event.dart';
+import '../../provider/participant/participant_state_provider.dart';
 import '../../utils/date_utils.dart';
 import 'package:golbang/services/participant_service.dart';
 import 'package:golbang/services/event_service.dart';
@@ -45,6 +46,11 @@ class EventPageState extends ConsumerState<EventPage> {
     _eventService = EventService(storage);
     _participantService = ParticipantService(storage);
     _loadEventsForMonth();
+
+    // // 여기서 participantStateProvider의 상태를 listen해서, 상태가 변경되면 이벤트 목록을 다시 로드합니다.
+    // ref.listen<ParticipantState>(participantStateProvider, (previous, next) {
+    //   _loadEventsForMonth();
+    // });
   }
 
   Future<void> _loadEventsForMonth() async {
@@ -62,6 +68,7 @@ class EventPageState extends ConsumerState<EventPage> {
             event.startDateTime.month,
             event.startDateTime.day,
           );
+
           if (_events.containsKey(eventDate)) {
             _events[eventDate]!.add(event);
           } else {
@@ -107,20 +114,6 @@ class EventPageState extends ConsumerState<EventPage> {
     _selectedEvents.dispose();
     super.dispose();
   }
-
-  // Future<void> _updateParticipantStatus(int participantId, String newStatusType, Event event) async {
-  //   bool success = await _participantService.updateParticipantStatus(participantId, newStatusType);
-  //   if (success) {
-  //     setState(() {
-  //       // 해당 참가자의 상태를 업데이트
-  //       final participant = event.participants.firstWhere(
-  //             (p) => p.participantId == participantId,
-  //       );
-  //       participant.statusType = newStatusType;
-  //     });
-  //     await _loadEventsForMonth();  // 상태가 업데이트되면 이벤트를 다시 로드
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -390,7 +383,6 @@ class EventPageState extends ConsumerState<EventPage> {
   Widget _buildStatusButton(String status, String selectedStatus, VoidCallback onPressed) {
     // 버튼이 선택된 상태인지 확인
     final bool isSelected = status == selectedStatus;
-
     // 선택된 상태에 따라 버튼의 색상을 결정
     final Color backgroundColor = isSelected
         ? _getStatusColor(status) // 선택된 상태이면 해당 색상을 사용
@@ -440,6 +432,8 @@ class EventPageState extends ConsumerState<EventPage> {
   Future<void> _handleStatusChange(String newStatus, int participantId, Event event) async {
     // 상태를 업데이트
     bool success = await _participantService.updateParticipantStatus(participantId, newStatus);
+    final participantNotifier = ref.read(participantStateProvider.notifier);
+    await participantNotifier.updateParticipantStatus(participantId, newStatus);
 
     if (success) {
       setState(() {
@@ -449,7 +443,6 @@ class EventPageState extends ConsumerState<EventPage> {
         );
         participant.statusType = newStatus;
 
-        // 현재 선택된 이벤트 리스트를 다시 로드하여 즉시 반영
         // TODO: 잘 반영이 안 됨. 반영되도록 수정 필요
         _selectedEvents.value = _getEventsForDay(_selectedDay!);
       });

@@ -2,7 +2,7 @@ import 'member.dart';
 
 class Participant {
   final int participantId;
-  late final String statusType;
+  String statusType;
   final String teamType;
   final int? holeNumber; // nullable로 변경
   final int groupType;
