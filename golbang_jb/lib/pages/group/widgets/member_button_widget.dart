@@ -28,6 +28,7 @@ class MemberAddButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20.0), // 둥근 모서리
           ),
+          minimumSize: Size(double.infinity, 50), // 버튼의 최소 크기 설정
         ),
       ),
     );

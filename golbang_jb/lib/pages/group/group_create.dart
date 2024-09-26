@@ -101,6 +101,7 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
   Widget build(BuildContext context) {
     final storage = ref.watch(secureStorageProvider);
     final UserService userService = UserService(storage);
+
     return Scaffold(
       appBar: AppBar(
         title: Text('모임 생성'),
@@ -149,53 +150,31 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
                 ),
               ),
               SizedBox(height: 20),
-              const Text(
-                '내 프로필',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              FutureBuilder<GetAllUserProfile>(
-                future: userService.getUserProfile(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('프로필을 불러오는데 실패했습니다.'));
-                  } else if (snapshot.hasData) {
-                    final userProfile = snapshot.data!;
-                    return ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: Colors.grey[200], // 연한 회색 배경
-                        backgroundImage: userProfile.profileImage.isNotEmpty && userProfile.profileImage.startsWith('http')
-                            ? NetworkImage(userProfile.profileImage)
-                            : null, // 이미지가 없을 경우 null 설정
-                        child: userProfile.profileImage.isEmpty || !userProfile.profileImage.startsWith('http')
-                            ? Icon(Icons.person, color: Colors.grey) // 기본 사람 아이콘
-                            : null,
-                      ),
-                      title: Text(userProfile.name),
-                      trailing: IconButton(
-                        icon: Icon(Icons.arrow_forward_ios, color: Colors.green),
-                        onPressed: () => _showMemberDialog(false),
-                      ),
-                    );
-                  } else {
-                    return Center(child: Text('프로필이 없습니다.'));
-                  }
-                },
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    child: MemberAddButton(onPressed: () => _showMemberDialog(false)),
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: AdminAddButton(onPressed: () => _showMemberDialog(true)),
-                  ),
-                ],
-              ),
-              MemberInvite(selectedMembers: selectedMembers),
+
+              // + 멤버 추가 버튼
+              MemberAddButton(onPressed: () => _showMemberDialog(false)),
+
+              // 추가된 멤버 목록 표시
+              if (selectedMembers.isNotEmpty) ...[
+                SizedBox(height: 10),
+                Text("추가된 멤버"),
+                MemberInvite(selectedMembers: selectedMembers),
+              ],
+
               SizedBox(height: 20),
+
+              // + 관리자 추가 버튼
+              AdminAddButton(onPressed: () => _showMemberDialog(true)),
+
+              // 추가된 관리자 목록 표시
+              if (selectedAdmins.isNotEmpty) ...[
+                SizedBox(height: 10),
+                Text("추가된 관리자"),
+                MemberInvite(selectedMembers: selectedAdmins),
+              ],
+
+              SizedBox(height: 20),
+
               const Text(
                 '모임명, 소개 문구, 멤버, 관리자를 모두 설정한 후 완료 버튼을 눌러주세요',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
@@ -207,7 +186,7 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
                   child: Text('완료'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.teal,
-                    foregroundColor: Colors.white, // 텍스트 색상을 흰색으로 설정
+                    foregroundColor: Colors.white,
                     minimumSize: Size(double.infinity, 50),
                   ),
                 ),
