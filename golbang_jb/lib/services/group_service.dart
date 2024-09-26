@@ -5,6 +5,7 @@ import 'package:golbang/models/profile/get_event_result_participants_ranks.dart'
 import 'package:http/http.dart' as http;
 import 'package:path/path.dart'; // basename을 사용하기 위해 필요
 import '../models/get_statistics_ranks.dart';
+import '../models/profile/get_all_user_profile.dart';
 import '../repoisitory/secure_storage.dart';
 import 'package:golbang/models/group.dart';
 
@@ -16,8 +17,8 @@ class GroupService {
   Future<bool> saveGroup({
     required String name,
     required String description,
-    required List<GetEventResultParticipantsRanks> members,
-    required List<GetEventResultParticipantsRanks> admins,
+    required List<GetAllUserProfile> members,
+    required List<GetAllUserProfile> admins,
     required File? imageFile, // 이미지 파일 추가
   }) async {
     try {
@@ -81,7 +82,8 @@ class GroupService {
         print('Success! Group created.');
         return true;
       } else {
-        print('Failed to create group. Status code: ${response.statusCode}');
+        var responseData = await response.stream.bytesToString();
+        print('Failed to create group. ${response.statusCode}, ${responseData}');
         return false;
       }
     } catch (e) {

@@ -261,7 +261,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
               SizedBox(height: 16),
               DropdownButtonFormField<Club>(
                 decoration: InputDecoration(
-                  labelText: '클럽 선택',
+                  labelText: '모임 선택',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ),

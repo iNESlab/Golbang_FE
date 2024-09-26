@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../../models/profile/get_event_result_participants_ranks.dart';
+import '../../models/profile/get_all_user_profile.dart';
 
 class MemberInvite extends StatelessWidget {
-  final List<GetEventResultParticipantsRanks> selectedMembers;
+  final List<GetAllUserProfile> selectedMembers;
 
   MemberInvite({required this.selectedMembers});
 
@@ -12,17 +12,19 @@ class MemberInvite extends StatelessWidget {
     return Wrap(
       spacing: 8.0,
       children: selectedMembers.map((member) {
-        // final memberData = users.firstWhere((m) => m.fullname == member);
         return Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             CircleAvatar(
-              // backgroundImage: AssetImage(memberData.profileImage!),
-              backgroundImage: member.profileImage.startsWith('http')
+              backgroundColor: Colors.grey[200], // 연한 회색 배경
+              backgroundImage: member.profileImage.isNotEmpty && member.profileImage.startsWith('http')
                   ? NetworkImage(member.profileImage)
-                  : AssetImage(member.profileImage) as ImageProvider,
+                  : null, // 이미지가 없을 경우 null 설정
+              child: member.profileImage.isEmpty || !member.profileImage.startsWith('http')
+                  ? Icon(Icons.person, color: Colors.grey) // 기본 사람 아이콘
+                  : null, // 유효한 이미지가 있을 경우 null로 설정
             ),
-            SizedBox(height: 5),
+            SizedBox(width: 5),
             Text(
               member.name,
               style: TextStyle(fontSize: 12),
