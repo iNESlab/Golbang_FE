@@ -150,6 +150,7 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
             child: Text('완료'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.teal,
+              foregroundColor: Colors.white, // 텍스트 색상을 흰색으로 설정
               minimumSize: Size(double.infinity, 50),
             ),
           ),
