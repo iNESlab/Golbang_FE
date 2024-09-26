@@ -56,9 +56,14 @@ class EventService {
 
   Future<List<Event>> getEventsForMonth({String? date, String? statusType}) async {
     try {
-      // API URL 설정
-      //final url = Uri.parse('${dotenv.env['API_HOST']}/events/?date=${date ?? DateTime.now().toIso8601String()}&status_type=');
-      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/');
+      // URL 생성
+      Uri url = Uri.parse(dotenv.env['API_HOST']!).replace(
+        path: '/api/v1/events/',
+        queryParameters: {
+          if (date != null) 'date': date,
+          if (statusType != null) 'status_type': statusType,
+        },
+      );
 
       // 액세스 토큰 가져오기
       final accessToken = await storage.readAccessToken();
