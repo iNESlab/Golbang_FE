@@ -86,6 +86,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
         address: field == '집 주소' ? value : _userAccount.address,
         dateOfBirth: field == '생일' ? DateTime.parse(value!) : _userAccount.dateOfBirth,
         studentId: field == '학번' ? value : _userAccount.studentId,
+        profileImage: _imageFile != null ? File(_imageFile!.path) : null,
       );
 
       setState(() {
