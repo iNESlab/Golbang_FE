@@ -48,46 +48,22 @@ class EventStateNotifierProvider extends StateNotifier<EventState> {
   }
 
 
-
-
   // 이벤트 수정
-  Future<void> updateEvent(CreateEvent updatedEvent, List<CreateParticipant> participants) async {
+  Future<bool> updateEvent(CreateEvent updatedEvent, List<CreateParticipant> participants) async {
     try {
       final success = await _eventService.updateEvent(event: updatedEvent, participants: participants);
       if (success) {
-        final updatedList = state.eventList.map((event) {
-          // updatedEvent를 Event로 변환하여 업데이트
-          return event.eventId == updatedEvent.eventId ? _convertToEvent(updatedEvent) : event;
-        }).toList();
-        state = state.copyWith(eventList: updatedList);
+        // 이벤트 수정 성공 시 전체 이벤트 목록을 다시 불러옴
+        await fetchEvents();
+        return true;
       } else {
         state = state.copyWith(errorMessage: '이벤트 수정 실패');
+        return false;
       }
     } catch (e) {
       state = state.copyWith(errorMessage: '이벤트 수정 중 오류 발생');
+      return false;
     }
-  }
-
-// CreateEvent를 Event로 변환하는 함수 추가
-  Event _convertToEvent(CreateEvent createEvent) {
-    return Event(
-      eventId: createEvent.eventId!,
-      memberGroup: int.parse(createEvent.memberGroup ?? '0'),
-      eventTitle: createEvent.eventTitle,
-      location: createEvent.location,
-      startDateTime: createEvent.startDateTime,
-      endDateTime: createEvent.endDateTime,
-      repeatType: createEvent.repeatType,
-      gameMode: createEvent.gameMode,
-      alertDateTime: createEvent.alertDateTime,
-      participantsCount: 0,  // 추가 정보 필요 시 변경
-      partyCount: 0,
-      acceptCount: 0,
-      denyCount: 0,
-      pendingCount: 0,
-      myParticipantId: 0,
-      participants: [], // 추가 정보 필요 시 변경
-    );
   }
 
   // 이벤트 삭제

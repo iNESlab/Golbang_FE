@@ -349,12 +349,12 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EventsUpdate1(event: widget.event), // 이벤트 데이터 자체를 전달
+        builder: (context) => EventsUpdate1(event: widget.event), // 이벤트 데이터 전달
       ),
     ).then((result) {
-      if(result){
-        // TODO: 이벤트 단건 조회 API 사용
-
+      if (result == true) {
+        // 수정 후 페이지 나가기
+        Navigator.of(context).pop(true);
       }
     });
   }
