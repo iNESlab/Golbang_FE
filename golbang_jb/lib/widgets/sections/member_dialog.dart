@@ -7,8 +7,8 @@ import '../../repoisitory/secure_storage.dart';
 import '../../services/user_service.dart';
 
 class MemberDialog extends ConsumerStatefulWidget {
-  final List<GetEventResultParticipantsRanks> selectedMembers;
-  final ValueChanged<List<GetEventResultParticipantsRanks>> onMembersSelected;
+  final List<GetAllUserProfile> selectedMembers;
+  final ValueChanged<List<GetAllUserProfile>> onMembersSelected;
 
   MemberDialog({
     required this.selectedMembers,
@@ -20,7 +20,7 @@ class MemberDialog extends ConsumerStatefulWidget {
 }
 
 class _MemberDialogState extends ConsumerState<MemberDialog> {
-  late List<GetEventResultParticipantsRanks> tempSelectedMembers;
+  late List<GetAllUserProfile> tempSelectedMembers;
 
   @override
   void initState() {
@@ -82,7 +82,6 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
                 itemBuilder: (BuildContext context, int index) {
                   return ListTile(
                     leading: CircleAvatar(
-                      // backgroundImage: NetworkImage(),
                       backgroundImage: users[index].profileImage.startsWith('http')
                           ? NetworkImage(users[index].profileImage)
                           : AssetImage(users[index].profileImage) as ImageProvider,
@@ -112,7 +111,7 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
         Center(
           child: ElevatedButton(
             onPressed: () {
-                Navigator.of(context).pop(tempSelectedMembers);
+              Navigator.of(context).pop(tempSelectedMembers);
             },
             child: Text('완료'),
             style: ElevatedButton.styleFrom(

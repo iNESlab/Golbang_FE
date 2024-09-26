@@ -8,6 +8,7 @@ import 'package:golbang/widgets/sections/member_dialog.dart';
 import 'package:golbang/widgets/sections/member_invite.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../models/profile/get_all_user_profile.dart';
 import '../../models/profile/get_event_result_participants_ranks.dart';
 import '../../provider/club/club_state_provider.dart';
 import '../../repoisitory/secure_storage.dart';
@@ -19,8 +20,8 @@ class GroupCreatePage extends ConsumerStatefulWidget {
 }
 
 class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
-  List<GetEventResultParticipantsRanks> selectedAdmins = [];
-  List<GetEventResultParticipantsRanks> selectedMembers = [];
+  List<GetAllUserProfile> selectedAdmins = [];
+  List<GetAllUserProfile> selectedMembers = [];
   TextEditingController _groupNameController = TextEditingController();
   TextEditingController _groupDescriptionController = TextEditingController();
   XFile? _imageFile;
@@ -34,14 +35,14 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
     });
   }
 
-
-  void _showMemberDialog(List<GetEventResultParticipantsRanks> users) {
-    showDialog<List<GetEventResultParticipantsRanks>>(
+  // `GetAllUserProfile`을 사용하는 멤버 다이얼로그
+  void _showMemberDialog(List<GetAllUserProfile> users) {
+    showDialog<List<GetAllUserProfile>>(
       context: context,
       builder: (BuildContext context) {
         return MemberDialog(
           selectedMembers: users,
-          onMembersSelected: (List<GetEventResultParticipantsRanks> members) {
+          onMembersSelected: (List<GetAllUserProfile> members) {
             setState(() {
               selectedMembers = members;
             });
@@ -51,17 +52,12 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
     ).then((result) {
       if (result != null) {
         setState(() {
-          if(users == selectedMembers){
+          if (users == selectedMembers) {
             selectedMembers = result;
-            selectedAdmins.removeWhere((admin) =>
-                selectedMembers.contains(admin)
-            );
-          }
-          else if(users == selectedAdmins){
+            selectedAdmins.removeWhere((admin) => selectedMembers.contains(admin));
+          } else if (users == selectedAdmins) {
             selectedAdmins = result;
-            selectedMembers.removeWhere((member) =>
-                selectedAdmins.contains(member)
-            );
+            selectedMembers.removeWhere((member) => selectedAdmins.contains(member));
           }
         });
       }
@@ -83,11 +79,9 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
       );
 
       if (success) {
-        // 클럽 생성 성공 후 상태 업데이트
         ref.read(clubStateProvider.notifier).fetchClubs(); // 클럽 리스트 다시 불러오기
         Navigator.of(context).pop(); // 성공 시 페이지 닫기
       } else {
-        // 실패 시 기본 에러 메시지 표시
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('그룹을 생성하는 데 실패했습니다. 나중에 다시 시도해주세요.')),
         );
@@ -98,8 +92,6 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
       );
     }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -157,7 +149,7 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
                 '내 프로필',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-              FutureBuilder<GetEventResultParticipantsRanks>(
+              FutureBuilder<GetAllUserProfile>(
                 future: userService.getUserProfile(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
@@ -186,7 +178,7 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
               Row(
                 children: [
                   Expanded(
-                    child: AdminAddButton(onPressed: ()=>_showMemberDialog(selectedAdmins)),
+                    child: AdminAddButton(onPressed: () => _showMemberDialog(selectedAdmins)),
                   ),
                   Expanded(
                     child: MemberInvite(selectedMembers: selectedAdmins),

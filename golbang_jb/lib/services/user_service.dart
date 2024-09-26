@@ -47,7 +47,7 @@ class UserService {
     }
   }
 
-  Future<GetEventResultParticipantsRanks> getUserProfile() async {
+  Future<GetAllUserProfile> getUserProfile() async {
     try {
       // 액세스 토큰 불러오기
       final accessToken = await storage.readAccessToken();
@@ -70,7 +70,7 @@ class UserService {
         var jsonData = json.decode(utf8.decode(response.bodyBytes))['data'];
         print("==============================json: ${jsonData}");
         // 이유는 모르나 code / message /data 형태로 반환이 안됨. data만 반환됨 => 해결완료
-        return GetEventResultParticipantsRanks.fromJson(jsonData);
+        return GetAllUserProfile.fromJson(jsonData);
       } else {
         throw Exception('Failed to load user profiles');
       }
