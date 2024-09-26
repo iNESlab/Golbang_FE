@@ -5,7 +5,7 @@ import 'package:golbang/pages/profile/profile_screen.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../models/user_account.dart';
 import '../../services/user_service.dart';
-import '../../provider/user_service_provider.dart';
+import '../../provider/user/user_service_provider.dart';
 import 'package:numberpicker/numberpicker.dart';
 
 class UserInfoPage extends ConsumerStatefulWidget {
