@@ -24,11 +24,16 @@ class MemberDialog extends ConsumerStatefulWidget {
 
 class _MemberDialogState extends ConsumerState<MemberDialog> {
   late List<GetAllUserProfile> tempSelectedMembers;
+  Map<int, bool> checkBoxStates = {}; // id를 키로 사용
 
   @override
   void initState() {
     super.initState();
     tempSelectedMembers = List.from(widget.isAdminMode ? widget.selectedAdmins : widget.selectedMembers);
+    // 각 멤버의 체크 상태를 초기화
+    for (var member in tempSelectedMembers) {
+      checkBoxStates[member.id] = true;
+    }
   }
 
   @override
@@ -59,7 +64,7 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
             IconButton(
               icon: Icon(Icons.close),
               onPressed: () {
-                Navigator.of(context).pop(tempSelectedMembers);
+                Navigator.of(context).pop(tempSelectedMembers); // 선택된 멤버 반환
               },
             ),
           ],
@@ -79,7 +84,6 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
               return Center(child: Text('No users found.'));
             } else {
               final users = snapshot.data!;
-              // 관리자를 추가할 때는 이미 추가된 멤버들 중에서만 선택 가능
               final selectableUsers = widget.isAdminMode
                   ? widget.selectedMembers.where((member) => users.contains(member)).toList()
                   : users;
@@ -104,26 +108,31 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
                       backgroundColor: Colors.grey[200],
                       backgroundImage: profileImage.isNotEmpty && profileImage.startsWith('http')
                           ? NetworkImage(profileImage)
-                          : null, // 기본 이미지를 제공하지 않을 때 null로 설정
+                          : null,
                       child: profileImage.isEmpty || !profileImage.startsWith('http')
-                          ? Icon(Icons.person, color: Colors.grey) // 기본 사람 아이콘
-                          : null, // 이미 이미지가 있으면 child를 null로 설정
+                          ? Icon(Icons.person, color: Colors.grey)
+                          : null,
                     ),
                     title: Text(user.name),
                     trailing: Checkbox(
-                      value: tempSelectedMembers.contains(user),
+                      value: checkBoxStates[user.id] ?? false, // id로 상태 관리
                       onChanged: (bool? value) {
                         setState(() {
-                          if (value != null && value) {
-                            tempSelectedMembers.add(user);
+                          // 체크박스 상태를 업데이트하고 멤버 추가/제거
+                          checkBoxStates[user.id] = value ?? false;
+                          if (value == true) {
+                            // 중복 추가 방지: 리스트에 없을 때만 추가
+                            if (!tempSelectedMembers.any((member) => member.id == user.id)) {
+                              tempSelectedMembers.add(user);
+                            }
                           } else {
-                            tempSelectedMembers.remove(user);
+                            // 체크 해제 시 리스트에서 제거
+                            tempSelectedMembers.removeWhere((member) => member.id == user.id);
                           }
                         });
                       },
                     ),
                   );
-
                 },
               );
             }
@@ -134,11 +143,12 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
         Center(
           child: ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop(tempSelectedMembers);
+              Navigator.of(context).pop(tempSelectedMembers); // 선택된 멤버 반환
             },
             child: Text('완료'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.teal,
+              foregroundColor: Colors.white,
               minimumSize: Size(double.infinity, 50),
             ),
           ),
