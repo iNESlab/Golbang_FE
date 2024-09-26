@@ -248,8 +248,6 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
     );
 
     if (success) {
-
-      ref.read(eventStateNotifierProvider.notifier).fetchEvents();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('이벤트가 성공적으로 수정되었습니다.')),
       );

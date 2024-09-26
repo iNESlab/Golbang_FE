@@ -222,10 +222,7 @@ class EventPageState extends ConsumerState<EventPage> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (context) => EventsCreate1()),
-                    );
+                    _navigateToEventCreation();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
@@ -311,13 +308,7 @@ class EventPageState extends ConsumerState<EventPage> {
                                 TextButton(
                                   onPressed: () {
                                       _navigateToEventDetail(event);
-
-                                      // context,
-                                      // MaterialPageRoute(
-                                      //   builder: (context) => EventDetailPage(event: event),
-                                      // ),
-
-                                  },
+                                      },
                                   style: TextButton.styleFrom(
                                     foregroundColor: Colors.green,
                                   ),
@@ -353,6 +344,19 @@ class EventPageState extends ConsumerState<EventPage> {
         ],
       ),
     );
+  }
+
+  void _navigateToEventCreation() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+          builder: (context) => EventsCreate1()),
+    );
+
+    if (result == true) {
+      // 이벤트 생성 후 목록 새로고침
+      await _loadEventsForMonth();
+    }
   }
 
   void _navigateToEventDetail(Event event) async {

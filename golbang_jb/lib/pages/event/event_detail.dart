@@ -371,7 +371,6 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
 
     if (success) {
       // 이벤트 삭제 후 목록 새로고침
-
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('성공적으로 삭제되었습니다')),
       );
