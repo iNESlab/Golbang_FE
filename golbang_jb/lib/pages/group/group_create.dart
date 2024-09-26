@@ -9,6 +9,7 @@ import 'package:golbang/widgets/sections/member_invite.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../models/profile/get_event_result_participants_ranks.dart';
+import '../../provider/club/club_state_provider.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/group_service.dart';
 
@@ -82,6 +83,8 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
       );
 
       if (success) {
+        // 클럽 생성 성공 후 상태 업데이트
+        ref.read(clubStateProvider.notifier).fetchClubs(); // 클럽 리스트 다시 불러오기
         Navigator.of(context).pop(); // 성공 시 페이지 닫기
       } else {
         // 실패 시 기본 에러 메시지 표시
@@ -95,6 +98,7 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
       );
     }
   }
+
 
 
   @override
