@@ -164,9 +164,13 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
                     final userProfile = snapshot.data!;
                     return ListTile(
                       leading: CircleAvatar(
-                        backgroundImage: userProfile.profileImage.startsWith('http')
+                        backgroundColor: Colors.grey[200], // 연한 회색 배경
+                        backgroundImage: userProfile.profileImage.isNotEmpty && userProfile.profileImage.startsWith('http')
                             ? NetworkImage(userProfile.profileImage)
-                            : AssetImage(userProfile.profileImage) as ImageProvider,
+                            : null, // 이미지가 없을 경우 null 설정
+                        child: userProfile.profileImage.isEmpty || !userProfile.profileImage.startsWith('http')
+                            ? Icon(Icons.person, color: Colors.grey) // 기본 사람 아이콘
+                            : null,
                       ),
                       title: Text(userProfile.name),
                       trailing: IconButton(

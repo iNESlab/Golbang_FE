@@ -101,7 +101,7 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
 
                   return ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Colors.white, // 흰색 배경
+                      backgroundColor: Colors.grey[200],
                       backgroundImage: profileImage.isNotEmpty && profileImage.startsWith('http')
                           ? NetworkImage(profileImage)
                           : null, // 기본 이미지를 제공하지 않을 때 null로 설정
