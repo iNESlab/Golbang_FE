@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../models/profile/get_all_user_profile.dart';
 
-import 'package:flutter/material.dart';
-import '../../models/profile/get_all_user_profile.dart';
-
 class MemberInvite extends StatelessWidget {
   final List<GetAllUserProfile> selectedMembers;
 

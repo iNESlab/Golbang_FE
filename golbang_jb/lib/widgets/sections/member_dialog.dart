@@ -29,7 +29,8 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
   @override
   void initState() {
     super.initState();
-    tempSelectedMembers = List.from(widget.isAdminMode ? widget.selectedAdmins : widget.selectedMembers);
+    tempSelectedMembers = List.from(
+        widget.isAdminMode ? widget.selectedAdmins : widget.selectedMembers);
     // 각 멤버의 체크 상태를 초기화
     for (var member in tempSelectedMembers) {
       checkBoxStates[member.id] = true;
@@ -72,7 +73,10 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
       ),
       content: Container(
         color: Colors.white,
-        width: MediaQuery.of(context).size.width * 0.9,
+        width: MediaQuery
+            .of(context)
+            .size
+            .width * 0.9,
         child: FutureBuilder<List<GetAllUserProfile>>(
           future: userService.getUserProfileList(),
           builder: (context, snapshot) {
@@ -85,7 +89,7 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
             } else {
               final users = snapshot.data!;
               final selectableUsers = widget.isAdminMode
-                  ? widget.selectedMembers.where((member) => users.contains(member)).toList()
+                  ? widget.selectedMembers // 관리자 추가 시 선택된 멤버만 가져옴
                   : users;
 
               if (selectableUsers.isEmpty) {
@@ -106,10 +110,12 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
                   return ListTile(
                     leading: CircleAvatar(
                       backgroundColor: Colors.grey[200],
-                      backgroundImage: profileImage.isNotEmpty && profileImage.startsWith('http')
+                      backgroundImage: profileImage.isNotEmpty && profileImage
+                          .startsWith('http')
                           ? NetworkImage(profileImage)
                           : null,
-                      child: profileImage.isEmpty || !profileImage.startsWith('http')
+                      child: profileImage.isEmpty || !profileImage.startsWith(
+                          'http')
                           ? Icon(Icons.person, color: Colors.grey)
                           : null,
                     ),
@@ -122,12 +128,14 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
                           checkBoxStates[user.id] = value ?? false;
                           if (value == true) {
                             // 중복 추가 방지: 리스트에 없을 때만 추가
-                            if (!tempSelectedMembers.any((member) => member.id == user.id)) {
+                            if (!tempSelectedMembers.any((member) =>
+                            member.id == user.id)) {
                               tempSelectedMembers.add(user);
                             }
                           } else {
                             // 체크 해제 시 리스트에서 제거
-                            tempSelectedMembers.removeWhere((member) => member.id == user.id);
+                            tempSelectedMembers.removeWhere((member) =>
+                            member.id == user.id);
                           }
                         });
                       },

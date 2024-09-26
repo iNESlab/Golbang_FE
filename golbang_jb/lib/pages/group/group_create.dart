@@ -41,7 +41,7 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
       context: context,
       builder: (BuildContext context) {
         return MemberDialog(
-          selectedMembers: isAdminMode ? selectedAdmins : selectedMembers,
+          selectedMembers: selectedMembers, // 여기에 항상 selectedMembers를 전달
           onMembersSelected: (List<GetAllUserProfile> members) {
             setState(() {
               if (isAdminMode) {
