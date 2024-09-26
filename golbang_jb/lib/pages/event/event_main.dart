@@ -51,21 +51,28 @@ class EventPageState extends ConsumerState<EventPage> {
     final storage = ref.watch(secureStorageProvider);
     final eventService = EventService(storage);
     String date = '${_focusedDay.year}-${_focusedDay.month.toString().padLeft(2, '0')}-01';
-    List<Event> events = await eventService.getEventsForMonth(date: date);
-    setState(() {
-      for (var event in events) {
-        DateTime eventDate = DateTime(
-          event.startDateTime.year,
-          event.startDateTime.month,
-          event.startDateTime.day,
-        );
-        if (_events.containsKey(eventDate)) {
-          _events[eventDate]!.add(event);
-        } else {
-          _events[eventDate] = [event];
+
+    try {
+      List<Event> events = await eventService.getEventsForMonth(date: date);
+      setState(() {
+        _events.clear(); // 이전 데이터를 초기화
+        for (var event in events) {
+          DateTime eventDate = DateTime(
+            event.startDateTime.year,
+            event.startDateTime.month,
+            event.startDateTime.day,
+          );
+          if (_events.containsKey(eventDate)) {
+            _events[eventDate]!.add(event);
+          } else {
+            _events[eventDate] = [event];
+          }
         }
-      }
-    });
+        _selectedEvents.value = _getEventsForDay(_selectedDay!); // UI 새로고침
+      });
+    } catch (e) {
+      print("Error loading events: $e");
+    }
   }
 
   List<Event> _getEventsForDay(DateTime day) {
@@ -303,12 +310,13 @@ class EventPageState extends ConsumerState<EventPage> {
                               children: [
                                 TextButton(
                                   onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => EventDetailPage(event: event),
-                                      ),
-                                    );
+                                      _navigateToEventDetail(event);
+
+                                      // context,
+                                      // MaterialPageRoute(
+                                      //   builder: (context) => EventDetailPage(event: event),
+                                      // ),
+
                                   },
                                   style: TextButton.styleFrom(
                                     foregroundColor: Colors.green,
@@ -345,6 +353,20 @@ class EventPageState extends ConsumerState<EventPage> {
         ],
       ),
     );
+  }
+
+  void _navigateToEventDetail(Event event) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EventDetailPage(event: event),
+      ),
+    );
+
+    if (result == true) {
+      // 이벤트 삭제 후 목록 새로고침
+      await _loadEventsForMonth();
+    }
   }
 
   Color _getStatusColor(String statusType) {
@@ -429,7 +451,4 @@ class EventPageState extends ConsumerState<EventPage> {
       });
     }
   }
-
-
-
 }

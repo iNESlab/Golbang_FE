@@ -19,29 +19,31 @@ class EventStateNotifierProvider extends StateNotifier<EventState> {
   EventStateNotifierProvider(this._eventService) : super(EventState());
 
   // 이벤트 목록을 불러오는 함수
-  Future<void> fetchEvents() async {
+  Future<void> fetchEvents({String? date, String? statusType}) async {
+    state = state.copyWith(isLoading: true);
     try {
-      final List<Event> events = await _eventService.getEventsForMonth();
-      state = state.copyWith(eventList: events);
+      final List<Event> events = await _eventService.getEventsForMonth(date: date, statusType: statusType);
+      state = state.copyWith(eventList: events, isLoading: false);
     } catch (e) {
-      state = state.copyWith(errorMessage: '이벤트 목록을 불러오는 중 오류 발생');
+      state = state.copyWith(errorMessage: '이벤트 목록을 불러오는 중 오류 발생', isLoading: false);
     }
   }
 
   // 이벤트 생성
   Future<bool> createEvent(CreateEvent event, List<CreateParticipant> participants, String clubId) async {
+    state = state.copyWith(isLoading: true);
     try {
       final success = await _eventService.postEvent(clubId: int.parse(clubId), event: event, participants: participants);
       if (success) {
         await fetchEvents();
-        return true; // 성공 시 true 반환
+        return true;
       } else {
-        state = state.copyWith(errorMessage: '이벤트 생성 실패');
-        return false; // 실패 시 false 반환
+        state = state.copyWith(errorMessage: '이벤트 생성 실패', isLoading: false);
+        return false;
       }
     } catch (e) {
-      state = state.copyWith(errorMessage: '이벤트 생성 중 오류 발생');
-      return false; // 오류 발생 시 false 반환
+      state = state.copyWith(errorMessage: '이벤트 생성 중 오류 발생', isLoading: false);
+      return false;
     }
   }
 
@@ -89,18 +91,22 @@ class EventStateNotifierProvider extends StateNotifier<EventState> {
   }
 
   // 이벤트 삭제
-  Future<void> deleteEvent(int eventId) async {
+  Future<bool> deleteEvent(int eventId) async {
+    state = state.copyWith(isLoading: true);
     try {
       final success = await _eventService.deleteEvent(eventId);
       if (success) {
-        state = state.copyWith(
-          eventList: state.eventList.where((event) => event.eventId != eventId).toList(),
-        );
+        // 이벤트 삭제 후 목록을 다시 불러와 업데이트
+        await fetchEvents(); // 이벤트 삭제 후 새로고침
+        state = state.copyWith(isLoading: false);
+        return true;
       } else {
-        state = state.copyWith(errorMessage: '이벤트 삭제 실패');
+        state = state.copyWith(errorMessage: '이벤트 삭제 실패', isLoading: false);
+        return false;
       }
     } catch (e) {
-      state = state.copyWith(errorMessage: '이벤트 삭제 중 오류 발생');
+      state = state.copyWith(errorMessage: '이벤트 삭제 중 오류 발생', isLoading: false);
+      return false;
     }
   }
 
