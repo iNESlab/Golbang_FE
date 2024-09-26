@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:jwt_decoder/jwt_decoder.dart';
+import '../models/profile/get_all_user_profile.dart';
 import '../models/profile/get_event_result_participants_ranks.dart';
 import '../models/user_account.dart';
 import '../repoisitory/secure_storage.dart';
@@ -13,7 +14,7 @@ class UserService {
 
   UserService(this.storage);
 
-  Future<List<GetEventResultParticipantsRanks>> getUserProfileList() async {
+  Future<List<GetAllUserProfile>> getUserProfileList() async {
     // 액세스 토큰 불러오기
     final accessToken = await storage.readAccessToken();
 
@@ -37,7 +38,7 @@ class UserService {
       print("json: ${jsonData['data']}");
 
       return (jsonData['data'] as List)
-          .map((json) => GetEventResultParticipantsRanks.fromJson(json))
+          .map((json) => GetAllUserProfile.fromJson(json))
           .toList();
 
     } else {

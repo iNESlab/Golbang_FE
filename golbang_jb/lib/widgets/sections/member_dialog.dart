@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/models/profile/get_event_result_participants_ranks.dart';
 
+import '../../models/profile/get_all_user_profile.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/user_service.dart';
 
@@ -64,7 +65,7 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
       content: Container(
         color: Colors.white,
         width: MediaQuery.of(context).size.width * 0.9,
-        child: FutureBuilder<List<GetEventResultParticipantsRanks>>(
+        child: FutureBuilder<List<GetAllUserProfile>>(
           future: userService.getUserProfileList(), // 이 메서드가 위젯 생성 시 자동으로 호출됩니다.
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
