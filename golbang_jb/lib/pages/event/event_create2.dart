@@ -169,11 +169,28 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
       alertDateTime: "",
     );
 
-    // 상태 노티파이어를 사용하여 이벤트 생성
-    await ref
+    // 이벤트 생성 호출 후 성공 여부에 따른 UI 처리
+    final success = await ref
         .read(eventStateNotifierProvider.notifier)
         .createEvent(event, _selectedParticipants, widget.selectedClub!.id.toString());
+
+    if (success) {
+      // 성공 시 "이벤트 생성에 성공했습니다" 메시지 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('이벤트 생성에 성공했습니다.')),
+      );
+
+      // 페이지 닫기
+      Navigator.of(context).pop(); // 첫 번째 페이지 닫기
+      Navigator.of(context).pop(); // 두 번째 페이지 닫기
+    } else {
+      // 실패 시 SnackBar로 오류 메시지 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('이벤트 생성에 실패했습니다. 나중에 다시 시도해주세요.')),
+      );
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {

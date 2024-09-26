@@ -29,18 +29,22 @@ class EventStateNotifierProvider extends StateNotifier<EventState> {
   }
 
   // 이벤트 생성
-  Future<void> createEvent(CreateEvent event, List<CreateParticipant> participants, String clubId) async {
+  Future<bool> createEvent(CreateEvent event, List<CreateParticipant> participants, String clubId) async {
     try {
       final success = await _eventService.postEvent(clubId: int.parse(clubId), event: event, participants: participants);
       if (success) {
         await fetchEvents();
+        return true; // 성공 시 true 반환
       } else {
         state = state.copyWith(errorMessage: '이벤트 생성 실패');
+        return false; // 실패 시 false 반환
       }
     } catch (e) {
       state = state.copyWith(errorMessage: '이벤트 생성 중 오류 발생');
+      return false; // 오류 발생 시 false 반환
     }
   }
+
 
 
 
