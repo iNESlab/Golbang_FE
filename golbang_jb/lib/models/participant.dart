@@ -2,7 +2,7 @@ import 'member.dart';
 
 class Participant {
   final int participantId;
-  late final String statusType;
+  String statusType;
   final String teamType;
   final int? holeNumber; // nullable로 변경
   final int groupType;
@@ -28,12 +28,13 @@ class Participant {
 
   // copyWith 메서드 추가
   Participant copyWith({
+    String? statusType,
     int? sumScore,
     String? rank,
   }) {
     return Participant(
       participantId: participantId,
-      statusType: statusType,
+      statusType: statusType ?? this.statusType, // 기존 상태 유지
       teamType: teamType,
       holeNumber: holeNumber,
       groupType: groupType,

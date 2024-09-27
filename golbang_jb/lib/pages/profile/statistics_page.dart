@@ -343,10 +343,24 @@ class _StatisticsPageState extends State<StatisticsPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: _selectedEvents.map((event) {
-        double fillPercentage = (event.points - 2) / event.totalParticipants ;
+        double fillPercentage = 0;
 
-        print("fillPercentage: $fillPercentage");
+        // 참가자 수가 0이거나 event.points가 2보다 작으면 예외 처리
+        if (event.totalParticipants != 0 && event.points >= 2) {
+          fillPercentage = (event.points - 2) / event.totalParticipants;
+          if (fillPercentage > 1) {
+            fillPercentage = 1;
+          }
+        }
+        // 예외 처리: fillPercentage가 유효하지 않은 경우 0으로 설정
+        if (fillPercentage.isNaN || fillPercentage.isInfinite) {
+          fillPercentage = 0;
+        }
+        print(event.points);
+        print(event.totalParticipants);
+        print("fillPercentage:, $fillPercentage");
 
+        // Color.lerp에 fillPercentage를 사용
         Color barColor = Color.lerp(Colors.yellow, Colors.green, fillPercentage)!;
 
         return Padding(

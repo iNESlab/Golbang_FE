@@ -181,8 +181,8 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
       );
 
       // 페이지 닫기
-      Navigator.of(context).pop(); // 첫 번째 페이지 닫기
-      Navigator.of(context).pop(); // 두 번째 페이지 닫기
+      Navigator.of(context).pop(true); // 첫 번째 페이지 닫기
+      Navigator.of(context).pop(true); // 두 번째 페이지 닫기
     } else {
       // 실패 시 SnackBar로 오류 메시지 표시
       ScaffoldMessenger.of(context).showSnackBar(

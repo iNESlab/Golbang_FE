@@ -3,6 +3,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:golbang/pages/event/event_result.dart';
 import '../../models/event.dart';
 import '../../models/participant.dart';
+import '../../provider/event/event_state_notifier_provider.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/event_service.dart';
 import '../game/score_card_page.dart';
@@ -348,12 +349,12 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EventsUpdate1(event: widget.event), // 이벤트 데이터 자체를 전달
+        builder: (context) => EventsUpdate1(event: widget.event), // 이벤트 데이터 전달
       ),
     ).then((result) {
-      if(result){
-        // TODO: 이벤트 단건 조회 API 사용
-
+      if (result == true) {
+        // 수정 후 페이지 나가기
+        Navigator.of(context).pop(true);
       }
     });
   }
@@ -363,13 +364,17 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     final storage = ref.watch(secureStorageProvider);
     final eventService = EventService(storage);
 
-    final success = await eventService.deleteEvent(widget.event.eventId);
+    // final success = await eventService.deleteEvent(widget.event.eventId);
+
+    final success = await ref.read(eventStateNotifierProvider.notifier).deleteEvent(widget.event.eventId);
+
 
     if (success) {
+      // 이벤트 삭제 후 목록 새로고침
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('성공적으로 삭제되었습니다')),
       );
-      Navigator.of(context).pop(); // 삭제 후 페이지를 나가기
+      Navigator.of(context).pop(true); // 삭제 후 페이지를 나가기
     } else if(success == 403) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('관리자가 아닙니다. 관리자만 삭제할 수 있습니다.')),

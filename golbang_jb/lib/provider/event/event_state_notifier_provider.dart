@@ -19,12 +19,13 @@ class EventStateNotifierProvider extends StateNotifier<EventState> {
   EventStateNotifierProvider(this._eventService) : super(EventState());
 
   // 이벤트 목록을 불러오는 함수
-  Future<void> fetchEvents() async {
+  Future<void> fetchEvents({String? date, String? statusType}) async {
+    state = state.copyWith(isLoading: true);
     try {
-      final List<Event> events = await _eventService.getEventsForMonth();
-      state = state.copyWith(eventList: events);
+      final List<Event> events = await _eventService.getEventsForMonth(date: date, statusType: statusType);
+      state = state.copyWith(eventList: events, isLoading: false);
     } catch (e) {
-      state = state.copyWith(errorMessage: '이벤트 목록을 불러오는 중 오류 발생');
+      state = state.copyWith(errorMessage: '이벤트 목록을 불러오는 중 오류 발생', isLoading: false);
     }
   }
 
@@ -34,73 +35,53 @@ class EventStateNotifierProvider extends StateNotifier<EventState> {
       final success = await _eventService.postEvent(clubId: int.parse(clubId), event: event, participants: participants);
       if (success) {
         await fetchEvents();
-        return true; // 성공 시 true 반환
+        return true;
       } else {
         state = state.copyWith(errorMessage: '이벤트 생성 실패');
-        return false; // 실패 시 false 반환
+        return false;
       }
     } catch (e) {
       state = state.copyWith(errorMessage: '이벤트 생성 중 오류 발생');
-      return false; // 오류 발생 시 false 반환
+      return false;
     }
   }
-
-
 
 
   // 이벤트 수정
-  Future<void> updateEvent(CreateEvent updatedEvent, List<CreateParticipant> participants) async {
+  Future<bool> updateEvent(CreateEvent updatedEvent, List<CreateParticipant> participants) async {
     try {
       final success = await _eventService.updateEvent(event: updatedEvent, participants: participants);
       if (success) {
-        final updatedList = state.eventList.map((event) {
-          // updatedEvent를 Event로 변환하여 업데이트
-          return event.eventId == updatedEvent.eventId ? _convertToEvent(updatedEvent) : event;
-        }).toList();
-        state = state.copyWith(eventList: updatedList);
+        // 이벤트 수정 성공 시 전체 이벤트 목록을 다시 불러옴
+        await fetchEvents();
+        return true;
       } else {
         state = state.copyWith(errorMessage: '이벤트 수정 실패');
+        return false;
       }
     } catch (e) {
       state = state.copyWith(errorMessage: '이벤트 수정 중 오류 발생');
+      return false;
     }
   }
 
-// CreateEvent를 Event로 변환하는 함수 추가
-  Event _convertToEvent(CreateEvent createEvent) {
-    return Event(
-      eventId: createEvent.eventId!,
-      memberGroup: int.parse(createEvent.memberGroup ?? '0'),
-      eventTitle: createEvent.eventTitle,
-      location: createEvent.location,
-      startDateTime: createEvent.startDateTime,
-      endDateTime: createEvent.endDateTime,
-      repeatType: createEvent.repeatType,
-      gameMode: createEvent.gameMode,
-      alertDateTime: createEvent.alertDateTime,
-      participantsCount: 0,  // 추가 정보 필요 시 변경
-      partyCount: 0,
-      acceptCount: 0,
-      denyCount: 0,
-      pendingCount: 0,
-      myParticipantId: 0,
-      participants: [], // 추가 정보 필요 시 변경
-    );
-  }
-
   // 이벤트 삭제
-  Future<void> deleteEvent(int eventId) async {
+  Future<bool> deleteEvent(int eventId) async {
+    state = state.copyWith(isLoading: true);
     try {
       final success = await _eventService.deleteEvent(eventId);
       if (success) {
-        state = state.copyWith(
-          eventList: state.eventList.where((event) => event.eventId != eventId).toList(),
-        );
+        // 이벤트 삭제 후 목록을 다시 불러와 업데이트
+        await fetchEvents(); // 이벤트 삭제 후 새로고침
+        state = state.copyWith(isLoading: false);
+        return true;
       } else {
-        state = state.copyWith(errorMessage: '이벤트 삭제 실패');
+        state = state.copyWith(errorMessage: '이벤트 삭제 실패', isLoading: false);
+        return false;
       }
     } catch (e) {
-      state = state.copyWith(errorMessage: '이벤트 삭제 중 오류 발생');
+      state = state.copyWith(errorMessage: '이벤트 삭제 중 오류 발생', isLoading: false);
+      return false;
     }
   }
 

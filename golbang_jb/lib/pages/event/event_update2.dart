@@ -4,6 +4,7 @@ import 'package:golbang/models/profile/member_profile.dart';
 import 'package:golbang/pages/event/widgets/group_card.dart';
 import 'package:golbang/pages/event/widgets/no_api_participant_dialog.dart';
 import 'package:golbang/pages/event/widgets/toggle_bottons.dart';
+import 'package:golbang/provider/event/event_state_notifier_provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../models/club.dart';
 import '../../models/create_event.dart';
@@ -247,11 +248,11 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
     );
 
     if (success) {
-      Navigator.of(context).pop(true);
-      Navigator.of(context).pop(true);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('이벤트가 성공적으로 수정되었습니다.')),
       );
+      Navigator.of(context).pop(true);
+      Navigator.of(context).pop(true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('이벤트 수정에 실패했습니다.')),
