@@ -238,7 +238,24 @@ class EventPageState extends ConsumerState<EventPage> {
               valueListenable: _selectedEvents,
               builder: (context, value, _) {
                 if (value.isEmpty) {
-                  return const Center(child: Text('일정이 없습니다.'));
+                  return Center(
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.event_note, // 어울리는 아이콘을 선택하세요.
+                              size: 100,
+                              color: Colors.grey,
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              '일정 추가 버튼을 눌러\n이벤트를 만들어보세요.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 16, color: Colors.grey),
+                            )
+                          ]
+                      )
+                  );
                 }
                 return ListView.builder(
                   itemCount: value.length,
@@ -300,8 +317,8 @@ class EventPageState extends ConsumerState<EventPage> {
                               children: [
                                 TextButton(
                                   onPressed: () {
-                                      _navigateToEventDetail(event);
-                                      },
+                                    _navigateToEventDetail(event);
+                                  },
                                   style: TextButton.styleFrom(
                                     foregroundColor: Colors.green,
                                   ),
