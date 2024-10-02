@@ -47,7 +47,6 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
   List<CreateParticipant> _selectedParticipants = [];
   bool hasDuplicateParticipants = false;
   bool areGroupsEmpty = true;
-  bool allParticipantsAssigned = false;
 
   @override
   void initState() {
@@ -62,7 +61,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
         name: participant.name,
         profileImage: participant.profileImage,
         teamType: teamConfig,
-        groupType: 0,
+        groupType: 1, // 0으로 하면, 에러 뜸.
       );
     }).toList();
   }
@@ -89,27 +88,9 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
     return false;
   }
 
-  bool _checkIfAllParticipantsAssigned() {
-    final assignedParticipants = <int>{};
-    for (var group in groups) {
-      for (var participant in group.values.first) {
-        assignedParticipants.add(participant.memberId);
-      }
-      if (isTeam) {
-        for (var participant in group.values.last) {
-          assignedParticipants.add(participant.memberId);
-        }
-      }
-    }
-    print('참가자 할당여부 ${assignedParticipants.length == _selectedParticipants.length}');
-    return assignedParticipants.length == _selectedParticipants.length;
-  }
-
   void _validateForm() {
     setState(() {
       hasDuplicateParticipants = _checkForDuplicateParticipants();
-      allParticipantsAssigned = _checkIfAllParticipantsAssigned();
-      print("---------------------------------------------------");
     });
   }
 
@@ -207,13 +188,13 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
         title: Text('이벤트 생성'),
         actions: [
           TextButton(
-            onPressed: (hasDuplicateParticipants || !allParticipantsAssigned)
+            onPressed: (hasDuplicateParticipants)
                 ? null
                 : _onCompletePressed,
             child: Text(
               '완료',
               style: TextStyle(
-                color: (hasDuplicateParticipants || !allParticipantsAssigned)
+                color: (hasDuplicateParticipants)
                     ? Colors.grey
                     : Colors.teal,
               ),
@@ -340,7 +321,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('추가 버튼을 눌러 멤버를 추가해보세요'),
+                    Text('추가 버튼을 눌러 멤버를 추가해보세요\n미선택시, 1조로 등록됩니다.'),
                     SizedBox(height: 10),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
