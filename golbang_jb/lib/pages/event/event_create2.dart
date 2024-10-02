@@ -128,6 +128,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
           groupName: groupName,
           participants: _selectedParticipants, // 모든 참가자 리스트
           selectedParticipants: groupParticipants, // 현재 그룹에 선택된 참가자
+          max: int.parse(numberOfPlayers.substring(0,1)),
           onSelectionComplete: (List<CreateParticipant> updatedParticipants) {
             setState(() {
               groups.firstWhere((group) => group.keys.contains(groupName))[groupName] = updatedParticipants;
@@ -212,7 +213,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
           children: [
             DropdownButtonFormField<GameMode>(
               decoration: InputDecoration(
-                labelText: '게임모드',
+                labelText: '게임 모드',
                 border: OutlineInputBorder(),
               ),
               value: gameMode,
@@ -266,7 +267,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     decoration: InputDecoration(
-                      labelText: '팀 수',
+                      labelText: '조(최대 갯수)',
                       border: OutlineInputBorder(),
                     ),
                     value: numberOfGroups,
@@ -287,7 +288,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     decoration: InputDecoration(
-                      labelText: '인원 수',
+                      labelText: '조별 인원 수(최대)',
                       border: OutlineInputBorder(),
                     ),
                     value: numberOfPlayers,

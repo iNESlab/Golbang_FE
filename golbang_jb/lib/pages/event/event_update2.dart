@@ -218,6 +218,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
           groupName: groupName,
           participants: _selectedParticipants,
           selectedParticipants: groupParticipants,
+          max: int.parse(numberOfPlayers.substring(0,1)),
           onSelectionComplete: (List<CreateParticipant> updatedParticipants) {
             setState(() {
               groups.firstWhere((group) => group.keys.contains(groupName))[groupName] =
@@ -354,7 +355,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     decoration: InputDecoration(
-                      labelText: '팀 수',
+                      labelText: '조(최대 갯수)',
                       border: OutlineInputBorder(),
                     ),
                     value: numberOfGroups,
@@ -375,7 +376,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     decoration: InputDecoration(
-                      labelText: '인원 수',
+                      labelText: '조별 인원 수(최대)',
                       border: OutlineInputBorder(),
                     ),
                     value: numberOfPlayers,
