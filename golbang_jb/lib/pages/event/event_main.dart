@@ -21,7 +21,7 @@ class EventPageState extends ConsumerState<EventPage> {
   late final ValueNotifier<List<Event>> _selectedEvents;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
-  late EventService _eventService;
+  // late EventService _eventService;
   late ParticipantService _participantService;
 
   final Map<DateTime, List<Event>> _events = LinkedHashMap(
@@ -43,7 +43,7 @@ class EventPageState extends ConsumerState<EventPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final storage = ref.watch(secureStorageProvider);
-    _eventService = EventService(storage);
+    // _eventService = EventService(storage);
     _participantService = ParticipantService(storage);
     _loadEventsForMonth();
 
@@ -291,7 +291,7 @@ class EventPageState extends ConsumerState<EventPage> {
                           const SizedBox(height: 8.0),
                           Text('시간: ${event.startDateTime.hour}:${event.startDateTime.minute}'),
                           Text('인원수: 참석 ${event.participants.length}명'),
-                          Text('장소: ${event.location}'),
+                          Text('장소: ${event.site}'),
                           Row(
                             children: [
                               _buildStatusButton('ACCEPT', statusType, () async {

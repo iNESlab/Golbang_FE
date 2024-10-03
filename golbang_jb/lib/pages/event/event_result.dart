@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/event/widgets/team_result.dart';
@@ -92,7 +90,7 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
           children: [
             EventHeader(
               eventTitle: _eventData!['event_title'],
-              location: _eventData!['location'],
+              location: _eventData!['site'],
               startDateTime: DateTime.parse(_eventData!['start_date_time']),
               endDateTime: DateTime.parse(_eventData!['end_date_time']),
               gameMode: _eventData!['game_mode'],

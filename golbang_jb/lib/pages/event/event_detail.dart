@@ -125,7 +125,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                         style: TextStyle(fontSize: 16),
                       ),
                       Text(
-                        '장소: ${widget.event.location}',
+                        '장소: ${widget.event.site}',
                         style: TextStyle(fontSize: 16),
                       ),
                       Text(
@@ -362,7 +362,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   void _deleteEvent() async {
     // ref.watch를 이용하여 storage 인스턴스를 얻고 이를 EventService에 전달
     final storage = ref.watch(secureStorageProvider);
-    final eventService = EventService(storage);
+    // final eventService = EventService(storage);
 
     // final success = await eventService.deleteEvent(widget.event.eventId);
 
