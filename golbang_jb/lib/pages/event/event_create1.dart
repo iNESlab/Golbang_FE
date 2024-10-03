@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:intl/intl.dart';
 import '../../models/club.dart';
 import '../../models/enum/event.dart';
 import '../../repoisitory/secure_storage.dart';
@@ -11,6 +12,10 @@ import 'widgets/participant_dialog.dart';
 import '../../models/profile/member_profile.dart';
 
 class EventsCreate1 extends ConsumerStatefulWidget {
+  DateTime? startDay;
+
+  EventsCreate1({this.startDay});
+
   @override
   _EventsCreate1State createState() => _EventsCreate1State();
 }
@@ -18,7 +23,7 @@ class EventsCreate1 extends ConsumerStatefulWidget {
 class _EventsCreate1State extends ConsumerState<EventsCreate1> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _locationController = TextEditingController();
-  final TextEditingController _startDateController = TextEditingController();
+  late final TextEditingController _startDateController;
   final TextEditingController _startTimeController = TextEditingController(text: "11:00 AM");
   final TextEditingController _endDateController = TextEditingController();
   LatLng? _selectedLocation;
@@ -34,6 +39,13 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
   @override
   void initState() {
     super.initState();
+    // widget.startDay를 날짜 포맷을 사용하여 문자열로 변환
+    String? formattedDate = widget.startDay != null
+        ? DateFormat('yyyy-MM-dd').format(widget.startDay!)
+        : null; // null일 때 기본 값을 처리할 수 있음
+
+    // 변환된 문자열을 초기 값으로 설정
+    _startDateController = TextEditingController(text: formattedDate);
     _clubService = ClubService(ref.read(secureStorageProvider));
     _fetchClubs();
     _setupListeners();

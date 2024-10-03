@@ -360,7 +360,7 @@ class EventPageState extends ConsumerState<EventPage> {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => EventsCreate1()),
+          builder: (context) => EventsCreate1(startDay: _focusedDay)),
     );
 
     if (result == true) {
