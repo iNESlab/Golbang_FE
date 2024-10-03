@@ -332,8 +332,8 @@ class EventPageState extends ConsumerState<EventPage> {
                                   style: TextButton.styleFrom(
                                     foregroundColor: Colors.green,
                                   ),
-                                  child: const Text(
-                                    '게임 시작',
+                                  child: Text(
+                                    (DateTime.now()).isAfter(event.endDateTime) ? '결과 조회':'게임 시작',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.black,
