@@ -41,7 +41,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
   String groupSetting = '직접 설정';
   String numberOfGroups = '4개';
   String numberOfPlayers = '4명';
-  bool isAutoMatching = false;
+ // bool isAutoMatching = false;
   bool isTeam = false;
   List<Map<String, List<CreateParticipant>>> groups = [];
   List<CreateParticipant> _selectedParticipants = [];
@@ -206,43 +206,64 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
         elevation: 0,
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            DropdownButtonFormField<GameMode>(
-              decoration: InputDecoration(
-                labelText: '게임 모드',
-                border: OutlineInputBorder(),
-              ),
-              value: gameMode,
-              onChanged: null,
-              items: GameMode.values.map((mode) {
-                return DropdownMenuItem<GameMode>(
-                  value: mode,
-                  child: Text(
-                    mode == GameMode.STROKE ? '스트로크' : mode.toString(),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16.0),
+          children: [ // TODO: 매칭 토ㄱ원시 여기부터
+            Row(
+              children: [ // TODO: 여기까지 삭제
+                Expanded(
+                  child: DropdownButtonFormField<GameMode>(
+                    decoration: InputDecoration(
+                      labelText: '게임모드',
+                      border: OutlineInputBorder(),
+                    ),
+                    value: gameMode,
+                    onChanged: (newValue) {
+                      setState(() {
+                        gameMode = newValue!;
+                        _validateForm();
+                      });
+                    },
+                    items: GameMode.values.map((mode) {
+                      return DropdownMenuItem<GameMode>(
+                        value: mode,
+                        child: Text(
+                          mode == GameMode.STROKE ? '스트로크' : mode.toString(),
+                        ),
+                      );
+                    }).toList(),
                   ),
-                );
-              }).toList(),
-            ),
+                ),
+                SizedBox(width: 20),
+                Expanded(
+                  child: DropdownButtonFormField<bool>(
+                    decoration: InputDecoration(
+                      labelText: '팀/개인전',
+                      border: OutlineInputBorder(),
+                    ),
+                    value: isTeam,
+                    onChanged: (newValue) {
+                      setState(() {
+                        isTeam = newValue!;
+                        _createGroups();
+                        _validateForm();
+                      });
+                    },
+                    items: ['개인전', '팀전'].asMap().entries.map((entry) {
+                      int idx = entry.key;  // 인덱스 추출
+                      String value = entry.value;  // 해당 문자열 ('개인전' 또는 '팀전')
+                      return DropdownMenuItem<bool>(
+                        value: idx == 1,  // 인덱스를 value로 지정
+                        child: Text(value),  // 보여줄 텍스트는 문자열
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+          ),
             SizedBox(height: 20),
-            ToggleButtonsWidget(
-              isTeam: isTeam,
-              onSelectedMatchingType: (int index) {
-                setState(() {
-                  isAutoMatching = index == 0;
-                });
-              },
-              onSelectedTeamType: (int index) {
-                setState(() {
-                  isTeam = index == 1;
-                  groups.clear();
-                });
-              },
-            ),
-            SizedBox(height: 20),
+            /*
             DropdownButtonFormField<String>(
               decoration: InputDecoration(
                 labelText: '직접 설정',
@@ -262,6 +283,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
               }).toList(),
             ),
             SizedBox(height: 20),
+            */
             Row(
               children: [
                 Expanded(
