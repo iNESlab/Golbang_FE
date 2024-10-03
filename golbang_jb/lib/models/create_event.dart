@@ -4,6 +4,7 @@ class CreateEvent {
   final String? memberGroup;
   final String eventTitle;
   final String? location;
+  final String site;
   final DateTime startDateTime;
   final DateTime endDateTime;
   final String? repeatType;
@@ -15,6 +16,7 @@ class CreateEvent {
     this.memberGroup,
     required this.eventTitle,
     this.location,
+    required this.site,
     required this.startDateTime,
     required this.endDateTime,
     this.repeatType,
@@ -29,6 +31,7 @@ class CreateEvent {
       memberGroup: json['memberGroup'] ?? "",
       eventTitle: json['event_title'],
       location: json['location'],
+      site: json['site'],
       startDateTime: DateTime.parse(json['start_date_time']),
       endDateTime: DateTime.parse(json['end_date_time']),
       repeatType: json['repeat_type'] ?? "",
@@ -42,6 +45,7 @@ class CreateEvent {
       'event_id': eventId,
       'event_title': eventTitle,
       'location': location,
+      'site': site,
       'start_date_time': startDateTime.toIso8601String(),
       'end_date_time': endDateTime.toIso8601String(),
       'repeat_type': repeatType,

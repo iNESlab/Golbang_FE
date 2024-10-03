@@ -12,7 +12,7 @@ import 'widgets/participant_dialog.dart';
 import '../../models/profile/member_profile.dart';
 
 class EventsCreate1 extends ConsumerStatefulWidget {
-  DateTime? startDay;
+  final DateTime? startDay;
 
   EventsCreate1({this.startDay});
 
@@ -27,12 +27,25 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
   final TextEditingController _startTimeController = TextEditingController(text: "11:00 AM");
   final TextEditingController _endDateController = TextEditingController();
   LatLng? _selectedLocation;
+  late String _site;
   List<Club> _clubs = [];
   Club? _selectedClub;
   GameMode? _selectedGameMode;
   List<ClubMemberProfile> _selectedParticipants = [];
   late ClubService _clubService;
   bool _isButtonEnabled = false;
+  final Map<String, LatLng> _locationCoordinates = {
+    "Jagorawi Golf & Country Club": LatLng(-6.454673, 106.876867),
+    "East Point Golf Club": LatLng(17.763526, 83.301727),
+    "Rusutsu Resort Golf 72": LatLng(42.748674, 140.904709),
+    "Siem Reap Lake Resort Golf Club": LatLng(13.368188, 103.964219),
+    "National Army, Taelung Sport Center": LatLng(37.630121, 127.109333),
+    "Luang Prabang Golf Club": LatLng(19.867596, 102.085709),
+    "Nuwara Eliya Golf Club": LatLng(6.971707, 80.765661),
+    "Bukit Banang Golf & Country Club": LatLng(1.802658, 102.968811),
+    "Panya Indra Golf Club": LatLng(13.828058, 100.687627),
+    "Song Be Golf Resort": LatLng(10.924936, 106.707254)
+  };
 
   final TimeOfDay _fixedTime = TimeOfDay(hour: 23, minute: 59);
 
@@ -87,22 +100,12 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
     showDialog(
       context: context,
       builder: (context) => LocationSearchDialog(
-        locationController: _locationController, //TODO: 지금 위도로 저장되는데 이대로 유지할지 결정해야함
-        locationCoordinates: {
-          "Jagorawi Golf & Country Club": LatLng(-6.454673, 106.876867),
-          "East Point Golf Club": LatLng(17.763526, 83.301727),
-          "Rusutsu Resort Golf 72": LatLng(42.748674, 140.904709),
-          "Siem Reap Lake Resort Golf Club": LatLng(13.368188, 103.964219),
-          "National Army, Taelung Sport Center": LatLng(37.630121, 127.109333),
-          "Luang Prabang Golf Club": LatLng(19.867596, 102.085709),
-          "Nuwara Eliya Golf Club": LatLng(6.971707, 80.765661),
-          "Bukit Banang Golf & Country Club": LatLng(1.802658, 102.968811),
-          "Panya Indra Golf Club": LatLng(13.828058, 100.687627),
-          "Song Be Golf Resort": LatLng(10.924936, 106.707254)
-        },
-        onLocationSelected: (LatLng location) {
+        locationController: _locationController,
+        locationCoordinates: _locationCoordinates,
+        onLocationSelected: (String site) {
           setState(() {
-            _selectedLocation = location;
+            _site = site;
+            _selectedLocation = _locationCoordinates[site];
             _validateForm();
           });
         },
@@ -396,6 +399,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                           title: _titleController.text,
                           selectedClub: _selectedClub!,
                           selectedLocation: _selectedLocation!,
+                          selectedSite: _site,
                           startDate: startDateTime,
                           endDate: endDateTime,
                           selectedParticipants: _selectedParticipants,

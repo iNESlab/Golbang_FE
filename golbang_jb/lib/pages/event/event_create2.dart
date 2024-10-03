@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/event/widgets/group_card.dart';
 import 'package:golbang/pages/event/widgets/no_api_participant_dialog.dart';
-import 'package:golbang/pages/event/widgets/toggle_bottons.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../models/club.dart';
@@ -16,6 +15,7 @@ class EventsCreate2 extends ConsumerStatefulWidget {
   final String title;
   final Club? selectedClub;
   final LatLng? selectedLocation;
+  final String selectedSite;
   final DateTime startDate;
   final DateTime endDate;
   final List<ClubMemberProfile> selectedParticipants;
@@ -25,6 +25,7 @@ class EventsCreate2 extends ConsumerStatefulWidget {
     required this.title,
     required this.selectedClub,
     required this.selectedLocation,
+    required this.selectedSite,
     required this.startDate,
     required this.endDate,
     required this.selectedParticipants,
@@ -144,6 +145,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
     final event = CreateEvent(
       eventTitle: widget.title,
       location: widget.selectedLocation?.toString() ?? "Unknown Location",
+      site: widget.selectedSite,
       startDateTime: widget.startDate,
       endDateTime: widget.endDate,
       repeatType: "NONE",
@@ -176,7 +178,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
 
   @override
   Widget build(BuildContext context) {
-    final eventState = ref.watch(eventStateNotifierProvider);
+    // final eventState = ref.watch(eventStateNotifierProvider);
 
     return Scaffold(
       appBar: AppBar(

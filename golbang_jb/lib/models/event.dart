@@ -10,6 +10,7 @@ class Event {
   final int memberGroup;
   final String eventTitle;
   final String? location;
+  final String site;
   final DateTime startDateTime;
   final DateTime endDateTime;
   final String? repeatType;
@@ -29,6 +30,7 @@ class Event {
     required this.memberGroup,
     required this.eventTitle,
     this.location,
+    required this.site,
     required this.startDateTime,
     required this.endDateTime,
     this.repeatType,
@@ -51,6 +53,7 @@ class Event {
       memberGroup: json['member_group'],
       eventTitle: json['event_title'],
       location: json['location'],
+      site: json['site']??'unknown site',
       startDateTime: DateTime.parse(json['start_date_time']),
       endDateTime: DateTime.parse(json['end_date_time']),
       repeatType: json['repeat_type'] ?? "",

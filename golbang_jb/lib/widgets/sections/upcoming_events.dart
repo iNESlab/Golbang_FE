@@ -103,7 +103,7 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
                         '${event.startDateTime.toLocal()}',
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      Text('장소: ${event.location}'),
+                      Text('장소: ${event.site}'),
                       Row(
                         children: [
                           const Text('참석 여부: '),

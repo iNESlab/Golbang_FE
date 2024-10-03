@@ -17,7 +17,8 @@ class EventsUpdate2 extends ConsumerStatefulWidget {
   final int eventId;
   final String title;
   final Club? selectedClub;
-  final LatLng? selectedLocation;
+  final LatLng selectedLocation;
+  final String selectedSite;
   final DateTime startDate;
   final DateTime endDate;
   final List<ClubMemberProfile> selectedParticipants;
@@ -29,6 +30,7 @@ class EventsUpdate2 extends ConsumerStatefulWidget {
     required this.title,
     required this.selectedClub,
     required this.selectedLocation,
+    required this.selectedSite,
     required this.startDate,
     required this.endDate,
     required this.selectedParticipants,
@@ -234,7 +236,8 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
     final eventData = CreateEvent(
       eventId: widget.eventId,
       eventTitle: widget.title,
-      location: widget.selectedLocation?.toString() ?? "Unknown Location",
+      location: widget.selectedLocation.toString() ?? "Unknown Location",
+      site: widget.selectedSite,
       startDateTime: widget.startDate,
       endDateTime: widget.endDate,
       repeatType: "NONE",

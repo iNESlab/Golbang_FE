@@ -4,7 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 class LocationSearchDialog extends StatefulWidget {
   final TextEditingController locationController;
   final Map<String, LatLng> locationCoordinates;
-  final Function(LatLng) onLocationSelected;
+  final Function(String) onLocationSelected;
 
   LocationSearchDialog({
     required this.locationController,
@@ -17,12 +17,12 @@ class LocationSearchDialog extends StatefulWidget {
 }
 
 class _LocationSearchDialogState extends State<LocationSearchDialog> {
-  List<String> _locationSuggestions = [];
+  List<String> _sites = [];
 
   @override
   void initState() {
     super.initState();
-    _locationSuggestions = widget.locationCoordinates.keys.toList();
+    _sites = widget.locationCoordinates.keys.toList();
   }
 
   @override
@@ -75,7 +75,7 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
                 ),
                 onChanged: (value) {
                   setState(() {
-                    _locationSuggestions = widget.locationCoordinates.keys
+                    _sites = widget.locationCoordinates.keys
                         .where((location) => location.toLowerCase().contains(value.toLowerCase()))
                         .toList();
                   });
@@ -86,14 +86,14 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
                 height: 300,
                 child: ListView.builder(
                   shrinkWrap: true,
-                  itemCount: _locationSuggestions.length,
+                  itemCount: _sites.length,
                   itemBuilder: (BuildContext context, int index) {
                     return ListTile(
-                      title: Text(_locationSuggestions[index]),
+                      title: Text(_sites[index]),
                       onTap: () {
-                        final selectedLocation = _locationSuggestions[index];
-                        widget.locationController.text = selectedLocation;
-                        widget.onLocationSelected(widget.locationCoordinates[selectedLocation]!);
+                        final site = _sites[index];
+                        widget.locationController.text = site;
+                        widget.onLocationSelected(site);
                         Navigator.pop(context);
                       },
                     );
