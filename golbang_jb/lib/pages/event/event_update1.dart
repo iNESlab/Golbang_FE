@@ -47,11 +47,12 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
   };
 
   LatLng? _selectedLocation;
-  String _site;  // 선택된 장소의 이름을 저장하는 변수
+  late String _site;  // 선택된 장소의 이름을 저장하는 변수
 
   @override
   void initState() {
     super.initState();
+    _site = widget.event.site;
     _clubService = ClubService(ref.read(secureStorageProvider));
     _fetchClubs();
     _setupInitialValues(); // 전달받은 이벤트 데이터를 초기화하는 메서드
