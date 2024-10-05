@@ -5,6 +5,7 @@ import '../../../models/create_participant.dart'; // CreateParticipant 모델 �
 class ParticipantSelectionDialog extends StatefulWidget {
   final bool isTeam;
   final String groupName;
+  final int max;
   final List<CreateParticipant> participants; // 전체 참여자 리스트
   final List<CreateParticipant> selectedParticipants; // 선택된 참여자 리스트
   final Function(List<CreateParticipant>) onSelectionComplete; // 완료 콜백
@@ -14,6 +15,7 @@ class ParticipantSelectionDialog extends StatefulWidget {
     required this.groupName,
     required this.participants,
     required this.selectedParticipants,
+    required this.max,
     required this.onSelectionComplete,
   });
 
@@ -45,8 +47,8 @@ class _ParticipantSelectionDialogState
         // 선택된 경우 리스트에서 제거
         _currentSelectedParticipants.removeWhere(
                 (selected) => selected.memberId == participant.memberId);
-      } else {
-        // 선택되지 않은 경우 리스트에 추가 (기존 객체 사용)
+      } else if(_currentSelectedParticipants.length+1 <= widget.max) {
+        // 조별 인원수를 다 채우지 않았고, 선택되지 않은 경우 리스트에 추가 (기존 객체 사용)
         participant.groupType = int.parse(widget.groupName.substring(1,2)); // groupType 설정
         print('groupType: ${participant.groupType}');
 

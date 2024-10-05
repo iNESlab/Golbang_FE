@@ -6,7 +6,6 @@ import '../../models/enum/event.dart';
 import '../../models/event.dart';
 import '../../models/member.dart';
 import '../../models/profile/member_profile.dart';
-import '../../models/profile/member_profile.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/club_service.dart';
 import 'widgets/location_search_dialog.dart';
@@ -48,11 +47,12 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
   };
 
   LatLng? _selectedLocation;
-  String? _selectedLocationName;  // 선택된 장소의 이름을 저장하는 변수
+  late String _site;  // 선택된 장소의 이름을 저장하는 변수
 
   @override
   void initState() {
     super.initState();
+    _site = widget.event.site;
     _clubService = ClubService(ref.read(secureStorageProvider));
     _fetchClubs();
     _setupInitialValues(); // 전달받은 이벤트 데이터를 초기화하는 메서드
@@ -142,13 +142,11 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
       builder: (context) => LocationSearchDialog(
         locationController: _locationController,
         locationCoordinates: _locationCoordinates,
-        onLocationSelected: (LatLng location) {
+        onLocationSelected: (String site) {
           setState(() {
-            _selectedLocation = location;
-            _selectedLocationName = _locationCoordinates.entries
-                .firstWhere((entry) => entry.value == location)
-                .key;
-            _locationController.text = _selectedLocationName ?? '';
+            _selectedLocation = _locationCoordinates[site];
+            _site = site;
+            // _locationController.text = site ?? ''; TODO: test
             _validateForm();
           });
         },
@@ -460,6 +458,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                           title: _titleController.text,
                           selectedClub: _selectedClub!,
                           selectedLocation: _selectedLocation!,
+                          selectedSite: _site,
                           startDate: startDateTime,
                           endDate: endDateTime,
                           selectedParticipants: _selectedParticipants,

@@ -4,7 +4,6 @@ import 'package:golbang/models/profile/member_profile.dart';
 import 'package:golbang/pages/event/widgets/group_card.dart';
 import 'package:golbang/pages/event/widgets/no_api_participant_dialog.dart';
 import 'package:golbang/pages/event/widgets/toggle_bottons.dart';
-import 'package:golbang/provider/event/event_state_notifier_provider.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../models/club.dart';
 import '../../models/create_event.dart';
@@ -18,7 +17,8 @@ class EventsUpdate2 extends ConsumerStatefulWidget {
   final int eventId;
   final String title;
   final Club? selectedClub;
-  final LatLng? selectedLocation;
+  final LatLng selectedLocation;
+  final String selectedSite;
   final DateTime startDate;
   final DateTime endDate;
   final List<ClubMemberProfile> selectedParticipants;
@@ -30,6 +30,7 @@ class EventsUpdate2 extends ConsumerStatefulWidget {
     required this.title,
     required this.selectedClub,
     required this.selectedLocation,
+    required this.selectedSite,
     required this.startDate,
     required this.endDate,
     required this.selectedParticipants,
@@ -218,6 +219,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
           groupName: groupName,
           participants: _selectedParticipants,
           selectedParticipants: groupParticipants,
+          max: int.parse(numberOfPlayers.substring(0,1)),
           onSelectionComplete: (List<CreateParticipant> updatedParticipants) {
             setState(() {
               groups.firstWhere((group) => group.keys.contains(groupName))[groupName] =
@@ -234,7 +236,8 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
     final eventData = CreateEvent(
       eventId: widget.eventId,
       eventTitle: widget.title,
-      location: widget.selectedLocation?.toString() ?? "Unknown Location",
+      location: widget.selectedLocation.toString() ?? "Unknown Location",
+      site: widget.selectedSite,
       startDateTime: widget.startDate,
       endDateTime: widget.endDate,
       repeatType: "NONE",
@@ -293,43 +296,61 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
       body: SafeArea(
         child: ListView(
           padding: const EdgeInsets.all(16.0),
-          children: [
-            DropdownButtonFormField<GameMode>(
-              decoration: InputDecoration(
-                labelText: '게임모드',
-                border: OutlineInputBorder(),
-              ),
-              value: gameMode,
-              onChanged: (newValue) {
-                setState(() {
-                  gameMode = newValue!;
-                  _validateForm();
-                });
-              },
-              items: GameMode.values.map((mode) {
-                return DropdownMenuItem<GameMode>(
-                  value: mode,
-                  child: Text(
-                    mode == GameMode.STROKE ? '스트로크' : mode.toString(),
+          children: [ // TODO: 매칭 토글 복원시 여기부터
+              Row(
+                children: [ // TODO: 여기까지 삭제
+                  Expanded(
+                    child: DropdownButtonFormField<GameMode>(
+                      decoration: InputDecoration(
+                        labelText: '게임모드',
+                        border: OutlineInputBorder(),
+                      ),
+                      value: gameMode,
+                      onChanged: (newValue) {
+                        setState(() {
+                          gameMode = newValue!;
+                          _validateForm();
+                        });
+                      },
+                      items: GameMode.values.map((mode) {
+                        return DropdownMenuItem<GameMode>(
+                          value: mode,
+                          child: Text(
+                            mode == GameMode.STROKE ? '스트로크' : mode.toString(),
+                          ),
+                        );
+                      }).toList(),
+                    ),
                   ),
-                );
-              }).toList(),
-            ),
-            SizedBox(height: 20),
-            ToggleButtonsWidget(
-              isTeam: isTeam,
-              onSelectedMatchingType: (int index) {
-                setState(() {
-                  isAutoMatching = index == 0;
-                });
-              },
-              onSelectedTeamType: (int index) {
-                setState(() {
-                  isTeam = index == 1;
-                });
-              },
-            ),
-            SizedBox(height: 20),
+                  SizedBox(width: 20),
+                  Expanded(
+                    child: DropdownButtonFormField<bool>(
+                      decoration: InputDecoration(
+                        labelText: '팀/개인전',
+                        border: OutlineInputBorder(),
+                      ),
+                      value: isTeam,
+                      onChanged: (newValue) {
+                        setState(() {
+                          isTeam = newValue!;
+                          _createGroups();
+                          _validateForm();
+                        });
+                      },
+                      items: ['개인전', '팀전'].asMap().entries.map((entry) {
+                        int idx = entry.key;  // 인덱스 추출
+                        String value = entry.value;  // 해당 문자열 ('개인전' 또는 '팀전')
+                        return DropdownMenuItem<bool>(
+                          value: idx == 1,  // 인덱스를 value로 지정
+                          child: Text(value),  // 보여줄 텍스트는 문자열
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                ],
+              ),
+             SizedBox(height: 20),
+            /*
             DropdownButtonFormField<String>(
               decoration: InputDecoration(
                 labelText: '직접 설정',
@@ -349,12 +370,13 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
               }).toList(),
             ),
             SizedBox(height: 20),
+             */
             Row(
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     decoration: InputDecoration(
-                      labelText: '팀 수',
+                      labelText: '조(최대 갯수)',
                       border: OutlineInputBorder(),
                     ),
                     value: numberOfGroups,
@@ -375,7 +397,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     decoration: InputDecoration(
-                      labelText: '인원 수',
+                      labelText: '조별 인원 수(최대)',
                       border: OutlineInputBorder(),
                     ),
                     value: numberOfPlayers,

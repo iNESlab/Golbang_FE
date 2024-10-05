@@ -21,7 +21,7 @@ class EventPageState extends ConsumerState<EventPage> {
   late final ValueNotifier<List<Event>> _selectedEvents;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
-  late EventService _eventService;
+  // late EventService _eventService;
   late ParticipantService _participantService;
 
   final Map<DateTime, List<Event>> _events = LinkedHashMap(
@@ -43,7 +43,7 @@ class EventPageState extends ConsumerState<EventPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     final storage = ref.watch(secureStorageProvider);
-    _eventService = EventService(storage);
+    // _eventService = EventService(storage);
     _participantService = ParticipantService(storage);
     _loadEventsForMonth();
 
@@ -238,7 +238,24 @@ class EventPageState extends ConsumerState<EventPage> {
               valueListenable: _selectedEvents,
               builder: (context, value, _) {
                 if (value.isEmpty) {
-                  return const Center(child: Text('일정이 없습니다.'));
+                  return Center(
+                      child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.event_note, // 어울리는 아이콘을 선택하세요.
+                              size: 100,
+                              color: Colors.grey,
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              '일정 추가 버튼을 눌러\n이벤트를 만들어보세요.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 16, color: Colors.grey),
+                            )
+                          ]
+                      )
+                  );
                 }
                 return ListView.builder(
                   itemCount: value.length,
@@ -274,7 +291,7 @@ class EventPageState extends ConsumerState<EventPage> {
                           const SizedBox(height: 8.0),
                           Text('시간: ${event.startDateTime.hour}:${event.startDateTime.minute}'),
                           Text('인원수: 참석 ${event.participants.length}명'),
-                          Text('장소: ${event.location}'),
+                          Text('장소: ${event.site}'),
                           Row(
                             children: [
                               _buildStatusButton('ACCEPT', statusType, () async {
@@ -300,8 +317,8 @@ class EventPageState extends ConsumerState<EventPage> {
                               children: [
                                 TextButton(
                                   onPressed: () {
-                                      _navigateToEventDetail(event);
-                                      },
+                                    _navigateToEventDetail(event);
+                                  },
                                   style: TextButton.styleFrom(
                                     foregroundColor: Colors.green,
                                   ),
@@ -315,8 +332,8 @@ class EventPageState extends ConsumerState<EventPage> {
                                   style: TextButton.styleFrom(
                                     foregroundColor: Colors.green,
                                   ),
-                                  child: const Text(
-                                    '게임 시작',
+                                  child: Text(
+                                    (DateTime.now()).isAfter(event.endDateTime) ? '결과 조회':'게임 시작',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.black,
@@ -343,7 +360,7 @@ class EventPageState extends ConsumerState<EventPage> {
     final result = await Navigator.push(
       context,
       MaterialPageRoute(
-          builder: (context) => EventsCreate1()),
+          builder: (context) => EventsCreate1(startDay: _focusedDay)),
     );
 
     if (result == true) {

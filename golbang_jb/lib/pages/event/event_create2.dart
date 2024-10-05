@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/event/widgets/group_card.dart';
 import 'package:golbang/pages/event/widgets/no_api_participant_dialog.dart';
-import 'package:golbang/pages/event/widgets/toggle_bottons.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../models/club.dart';
@@ -16,6 +15,7 @@ class EventsCreate2 extends ConsumerStatefulWidget {
   final String title;
   final Club? selectedClub;
   final LatLng? selectedLocation;
+  final String selectedSite;
   final DateTime startDate;
   final DateTime endDate;
   final List<ClubMemberProfile> selectedParticipants;
@@ -25,6 +25,7 @@ class EventsCreate2 extends ConsumerStatefulWidget {
     required this.title,
     required this.selectedClub,
     required this.selectedLocation,
+    required this.selectedSite,
     required this.startDate,
     required this.endDate,
     required this.selectedParticipants,
@@ -41,13 +42,12 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
   String groupSetting = '직접 설정';
   String numberOfGroups = '4개';
   String numberOfPlayers = '4명';
-  bool isAutoMatching = false;
+ // bool isAutoMatching = false;
   bool isTeam = false;
   List<Map<String, List<CreateParticipant>>> groups = [];
   List<CreateParticipant> _selectedParticipants = [];
   bool hasDuplicateParticipants = false;
   bool areGroupsEmpty = true;
-  bool allParticipantsAssigned = false;
 
   @override
   void initState() {
@@ -62,7 +62,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
         name: participant.name,
         profileImage: participant.profileImage,
         teamType: teamConfig,
-        groupType: 0,
+        groupType: 1, // 0으로 하면, 에러 뜸.
       );
     }).toList();
   }
@@ -89,27 +89,9 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
     return false;
   }
 
-  bool _checkIfAllParticipantsAssigned() {
-    final assignedParticipants = <int>{};
-    for (var group in groups) {
-      for (var participant in group.values.first) {
-        assignedParticipants.add(participant.memberId);
-      }
-      if (isTeam) {
-        for (var participant in group.values.last) {
-          assignedParticipants.add(participant.memberId);
-        }
-      }
-    }
-    print('참가자 할당여부 ${assignedParticipants.length == _selectedParticipants.length}');
-    return assignedParticipants.length == _selectedParticipants.length;
-  }
-
   void _validateForm() {
     setState(() {
       hasDuplicateParticipants = _checkForDuplicateParticipants();
-      allParticipantsAssigned = _checkIfAllParticipantsAssigned();
-      print("---------------------------------------------------");
     });
   }
 
@@ -147,6 +129,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
           groupName: groupName,
           participants: _selectedParticipants, // 모든 참가자 리스트
           selectedParticipants: groupParticipants, // 현재 그룹에 선택된 참가자
+          max: int.parse(numberOfPlayers.substring(0,1)),
           onSelectionComplete: (List<CreateParticipant> updatedParticipants) {
             setState(() {
               groups.firstWhere((group) => group.keys.contains(groupName))[groupName] = updatedParticipants;
@@ -162,6 +145,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
     final event = CreateEvent(
       eventTitle: widget.title,
       location: widget.selectedLocation?.toString() ?? "Unknown Location",
+      site: widget.selectedSite,
       startDateTime: widget.startDate,
       endDateTime: widget.endDate,
       repeatType: "NONE",
@@ -194,7 +178,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
 
   @override
   Widget build(BuildContext context) {
-    final eventState = ref.watch(eventStateNotifierProvider);
+    // final eventState = ref.watch(eventStateNotifierProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -207,13 +191,13 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
         title: Text('이벤트 생성'),
         actions: [
           TextButton(
-            onPressed: (hasDuplicateParticipants || !allParticipantsAssigned)
+            onPressed: (hasDuplicateParticipants)
                 ? null
                 : _onCompletePressed,
             child: Text(
               '완료',
               style: TextStyle(
-                color: (hasDuplicateParticipants || !allParticipantsAssigned)
+                color: (hasDuplicateParticipants)
                     ? Colors.grey
                     : Colors.teal,
               ),
@@ -224,43 +208,64 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
         elevation: 0,
         centerTitle: true,
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            DropdownButtonFormField<GameMode>(
-              decoration: InputDecoration(
-                labelText: '게임모드',
-                border: OutlineInputBorder(),
-              ),
-              value: gameMode,
-              onChanged: null,
-              items: GameMode.values.map((mode) {
-                return DropdownMenuItem<GameMode>(
-                  value: mode,
-                  child: Text(
-                    mode == GameMode.STROKE ? '스트로크' : mode.toString(),
+      body: SafeArea(
+        child: ListView(
+          padding: const EdgeInsets.all(16.0),
+          children: [ // TODO: 매칭 토ㄱ원시 여기부터
+            Row(
+              children: [ // TODO: 여기까지 삭제
+                Expanded(
+                  child: DropdownButtonFormField<GameMode>(
+                    decoration: InputDecoration(
+                      labelText: '게임모드',
+                      border: OutlineInputBorder(),
+                    ),
+                    value: gameMode,
+                    onChanged: (newValue) {
+                      setState(() {
+                        gameMode = newValue!;
+                        _validateForm();
+                      });
+                    },
+                    items: GameMode.values.map((mode) {
+                      return DropdownMenuItem<GameMode>(
+                        value: mode,
+                        child: Text(
+                          mode == GameMode.STROKE ? '스트로크' : mode.toString(),
+                        ),
+                      );
+                    }).toList(),
                   ),
-                );
-              }).toList(),
-            ),
+                ),
+                SizedBox(width: 20),
+                Expanded(
+                  child: DropdownButtonFormField<bool>(
+                    decoration: InputDecoration(
+                      labelText: '팀/개인전',
+                      border: OutlineInputBorder(),
+                    ),
+                    value: isTeam,
+                    onChanged: (newValue) {
+                      setState(() {
+                        isTeam = newValue!;
+                        _createGroups();
+                        _validateForm();
+                      });
+                    },
+                    items: ['개인전', '팀전'].asMap().entries.map((entry) {
+                      int idx = entry.key;  // 인덱스 추출
+                      String value = entry.value;  // 해당 문자열 ('개인전' 또는 '팀전')
+                      return DropdownMenuItem<bool>(
+                        value: idx == 1,  // 인덱스를 value로 지정
+                        child: Text(value),  // 보여줄 텍스트는 문자열
+                      );
+                    }).toList(),
+                  ),
+                ),
+              ],
+          ),
             SizedBox(height: 20),
-            ToggleButtonsWidget(
-              isTeam: isTeam,
-              onSelectedMatchingType: (int index) {
-                setState(() {
-                  isAutoMatching = index == 0;
-                });
-              },
-              onSelectedTeamType: (int index) {
-                setState(() {
-                  isTeam = index == 1;
-                  groups.clear();
-                });
-              },
-            ),
-            SizedBox(height: 20),
+            /*
             DropdownButtonFormField<String>(
               decoration: InputDecoration(
                 labelText: '직접 설정',
@@ -280,12 +285,13 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
               }).toList(),
             ),
             SizedBox(height: 20),
+            */
             Row(
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     decoration: InputDecoration(
-                      labelText: '팀 수',
+                      labelText: '조(최대 갯수)',
                       border: OutlineInputBorder(),
                     ),
                     value: numberOfGroups,
@@ -306,7 +312,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                 Expanded(
                   child: DropdownButtonFormField<String>(
                     decoration: InputDecoration(
-                      labelText: '인원 수',
+                      labelText: '조별 인원 수(최대)',
                       border: OutlineInputBorder(),
                     ),
                     value: numberOfPlayers,
@@ -340,7 +346,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('추가 버튼을 눌러 멤버를 추가해보세요'),
+                    Text('추가 버튼을 눌러 멤버를 추가해보세요\n미선택시, 1조로 등록됩니다.'),
                     SizedBox(height: 10),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
