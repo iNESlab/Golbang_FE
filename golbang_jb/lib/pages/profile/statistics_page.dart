@@ -162,12 +162,12 @@ class _StatisticsPageState extends State<StatisticsPage> {
       context: context,
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
-      initialDateRange: startDate != null && endDate != null
+      initialDateRange: (startDate != null && endDate != null)
           ? DateTimeRange(start: startDate!, end: endDate!)
-          : null,
+          : DateTimeRange(start: DateTime.now(), end: DateTime.now().add(const Duration(days: 1))), // 기본값 설정
     );
 
-    if (picked != null && picked != DateTimeRange(start: startDate!, end: endDate!)) {
+    if (picked != null) {
       setState(() {
         startDate = picked.start;
         endDate = picked.end;
@@ -177,10 +177,12 @@ class _StatisticsPageState extends State<StatisticsPage> {
     }
   }
 
+
   Future<void> _loadPeriodStatistics() async {
     if (startDate != null && endDate != null) {
       final String formattedStartDate = "${startDate!.year}-${startDate!.month.toString().padLeft(2, '0')}-${startDate!.day.toString().padLeft(2, '0')}";
       final String formattedEndDate = "${endDate!.year}-${endDate!.month.toString().padLeft(2, '0')}-${endDate!.day.toString().padLeft(2, '0')}";
+      print("startDate: $formattedStartDate / endDate: $formattedEndDate");
 
       periodStatistics = await statisticsService.fetchPeriodStatistics(formattedStartDate, formattedEndDate);
       setState(() {}); // 화면 갱신
@@ -274,7 +276,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
 
   Widget _buildClubRankingSection() {
     if (groups.isEmpty) {
-      return const Center(child: Text('그룹 데이터를 불러오는 중...'));
+      return const Center(child: Text('모임의 이벤트 데이터가 없습니다.'));
     }
 
     return Card(
