@@ -401,7 +401,10 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                 backgroundColor: Colors.teal,
                 minimumSize: Size(double.infinity, 50),
               ),
-              child: Text('조 생성'),
+              child: Text(
+                '조 생성',
+                style: TextStyle(color: Colors.white),  // 글자 색을 흰색으로 설정
+              ),
             ),
             if (groups.isNotEmpty)
               Padding(
