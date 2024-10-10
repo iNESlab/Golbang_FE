@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/models/get_statistics_overall.dart';
 import 'package:golbang/models/get_statistics_yearly.dart';
 import 'package:golbang/models/get_statistics_period.dart';
@@ -9,17 +9,16 @@ import '../../services/statistics_service.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../models/group.dart'; // 그룹 모델 추가
 
-class StatisticsPage extends StatefulWidget {
+class StatisticsPage extends ConsumerStatefulWidget {
   const StatisticsPage({super.key});
 
   @override
   _StatisticsPageState createState() => _StatisticsPageState();
 }
 
-class _StatisticsPageState extends State<StatisticsPage> {
-  late final SecureStorage secureStorage;
-  late final StatisticsService statisticsService;
-  late final GroupService groupService; // 그룹 서비스 추가
+class _StatisticsPageState extends ConsumerState<StatisticsPage> {
+  late StatisticsService statisticsService;
+  late GroupService groupService; // 그룹 서비스 추가
   String selectedYear = '전체'; // 초기 연도 설정
 
   List<Group> groups = []; // 그룹 리스트
@@ -35,11 +34,14 @@ class _StatisticsPageState extends State<StatisticsPage> {
   PeriodStatistics? periodStatistics; // 기간별 통계 데이터
 
   @override
-  void initState() {
-    super.initState();
-    secureStorage = SecureStorage(storage: const FlutterSecureStorage());
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // SecureStorage를 가져와서 서비스 초기화
+    final secureStorage = ref.watch(secureStorageProvider);
     statisticsService = StatisticsService(secureStorage);
-    groupService = GroupService(secureStorage); // 그룹 서비스 초기화
+    groupService = GroupService(secureStorage);
+
     _loadInitialData();
   }
 
@@ -50,31 +52,17 @@ class _StatisticsPageState extends State<StatisticsPage> {
     });
 
     try {
-      // 그룹 리스트 가져오기
       groups = await groupService.getUserGroups();
-
-      // 각 그룹별 랭킹 가져오기
       for (Group group in groups) {
-        print("aa");
-        print(group);
-        print(group.id);
-        print("bb");
         ClubStatistics? ranking = await groupService.fetchGroupRanking(group.id);
-
         if (ranking != null) {
           groupRankings[group.id] = ranking;
         }
       }
-
-
-      // 통계 데이터 로드
       await _loadStatisticsData();
-
-      // 첫 번째 그룹의 이벤트 리스트 로드
       if (groups.isNotEmpty && groupRankings.isNotEmpty) {
         _loadEventsForGroup(groups.first.id);
       }
-
       if (groups.isEmpty && overallStatistics == null && yearStatistics == null) {
         hasError = true;
       }
@@ -89,14 +77,24 @@ class _StatisticsPageState extends State<StatisticsPage> {
   }
 
   Future<void> _loadStatisticsData() async {
-    if (selectedYear == '전체') {
-      // 전체 통계 가져오기
-      overallStatistics = await statisticsService.fetchOverallStatistics();
-      yearStatistics = null; // 연도별 통계는 비워둠
-    } else {
-      // 연도별 통계 가져오기
-      yearStatistics = await statisticsService.fetchYearStatistics(selectedYear);
-      overallStatistics = null; // 전체 통계는 비워둠
+    try {
+      if (selectedYear == '전체') {
+        // 전체 통계 가져오기
+        overallStatistics = await statisticsService.fetchOverallStatistics();
+        yearStatistics = null;
+      } else if (selectedYear == '2023' || selectedYear == '2024') {
+        // 연도별 통계 가져오기 (startDate, endDate는 사용하지 않음)
+        yearStatistics = await statisticsService.fetchYearStatistics(selectedYear);
+        overallStatistics = null;
+        periodStatistics = null; // 기간 통계 데이터를 초기화
+      } else if (startDate != null && endDate != null) {
+        // 기간 통계 가져오기 (선택된 날짜에 대한 통계)
+        await _loadPeriodStatistics();
+      }
+    } catch (e) {
+      setState(() {
+        hasError = true;
+      });
     }
   }
 
@@ -164,39 +162,68 @@ class _StatisticsPageState extends State<StatisticsPage> {
       lastDate: DateTime(2030),
       initialDateRange: (startDate != null && endDate != null)
           ? DateTimeRange(start: startDate!, end: endDate!)
-          : DateTimeRange(start: DateTime.now(), end: DateTime.now().add(const Duration(days: 1))), // 기본값 설정
+          : DateTimeRange(start: DateTime.now(), end: DateTime.now().add(const Duration(days: 1))),
     );
 
     if (picked != null) {
       setState(() {
         startDate = picked.start;
         endDate = picked.end;
+        selectedYear = ''; // 연도 선택 초기화
       });
 
+      print("Selected date range: $startDate to $endDate");
       await _loadPeriodStatistics(); // 기간별 통계 로드
     }
   }
-
 
   Future<void> _loadPeriodStatistics() async {
     if (startDate != null && endDate != null) {
       final String formattedStartDate = "${startDate!.year}-${startDate!.month.toString().padLeft(2, '0')}-${startDate!.day.toString().padLeft(2, '0')}";
       final String formattedEndDate = "${endDate!.year}-${endDate!.month.toString().padLeft(2, '0')}-${endDate!.day.toString().padLeft(2, '0')}";
-      print("startDate: $formattedStartDate / endDate: $formattedEndDate");
 
-      periodStatistics = await statisticsService.fetchPeriodStatistics(formattedStartDate, formattedEndDate);
-      setState(() {}); // 화면 갱신
+      try {
+        print("Loading period statistics from $formattedStartDate to $formattedEndDate");
+        periodStatistics = await statisticsService.fetchPeriodStatistics(formattedStartDate, formattedEndDate);
+
+        // 데이터 수신 후 상태 갱신
+        setState(() {
+          periodStatistics = periodStatistics; // 상태를 다시 설정해 화면을 갱신합니다.
+        });
+      } catch (e) {
+        print("Failed to load period statistics: $e");
+        setState(() {
+          hasError = true;
+        });
+      }
     }
   }
 
+
+  // 기간 선택 버튼 아래에 선택된 기간을 표시
+  Widget _buildDateRangeDisplay() {
+    if (startDate != null && endDate != null) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 8.0),
+        child: Text(
+          "선택된 기간: ${startDate!.year}-${startDate!.month.toString().padLeft(2, '0')}-${startDate!.day.toString().padLeft(2, '0')} ~ ${endDate!.year}-${endDate!.month.toString().padLeft(2, '0')}-${endDate!.day.toString().padLeft(2, '0')}",
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
+      );
+    }
+    return const SizedBox.shrink(); // 선택된 날짜가 없으면 빈 공간을 반환
+  }
 
   Widget _buildYearButton(String title) {
     return ElevatedButton(
       onPressed: () async {
         setState(() {
-          isLoading = true; // 로딩 상태로 전환
-          // '2023년' 같은 한글 연도를 '2023'으로 변환
+          isLoading = true;
           selectedYear = title.replaceAll('년', '');
+          // 연도별 통계를 선택할 때 기간 선택 데이터를 초기화합니다.
+          startDate = null;
+          endDate = null;
+          periodStatistics = null; // 기간 통계 데이터를 초기화
         });
 
         // 비동기 작업 완료 후 데이터 로드
@@ -204,7 +231,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
 
         // 로딩이 끝난 후 화면 갱신
         setState(() {
-          isLoading = false; // 로딩 완료
+          isLoading = false;
         });
       },
       style: ElevatedButton.styleFrom(
@@ -245,7 +272,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
         ],
       );
     } else {
-      return const Center(child: Text('통계 데이터를 불러올 수 없습니다.'));
+      return const Center(child: Text('해당 기간에 이벤트가 존재하지 않아 데이터를 불러올 수 없습니다.'));
     }
   }
 
