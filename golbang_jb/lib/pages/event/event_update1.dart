@@ -62,7 +62,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
   void _setupInitialValues() {
     // 전달받은 이벤트 데이터를 각 컨트롤러와 변수에 초기화
     _titleController.text = widget.event.eventTitle;
-    _locationController.text = widget.event.location ?? '';
+    _locationController.text = widget.event.site ?? '';
     _startDateController.text = widget.event.startDateTime.toLocal().toIso8601String().split('T').first;
     _startTimeController.text = widget.event.startDateTime.toLocal().toIso8601String().split('T').last;
     _endDateController.text = widget.event.endDateTime.toLocal().toIso8601String().split('T').first;
