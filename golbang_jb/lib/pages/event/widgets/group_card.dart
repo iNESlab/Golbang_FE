@@ -34,7 +34,10 @@ class GroupCard extends StatelessWidget {
           ElevatedButton.icon(
             onPressed: onAddParticipant,
             icon: Icon(Icons.add),
-            label: Text('추가'),
+            label: Text(
+              '추가',
+              style: TextStyle(color: Colors.white)
+            ),
             style: ElevatedButton.styleFrom(
               iconColor: Colors.white,
               backgroundColor: Colors.teal,

@@ -53,12 +53,16 @@ class StatisticsService {
       print("hello");
       if (response.statusCode == 200) {
         final jsonData = json.decode(utf8.decode(response.bodyBytes))['data'];
-        print("overall");
+        print("--start overall--");
         print(jsonData);
-        print("overall");
+        print("--end overall--");
         if (jsonData != null) {
           return OverallStatistics.fromJson(jsonData);
         }
+      } else if (response.statusCode == 404) {
+        throw Exception('No event data available for this date.');
+      } else {
+        throw Exception('Failed to load overall statistics');
       }
     } catch (e) {
       print('Failed to load overall statistics: $e');
@@ -81,9 +85,16 @@ class StatisticsService {
 
       if (response.statusCode == 200) {
         final jsonData = json.decode(utf8.decode(response.bodyBytes))['data'];
+        print("--start yearlly--");
+        print(jsonData);
+        print("--end yearlly--");
         if (jsonData != null) {
           return YearStatistics.fromJson(jsonData);
         }
+      } else if (response.statusCode == 404) {
+        throw Exception("404");
+      } else {
+        throw Exception('Failed to load yearly statistics');
       }
     } catch (e) {
       print('Failed to load year statistics for $year: $e');
@@ -105,9 +116,16 @@ class StatisticsService {
       var response = await http.get(uri, headers: headers);
       if (response.statusCode == 200) {
         final jsonData = json.decode(utf8.decode(response.bodyBytes))['data'];
+        print("--start period--");
+        print(jsonData);
+        print("--end period--");
         if (jsonData != null) {
           return PeriodStatistics.fromJson(jsonData);
         }
+      } else if (response.statusCode == 404) {
+        throw Exception("404");
+      } else {
+        throw Exception('Failed to load yearly statistics');
       }
     } catch (e) {
       print('Failed to load period statistics: $e');
