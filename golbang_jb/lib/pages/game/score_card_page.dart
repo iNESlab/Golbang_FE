@@ -299,7 +299,10 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey[800],
                   ),
-                  child: Text('전체 현황 조회'),
+                  child: Text(
+                    '전체 현황 조회',
+                    style: TextStyle(color: Colors.white)
+                  ),
                 ),
               ),
               // SizedBox(width: 8), TODO: mvp에서 일시적으로 제외
