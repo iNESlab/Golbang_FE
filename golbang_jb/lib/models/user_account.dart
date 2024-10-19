@@ -12,6 +12,7 @@ class UserAccount {
   final int handicap;
   final String? studentId; // Nullable 처리
   String? profileImage; // Nullable 처리
+  final String? fcmToken;
 
   UserAccount({
     required this.id,
@@ -24,6 +25,7 @@ class UserAccount {
     required this.handicap,
     this.studentId, // Nullable
     this.profileImage, // Nullable
+    this.fcmToken,
   });
 
   factory UserAccount.fromJson(Map<String, dynamic> json) {
@@ -38,6 +40,7 @@ class UserAccount {
       handicap: json['handicap'] ?? 0, // 기본값 처리
       studentId: json['student_id'] as String?, // Nullable 처리
       profileImage: json['profile_image'] as String?, // Nullable 처리
+      fcmToken: json['fcm_token'] as String?, // Nullable 처리
     );
   }
 }

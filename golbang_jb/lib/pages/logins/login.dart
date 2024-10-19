@@ -19,10 +19,10 @@ class LoginPage extends ConsumerStatefulWidget {
 class _LoginPageState extends ConsumerState<LoginPage> {
   // final TextEditingController _emailController = TextEditingController(text: 'yoonsh1004z');
   // final TextEditingController _passwordController = TextEditingController(text: 'todwnl@7706');
-  // final TextEditingController _emailController = TextEditingController(text: 'kojungbeom2');
-  // final TextEditingController _passwordController = TextEditingController(text: 'Golbang12!@');
-  final TextEditingController _emailController = TextEditingController(text: 'hihello@email.com');
-  final TextEditingController _passwordController = TextEditingController(text: '1q2w3e4r!');
+  final TextEditingController _emailController = TextEditingController(text: 'kojungbeom2');
+  final TextEditingController _passwordController = TextEditingController(text: 'Golbang12!@');
+  // final TextEditingController _emailController = TextEditingController(text: 'hihello@email.com');
+  // final TextEditingController _passwordController = TextEditingController(text: '1q2w3e4r!');
 
   @override
   Widget build(BuildContext context) {
@@ -43,10 +43,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               const ForgotPasswordLink(),
               const SizedBox(height: 32),
               LoginButton(onPressed: _login),
-              const SizedBox(height: 32),
-              const SignInDivider(),
-              const SizedBox(height: 16),
-              const SocialLoginButtons(),
+              // const SizedBox(height: 32),
+              // const SignInDivider(),
+              // const SizedBox(height: 16),
+              // const SocialLoginButtons(),
               const SizedBox(height: 32),
               const SignUpLink(),
             ],

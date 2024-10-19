@@ -1,24 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:golbang/models/bookmark.dart';
-
+import 'package:golbang/models/user_account.dart';
 
 class BookmarkSection extends StatelessWidget {
-  final List<Bookmark> bookmarks;
+  final UserAccount userAccount;
 
-  const BookmarkSection({super.key, required this.bookmarks});
-
+  const BookmarkSection({super.key, required this.userAccount});
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: bookmarks.map((bookmark) => _buildInfoCard(bookmark)).toList(),
+        children: _buildInfoCards(),
       ),
     );
   }
 
-  Widget _buildInfoCard(Bookmark bookmark) {
+  List<Widget> _buildInfoCards() {
+    return [
+      _buildSingleCard("Title 1", userAccount.handicap.toString()),
+      _buildSingleCard("Title 2", userAccount.handicap.toString()),
+      _buildSingleCard("Title 3", userAccount.userId),
+    ];
+  }
+
+  Widget _buildSingleCard(String title, String description) {
     return Container(
       width: 130,
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
@@ -38,13 +44,13 @@ class BookmarkSection extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Text(
-            bookmark.title,
+            title,
             style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
           Text(
-            bookmark.score,
+            description,
             style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
           ),
         ],
