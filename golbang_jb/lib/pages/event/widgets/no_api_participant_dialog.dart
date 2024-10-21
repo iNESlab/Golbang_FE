@@ -8,6 +8,7 @@ class ParticipantSelectionDialog extends StatefulWidget {
   final int max;
   final List<CreateParticipant> participants; // 전체 참여자 리스트
   final List<CreateParticipant> selectedParticipants; // 선택된 참여자 리스트
+  final List<CreateParticipant> notOtherGroupParticipants; // 다른 조에서 선택된 참가자 리스트
   final Function(List<CreateParticipant>) onSelectionComplete; // 완료 콜백
 
   ParticipantSelectionDialog({
@@ -15,6 +16,7 @@ class ParticipantSelectionDialog extends StatefulWidget {
     required this.groupName,
     required this.participants,
     required this.selectedParticipants,
+    required this.notOtherGroupParticipants, // 다른 조의 참가자 리스트를 추가로 받음
     required this.max,
     required this.onSelectionComplete,
   });
@@ -47,17 +49,20 @@ class _ParticipantSelectionDialogState
         // 선택된 경우 리스트에서 제거
         _currentSelectedParticipants.removeWhere(
                 (selected) => selected.memberId == participant.memberId);
-      } else if(_currentSelectedParticipants.length+1 <= widget.max) {
-        // 조별 인원수를 다 채우지 않았고, 선택되지 않은 경우 리스트에 추가 (기존 객체 사용)
-        participant.groupType = int.parse(widget.groupName.substring(1,2)); // groupType 설정
+        participant.groupType=0;
+        participant.teamType=TeamConfig.NONE;
+
+      } else if (_currentSelectedParticipants.length + 1 <= widget.max) {
+        // 조별 인원수를 다 채우지 않았고, 선택되지 않은 경우 리스트에 추가
+        participant.groupType = int.parse(widget.groupName.substring(1, 2)); // groupType 설정
         print('groupType: ${participant.groupType}');
 
-        if(widget.isTeam){
+        if (widget.isTeam) {
           String team = widget.groupName.substring(3);
           print('team: ${team}');
 
-          participant.teamType = ( team == 'A') ? TeamConfig.TEAM_A
-              : ( team == 'B') ? TeamConfig.TEAM_B
+          participant.teamType = (team == 'A') ? TeamConfig.TEAM_A
+              : (team == 'B') ? TeamConfig.TEAM_B
               : TeamConfig.NONE;
         }
 
@@ -73,7 +78,9 @@ class _ParticipantSelectionDialogState
       content: Container(
         width: double.maxFinite,
         child: ListView(
-          children: widget.participants.map((participant) {
+          children: widget.participants
+              .where((participant) => widget.notOtherGroupParticipants.contains(participant)) // 다른 조에 이미 포함된 참가자를 제외
+              .map((participant) {
             return CheckboxListTile(
               // 프로필 이미지와 이름 표시
               secondary: CircleAvatar(
