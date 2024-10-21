@@ -431,7 +431,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('추가 버튼을 눌러 멤버를 추가해보세요'),
+                    Text('참가자 조를 지정해 주세요.\n모두 지정해야 완료됩니다.'),
                     SizedBox(height: 10),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,

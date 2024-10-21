@@ -346,7 +346,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('추가 버튼을 눌러 멤버를 추가해보세요\n미선택시, 1조로 등록됩니다.'),
+                    Text('멤버를 추가해주세요.\n미선택시, 1조로 등록됩니다.'),
                     SizedBox(height: 10),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
