@@ -1,5 +1,9 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:golbang/services/event_service.dart';
+import 'package:excel/excel.dart'; // excel 패키지 추가
+import 'package:path_provider/path_provider.dart';  // path_provider 패키지 임포트
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../repoisitory/secure_storage.dart'; // Riverpod 관련 패키지
 
@@ -53,6 +57,12 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
       backgroundColor: Colors.grey[200], // 배경색 설정
       appBar: AppBar(
         title: Text('스코어카드'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.download), // export 아이콘 추가
+            onPressed: exportToExcel,   // 엑셀로 내보내기
+          ),
+        ],
       ),
       body: isLoading
           ? Center(child: CircularProgressIndicator())
@@ -66,6 +76,54 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
         ),
       ),
     );
+  }
+
+  Future<void> exportToExcel() async {
+    var excel = Excel.createExcel();
+    var sheet = excel['Score Data'];
+
+    // 열 제목 설정
+    List<String> columnTitles = ['팀/참가자', '전반전', '후반전', '전체 스코어', '핸디캡 스코어'];
+    sheet.appendRow(columnTitles);
+
+    // 팀 점수 추가
+    if (teamAScores != null) {
+      sheet.appendRow(['Team A', teamAScores?['front_nine_score'], teamAScores?['back_nine_score'], teamAScores?['total_score'], teamAScores?['handicap_score']]);
+    }
+    if (teamBScores != null) {
+      sheet.appendRow(['Team B', teamBScores?['front_nine_score'], teamBScores?['back_nine_score'], teamBScores?['total_score'], teamBScores?['handicap_score']]);
+    }
+
+    // 참가자별 점수 추가
+    for (var participant in participants) {
+      sheet.appendRow([
+        participant['participant_name'],
+        participant['front_nine_score'],
+        participant['back_nine_score'],
+        participant['total_score'],
+        participant['handicap_score']
+      ]);
+    }
+
+    // 외부 저장소 경로 가져오기
+    Directory? directory = await getExternalStorageDirectory();  // path_provider에서 가져옴
+    if (directory != null) {
+      String filePath = '${directory.path}/event_scores.xlsx';
+      File file = File(filePath);
+
+      // 파일 쓰기
+      await file.writeAsBytes(excel.encode()!);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('엑셀 파일이 저장되었습니다: $filePath')),
+
+      );
+      print('Excel 파일 경로: $filePath');
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('저장 경로를 찾을 수 없습니다.')),
+      );
+    }
   }
 
   // 팀 및 참가자 점수를 표시하는 DataTable 위젯
