@@ -23,7 +23,6 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
   List<ClubMemberProfile> filteredParticipants = []; // 필터링된 참가자 리스트
   bool isLoading = true;
   late ClubMemberService _clubMemberService;
-  bool isAllSelected = false; // 전체 선택 상태
 
   @override
   void initState() {
@@ -47,17 +46,6 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
         isLoading = false;
       });
     }
-  }
-
-  void _toggleSelectAll() {
-    setState(() {
-      if (isAllSelected) {
-        tempSelectedParticipants.clear(); // 전체 선택 해제
-      } else {
-        tempSelectedParticipants = List.from(filteredParticipants); // 필터된 전체 멤버 선택
-      }
-      isAllSelected = !isAllSelected; // 전체 선택 상태를 토글
-    });
   }
 
   @override
@@ -114,30 +102,12 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
                 onChanged: (value) {
                   setState(() {
                     // 검색 결과 필터링
-                    allParticipants.retainWhere((participant) =>
-                        participant.name.toLowerCase().contains(value.toLowerCase()));
+                    filteredParticipants = allParticipants.where((participant) =>
+                        participant.name.toLowerCase().contains(value.toLowerCase())).toList();
                   });
                 },
               ),
               SizedBox(height: 10),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text(
-                    isAllSelected ? '전체 해제' : '전체 선택', // 상태에 따라 텍스트 변경
-                    style: TextStyle(fontSize: 12),
-                  ),
-                  Checkbox(
-                    value: isAllSelected,
-                    onChanged: (bool? value) {
-                      setState(() {
-                        _toggleSelectAll(); // 전체 선택/해제 기능 수행
-                      });
-                    },
-                  ),
-                  SizedBox(width:23) //TODO: 임시로 하드코딩으로 우측 마진 잡음
-                ],
-              ),
               Container(
                 height: 300,
                 child: ListView.builder(
