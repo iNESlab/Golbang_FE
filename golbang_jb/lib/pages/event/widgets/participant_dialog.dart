@@ -20,8 +20,10 @@ class ParticipantDialog extends ConsumerStatefulWidget {
 class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
   List<ClubMemberProfile> tempSelectedParticipants = [];
   List<ClubMemberProfile> allParticipants = [];
+  List<ClubMemberProfile> filteredParticipants = []; // 필터링된 참가자 리스트
   bool isLoading = true;
   late ClubMemberService _clubMemberService;
+  bool isAllSelected = false; // 전체 선택 상태
 
   @override
   void initState() {
@@ -36,6 +38,7 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
       List<ClubMemberProfile> participants = await _clubMemberService.getClubMemberProfileList(club_id: widget.clubId);
       setState(() {
         allParticipants = participants;
+        filteredParticipants = participants; // 처음에는 전체 참가자 리스트로 초기화
         isLoading = false;
       });
     } catch (e) {
@@ -44,6 +47,17 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
         isLoading = false;
       });
     }
+  }
+
+  void _toggleSelectAll() {
+    setState(() {
+      if (isAllSelected) {
+        tempSelectedParticipants.clear(); // 전체 선택 해제
+      } else {
+        tempSelectedParticipants = List.from(filteredParticipants); // 필터된 전체 멤버 선택
+      }
+      isAllSelected = !isAllSelected; // 전체 선택 상태를 토글
+    });
   }
 
   @override
@@ -106,13 +120,31 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
                 },
               ),
               SizedBox(height: 10),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Text(
+                    isAllSelected ? '전체 해제' : '전체 선택', // 상태에 따라 텍스트 변경
+                    style: TextStyle(fontSize: 12),
+                  ),
+                  Checkbox(
+                    value: isAllSelected,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        _toggleSelectAll(); // 전체 선택/해제 기능 수행
+                      });
+                    },
+                  ),
+                  SizedBox(width:23) //TODO: 임시로 하드코딩으로 우측 마진 잡음
+                ],
+              ),
               Container(
                 height: 300,
                 child: ListView.builder(
                   shrinkWrap: true,
-                  itemCount: allParticipants.length,
+                  itemCount: filteredParticipants.length, // 필터링된 참가자 리스트로 표시
                   itemBuilder: (BuildContext context, int index) {
-                    final participant = allParticipants[index];
+                    final participant = filteredParticipants[index];
                     return ListTile(
                       leading: CircleAvatar(
                         backgroundImage: participant.profileImage.startsWith('http')
