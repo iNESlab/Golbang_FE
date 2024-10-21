@@ -193,6 +193,87 @@ class UserService {
     }
   }
 
+  Future<UserAccount> updateUserInfo2({
+    required String userId,
+    String? name,
+    String? email,
+    String? phoneNumber,
+    int? handicap,
+    DateTime? dateOfBirth, // DateTime 형식
+    String? address,
+    String? studentId,
+    File? profileImage, // 이미지 파일
+    String? fcmToken,
+  }) async {
+    try {
+      // 액세스 토큰 불러오기
+      final accessToken = await storage.readAccessToken();
+      Map<String, dynamic> decodedToken = JwtDecoder.decode(accessToken);
+      String userId = decodedToken['user_id'].toString();
+
+      var uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/users/info/$userId/");
+
+      // 요청 헤더 설정
+      Map<String, String> headers = {
+        "Authorization": "Bearer $accessToken",
+      };
+
+      // Multipart 요청을 위한 객체 생성
+      var request = http.MultipartRequest('PATCH', uri);
+      request.headers.addAll(headers);
+
+      // JSON 필드 추가 (변경된 값만 추가)
+      Map<String, String> fields = {};
+      if (name != null && name.isNotEmpty) fields['name'] = name;
+      if (email != null && email.isNotEmpty) fields['email'] = email;
+      if (phoneNumber != null && phoneNumber.isNotEmpty) fields['phone_number'] = phoneNumber;
+      if (handicap != null) fields['handicap'] = handicap.toString();
+
+      // 날짜 포맷팅 추가
+      if (dateOfBirth != null) {
+        String formattedDate = "${dateOfBirth.year.toString().padLeft(4, '0')}-${dateOfBirth.month.toString().padLeft(2, '0')}-${dateOfBirth.day.toString().padLeft(2, '0')}";
+        fields['date_of_birth'] = formattedDate;
+      }
+
+      if (address != null && address.isNotEmpty) fields['address'] = address;
+      if (studentId != null && studentId.isNotEmpty) fields['student_id'] = studentId;
+
+      if (profileImage != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath('profile_image', profileImage.path),
+        );
+      } else {
+        // 이미지가 없는 경우, 빈 문자열을 서버에 전송
+        print("----이미지 삭제2---");
+        fields['profile_image'] = '';  // 서버가 이 값을 보고 이미지 삭제 처리
+      }
+
+      if (fcmToken != null && fcmToken.isNotEmpty) fields['fcm_token'] = fcmToken;
+      request.fields.addAll(fields);
+
+      // 요청 전송
+      var response = await request.send();
+
+      // 응답 처리
+      if (response.statusCode == 200) {
+        var responseData = await response.stream.bytesToString();
+        var jsonData = json.decode(responseData)['data'];
+        print("===============내정보 수정 성공===============json: ${jsonData}");
+        print("request $fields");
+
+        return UserAccount.fromJson(jsonData);
+      } else {
+        var responseData = await response.stream.bytesToString();
+        print('Failed to update user info: ${response.statusCode}, ${responseData}');
+        throw Exception('Failed to update user info');
+      }
+    } catch (e) {
+      print('Error updating user info: $e');
+      throw Exception('Error updating user info: $e');
+    }
+  }
+
+
   // TODO: 추후 S3 삭제가 정상적으로 될 경우 아래 로직을 이용할 예정
   // Future<void> deleteProfileImage({required String userId}) async {
   //   final accessToken = await storage.readAccessToken();

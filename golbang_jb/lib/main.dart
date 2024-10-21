@@ -3,17 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/event/event_result.dart';
-import 'package:golbang/pages/login/signup_complete.dart';
+import 'package:golbang/pages/logins/login.dart';
+import 'package:golbang/pages/logins/signup_complete.dart';
 import 'package:golbang/pages/logins/hi_screen.dart';
 import 'package:golbang/pages/signup/signup.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 import 'package:golbang/pages/game/score_card_page.dart';
 
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 
 Future<void> main() async {
   await dotenv.load(fileName: 'assets/config/.env');
   // 날짜 형식화를 초기화한 후 앱을 시작합니다.
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   initializeDateFormatting().then((_) {
     runApp(
       ProviderScope(
@@ -21,6 +25,7 @@ Future<void> main() async {
       ),
     );
   });
+  await Firebase.initializeApp(); // Firebase 초기화
 }
 
 class MyApp extends StatelessWidget {
@@ -45,7 +50,7 @@ class MyApp extends StatelessWidget {
         scaffoldBackgroundColor: Colors.white,
         useMaterial3: true,
       ),
-      home: const HiScreen(),
+      home: const LoginPage(),
 
       routes: {
         '/signup': (context) => SignUpPage(),

@@ -8,21 +8,54 @@ class LoginTitle extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const Text(
-          'Welcome Back',
-          style: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+        Row(
+          children: [
+            Expanded(
+              flex: 1, // 왼쪽 영역
+              child: Align(
+                alignment: Alignment.centerRight, // 왼쪽 정렬
+                child: const CircleAvatar(
+                  radius: 40,
+                  backgroundColor: Colors.white,
+                  child: Icon(
+                    Icons.golf_course,
+                    size: 40,
+                    color: Colors.green,
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 2, // 가운데 영역
+              child: const Center( // 텍스트를 가운데 정렬
+                child: Text(
+                  'GOLBANG',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              flex: 1, // 오른쪽 영역 (빈 공간)
+              child: Container(), // 빈 공간
+            ),
+          ],
         ),
-        const SizedBox(height: 8),
-        Text(
-          'Login to access your account',
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey[400],
-          ),
+        const SizedBox(height: 20),
+        Row(
+          children: [
+            Text(
+              'Login',
+              style: TextStyle(
+                fontSize: 32,
+                color: Colors.grey[400],
+              ),
+              textAlign: TextAlign.left,
+            ),
+          ],
         ),
       ],
     );
@@ -35,22 +68,37 @@ class EmailField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.grey[800],
-        hintText: 'Email Address',
-        hintStyle: TextStyle(color: Colors.grey[500]),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30.0),
-          borderSide: BorderSide.none,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start, // 텍스트와 필드가 왼쪽으로 정렬되도록 설정
+      children: [
+        const Text(
+          '이메일',  // 텍스트 필드 위에 고정된 라벨
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey,  // 라벨 색상
+          ),
         ),
-      ),
-      style: const TextStyle(color: Colors.white),
+        const SizedBox(height: 8), // 라벨과 텍스트 필드 사이의 공간
+        TextField(
+          controller: controller,
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.grey[800],
+            hintText: 'Email Address',
+            hintStyle: TextStyle(color: Colors.grey[500]),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30.0),
+              borderSide: BorderSide.none,
+            ),
+          ),
+          style: const TextStyle(color: Colors.white),
+        ),
+      ],
     );
   }
 }
+
 
 class PasswordField extends StatelessWidget {
   final TextEditingController controller;
@@ -58,27 +106,42 @@ class PasswordField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
-      controller: controller,
-      obscureText: true,
-      decoration: InputDecoration(
-        filled: true,
-        fillColor: Colors.grey[800],
-        hintText: 'Password',
-        hintStyle: TextStyle(color: Colors.grey[500]),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(30.0),
-          borderSide: BorderSide.none,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start, // 라벨과 필드가 왼쪽 정렬되도록 설정
+      children: [
+        const Text(
+          'Password',  // 텍스트 필드 위에 고정된 라벨
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Colors.grey,  // 라벨 색상 설정
+          ),
         ),
-        suffixIcon: Icon(
-          Icons.visibility_off,
-          color: Colors.grey[500],
+        const SizedBox(height: 8), // 라벨과 텍스트 필드 사이의 간격
+        TextField(
+          controller: controller,
+          obscureText: true, // 비밀번호를 가리도록 설정
+          decoration: InputDecoration(
+            filled: true,
+            fillColor: Colors.grey[800],
+            hintText: 'Password',
+            hintStyle: TextStyle(color: Colors.grey[500]),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(30.0),
+              borderSide: BorderSide.none,
+            ),
+            suffixIcon: Icon(
+              Icons.visibility_off,
+              color: Colors.grey[500],
+            ),
+          ),
+          style: const TextStyle(color: Colors.white),
         ),
-      ),
-      style: const TextStyle(color: Colors.white),
+      ],
     );
   }
 }
+
 
 class ForgotPasswordLink extends StatelessWidget {
   const ForgotPasswordLink({Key? key}) : super(key: key);

@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/global_config.dart';
@@ -5,6 +7,7 @@ import 'package:golbang/global_config.dart';
 import 'package:golbang/models/bookmark.dart';
 import 'package:golbang/models/event.dart';
 import 'package:golbang/models/group.dart';
+import 'package:golbang/models/user_account.dart';
 import 'package:golbang/services/event_service.dart';
 import 'package:golbang/widgets/sections/bookmark_section.dart';
 import 'package:golbang/widgets/sections/groups_section.dart';
@@ -18,6 +21,7 @@ import 'package:golbang/services/group_service.dart';
 import 'package:golbang/services/user_service.dart';
 import '../../repoisitory/secure_storage.dart';
 
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -128,7 +132,8 @@ class HomeContent extends ConsumerWidget {
     return Scaffold(
       body: FutureBuilder(
         future: Future.wait([
-          Future.value(GlobalConfig.bookmarks),
+          userService.getUserInfo(),
+          //Future.value(GlobalConfig.bookmarks),
           eventService.getEventsForMonth(date: date),
           groupService.getUserGroups(), // 그룹 데이터를 비동기적으로 가져옴
         ]),
@@ -139,17 +144,23 @@ class HomeContent extends ConsumerWidget {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
             // Snapshot에서 데이터를 가져옴
-            List<Bookmark> bookmarks = snapshot.data![0];
+            UserAccount userAccount = snapshot.data![0];
             List<Event> events = snapshot.data![1];
             List<Group> groups = snapshot.data![2];
-
+            print(userAccount);
+            if (userAccount.fcmToken == null) {
+              // FCM 토큰이 없을 때 새로 FCM 토큰을 얻고 서버에 업데이트
+              Future.microtask(() async {
+                await _getAndUpdateFCMToken(userService, userAccount);
+              });
+            }
             return Column(
               children: <Widget>[
                 SizedBox(
                   height: 140,
                   child: SectionWithScroll(
                     title: '즐겨찾기',
-                    child: BookmarkSection(bookmarks: bookmarks),
+                    child: BookmarkSection(userAccount: userAccount),
                   ),
                 ),
                 Expanded(
@@ -172,5 +183,36 @@ class HomeContent extends ConsumerWidget {
         },
       ),
     );
+  }
+}
+
+
+Future<void> _getAndUpdateFCMToken(UserService userService, UserAccount userAccount) async {
+  try {
+    // FCM 토큰 가져오기
+    FirebaseMessaging messaging = FirebaseMessaging.instance;
+    String? fcmToken = await messaging.getToken();
+    print("if null");
+    if (fcmToken != null) {
+      print("null");
+      // FCM 토큰을 서버에 업데이트
+      await userService.updateUserInfo2(
+        userId: userAccount.userId,
+        name: userAccount.name,
+        email: userAccount.email,
+        phoneNumber: userAccount.phoneNumber,
+        handicap: userAccount.handicap,
+        address: userAccount.address,
+        dateOfBirth: userAccount.dateOfBirth,
+        studentId: userAccount.studentId,
+        profileImage: (userAccount.profileImage != null && userAccount.profileImage!.isNotEmpty)
+            ? File(userAccount.profileImage!)
+            : null,
+        fcmToken: fcmToken,  // 새로운 FCM 토큰 서버에 저장
+      );
+      print('FCM 토큰이 서버에 업데이트되었습니다: $fcmToken');
+    }
+  } catch (e) {
+    print('FCM 토큰 가져오기 실패: $e');
   }
 }
