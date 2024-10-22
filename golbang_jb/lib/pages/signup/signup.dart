@@ -84,9 +84,9 @@ class _SignUpPageState extends State<SignUpPage> {
           password1: _passwordController.text,
           password2: _confirmPasswordController.text,
         );
+        var data = json.decode(utf8.decode(response.bodyBytes));
 
         if (response.statusCode == 201) {
-          var data = json.decode(response.body);
 
           Navigator.of(ctx).push(
             MaterialPageRoute(
@@ -98,8 +98,17 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
           );
         } else {
+          // errors 딕셔너리 추출
+          var errors = data['errors'];
+
+          // 모든 에러 메시지 하나의 문자열로 결합
+          String errorMessage = errors.entries.map((entry) {
+            String messages = entry.value.join(', '); // 해당 필드의 에러 메시지 리스트를 문자열로 변환
+            return '$messages'; // 각 필드와 메시지를 조합
+          }).join('\n'); // 여러 에러 메시지를 줄바꿈으로 연결
+
           ScaffoldMessenger.of(ctx).showSnackBar(
-            SnackBar(content: Text('회원가입에 실패했습니다. 다시 시도해 주세요.')),
+            SnackBar(content: Text('$errorMessage \n회원가입에 실패했습니다. 다시 시도해 주세요.')),
           );
         }
       } catch (e) {
