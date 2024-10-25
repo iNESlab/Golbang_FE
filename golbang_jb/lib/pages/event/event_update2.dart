@@ -62,30 +62,30 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
     super.initState();
     _eventService = EventService(ref.read(secureStorageProvider));
     _initializeParticipants();
-    isTeam = widget.existingParticipants.first.teamType != TeamConfig.NONE.value;// 기존에 설정된 게임 모드 초기화
+    isTeam = widget.existingParticipants.isEmpty ? false
+        : widget.existingParticipants.first.teamType != TeamConfig.NONE.value;// 기존에 설정된 게임 모드 초기화
     _initializeGroups();
     gameMode = widget.selectedGameMode; // 기존에 설정된 게임 모드 초기화
   }
 
   void _initializeParticipants() {
     _selectedParticipants = widget.selectedParticipants.map((participant) {
-      Participant? existingParticipant;
-      try {
-        existingParticipant = widget.existingParticipants.firstWhere(
-              (existing) => existing.member!.memberId == participant.memberId,
-        );
-      } catch (e) {
-        existingParticipant = null;
-      }
+      bool isExisting = widget.existingParticipants.contains(participant);
+      late Participant existingParticipant;
 
-      int groupType = existingParticipant?.groupType ?? 0;
+      if (isExisting) {
+        existingParticipant = widget.existingParticipants
+            .firstWhere(
+              (existing) => existing.member!.memberId == participant.memberId,
+            );
+      }
 
       return CreateParticipant(
         memberId: participant.memberId,
         name: participant.name,
         profileImage: participant.profileImage,
         teamType: teamConfig,
-        groupType: groupType,
+        groupType: isExisting ? existingParticipant.groupType : 0,
       );
     }).toList();
   }
@@ -144,6 +144,11 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
   void _createGroups() {
     int numGroups = int.parse(numberOfGroups.replaceAll('개', ''));
     setState(() {
+      // 각 참가자의 groupType과 teamType을 0과 NONE으로 리셋
+      _selectedParticipants.forEach((participant) {
+        participant.groupType = 0;
+        participant.teamType = TeamConfig.NONE;
+      });
       groups.clear();
       groups = isTeam
           ? List.generate(
@@ -208,8 +213,16 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
   }
 
   void _showParticipantSelectionDialog(String groupName) {
-    List<CreateParticipant> groupParticipants =
-    groups.firstWhere((group) => group.keys.first == groupName || group.keys.last == groupName)[groupName]!;
+    List<CreateParticipant> groupParticipants = groups
+        .firstWhere((group) => group.keys.first == groupName || group.keys.last == groupName)[groupName]!;
+
+    bool Function(CreateParticipant) isSameGroup = (CreateParticipant participant) =>
+    participant.groupType == int.parse(groupName.substring(1, 2));
+
+    List<CreateParticipant> notOtherGroupParticipants = _selectedParticipants
+        .where((p) => !isTeam ? isSameGroup(p) || p.groupType==0
+        : p.groupType==0 || (isSameGroup(p) && p.teamType.value == groupName.substring(3)))
+        .toList();
 
     showDialog(
       context: context,
@@ -217,13 +230,13 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
         return ParticipantSelectionDialog(
           isTeam: isTeam,
           groupName: groupName,
-          participants: _selectedParticipants,
-          selectedParticipants: groupParticipants,
+          participants: _selectedParticipants, // 모든 참가자 리스트
+          selectedParticipants: groupParticipants, // 현재 그룹에 선택된 참가자
+          notOtherGroupParticipants: notOtherGroupParticipants,
           max: int.parse(numberOfPlayers.substring(0,1)),
           onSelectionComplete: (List<CreateParticipant> updatedParticipants) {
             setState(() {
-              groups.firstWhere((group) => group.keys.contains(groupName))[groupName] =
-                  updatedParticipants;
+              groups.firstWhere((group) => group.keys.contains(groupName))[groupName] = updatedParticipants;
               _validateForm();
             });
           },
@@ -434,7 +447,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('추가 버튼을 눌러 멤버를 추가해보세요'),
+                    Text('참가자 조를 지정해 주세요.\n모두 지정해야 완료됩니다.'),
                     SizedBox(height: 10),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,

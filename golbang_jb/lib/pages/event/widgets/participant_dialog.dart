@@ -20,6 +20,7 @@ class ParticipantDialog extends ConsumerStatefulWidget {
 class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
   List<ClubMemberProfile> tempSelectedParticipants = [];
   List<ClubMemberProfile> allParticipants = [];
+  List<ClubMemberProfile> filteredParticipants = []; // 필터링된 참가자 리스트
   bool isLoading = true;
   late ClubMemberService _clubMemberService;
 
@@ -36,6 +37,7 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
       List<ClubMemberProfile> participants = await _clubMemberService.getClubMemberProfileList(club_id: widget.clubId);
       setState(() {
         allParticipants = participants;
+        filteredParticipants = participants; // 처음에는 전체 참가자 리스트로 초기화
         isLoading = false;
       });
     } catch (e) {
@@ -100,8 +102,8 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
                 onChanged: (value) {
                   setState(() {
                     // 검색 결과 필터링
-                    allParticipants.retainWhere((participant) =>
-                        participant.name.toLowerCase().contains(value.toLowerCase()));
+                    filteredParticipants = allParticipants.where((participant) =>
+                        participant.name.toLowerCase().contains(value.toLowerCase())).toList();
                   });
                 },
               ),
@@ -110,9 +112,9 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
                 height: 300,
                 child: ListView.builder(
                   shrinkWrap: true,
-                  itemCount: allParticipants.length,
+                  itemCount: filteredParticipants.length, // 필터링된 참가자 리스트로 표시
                   itemBuilder: (BuildContext context, int index) {
-                    final participant = allParticipants[index];
+                    final participant = filteredParticipants[index];
                     return ListTile(
                       leading: CircleAvatar(
                         backgroundImage: participant.profileImage.startsWith('http')
