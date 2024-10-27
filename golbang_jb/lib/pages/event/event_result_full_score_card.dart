@@ -1,10 +1,10 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:golbang/services/event_service.dart';
 import 'package:excel/excel.dart'; // excel 패키지 추가
 import 'package:path_provider/path_provider.dart';  // path_provider 패키지 임포트
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_email_sender/flutter_email_sender.dart'; // 이메일 전송 패키지 추가
 import '../../repoisitory/secure_storage.dart'; // Riverpod 관련 패키지
 
 class EventResultFullScoreCard extends ConsumerStatefulWidget {
@@ -59,8 +59,8 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
         title: Text('스코어카드'),
         actions: [
           IconButton(
-            icon: Icon(Icons.download), // export 아이콘 추가
-            onPressed: exportToExcel,   // 엑셀로 내보내기
+            icon: Icon(Icons.email), // 이메일 아이콘으로 변경
+            onPressed: exportAndSendEmail,   // 이메일 전송 기능으로 변경
           ),
         ],
       ),
@@ -78,9 +78,12 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
     );
   }
 
-  Future<void> exportToExcel() async {
+  Future<void> exportAndSendEmail() async {
+    // 엑셀 파일 생성
     var excel = Excel.createExcel();
-    var sheet = excel['Score Data'];
+    var sheet = excel['Sheet1'];
+
+    // excel.rename('Sheet1', 'Score Data');
 
     // 열 제목 설정
     List<String> columnTitles = ['팀/참가자', '전반전', '후반전', '전체 스코어', '핸디캡 스코어'];
@@ -106,7 +109,7 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
     }
 
     // 외부 저장소 경로 가져오기
-    Directory? directory = await getExternalStorageDirectory();  // path_provider에서 가져옴
+    Directory? directory = await getExternalStorageDirectory();
     if (directory != null) {
       String filePath = '${directory.path}/event_scores.xlsx';
       File file = File(filePath);
@@ -114,11 +117,26 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
       // 파일 쓰기
       await file.writeAsBytes(excel.encode()!);
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('엑셀 파일이 저장되었습니다: $filePath')),
-
+      // 이메일 전송
+      final Email email = Email(
+        body: '이메일 본문 내용을 여기에 작성하세요.',
+        subject: '이벤트 스코어 엑셀 파일',
+        recipients: [],  // 받을 사람의 이메일 주소
+        attachmentPaths: [filePath],  // 첨부할 파일 경로
+        isHTML: false,
       );
-      print('Excel 파일 경로: $filePath');
+
+      try {
+        await FlutterEmailSender.send(email);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('이메일이 전송되었습니다.')),
+        );
+      } catch (error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('이메일 전송 실패: $error')),
+        );
+      }
+
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('저장 경로를 찾을 수 없습니다.')),
