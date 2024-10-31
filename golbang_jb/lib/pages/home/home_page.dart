@@ -147,6 +147,7 @@ class HomeContent extends ConsumerWidget {
             UserAccount userAccount = snapshot.data![0];
             List<Event> events = snapshot.data![1];
             List<Group> groups = snapshot.data![2];
+            /*
             print(userAccount);
             if (userAccount.fcmToken == null) {
               // FCM 토큰이 없을 때 새로 FCM 토큰을 얻고 서버에 업데이트
@@ -154,6 +155,7 @@ class HomeContent extends ConsumerWidget {
                 await _getAndUpdateFCMToken(userService, userAccount);
               });
             }
+            */
             return Column(
               children: <Widget>[
                 SizedBox(
@@ -186,7 +188,7 @@ class HomeContent extends ConsumerWidget {
   }
 }
 
-
+/*
 Future<void> _getAndUpdateFCMToken(UserService userService, UserAccount userAccount) async {
   try {
     // FCM 토큰 가져오기
@@ -216,3 +218,4 @@ Future<void> _getAndUpdateFCMToken(UserService userService, UserAccount userAcco
     print('FCM 토큰 가져오기 실패: $e');
   }
 }
+*/

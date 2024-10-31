@@ -8,6 +8,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';  // hooks_riverpod 사용
 import 'package:http/http.dart' as http;
 
 import '../../repoisitory/secure_storage.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -59,12 +60,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Future<void> _login() async {
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
+    String? fcmToken;
+    try {
+      FirebaseMessaging messaging = FirebaseMessaging.instance;
+      fcmToken = await messaging.getToken();
+      print('FCM 토큰: $fcmToken');
+    } catch (e) {
+      print('FCM 토큰 가져오기 실패: $e');
+    }
 
     if (_validateInputs(email, password)) {
       try {
         final response = await AuthService.login(
           username: email,
           password: password,
+          fcm_token: fcmToken ?? '',
         );
         await _handleLoginResponse(response);
       } catch (e) {
