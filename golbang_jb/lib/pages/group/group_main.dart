@@ -15,11 +15,39 @@ class GroupMainPage extends ConsumerStatefulWidget {
 
 class _GroupMainPageState extends ConsumerState<GroupMainPage> {
   final PageController _pageController = PageController();
+  List<Group> allGroups = []; // 전체 그룹 리스트
+  List<Group> filteredGroups = []; // 필터링된 그룹 리스트
+  bool isLoading = true;
 
-  // 그룹 데이터를 페이지로 나누는 함수
-  List<Widget> _buildGroupPages(List<Group> groupData) {
+  // Fetch groups once
+  Future<void> _fetchGroups() async {
+    try {
+      final storage = ref.read(secureStorageProvider);
+      final GroupService groupService = GroupService(storage);
+      List<Group> groups = await groupService.getUserGroups();
+      setState(() {
+        allGroups = groups;
+        filteredGroups = groups; // 초기에는 모든 그룹 표시
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error fetching groups: $e");
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchGroups(); // 그룹 데이터를 초기화 시 가져옴
+  }
+
+  // 그룹 데이터를 페이지로 나누는 함수 (필터링된 그룹 사용)
+  List<Widget> _buildGroupPages() {
     int itemsPerPage = 3;
-    int pageCount = (groupData.length / itemsPerPage).ceil();
+    int pageCount = (filteredGroups.length / itemsPerPage).ceil();
 
     return List.generate(pageCount, (index) {
       return GridView.count(
@@ -28,7 +56,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
         mainAxisSpacing: 10,
         crossAxisSpacing: 10,
         padding: EdgeInsets.all(10),
-        children: groupData
+        children: filteredGroups
             .skip(index * itemsPerPage)
             .take(itemsPerPage)
             .map((group) {
@@ -75,99 +103,92 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
 
   @override
   Widget build(BuildContext context) {
-    // ref를 사용하여 필요한 객체 가져오기
-    final storage = ref.watch(secureStorageProvider);
-    final GroupService groupService = GroupService(storage);
-
-    return FutureBuilder<List<Group>>(
-      future: groupService.getUserGroups(), // 비동기 그룹 데이터를 받아옴
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error: ${snapshot.error}'));
-        } else {
-          List<Group> userGroups = snapshot.data ?? [];
-
-          return Column(
+    return isLoading
+        ? Center(child: CircularProgressIndicator())
+        : Column(
+      children: [
+        Container(
+          padding: EdgeInsets.all(10),
+          child: Column(
             children: [
+              Row(
+                children: [
+                  Text('내 모임',
+                      style: TextStyle(
+                          fontSize: 24, fontWeight: FontWeight.bold)),
+                  Spacer(),
+                  TextButton.icon(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => GroupCreatePage()),
+                      ).then((_) {
+                        _fetchGroups(); // 모임 생성 후 새로고침
+                      });
+                    },
+                    icon: Icon(Icons.add_circle, color: Colors.green),
+                    label: Text('모임생성',
+                        style: TextStyle(fontSize: 16, color: Colors.green)),
+                  ),
+                ],
+              ),
+              SizedBox(height: 10),
+              SizedBox(
+                height: 50,
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: '모임명 검색',
+                    prefixIcon: Icon(Icons.search),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    contentPadding: EdgeInsets.symmetric(vertical: 10),
+                  ),
+                  onChanged: (value) {
+                    setState(() {
+                      filteredGroups = allGroups
+                          .where((group) => group.name
+                          .toLowerCase()
+                          .contains(value.toLowerCase()))
+                          .toList();
+                    });
+                  },
+                ),
+              ),
+              SizedBox(height: 10),
               Container(
-                padding: EdgeInsets.all(10),
+                height: 160,
+                decoration: BoxDecoration(
+                  color: Colors.grey[200],
+                  borderRadius: BorderRadius.circular(10),
+                ),
                 child: Column(
                   children: [
-                    Row(
-                      children: [
-                        Text('내 모임',
-                            style: TextStyle(
-                                fontSize: 24, fontWeight: FontWeight.bold)),
-                        Spacer(),
-                        TextButton.icon(
-                          onPressed: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => GroupCreatePage()),
-                            ).then((_) {
-                              setState(() {}); // 모임 생성 후 상태 갱신
-                            });
-                          },
-                          icon: Icon(Icons.add_circle, color: Colors.green),
-                          label: Text('모임생성',
-                              style:
-                              TextStyle(fontSize: 16, color: Colors.green)),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 10),
-                    SizedBox(
-                      height: 50,
-                      child: TextField(
-                        decoration: InputDecoration(
-                          hintText: '모임명 검색',
-                          prefixIcon: Icon(Icons.search),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          contentPadding: EdgeInsets.symmetric(vertical: 10),
-                        ),
+                    Expanded(
+                      child: PageView(
+                        controller: _pageController,
+                        children: _buildGroupPages(),
                       ),
                     ),
-                    SizedBox(height: 10),
-                    Container(
-                      height: 160,
-                      decoration: BoxDecoration(
-                        color: Colors.grey[200],
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Column(
-                        children: [
-                          Expanded(
-                            child: PageView(
-                              controller: _pageController,
-                              children: _buildGroupPages(userGroups),
-                            ),
-                          ),
-                          SmoothPageIndicator(
-                            controller: _pageController,
-                            count: (userGroups.length / 3).ceil(),
-                            effect: WormEffect(
-                              dotHeight: 8,
-                              dotWidth: 8,
-                              activeDotColor: Colors.blue,
-                            ),
-                          ),
-                          SizedBox(height: 15),
-                        ],
+                    SmoothPageIndicator(
+                      controller: _pageController,
+                      count: (filteredGroups.length / 3).ceil(),
+                      effect: WormEffect(
+                        dotHeight: 8,
+                        dotWidth: 8,
+                        activeDotColor: Colors.blue,
                       ),
                     ),
+                    SizedBox(height: 15),
                   ],
                 ),
               ),
-              Divider(),
             ],
-          );
-        }
-      },
+          ),
+        ),
+        Divider(),
+      ],
     );
   }
 }
