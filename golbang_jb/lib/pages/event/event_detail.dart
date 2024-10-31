@@ -56,13 +56,6 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-
-    // 더미 데이터
-    final courseName = "더미 코스 이름";
-    final hole = "18홀";
-    final par = "72";
-    final courseType = "더미 코스 타입";
-
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.event.eventTitle),
@@ -208,15 +201,30 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                   ),
                 ),
                 SizedBox(height: 16),
+                // 코스 정보 표시
                 Text(
                   "코스 정보",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 8),
-                Text("코스 이름: $courseName"),
-                Text("홀: $hole"),
-                Text("Par: $par"),
-                Text("코스 타입: $courseType"),
+                widget.event.golfClub != null
+                    ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: widget.event.golfClub!.courses.map((course) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text("코스 이름: ${course.courseName}"),
+                        Text("홀: ${course.holes}"),
+                        Text("Par: ${course.par}"),
+                        SizedBox(height: 10),
+                        Text("홀 Par: ${course.holePars.join(", ")}"),
+                        Text("홀 Handicap: ${course.holeHandicaps.join(", ")}"),
+                        Divider(),
+                      ],
+                    );
+                  }).toList(),
+                )
+                    : Text("코스 정보가 없습니다."),
               ],
             ],
           ),
@@ -241,7 +249,6 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
             context,
             MaterialPageRoute(
               builder: (context) => ScoreCardPage(event: widget.event),
-
             ),
           );
         },
@@ -349,11 +356,10 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EventsUpdate1(event: widget.event), // 이벤트 데이터 전달
+        builder: (context) => EventsUpdate1(event: widget.event),
       ),
     ).then((result) {
       if (result == true) {
-        // 수정 후 페이지 나가기
         Navigator.of(context).pop(true);
       }
     });
