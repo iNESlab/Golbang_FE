@@ -19,6 +19,9 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
   List<Group> filteredGroups = []; // 필터링된 그룹 리스트
   bool isLoading = true;
 
+  // Set the number of items per page as a configurable variable
+  static const int itemsPerPage = 6;
+
   // Fetch groups once
   Future<void> _fetchGroups() async {
     try {
@@ -46,7 +49,6 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
 
   // 그룹 데이터를 페이지로 나누는 함수 (필터링된 그룹 사용)
   List<Widget> _buildGroupPages() {
-    int itemsPerPage = 3;
     int pageCount = (filteredGroups.length / itemsPerPage).ceil();
 
     return List.generate(pageCount, (index) {
@@ -158,7 +160,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
               ),
               SizedBox(height: 10),
               Container(
-                height: 160,
+                height: 320, // 높이를 약간 늘려서 6개의 그룹을 표시할 공간 확보
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(10),
@@ -173,7 +175,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
                     ),
                     SmoothPageIndicator(
                       controller: _pageController,
-                      count: (filteredGroups.length / 3).ceil(),
+                      count: (filteredGroups.length / itemsPerPage).ceil(),
                       effect: WormEffect(
                         dotHeight: 8,
                         dotWidth: 8,
