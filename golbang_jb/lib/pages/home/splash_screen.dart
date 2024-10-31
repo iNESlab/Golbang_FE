@@ -32,7 +32,7 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/images/google.png'), // 로고 이미지 추가 (경로 수정 필요)
+            Image.asset('assets/images/logo.png'), // 로고 이미지 추가
             const SizedBox(height: 16),
             const Text(
               'GOLBANG',
