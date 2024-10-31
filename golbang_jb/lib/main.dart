@@ -8,23 +8,25 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'firebase_options.dart';
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-FlutterLocalNotificationsPlugin();
+// 전역으로 채널 선언
+const AndroidNotificationChannel channel = AndroidNotificationChannel(
+  'importance_channel', // 채널 ID
+  'Importance Notifications', // 채널 이름
+  description: 'This channel is used for important notifications.',
+  importance: Importance.high,
+);
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
 
 Future<void> main() async {
   await dotenv.load(fileName: 'assets/config/.env');
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  // 알림 채널 설정
-  const AndroidNotificationChannel channel = AndroidNotificationChannel(
-    'high_importance_channel', // 채널 ID
-    'High Importance Notifications', // 채널 이름
-    description: 'This channel is used for important notifications.',
-    importance: Importance.high,
-  );
 
+  // 알림 채널 설정
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
@@ -49,12 +51,16 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    setupFCMListeners();
+    setupFCM();
   }
 
-  void setupFCMListeners() {
+  void setupFCM() async {
+    // 알림 권한 요청 및 포그라운드 메시지 리스너 설정
+    if (await Permission.notification.isDenied) {
+      await Permission.notification.request();
+    }
+
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      // 앱이 포그라운드에 있을 때 로컬 알림으로 알림 표시
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
 
@@ -65,11 +71,11 @@ class _MyAppState extends State<MyApp> {
           notification.body,
           NotificationDetails(
             android: AndroidNotificationDetails(
-              'high_importance_channel', // 동일한 채널 ID를 사용
-              'High Importance Notifications',
-              channelDescription: 'This channel is used for important notifications.',
+              channel.id,
+              channel.name,
+              channelDescription: channel.description,
               importance: Importance.high,
-              icon: 'launch_background', // 앱의 아이콘 리소스
+              icon: 'launch_background',
             ),
           ),
         );
@@ -97,7 +103,6 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       home: const LoginPage(),
-
       routes: {
         '/signup': (context) => SignUpPage(),
         '/signupComplete': (context) => const SignupComplete(),
@@ -105,6 +110,7 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
+
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   print("백그라운드에서 메시지 수신: ${message.messageId}");
