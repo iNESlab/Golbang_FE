@@ -160,6 +160,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
               ),
               SizedBox(height: 10),
               Container(
+                padding: const EdgeInsets.all(10.0),
                 height: 320, // 높이를 약간 늘려서 6개의 그룹을 표시할 공간 확보
                 decoration: BoxDecoration(
                   color: Colors.grey[200],

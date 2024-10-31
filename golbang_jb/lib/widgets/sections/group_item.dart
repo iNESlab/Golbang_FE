@@ -10,7 +10,9 @@ class GroupItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Expanded(
+        SizedBox(
+          width: 90,
+          height: 90,
           child: Image.asset(image, fit: BoxFit.cover),
         ),
         SizedBox(height: 5),

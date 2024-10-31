@@ -23,7 +23,7 @@ class Group {
       id: json['id'] ?? 0, // 기본값 설정
       name: json['name'] ?? '',
       description: json['description'] ?? '',
-      image: json['image'] ?? 'assets/images/apple.png',
+      image: json['image'] ?? 'assets/images/golbang_group_default.png',
       members: (json['members'] as List<dynamic>)
           .map((member) => Member.fromJson(member))
           .toList(),
