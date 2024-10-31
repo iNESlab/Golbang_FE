@@ -99,10 +99,23 @@ class EmailField extends StatelessWidget {
   }
 }
 
-
-class PasswordField extends StatelessWidget {
+class PasswordField extends StatefulWidget {
   final TextEditingController controller;
-  const PasswordField({required this.controller, Key? key}) : super(key: key);
+
+  const PasswordField({Key? key, required this.controller}) : super(key: key);
+
+  @override
+  _PasswordFieldState createState() => _PasswordFieldState();
+}
+
+class _PasswordFieldState extends State<PasswordField> {
+  bool _obscureText = true; // 비밀번호 숨김 상태 초기화
+
+  void _toggleVisibility() {
+    setState(() {
+      _obscureText = !_obscureText; // 비밀번호 숨기기/보이기 상태 변경
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,8 +132,8 @@ class PasswordField extends StatelessWidget {
         ),
         const SizedBox(height: 8), // 라벨과 텍스트 필드 사이의 간격
         TextField(
-          controller: controller,
-          obscureText: true, // 비밀번호를 가리도록 설정
+          controller: widget.controller,
+          obscureText: _obscureText, // 비밀번호 숨김 여부
           decoration: InputDecoration(
             filled: true,
             fillColor: Colors.grey[800],
@@ -130,8 +143,11 @@ class PasswordField extends StatelessWidget {
               borderRadius: BorderRadius.circular(30.0),
               borderSide: BorderSide.none,
             ),
-            suffixIcon: Icon(
-              Icons.visibility_off,
+            suffixIcon: IconButton(
+              icon: Icon(
+                _obscureText ? Icons.visibility_off : Icons.visibility,
+              ),
+              onPressed: _toggleVisibility, // 보이기/숨기기 토글 기능 추가
               color: Colors.grey[500],
             ),
           ),
