@@ -82,9 +82,14 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
               padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
               child: TextField(
                 decoration: InputDecoration(
-                  hintText: '사용자 이름을 입력해 검색',
-                  border: OutlineInputBorder(),
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintText: '이름 또는 닉네임으로 검색',
                   prefixIcon: Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
                 onChanged: (value) {
                   setState(() {
