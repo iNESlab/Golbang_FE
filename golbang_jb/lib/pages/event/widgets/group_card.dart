@@ -9,7 +9,8 @@ class GroupCard extends StatelessWidget {
   GroupCard({
     required this.groupName,
     required this.members,
-    required this.onAddParticipant, required TextStyle buttonTextStyle,
+    required this.onAddParticipant,
+    required TextStyle buttonTextStyle,
   });
 
   @override
@@ -17,9 +18,30 @@ class GroupCard extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(right: 10),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(groupName, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          // 그룹 이름과 추가 버튼
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              ElevatedButton.icon(
+                onPressed: onAddParticipant,
+                icon: Icon(Icons.add),
+                label: Text(
+                  groupName,
+                  style: TextStyle(color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  iconColor: Colors.white,
+                  backgroundColor: Colors.teal,
+                  minimumSize: Size(80, 35),
+                ),
+              ),
+            ],
+          ),
           SizedBox(height: 10),
+
+          // 참가자 리스트
           for (var member in members)
             Container(
               width: 100,
@@ -31,19 +53,6 @@ class GroupCard extends StatelessWidget {
               ),
               child: Center(child: Text(member.name)),
             ),
-          ElevatedButton.icon(
-            onPressed: onAddParticipant,
-            icon: Icon(Icons.add),
-            label: Text(
-              '추가',
-              style: TextStyle(color: Colors.white)
-            ),
-            style: ElevatedButton.styleFrom(
-              iconColor: Colors.white,
-              backgroundColor: Colors.teal,
-              minimumSize: Size(100, 40),
-            ),
-          ),
         ],
       ),
     );
