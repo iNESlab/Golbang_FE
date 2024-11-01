@@ -17,11 +17,7 @@ class LoginTitle extends StatelessWidget {
                 child: const CircleAvatar(
                   radius: 40,
                   backgroundColor: Colors.white,
-                  child: Icon(
-                    Icons.golf_course,
-                    size: 40,
-                    color: Colors.green,
-                  ),
+                  backgroundImage: AssetImage('assets/images/logo.png'), // 이미지 설정
                 ),
               ),
             ),

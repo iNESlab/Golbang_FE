@@ -56,13 +56,6 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-
-    // 더미 데이터
-    final courseName = "더미 코스 이름";
-    final hole = "18홀";
-    final par = "72";
-    final courseType = "더미 코스 타입";
-
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.event.eventTitle),
@@ -208,15 +201,132 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                   ),
                 ),
                 SizedBox(height: 16),
-                Text(
-                  "코스 정보",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 8),
-                Text("코스 이름: $courseName"),
-                Text("홀: $hole"),
-                Text("Par: $par"),
-                Text("코스 타입: $courseType"),
+                // 코스 정보 표시
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "코스 정보",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 10),
+                    widget.event.golfClub != null
+                        ? Column(
+                      children: widget.event.golfClub!.courses.map((course) {
+                        return Card(
+                          margin: EdgeInsets.symmetric(vertical: 8),
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.golf_course, color: Colors.green),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      course.courseName,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      "홀 수: ${course.holes}",
+                                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                                    ),
+                                    Text(
+                                      "코스 Par: ${course.par}",
+                                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 10),
+                                Divider(),
+                                SizedBox(height: 10),
+
+                                // 홀 번호, Par 및 Handicap 테이블 형식 표시
+                                Text("홀 정보", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                SizedBox(height: 8),
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Column(
+                                    children: [
+                                      // 1~18홀 번호
+                                      Row(
+                                        children: List.generate(18, (index) {
+                                          return SizedBox(
+                                            width: 40,  // 각 항목의 고정 너비 지정
+                                            child: Center(
+                                              child: Text(
+                                                "${index + 1}홀",
+                                                style: TextStyle(
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 12,
+                                                  color: Colors.blueGrey,
+                                                ),
+                                              ),
+                                            ),
+                                          );
+                                        }),
+                                      ),
+                                      SizedBox(height: 8),
+                                      // 홀 Par
+                                      Row(
+                                        children: course.holePars.map((par) {
+                                          return SizedBox(
+                                            width: 40,  // 각 항목의 고정 너비 지정
+                                            child: Center(
+                                              child: Text(
+                                                "$par",
+                                                style: TextStyle(fontSize: 14),
+                                              ),
+                                            ),
+                                          );
+                                        }).toList(),
+                                      ),
+                                      SizedBox(height: 8),
+                                      // 홀 Handicap
+                                      Row(
+                                        children: course.holeHandicaps.map((handicap) {
+                                          return SizedBox(
+                                            width: 40,  // 각 항목의 고정 너비 지정
+                                            child: Center(
+                                              child: Text(
+                                                "$handicap",
+                                                style: TextStyle(fontSize: 14),
+                                              ),
+                                            ),
+                                          );
+                                        }).toList(),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    )
+                        : Text(
+                      "코스 정보가 없습니다.",
+                      style: TextStyle(color: Colors.redAccent),
+                    ),
+                  ],
+                )
+
+
               ],
             ],
           ),
@@ -241,7 +351,6 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
             context,
             MaterialPageRoute(
               builder: (context) => ScoreCardPage(event: widget.event),
-
             ),
           );
         },
@@ -349,11 +458,10 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EventsUpdate1(event: widget.event), // 이벤트 데이터 전달
+        builder: (context) => EventsUpdate1(event: widget.event),
       ),
     ).then((result) {
       if (result == true) {
-        // 수정 후 페이지 나가기
         Navigator.of(context).pop(true);
       }
     });

@@ -3,6 +3,8 @@
 import 'package:golbang/models/participant.dart';
 import 'package:golbang/models/profile/club_profile.dart';
 import 'package:golbang/models/update_event_participant.dart';
+import 'package:golbang/models/golf_club_data.dart';
+
 
 class Event {
   final ClubProfile? club;
@@ -23,6 +25,7 @@ class Event {
   final int pendingCount;
   final int myParticipantId;
   final List<Participant> participants;
+  final GolfClub? golfClub;
 
   Event({
     this.club,
@@ -43,6 +46,7 @@ class Event {
     required this.pendingCount,
     required this.myParticipantId,
     required this.participants,
+    this.golfClub,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
@@ -68,6 +72,7 @@ class Event {
       participants: (json['participants'] as List)
           .map((p) => Participant.fromJson(p))
           .toList(),
+      golfClub: json['golf_club'] != null ? GolfClub.fromJson(json['golf_club']) : null,
     );
   }
 
