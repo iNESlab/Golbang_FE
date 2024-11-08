@@ -9,7 +9,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'firebase_options.dart';
+// import 'firebase_options.dart';
 
 // 전역으로 채널 선언
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
@@ -23,7 +23,9 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterL
 
 Future<void> main() async {
   await dotenv.load(fileName: 'assets/config/.env');
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   // 알림 채널 설정
@@ -55,12 +57,25 @@ class _MyAppState extends State<MyApp> {
   }
 
   void setupFCM() async {
-    // 알림 권한 요청 및 포그라운드 메시지 리스너 설정
-    if (await Permission.notification.isDenied) {
-      await Permission.notification.request();
+    // 알림 권한 요청 및 결과 확인
+    PermissionStatus status = await Permission.notification.request();
+    print("Notification permission status: $status");
+
+    if (status.isGranted) {
+      print("Notification permission granted");
+    } else if (status.isDenied) {
+      print("Notification permission denied");
+    } else if (status.isPermanentlyDenied) {
+      print("Notification permission permanently denied");
     }
 
+    // 이후 FCM 토큰 출력 및 알림 리스너 설정
+    String? token = await FirebaseMessaging.instance.getToken();
+    print("FCM Token: $token");
+
+    // 포그라운드 상태에서 알림 수신 리스너 설정
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("포그라운드에서 알림 수신: ${message.notification?.title} - ${message.notification?.body}");
       RemoteNotification? notification = message.notification;
       AndroidNotification? android = message.notification?.android;
 
@@ -75,13 +90,23 @@ class _MyAppState extends State<MyApp> {
               channel.name,
               channelDescription: channel.description,
               importance: Importance.high,
-              icon: 'launch_background',
+              icon: '@drawable/logo',
             ),
           ),
         );
       }
     });
   }
+
+
+  void setupLocalNotifications() async {
+    const AndroidInitializationSettings initializationSettingsAndroid =
+    AndroidInitializationSettings('@drawable/logo');
+    final InitializationSettings initializationSettings =
+    InitializationSettings(android: initializationSettingsAndroid);
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -111,6 +136,7 @@ class _MyAppState extends State<MyApp> {
   }
 }
 
+// 백그라운드 메시지 핸들러
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   print("백그라운드에서 메시지 수신: ${message.messageId}");
