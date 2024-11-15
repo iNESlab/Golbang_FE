@@ -36,7 +36,7 @@
             android:value="AIzaSyCXKRNs7adgHwajXYBOVypQlghMSnTmtTs" />
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_channel_id"
-            android:value="important_channel" />
+            android:value="importance_channel" />
 
 
     </application>

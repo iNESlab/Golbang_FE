@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "500016887686",
-    "project_id": "golbangtemp",
-    "storage_bucket": "golbangtemp.appspot.com"
+    "project_number": "461170500461",
+    "project_id": "golbang-cc294",
+    "storage_bucket": "golbang-cc294.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:500016887686:android:c07389bf1eb664fee59e07",
+        "mobilesdk_app_id": "1:461170500461:android:40d8fc2917ccd96c92f064",
         "android_client_info": {
           "package_name": "com.example.golbang"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCJF0eHAOFvuU0c_iZVbAL9l_79MN_H8-s"
+          "current_key": "AIzaSyBoHvPIHBjwtwGrGkAgnVQq3zu-ictv_NY"
         }
       ],
       "services": {

@@ -14,6 +14,12 @@ class UserService {
 
   UserService(this.storage);
 
+  // 로그인 여부 확인하는 임시 코드
+  Future<bool> isLoggedIn() async {
+    final accessToken = await storage.readAccessToken();
+    return accessToken != null && accessToken.isNotEmpty;
+  }
+
   Future<List<GetAllUserProfile>> getUserProfileList() async {
     // 액세스 토큰 불러오기
     final accessToken = await storage.readAccessToken();

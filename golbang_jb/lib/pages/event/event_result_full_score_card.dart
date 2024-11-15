@@ -86,7 +86,13 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
     // excel.rename('Sheet1', 'Score Data');
 
     // 열 제목 설정
-    List<String> columnTitles = ['팀/참가자', '전반전', '후반전', '전체 스코어', '핸디캡 스코어'];
+    List<String> columnTitles = ['팀/참가자', '전반전', '후반전', '전체 스코어', '핸디캡 스코어',
+      'hole 1', 'hole 2', 'hole 3',
+      'hole 4', 'hole 5', 'hole 6',
+      'hole 7', 'hole 8', 'hole 9',
+      'hole 10', 'hole 11', 'hole 12',
+      'hole 13', 'hole 14', 'hole 15',
+      'hole 16', 'hole 17', 'hole 18'];
     sheet.appendRow(columnTitles);
 
     // 팀 점수 추가
@@ -99,13 +105,20 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
 
     // 참가자별 점수 추가
     for (var participant in participants) {
-      sheet.appendRow([
+      List<dynamic> rowData = [
         participant['participant_name'],
         participant['front_nine_score'],
         participant['back_nine_score'],
         participant['total_score'],
         participant['handicap_score']
-      ]);
+      ];
+
+      // 홀별 점수 추가
+      for (int i = 0; i < 18; i++) {
+        rowData.add(participant['scorecard'].length > i ? participant['scorecard'][i] : '-');
+      }
+
+      sheet.appendRow(rowData);
     }
 
     // 외부 저장소 경로 가져오기
