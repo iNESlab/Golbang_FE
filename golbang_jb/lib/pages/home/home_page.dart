@@ -21,7 +21,8 @@ import 'package:golbang/services/group_service.dart';
 import 'package:golbang/services/user_service.dart';
 import '../../repoisitory/secure_storage.dart';
 
-import 'package:firebase_messaging/firebase_messaging.dart';
+
+import 'package:get/get.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -36,6 +37,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _selectedIndex = Get.arguments?['initialIndex'] ?? 0;
   }
 
   static final List<Widget> _widgetOptions = <Widget>[
