@@ -159,4 +159,40 @@ class GroupService {
     }
     return null;
   }
+  Future<List<Group>> getGroupInfo(int clubId) async {
+    // 액세스 토큰 불러오기
+    final accessToken = await storage.readAccessToken();
+    String clubId_str = clubId.toString();
+    // API URI 설정
+    var uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/clubs/$clubId_str/");
+    print(uri);
+    // 요청 헤더 설정
+    Map<String, String> headers = {
+      "Content-type": "application/json",
+      "Authorization": "Bearer $accessToken"
+    };
+
+    // API 요청
+    var response = await http.get(uri, headers: headers);
+
+    // 응답 상태 코드가 200인 경우, 데이터를 성공적으로 가져온 경우
+    if (response.statusCode == 200) {
+      // JSON 디코딩
+      final Map<String, dynamic> data = jsonDecode(response.body);
+      List<dynamic> groupsData = [data['data']];
+      List<Group> groups = groupsData.map((groupJson) {
+        try {
+          return Group.fromJson(groupJson);
+        } catch (e) {
+          print('Error parsing group: $e');
+          return null; // 파싱 오류가 발생한 경우 null 반환
+        }
+      }).whereType<Group>().toList(); // null이 아닌 Group 객체만 리스트에 포함
+
+      return groups; // 그룹 리스트 반환
+    } else {
+      print('Failed to load groups with status code: ${response.statusCode}');
+      return []; // 실패 시 빈 리스트 반환
+    }
+  }
 }
