@@ -1,13 +1,23 @@
 {
   "project_info": {
+<<<<<<< HEAD
     "project_number": "461170500461",
     "project_id": "golbang-cc294",
     "storage_bucket": "golbang-cc294.firebasestorage.app"
+=======
+    "project_number": "1032223675274",
+    "project_id": "golbang-test-31a73",
+    "storage_bucket": "golbang-test-31a73.firebasestorage.app"
+>>>>>>> 292de8d (chore: gitignore 파일에 google-servives.json 파일 추가)
   },
   "client": [
     {
       "client_info": {
+<<<<<<< HEAD
         "mobilesdk_app_id": "1:461170500461:android:40d8fc2917ccd96c92f064",
+=======
+        "mobilesdk_app_id": "1:1032223675274:android:2fce275b038dc8f2842e73",
+>>>>>>> 292de8d (chore: gitignore 파일에 google-servives.json 파일 추가)
         "android_client_info": {
           "package_name": "com.example.golbang"
         }
@@ -15,7 +25,11 @@
       "oauth_client": [],
       "api_key": [
         {
+<<<<<<< HEAD
           "current_key": "AIzaSyBoHvPIHBjwtwGrGkAgnVQq3zu-ictv_NY"
+=======
+          "current_key": "AIzaSyD6llRhlBC8bi1a40ozVDVgNhrEuz1LIN0"
+>>>>>>> 292de8d (chore: gitignore 파일에 google-servives.json 파일 추가)
         }
       ],
       "services": {
