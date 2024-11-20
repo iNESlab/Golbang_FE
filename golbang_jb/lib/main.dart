@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,7 +17,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'repoisitory/secure_storage.dart';
 import 'package:golbang/provider/user/user_service_provider.dart';
 import 'services/user_service.dart';
-// import 'firebase_options.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 FlutterLocalNotificationsPlugin();
@@ -53,7 +54,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NotificationHandler(
-      child: GetMaterialApp( // MaterialApp 대신 GetMaterialApp 사용
+      child: GetMaterialApp(
         title: 'GOLBANG MAIN PAGE',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
@@ -103,27 +104,38 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
     await _requestNotificationPermission();
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("Foreground message received: ${message.notification}, ${message.data}");
       _showForegroundNotification(message);
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print("onMessageOpenedApp 확인");
-      _handleNotificationClick();
+      print("onMessageOpenedApp 확인: ${message.data}");
+      _handleNotificationClick(message.data);
     });
   }
 
-  void _handleNotificationClick() async {
+  void _handleNotificationClick(Map<String, dynamic> data) async {
+    print("Notification Click Data: $data");
     final userService = ref.read(userServiceProvider);
     final isLoggedIn = await userService.isLoggedIn();
     print("로그인 확인: $isLoggedIn");
 
     if (isLoggedIn) {
-      // HomePage로 이동하면서 EventPage 탭을 초기 선택으로 설정
-      print("hello?");
-      Get.offAll(() => const HomePage(), arguments: {
-        'initialIndex': 2,
-        'communityId' : 1, // 예시 id
-      });
+      if (data.containsKey('event_id')) {
+        String eventId = data['event_id'];
+        print("Event ID: $eventId");
+        Get.offAll(() => const HomePage(), arguments: {
+          'initialIndex': 1,
+          'eventId': eventId
+        });
+      } else if (data.containsKey('club_id')) {
+        String clubId = data['club_id'];
+        print("Club ID: $clubId");
+        Get.offAll(() => const HomePage(), arguments: {
+          'initialIndex': 2,
+          'communityId': clubId
+        });
+      }
     } else {
       print("LoginPage로 이동.");
       Get.toNamed('/'); // 로그인 페이지로 이동
@@ -139,7 +151,20 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
     flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) async {
-        _handleNotificationClick();
+        if (response.payload != null) {
+          print("Notification payload: ${response.payload}");
+          try {
+            final data = response.payload!.isNotEmpty
+                ? (jsonDecode(response.payload!) as Map<dynamic, dynamic>)
+                .map((key, value) => MapEntry(key.toString(), value))
+                : <String, dynamic>{};
+            _handleNotificationClick(data);
+          } catch (e) {
+            print("Error parsing notification payload: $e");
+          }
+        } else {
+          print("Notification payload is null or empty.");
+        }
       },
     );
   }
@@ -167,6 +192,7 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
             icon: '@mipmap/ic_launcher',
           ),
         ),
+        payload: jsonEncode(message.data),
       );
     }
   }
