@@ -100,7 +100,6 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
     _initializeLocalNotifications();
   }
 
-
   void setupFCM() async {
     await _requestNotificationPermission();
 
@@ -198,6 +197,11 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
             channel.name,
             channelDescription: channel.description,
             icon: '@mipmap/ic_launcher',
+            styleInformation: BigTextStyleInformation(
+              notification.body ?? '', // 긴 텍스트를 멀티라인으로 표시
+              contentTitle: notification.title, // 제목
+              summaryText: '알림 요약', // 알림 요약 (옵션)
+            ),
           ),
         ),
         payload: jsonEncode(message.data),
