@@ -36,7 +36,8 @@ Future<void> main() async {
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+      .resolvePlatformSpecificImplementation<
+      AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
 
   initializeDateFormatting().then((_) {
@@ -120,17 +121,24 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
     final isLoggedIn = await userService.isLoggedIn();
     print("로그인 확인: $isLoggedIn");
 
+    int? eventId;
+    int? clubId;
+
+    if (data.containsKey('event_id')) {
+      eventId = int.tryParse(data['event_id'].toString());
+      print("Event ID: $eventId");
+    } else if (data.containsKey('club_id')) {
+      clubId = int.tryParse(data['club_id'].toString());
+      print("Club ID: $clubId");
+    }
+
     if (isLoggedIn) {
-      if (data.containsKey('event_id')) {
-        String eventId = data['event_id'];
-        print("Event ID: $eventId");
+      if (eventId != null) {
         Get.offAll(() => const HomePage(), arguments: {
           'initialIndex': 1,
           'eventId': eventId
         });
-      } else if (data.containsKey('club_id')) {
-        String clubId = data['club_id'];
-        print("Club ID: $clubId");
+      } else if (clubId != null) {
         Get.offAll(() => const HomePage(), arguments: {
           'initialIndex': 2,
           'communityId': clubId
