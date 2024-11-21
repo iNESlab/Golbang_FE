@@ -1,5 +1,7 @@
 #
 .env
+assets/config/.env
+firebase.json
 
 # Miscellaneous
 *.class
@@ -34,6 +36,7 @@ migrate_working_dir/
 .pub-cache/
 .pub/
 /build/
+ios/build/**
 
 # Symbolication related
 app.*.symbols
@@ -45,4 +48,5 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
-/android/app/google-services.json
+android/app/google-services.json
+

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,7 +17,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'repoisitory/secure_storage.dart';
 import 'package:golbang/provider/user/user_service_provider.dart';
 import 'services/user_service.dart';
-import 'firebase_options.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 FlutterLocalNotificationsPlugin();
@@ -30,14 +31,13 @@ const AndroidNotificationChannel channel = AndroidNotificationChannel(
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load(fileName: 'assets/config/.env');
-  // await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
-  WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
 
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
   await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+      .resolvePlatformSpecificImplementation<
+      AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
 
   initializeDateFormatting().then((_) {
@@ -55,7 +55,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return NotificationHandler(
-      child: GetMaterialApp( // MaterialApp 대신 GetMaterialApp 사용
+      child: GetMaterialApp(
         title: 'GOLBANG MAIN PAGE',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
@@ -100,42 +100,49 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
     _initializeLocalNotifications();
   }
 
-
   void setupFCM() async {
-    // 알림 권한 요청 및 결과 확인
-    PermissionStatus status = await Permission.notification.request();
-    print("Notification permission status: $status");
-
-    if (status.isGranted) {
-      print("Notification permission granted");
-    } else if (status.isDenied) {
-      print("Notification permission denied");
-    } else if (status.isPermanentlyDenied) {
-      print("Notification permission permanently denied");
     await _requestNotificationPermission();
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("Foreground message received: ${message.notification}, ${message.data}");
       _showForegroundNotification(message);
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print("onMessageOpenedApp 확인");
-      _handleNotificationClick();
+      print("onMessageOpenedApp 확인: ${message.data}");
+      _handleNotificationClick(message.data);
     });
   }
 
-  void _handleNotificationClick() async {
+  void _handleNotificationClick(Map<String, dynamic> data) async {
+    print("Notification Click Data: $data");
     final userService = ref.read(userServiceProvider);
     final isLoggedIn = await userService.isLoggedIn();
     print("로그인 확인: $isLoggedIn");
 
+    int? eventId;
+    int? clubId;
+
+    if (data.containsKey('event_id')) {
+      eventId = int.tryParse(data['event_id'].toString());
+      print("Event ID: $eventId");
+    } else if (data.containsKey('club_id')) {
+      clubId = int.tryParse(data['club_id'].toString());
+      print("Club ID: $clubId");
+    }
+
     if (isLoggedIn) {
-      // HomePage로 이동하면서 EventPage 탭을 초기 선택으로 설정
-      print("hello?");
-      Get.offAll(() => const HomePage(), arguments: {
-        'initialIndex': 2,
-        'communityId' : 1, // 예시 id
-      });
+      if (eventId != null) {
+        Get.offAll(() => const HomePage(), arguments: {
+          'initialIndex': 1,
+          'eventId': eventId
+        });
+      } else if (clubId != null) {
+        Get.offAll(() => const HomePage(), arguments: {
+          'initialIndex': 2,
+          'communityId': clubId
+        });
+      }
     } else {
       print("LoginPage로 이동.");
       Get.toNamed('/'); // 로그인 페이지로 이동
@@ -151,7 +158,20 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
     flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) async {
-        _handleNotificationClick();
+        if (response.payload != null) {
+          print("Notification payload: ${response.payload}");
+          try {
+            final data = response.payload!.isNotEmpty
+                ? (jsonDecode(response.payload!) as Map<dynamic, dynamic>)
+                .map((key, value) => MapEntry(key.toString(), value))
+                : <String, dynamic>{};
+            _handleNotificationClick(data);
+          } catch (e) {
+            print("Error parsing notification payload: $e");
+          }
+        } else {
+          print("Notification payload is null or empty.");
+        }
       },
     );
   }
@@ -162,44 +182,32 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
     }
   }
 
-    // 이후 FCM 토큰 출력 및 알림 리스너 설정
-    String? token = await FirebaseMessaging.instance.getToken();
-    print("FCM Token: $token");
+  void _showForegroundNotification(RemoteMessage message) {
+    RemoteNotification? notification = message.notification;
+    AndroidNotification? android = message.notification?.android;
 
-    // 포그라운드 상태에서 알림 수신 리스너 설정
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print("포그라운드에서 알림 수신: ${message.notification?.title} - ${message.notification?.body}");
-      RemoteNotification? notification = message.notification;
-      AndroidNotification? android = message.notification?.android;
-
-      if (notification != null && android != null) {
-        flutterLocalNotificationsPlugin.show(
-          notification.hashCode,
-          notification.title,
-          notification.body,
-          NotificationDetails(
-            android: AndroidNotificationDetails(
-              channel.id,
-              channel.name,
-              channelDescription: channel.description,
-              importance: Importance.high,
-              icon: '@drawable/logo',
+    if (notification != null && android != null) {
+      flutterLocalNotificationsPlugin.show(
+        notification.hashCode,
+        notification.title,
+        notification.body,
+        NotificationDetails(
+          android: AndroidNotificationDetails(
+            channel.id,
+            channel.name,
+            channelDescription: channel.description,
+            icon: '@mipmap/ic_launcher',
+            styleInformation: BigTextStyleInformation(
+              notification.body ?? '', // 긴 텍스트를 멀티라인으로 표시
+              contentTitle: notification.title, // 제목
+              summaryText: '알림 요약', // 알림 요약 (옵션)
             ),
           ),
         ),
+        payload: jsonEncode(message.data),
       );
     }
   }
-
-
-  void setupLocalNotifications() async {
-    const AndroidInitializationSettings initializationSettingsAndroid =
-    AndroidInitializationSettings('@drawable/logo');
-    final InitializationSettings initializationSettings =
-    InitializationSettings(android: initializationSettingsAndroid);
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-  }
-
 
   @override
   Widget build(BuildContext context) {
