@@ -8,6 +8,7 @@ import '../../repoisitory/secure_storage.dart';
 import '../../services/event_service.dart';
 import '../game/score_card_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart'; // 공유 라이브러리 추가
 
 import 'event_update1.dart';
 
@@ -30,6 +31,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     super.initState();
     _selectedLocation = _parseLocation(widget.event.location);
     _myGroup = widget.event.memberGroup; // initState에서 초기화
+
   }
 
   LatLng? _parseLocation(String? location) {
@@ -40,21 +42,28 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     try {
       if (location.startsWith('LatLng')) {
         final coords = location
-            .substring(7, location.length - 1)
+            .substring(7, location.length - 1) // "LatLng("와 ")" 제거
             .split(',')
-            .map((e) => double.parse(e.trim()))
+            .map((e) => double.parse(e.trim())) // 공백 제거 후 숫자로 변환
             .toList();
         return LatLng(coords[0], coords[1]);
       } else {
-        return null;
+        return null; // LatLng 형식이 아니면 null 반환
       }
     } catch (e) {
-      return null;
+      return null; // 파싱 실패 시 null 반환
     }
   }
 
   @override
   Widget build(BuildContext context) {
+
+    // 더미 데이터
+    final courseName = "더미 코스 이름";
+    final hole = "18홀";
+    final par = "72";
+    final courseType = "더미 코스 타입";
+
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.event.eventTitle),
@@ -74,6 +83,9 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                 case 'delete':
                   _deleteEvent();
                   break;
+                case 'share': // 공유 버튼 추가
+                  _shareEvent();
+                  break;
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
@@ -85,6 +97,10 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                 value: 'delete',
                 child: Text('삭제'),
               ),
+              const PopupMenuItem<String>(
+                value: 'share', // 공유 버튼 추가
+                child: Text('공유'),
+              ),
             ],
           ),
         ],
@@ -95,6 +111,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Event Header
               Row(
                 children: [
                   Image.asset(
@@ -128,11 +145,13 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                 ],
               ),
               SizedBox(height: 10),
+              // 참석자 수를 표시
               Text(
                 '참여 인원: ${widget.event.participants.length}명',
                 style: TextStyle(fontSize: 16),
               ),
               SizedBox(height: 10),
+              // 나의 조 표시
               Row(
                 children: [
                   Text(
@@ -153,6 +172,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                 ],
               ),
               SizedBox(height: 20),
+              // 토글 가능한 참석 상태별 리스트
               ExpansionPanelList(
                 elevation: 1,
                 expandedHeaderPadding: EdgeInsets.all(0),
@@ -169,6 +189,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                 ],
               ),
 
+              // 골프장 위치 표시
               if (_selectedLocation != null) ...[
                 SizedBox(height: 16),
                 Text(
@@ -195,105 +216,15 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                   ),
                 ),
                 SizedBox(height: 16),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      "코스 정보",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    SizedBox(height: 10),
-                    widget.event.golfClub != null
-                        ? Column(
-                      children: widget.event.golfClub!.courses.map((course) {
-                        return Card(
-                          margin: EdgeInsets.symmetric(vertical: 8),
-                          elevation: 3,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Padding(
-                            padding: EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Icon(Icons.golf_course, color: Colors.green),
-                                    SizedBox(width: 8),
-                                    Text(
-                                      course.courseName,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 10),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "홀 수: ${course.holes}",
-                                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                                    ),
-                                    Text(
-                                      "코스 Par: ${course.par}",
-                                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
-                                    ),
-                                  ],
-                                ),
-                                SizedBox(height: 10),
-                                Divider(),
-                                SizedBox(height: 10),
-                                Text("홀 Par 정보", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                                SizedBox(height: 8),
-                                SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Row(
-                                    children: List.generate(course.holes, (index) {
-                                      final holeNumber = index + 1;
-                                      final par = course.holePars[index];
-                                      return Container(
-                                        width: 50,
-                                        height: 50,
-                                        margin: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(8),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey.withOpacity(0.2),
-                                              spreadRadius: 2,
-                                              blurRadius: 5,
-                                              offset: Offset(0, 3),
-                                            ),
-                                          ],
-                                          border: Border.all(color: Colors.grey[300]!, width: 1),
-                                        ),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(8),
-                                          child: CustomPaint(
-                                            painter: DiagonalTextPainter(holeNumber: holeNumber, par: par),
-                                          ),
-                                        ),
-                                      );
-                                    }),
-                                  ),
-                                )
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    )
-                        : Text(
-                      "코스 정보가 없습니다.",
-                      style: TextStyle(color: Colors.redAccent),
-                    ),
-                  ],
+                Text(
+                  "코스 정보",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
+                SizedBox(height: 8),
+                Text("코스 이름: $courseName"),
+                Text("홀: $hole"),
+                Text("Par: $par"),
+                Text("코스 타입: $courseType"),
               ],
             ],
           ),
@@ -311,12 +242,14 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     final DateTime eventDate = widget.event.endDateTime;
 
     if (currentDate.isBefore(eventDate)) {
+      // 현재 날짜가 이벤트 날짜보다 이전인 경우 "게임 시작" 버튼만 표시
       return ElevatedButton(
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => ScoreCardPage(event: widget.event),
+
             ),
           );
         },
@@ -332,6 +265,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
         ),
       );
     } else {
+      // 현재 날짜가 이벤트 날짜보다 이후인 경우 "결과 조회" 버튼만 표시
       return ElevatedButton(
         onPressed: () {
           Navigator.push(
@@ -423,24 +357,44 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => EventsUpdate1(event: widget.event),
+        builder: (context) => EventsUpdate1(event: widget.event), // 이벤트 데이터 전달
       ),
     ).then((result) {
       if (result == true) {
+        // 수정 후 페이지 나가기
         Navigator.of(context).pop(true);
       }
     });
   }
 
+  void _shareEvent() {
+    final String eventLink = "https://your-app-link.com/event/${widget.event.eventId}";
+
+    Share.share(
+      '이벤트를 확인해보세요!\n\n'
+          '제목: ${widget.event.eventTitle}\n'
+          '날짜: ${widget.event.startDateTime.toLocal().toIso8601String().split('T').first}\n'
+          '장소: ${widget.event.site}\n\n'
+          '자세히 보기: $eventLink',
+    );
+  }
+
   void _deleteEvent() async {
+    // ref.watch를 이용하여 storage 인스턴스를 얻고 이를 EventService에 전달
     final storage = ref.watch(secureStorageProvider);
+    // final eventService = EventService(storage);
+
+    // final success = await eventService.deleteEvent(widget.event.eventId);
+
     final success = await ref.read(eventStateNotifierProvider.notifier).deleteEvent(widget.event.eventId);
 
+
     if (success) {
+      // 이벤트 삭제 후 목록 새로고침
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('성공적으로 삭제되었습니다')),
       );
-      Navigator.of(context).pop(true);
+      Navigator.of(context).pop(true); // 삭제 후 페이지를 나가기
     } else if(success == 403) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('관리자가 아닙니다. 관리자만 삭제할 수 있습니다.')),
@@ -450,46 +404,5 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
         SnackBar(content: Text('이벤트 삭제에 실패했습니다.')),
       );
     }
-  }
-}
-
-// 대각선 구분선 및 텍스트 표시를 위한 CustomPainter
-class DiagonalTextPainter extends CustomPainter {
-  final int holeNumber;
-  final int par;
-
-  DiagonalTextPainter({required this.holeNumber, required this.par});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.black
-      ..strokeWidth = 1;
-
-    canvas.drawLine(Offset(size.width, 0), Offset(0, size.height), paint);
-
-    final textStyle = TextStyle(color: Colors.black, fontSize: 12);
-    final holeTextSpan = TextSpan(text: "$holeNumber홀", style: textStyle);
-    final parTextSpan = TextSpan(text: "$par", style: textStyle);
-
-    final holePainter = TextPainter(
-      text: holeTextSpan,
-      textDirection: TextDirection.ltr,
-    );
-    final parPainter = TextPainter(
-      text: parTextSpan,
-      textDirection: TextDirection.ltr,
-    );
-
-    holePainter.layout();
-    parPainter.layout();
-
-    holePainter.paint(canvas, Offset(5, 5));
-    parPainter.paint(canvas, Offset(size.width - parPainter.width - 5, size.height - parPainter.height - 5));
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return false;
   }
 }

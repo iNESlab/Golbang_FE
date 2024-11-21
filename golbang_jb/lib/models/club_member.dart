@@ -4,6 +4,7 @@
 import 'package:golbang/models/user.dart';
 
 class ClubMember {
+
   final User user;
   final String role;
   final int totalPoints;

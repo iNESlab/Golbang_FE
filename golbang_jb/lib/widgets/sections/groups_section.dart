@@ -32,6 +32,7 @@ class GroupsSection extends StatelessWidget {
                       builder: (context) => CommunityMain(
                         communityName: group.name,
                         communityImage: group.image!,
+                        adminName: group.getAdminName(),
                       ),
                     ),
                   );

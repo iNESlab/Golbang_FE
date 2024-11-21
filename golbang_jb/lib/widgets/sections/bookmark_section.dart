@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:golbang/models/user_account.dart';
+import 'package:golbang/models/get_statistics_overall.dart';
 
 class BookmarkSection extends StatelessWidget {
   final UserAccount userAccount;
+  final OverallStatistics overallStatistics;
 
-  const BookmarkSection({super.key, required this.userAccount});
+  const BookmarkSection({super.key, required this.userAccount, required this.overallStatistics});
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -18,9 +20,9 @@ class BookmarkSection extends StatelessWidget {
 
   List<Widget> _buildInfoCards() {
     return [
-      _buildSingleCard("Title 1", userAccount.handicap.toString()),
-      _buildSingleCard("Title 2", userAccount.handicap.toString()),
-      _buildSingleCard("Title 3", userAccount.userId),
+      _buildSingleCard("평균 스코어", overallStatistics.averageScore?.toString() ?? 'N/A'),
+      _buildSingleCard("베스트 스코어", overallStatistics.bestScore?.toString() ?? 'N/A'),
+      _buildSingleCard("기록", overallStatistics.gamesPlayed?.toString() ?? 'N/A'),
     ];
   }
 
@@ -45,13 +47,13 @@ class BookmarkSection extends StatelessWidget {
         children: <Widget>[
           Text(
             title,
-            style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
           Text(
             description,
-            style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ],
       ),

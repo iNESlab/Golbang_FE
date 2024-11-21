@@ -47,6 +47,7 @@ Future<void> main() async {
       ),
     );
   });
+  await Firebase.initializeApp(); // Firebase 초기화
 }
 
 class MyApp extends StatelessWidget {
