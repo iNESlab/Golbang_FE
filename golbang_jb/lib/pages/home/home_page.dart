@@ -129,23 +129,44 @@ class HomeContent extends ConsumerWidget {
 
     return Scaffold(
       body: FutureBuilder(
+        // future: Future.wait([
+        //   userService.getUserInfo(), // Fetch user info
+        //   eventService.getEventsForMonth(date: date), // Fetch events for the month
+        //   groupService.getUserGroups(), // Fetch user groups
+        //   statisticsService.fetchOverallStatistics(), // Fetch overall statistics
+        // ]),
         future: Future.wait([
-          userService.getUserInfo(), // Fetch user info
-          eventService.getEventsForMonth(date: date), // Fetch events for the month
-          groupService.getUserGroups(), // Fetch user groups
-          statisticsService.fetchOverallStatistics(), // Fetch overall statistics
+          userService.getUserInfo(),
+          eventService.getEventsForMonth(date: date),
+          groupService.getUserGroups(),
+          statisticsService.fetchOverallStatistics().catchError((e) {
+            print('Error fetching overall statistics: $e');
+            return OverallStatistics(
+              averageScore: 0.0,
+              bestScore: 0,
+              handicapBestScore: 0,
+              gamesPlayed: 0,
+            );
+          }),
         ]),
         builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
-          } else {
-            // Retrieve data from snapshot
-            UserAccount userAccount = snapshot.data![0];
-            List<Event> events = snapshot.data![1];
-            List<Group> groups = snapshot.data![2];
-            OverallStatistics overallStatistics = snapshot.data![3];
+          } else if (!snapshot.hasData || snapshot.data == null) {
+            return Center(child: Text('No data available'));
+          }
+          // 데이터 추출
+          UserAccount userAccount = snapshot.data![0];
+          List<Event> events = snapshot.data![1];
+          List<Group> groups = snapshot.data![2];
+          OverallStatistics overallStatistics = snapshot.data![3] ?? OverallStatistics(
+            averageScore: 0.0,
+            bestScore: 0,
+            handicapBestScore: 0,
+            gamesPlayed: 0,
+          );
 
             return Column(
               children: <Widget>[
@@ -176,7 +197,7 @@ class HomeContent extends ConsumerWidget {
               ],
             );
           }
-        },
+
       ),
     );
   }
