@@ -1,3 +1,4 @@
+
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:golbang/pages/home/splash_screen.dart';
@@ -24,6 +25,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final TextEditingController _passwordController = TextEditingController(text: 'Golbang12!@');
   // final TextEditingController _emailController = TextEditingController(text: 'hihello@email.com');
   // final TextEditingController _passwordController = TextEditingController(text: '1q2w3e4r!');
+  // final TextEditingController _emailController = TextEditingController(text: 'gunoh928@gmail.com');
+  // final TextEditingController _passwordController = TextEditingController(text: 'qwer1234!');
 
   @override
   Widget build(BuildContext context) {

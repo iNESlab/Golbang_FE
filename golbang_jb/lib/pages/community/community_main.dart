@@ -7,8 +7,13 @@ import 'package:golbang/widgets/sections/post_item.dart';
 class CommunityMain extends StatefulWidget {
   final String communityName;
   final String communityImage;
+  final String adminName;
 
-  CommunityMain({required this.communityName, required this.communityImage});
+  CommunityMain({
+    required this.communityName,
+    required this.communityImage,
+    required this.adminName,  // 관리자 이름을 받도록 수정
+  });
 
   @override
   _CommunityMainState createState() => _CommunityMainState();
@@ -68,26 +73,26 @@ class _CommunityMainState extends State<CommunityMain> {
                   },
                 ),
               ),
-              Positioned(
-                top: 40,
-                right: 60,
-                child: IconButton(
-                  icon: Icon(Icons.edit, color: Colors.white),
-                  onPressed: () {
-                    // 글쓰기 버튼 클릭 시 동작
-                  },
-                ),
-              ),
-              Positioned(
-                top: 40,
-                right: 10,
-                child: IconButton(
-                  icon: Icon(Icons.settings, color: Colors.white),
-                  onPressed: () {
-                    // 설정 버튼 클릭 시 동작
-                  },
-                ),
-              ),
+              // Positioned(
+              //   top: 40,
+              //   right: 60,
+              //   child: IconButton(
+              //     icon: Icon(Icons.edit, color: Colors.white),
+              //     onPressed: () {
+              //       // 글쓰기 버튼 클릭 시 동작
+              //     },
+              //   ),
+              // ),
+              // Positioned(
+              //   top: 40,
+              //   right: 10,
+              //   child: IconButton(
+              //     icon: Icon(Icons.settings, color: Colors.white),
+              //     onPressed: () {
+              //       // 설정 버튼 클릭 시 동작
+              //     },
+              //   ),
+              // ),
               Positioned(
                 bottom: 20,
                 left: 10,
@@ -107,7 +112,7 @@ class _CommunityMainState extends State<CommunityMain> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      '관리자: 김민정, 정수미', // 이 부분은 데이터로 대체할 수 있습니다.
+                      '관리자: ${widget.adminName}', // 관리자 이름을 동적으로 표시
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     Text(
@@ -116,12 +121,12 @@ class _CommunityMainState extends State<CommunityMain> {
                     ),
                   ],
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    // 멤버 추가 버튼 클릭 시 동작
-                  },
-                  child: Text('멤버 추가'),
-                ),
+                // ElevatedButton(
+                //   onPressed: () {
+                //     // 멤버 추가 버튼 클릭 시 동작
+                //   },
+                //   child: Text('멤버 추가'),
+                // ),
               ],
             ),
           ),
@@ -130,17 +135,18 @@ class _CommunityMainState extends State<CommunityMain> {
               itemCount: posts.length,
               itemBuilder: (context, index) {
                 final post = posts[index];
-                return PostItem(
-                  post: post,
-                  onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CommunityPost(post: post),
-                      ),
-                    );
-                  },
-                );
+                return ;
+                // return PostItem(
+                //   post: post,
+                //   onTap: () {
+                //     Navigator.push(
+                //       context,
+                //       MaterialPageRoute(
+                //         builder: (context) => CommunityPost(post: post),
+                //       ),
+                //     );
+                //   },
+                // );
               },
             ),
           ),

@@ -1,13 +1,12 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/global_config.dart';
-
 import 'package:golbang/models/bookmark.dart';
 import 'package:golbang/models/event.dart';
 import 'package:golbang/models/group.dart';
 import 'package:golbang/models/user_account.dart';
+import 'package:golbang/models/get_statistics_overall.dart';
 import 'package:golbang/services/event_service.dart';
 import 'package:golbang/widgets/sections/bookmark_section.dart';
 import 'package:golbang/widgets/sections/groups_section.dart';
@@ -16,13 +15,13 @@ import 'package:golbang/widgets/sections/upcoming_events.dart';
 import 'package:golbang/pages/event/event_main.dart';
 import 'package:golbang/pages/group/group_main.dart';
 import 'package:golbang/pages/profile/profile_screen.dart';
-
 import 'package:golbang/services/group_service.dart';
 import 'package:golbang/services/user_service.dart';
+import 'package:golbang/services/statistics_service.dart';
 import '../../repoisitory/secure_storage.dart';
+
 import 'package:golbang/pages/notification/notification_history_page.dart';
 
-import 'package:get/get.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -36,7 +35,6 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _selectedIndex = Get.arguments?['initialIndex'] ?? 0;
   }
 
   static final List<Widget> _widgetOptions = <Widget>[
@@ -127,23 +125,23 @@ class HomeContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Simulate fetching user token
+    // Fetching services
     final storage = ref.watch(secureStorageProvider);
     final UserService userService = UserService(storage);
     final GroupService groupService = GroupService(storage);
     final EventService eventService = EventService(storage);
-    DateTime _focusedDay = DateTime.now();
+    final StatisticsService statisticsService = StatisticsService(storage);
 
+    DateTime _focusedDay = DateTime.now();
     String date = '${_focusedDay.year}-${_focusedDay.month.toString().padLeft(2, '0')}-01';
-    print(date);
 
     return Scaffold(
       body: FutureBuilder(
         future: Future.wait([
-          userService.getUserInfo(),
-          //Future.value(GlobalConfig.bookmarks),
-          eventService.getEventsForMonth(date: date),
-          groupService.getUserGroups(), // 그룹 데이터를 비동기적으로 가져옴
+          userService.getUserInfo(), // Fetch user info
+          eventService.getEventsForMonth(date: date), // Fetch events for the month
+          groupService.getUserGroups(), // Fetch user groups
+          statisticsService.fetchOverallStatistics(), // Fetch overall statistics
         ]),
         builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -151,26 +149,22 @@ class HomeContent extends ConsumerWidget {
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
           } else {
-            // Snapshot에서 데이터를 가져옴
+            // Retrieve data from snapshot
             UserAccount userAccount = snapshot.data![0];
             List<Event> events = snapshot.data![1];
             List<Group> groups = snapshot.data![2];
-            /*
-            print(userAccount);
-            if (userAccount.fcmToken == null) {
-              // FCM 토큰이 없을 때 새로 FCM 토큰을 얻고 서버에 업데이트
-              Future.microtask(() async {
-                await _getAndUpdateFCMToken(userService, userAccount);
-              });
-            }
-            */
+            OverallStatistics overallStatistics = snapshot.data![3];
+
             return Column(
               children: <Widget>[
                 SizedBox(
                   height: 140,
                   child: SectionWithScroll(
                     title: '즐겨찾기',
-                    child: BookmarkSection(userAccount: userAccount),
+                    child: BookmarkSection(
+                      userAccount: userAccount,
+                      overallStatistics: overallStatistics, // Pass overall statistics
+                    ),
                   ),
                 ),
                 Expanded(
@@ -195,35 +189,3 @@ class HomeContent extends ConsumerWidget {
     );
   }
 }
-
-/*
-Future<void> _getAndUpdateFCMToken(UserService userService, UserAccount userAccount) async {
-  try {
-    // FCM 토큰 가져오기
-    FirebaseMessaging messaging = FirebaseMessaging.instance;
-    String? fcmToken = await messaging.getToken();
-    print("if null");
-    if (fcmToken != null) {
-      print("null");
-      // FCM 토큰을 서버에 업데이트
-      await userService.updateUserInfo2(
-        userId: userAccount.userId,
-        name: userAccount.name,
-        email: userAccount.email,
-        phoneNumber: userAccount.phoneNumber,
-        handicap: userAccount.handicap,
-        address: userAccount.address,
-        dateOfBirth: userAccount.dateOfBirth,
-        studentId: userAccount.studentId,
-        profileImage: (userAccount.profileImage != null && userAccount.profileImage!.isNotEmpty)
-            ? File(userAccount.profileImage!)
-            : null,
-        fcmToken: fcmToken,  // 새로운 FCM 토큰 서버에 저장
-      );
-      print('FCM 토큰이 서버에 업데이트되었습니다: $fcmToken');
-    }
-  } catch (e) {
-    print('FCM 토큰 가져오기 실패: $e');
-  }
-}
-*/
