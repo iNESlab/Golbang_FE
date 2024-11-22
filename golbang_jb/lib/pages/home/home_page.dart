@@ -20,13 +20,12 @@ import 'package:golbang/pages/profile/profile_screen.dart';
 import 'package:golbang/services/group_service.dart';
 import 'package:golbang/services/user_service.dart';
 import '../../repoisitory/secure_storage.dart';
-
+import 'package:golbang/pages/notification/notification_history_page.dart';
 
 import 'package:get/get.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
-
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -66,7 +65,14 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined, color: Colors.black),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationHistoryPage(),
+                ),
+              );
+            },
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined, color: Colors.black),

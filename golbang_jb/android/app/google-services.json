@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "1032223675274",
+    "project_id": "golbang-test-31a73",
+    "storage_bucket": "golbang-test-31a73.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1032223675274:android:2fce275b038dc8f2842e73",
+        "android_client_info": {
+          "package_name": "com.example.golbang"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6llRhlBC8bi1a40ozVDVgNhrEuz1LIN0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1032223675274:android:8a398adf74b1f19e842e73",
+        "android_client_info": {
+          "package_name": "com.ines.golbang"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD6llRhlBC8bi1a40ozVDVgNhrEuz1LIN0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

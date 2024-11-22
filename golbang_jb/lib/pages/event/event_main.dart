@@ -10,6 +10,7 @@ import '../../utils/date_utils.dart';
 import 'package:golbang/services/participant_service.dart';
 import 'package:golbang/services/event_service.dart';
 import 'event_detail.dart';
+import 'package:get/get.dart';
 
 class EventPage extends ConsumerStatefulWidget {
   const EventPage({super.key});
@@ -17,6 +18,7 @@ class EventPage extends ConsumerStatefulWidget {
   @override
   EventPageState createState() => EventPageState();
 }
+
 class EventPageState extends ConsumerState<EventPage> {
   late final ValueNotifier<List<Event>> _selectedEvents;
   DateTime _focusedDay = DateTime.now();
@@ -29,11 +31,42 @@ class EventPageState extends ConsumerState<EventPage> {
     hashCode: getHashCode,
   );
 
+  Future<void> _checkAndNavigateToEventDetail() async {
+    // Get.arguments에서 eventId 가져오기
+    var eventId = Get.arguments?['eventId'];
+
+    if (eventId != null) {
+      final storage = ref.read(secureStorageProvider);
+      final EventService eventService = EventService(storage);
+
+      try {
+        // 이벤트 상세 정보 가져오기
+        final event = await eventService.getEventDetails(eventId);
+        if (event != null) {
+          // UI 빌드 후 이벤트 상세 페이지로 이동
+          Get.offNamed('/home', arguments: {'eventId': null});
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => EventDetailPage(event: event),
+              ),
+            );
+          });
+        }
+      } catch (e) {
+        print('Error fetching event details: $e');
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
     _selectedDay = _focusedDay;
     _selectedEvents = ValueNotifier(_getUpcomingEvents());
+    // eventId 확인 및 상세 페이지로 이동
+    _checkAndNavigateToEventDetail();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showMostRecentEvent();
     });
