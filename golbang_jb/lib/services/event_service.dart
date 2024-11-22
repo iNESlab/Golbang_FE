@@ -266,4 +266,38 @@ class EventService {
       return null;
     }
   }
+  Future<Event?> getEventDetails(int eventId) async {
+    try {
+      // API URL 설정
+      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/');
+      final accessToken = await storage.readAccessToken(); // 저장소에서 액세스 토큰 가져오기
+
+      // API 요청
+      final response = await http.get(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken', // 액세스 토큰을 헤더에 포함
+        },
+      );
+
+      if (response.statusCode == 200) {
+        // 응답 데이터 파싱
+        final jsonData = jsonDecode(utf8.decode(response.bodyBytes))['data'];
+        print("이벤트 상세 조회 성공: $jsonData");
+
+        // JSON 데이터를 Event 객체로 변환
+        return Event.fromJson(jsonData);
+      } else {
+        // 오류 로그 출력
+        print('이벤트 상세 조회 실패: ${response.statusCode} - ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      // 예외 처리
+      print('Error occurred while fetching event details: $e');
+      return null;
+    }
+  }
+
 }

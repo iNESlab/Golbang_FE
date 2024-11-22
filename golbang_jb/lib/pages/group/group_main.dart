@@ -60,7 +60,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
     if (communityId != null) {
       final storage = ref.read(secureStorageProvider);
       final GroupService groupService = GroupService(storage);
-      final targetGroupId = Get.arguments?['communityId'];
+      var targetGroupId = Get.arguments?['communityId'];
 
       if (targetGroupId != null) {
         List<Group> group = await groupService.getGroupInfo(targetGroupId);
@@ -68,6 +68,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
         final communityImage = group[0].image ?? ''; // 이미지가 없을 때 대비
         final adminName = group[0].getAdminName(); // 관리자의 이름 가져오기
 
+        Get.offNamed('/home', arguments: {'communityId': null});
         // UI가 빌드된 후 CommunityMain 페이지로 이동
         WidgetsBinding.instance.addPostFrameCallback((_) {
           Navigator.push(

@@ -21,12 +21,12 @@ class LoginPage extends ConsumerStatefulWidget {
 class _LoginPageState extends ConsumerState<LoginPage> {
   // final TextEditingController _emailController = TextEditingController(text: 'yoonsh1004z');
   // final TextEditingController _passwordController = TextEditingController(text: 'todwnl@7706');
-  // final TextEditingController _emailController = TextEditingController(text: 'Kojungbeom');
-  // final TextEditingController _passwordController = TextEditingController(text: 'Golbang12!@');
+  final TextEditingController _emailController = TextEditingController(text: 'Kojungbeom');
+  final TextEditingController _passwordController = TextEditingController(text: 'Golbang12!@');
   // final TextEditingController _emailController = TextEditingController(text: 'hihello@email.com');
   // final TextEditingController _passwordController = TextEditingController(text: '1q2w3e4r!');
-  final TextEditingController _emailController = TextEditingController(text: 'gunoh928@gmail.com');
-  final TextEditingController _passwordController = TextEditingController(text: 'qwer1234!');
+  // final TextEditingController _emailController = TextEditingController(text: 'gunoh928@gmail.com');
+  // final TextEditingController _passwordController = TextEditingController(text: 'qwer1234!');
 
   @override
   Widget build(BuildContext context) {
