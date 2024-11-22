@@ -209,7 +209,8 @@ class UserService {
     String? address,
     String? studentId,
     File? profileImage, // 이미지 파일
-    String? fcmToken,
+    String? fcmToken
+
   }) async {
     try {
       // 액세스 토큰 불러오기

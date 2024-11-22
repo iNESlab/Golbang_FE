@@ -23,12 +23,41 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
   // Set the number of items per page as a configurable variable
   static const int itemsPerPage = 6;
 
+  // Future<void> _checkAndNavigateToCommunity() async {
+  //   final communityId = Get.arguments?['communityId'];
+  //
+  //   if (communityId != null) {
+  //
+  //     // groupService를 사용해 그룹 정보를 가져옴
+  //     final storage = ref.read(secureStorageProvider);
+  //     final GroupService groupService = GroupService(storage);
+  //     final targetGroupId = Get.arguments?['communityId'];
+  //
+  //     if (targetGroupId != null) {
+  //       List<Group> group = await groupService.getGroupInfo(targetGroupId);
+  //       final communityName = group[0].name;
+  //       final communityImage = group[0].image;
+  //
+  //       // UI가 빌드된 후 CommunityMain 페이지로 이동
+  //       WidgetsBinding.instance.addPostFrameCallback((_) {
+  //         Navigator.push(
+  //           context,
+  //           MaterialPageRoute(
+  //             builder: (context) => CommunityMain(
+  //               communityName: communityName,
+  //               communityImage: communityImage ?? '', // 이미지가 없을 때 대비
+  //             ),
+  //           ),
+  //         );
+  //       });
+  //     }
+  //   }
+  // }
+
   Future<void> _checkAndNavigateToCommunity() async {
     final communityId = Get.arguments?['communityId'];
 
     if (communityId != null) {
-
-      // groupService를 사용해 그룹 정보를 가져옴
       final storage = ref.read(secureStorageProvider);
       final GroupService groupService = GroupService(storage);
       final targetGroupId = Get.arguments?['communityId'];
@@ -36,7 +65,8 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
       if (targetGroupId != null) {
         List<Group> group = await groupService.getGroupInfo(targetGroupId);
         final communityName = group[0].name;
-        final communityImage = group[0].image;
+        final communityImage = group[0].image ?? ''; // 이미지가 없을 때 대비
+        final adminName = group[0].getAdminName(); // 관리자의 이름 가져오기
 
         // UI가 빌드된 후 CommunityMain 페이지로 이동
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -45,7 +75,8 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
             MaterialPageRoute(
               builder: (context) => CommunityMain(
                 communityName: communityName,
-                communityImage: communityImage ?? '', // 이미지가 없을 때 대비
+                communityImage: communityImage,
+                adminName: adminName,  // 관리자의 이름 전달
               ),
             ),
           );
@@ -53,6 +84,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
       }
     }
   }
+
 
   // Fetch groups once
   Future<void> _fetchGroups() async {
@@ -113,6 +145,8 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
                     builder: (context) => CommunityMain(
                       communityName: group.name,
                       communityImage: group.image!,
+                      adminName: group.getAdminName(),
+
                     ),
                   ),
                 );
