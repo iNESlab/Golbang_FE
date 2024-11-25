@@ -33,18 +33,18 @@ class EventPageState extends ConsumerState<EventPage> {
 
   Future<void> _checkAndNavigateToEventDetail() async {
     // Get.arguments에서 eventId 가져오기
-    var eventId = Get.arguments?['eventId'];
+    int? eventId = Get.arguments?['eventId'];
 
-    if (eventId != null) {
+    if (eventId != -1) {
       final storage = ref.read(secureStorageProvider);
       final EventService eventService = EventService(storage);
 
       try {
         // 이벤트 상세 정보 가져오기
-        final event = await eventService.getEventDetails(eventId);
+        final event = await eventService.getEventDetails(eventId!);
         if (event != null) {
           // UI 빌드 후 이벤트 상세 페이지로 이동
-          Get.offNamed('/home', arguments: {'eventId': null});
+          Get.arguments?['eventId'] = -1;
           WidgetsBinding.instance.addPostFrameCallback((_) {
             Navigator.push(
               context,
