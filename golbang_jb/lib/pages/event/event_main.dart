@@ -322,7 +322,7 @@ class EventPageState extends ConsumerState<EventPage> {
                             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
                           ),
                           const SizedBox(height: 8.0),
-                          Text('시간: ${event.startDateTime.hour}:${event.startDateTime.minute}'),
+                          Text('시간: ${event.startDateTime.hour}:${event.startDateTime.minute.toString().padLeft(2, '0')} ~ ${event.endDateTime.add(Duration(hours: 2)).hour}:${event.endDateTime.minute.toString().padLeft(2, '0')}'),
                           Text('인원수: 참석 ${event.participants.length}명'),
                           Text('장소: ${event.site}'),
                           Row(
