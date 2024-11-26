@@ -227,6 +227,17 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
             ],
           ),
         ),
+        SizedBox(height: 10),
+        Text(
+          '이벤트 페이지로 이동해 모임의 이벤트를 생성해보세요!',
+          style: TextStyle(
+            fontSize: 14,
+            color: Colors.grey[600],
+            fontWeight: FontWeight.w500,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 10),
         Divider(),
       ],
     );
