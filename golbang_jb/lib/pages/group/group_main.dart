@@ -55,20 +55,19 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
   // }
 
   Future<void> _checkAndNavigateToCommunity() async {
-    final communityId = Get.arguments?['communityId'];
+    int? communityId = Get.arguments?['communityId'];
 
-    if (communityId != null) {
+    if (communityId != -1) {
       final storage = ref.read(secureStorageProvider);
       final GroupService groupService = GroupService(storage);
-      var targetGroupId = Get.arguments?['communityId'];
+      List<Group> group = await groupService.getGroupInfo(communityId!);
 
-      if (targetGroupId != null) {
-        List<Group> group = await groupService.getGroupInfo(targetGroupId);
+      if (group != null) {
         final communityName = group[0].name;
         final communityImage = group[0].image ?? ''; // 이미지가 없을 때 대비
         final adminName = group[0].getAdminName(); // 관리자의 이름 가져오기
 
-        Get.offNamed('/home', arguments: {'communityId': null});
+        Get.arguments?['communityId'] = -1;
         // UI가 빌드된 후 CommunityMain 페이지로 이동
         WidgetsBinding.instance.addPostFrameCallback((_) {
           Navigator.push(
