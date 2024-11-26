@@ -137,12 +137,6 @@ class HomeContent extends ConsumerWidget {
 
     return Scaffold(
       body: FutureBuilder(
-        // future: Future.wait([
-        //   userService.getUserInfo(), // Fetch user info
-        //   eventService.getEventsForMonth(date: date), // Fetch events for the month
-        //   groupService.getUserGroups(), // Fetch user groups
-        //   statisticsService.fetchOverallStatistics(), // Fetch overall statistics
-        // ]),
         future: Future.wait([
           userService.getUserInfo(),
           eventService.getEventsForMonth(date: date),
