@@ -107,7 +107,7 @@ class ProfileScreen extends ConsumerWidget {
                 crossAxisCount: 2,
                 mainAxisSpacing: 12,
                 crossAxisSpacing: 12,
-                childAspectRatio: 1.8,
+                childAspectRatio: 1.5, // TODO: 소속된 그룹, 관리 그룹을 활성화할 때는 1.8 비율로 변경해야 함
                 children: [
                   _buildActionButton('내 정보', Icons.person, context, userAccount, () {
                     if (userAccount != null) {
@@ -130,12 +130,12 @@ class ProfileScreen extends ConsumerWidget {
                       ),
                     );
                   }),
-                  _buildActionButton('소속된 그룹', Icons.group, context, userAccount, () {
-                    // 소속된 그룹 버튼 동작 추가
-                  }),
-                  _buildActionButton('관리 그룹', Icons.admin_panel_settings, context, userAccount, () {
-                    // 관리 그룹 버튼 동작 추가
-                  }),
+                  // _buildActionButton('소속된 그룹', Icons.group, context, userAccount, () {
+                  //   // 소속된 그룹 버튼 동작 추가
+                  // }),
+                  // _buildActionButton('관리 그룹', Icons.admin_panel_settings, context, userAccount, () {
+                  //   // 관리 그룹 버튼 동작 추가
+                  // }),
                 ],
               ),
             ),
