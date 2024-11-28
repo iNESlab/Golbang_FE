@@ -35,4 +35,31 @@ class NotificationService {
       return [];
     }
   }
+
+  Future<bool> deleteNotification(String notificationId) async {
+    try {
+      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/notifications/$notificationId/');
+      final accessToken = await storage.readAccessToken();
+
+      // API 요청
+      final response = await http.delete(
+        url,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer $accessToken',
+        },
+      );
+
+      if (response.statusCode == 204) {
+        print("알림 삭제 성공: $notificationId");
+        return true;
+      } else {
+        print("알림 삭제 실패: ${response.statusCode} - ${response.body}");
+        return false;
+      }
+    } catch (e) {
+      print("Error deleting notification: $e");
+      return false;
+    }
+  }
 }

@@ -35,6 +35,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
         final communityName = group[0].name;
         final communityImage = group[0].image ?? ''; // 이미지가 없을 때 대비
         final adminName = group[0].getAdminName(); // 관리자의 이름 가져오기
+        final isAdmin = group[0].isAdmin;
 
         Get.arguments?['communityId'] = -1;
         // UI가 빌드된 후 CommunityMain 페이지로 이동
@@ -43,9 +44,11 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
             context,
             MaterialPageRoute(
               builder: (context) => CommunityMain(
+                communityID: group[0].id,
                 communityName: communityName,
                 communityImage: communityImage,
                 adminName: adminName,  // 관리자의 이름 전달
+                isAdmin: isAdmin,
               ),
             ),
           );
@@ -120,9 +123,11 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => CommunityMain(
+                          communityID: group.id,
                           communityName: group.name,
                           communityImage: group.image!,
                           adminName: group.getAdminName(),
+                          isAdmin: group.isAdmin,
                         ),
                       ),
                     );
