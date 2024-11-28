@@ -3,16 +3,22 @@ import 'package:golbang/api.dart';
 import 'package:golbang/global_config.dart';
 import 'package:golbang/pages/community/community_post.dart';
 import 'package:golbang/widgets/sections/post_item.dart';
+import 'admin_settings_page.dart';
+import 'member_settings_page.dart';
 
 class CommunityMain extends StatefulWidget {
+  final int communityID;
   final String communityName;
   final String communityImage;
   final String adminName;
+  final bool isAdmin; // 관리자 여부 추가
 
   CommunityMain({
+    required this.communityID,
     required this.communityName,
     required this.communityImage,
-    required this.adminName,  // 관리자 이름을 받도록 수정
+    required this.adminName,
+    required this.isAdmin, // 관리자 여부를 받도록 수정
   });
 
   @override
@@ -29,7 +35,7 @@ class _CommunityMainState extends State<CommunityMain> {
     final groupId = _getGroupId();
     posts = getGroupPosts(groupId)['data'];
     members = [];
-    //members = getGroupMembers(groupId)['data'];
+    // members = getGroupMembers(groupId)['data'];
 
     // 로그에 데이터 출력
     print('Posts: $posts');
@@ -37,8 +43,26 @@ class _CommunityMainState extends State<CommunityMain> {
   }
 
   int _getGroupId() {
-    //final group = GlobalConfig.groups.firstWhere((group) => group.name == widget.communityName);
+    // final group = GlobalConfig.groups.firstWhere((group) => group.name == widget.communityName);
     return 1;
+  }
+
+  void _onSettingsPressed() {
+    if (widget.isAdmin) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => AdminSettingsPage(clubId: widget.communityID,), // 관리자 페이지
+        ),
+      );
+    } else {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => MemberSettingsPage(clubId: widget.communityID,), // 멤버 설정 페이지
+        ),
+      );
+    }
   }
 
   @override
@@ -73,26 +97,14 @@ class _CommunityMainState extends State<CommunityMain> {
                   },
                 ),
               ),
-              // Positioned(
-              //   top: 40,
-              //   right: 60,
-              //   child: IconButton(
-              //     icon: Icon(Icons.edit, color: Colors.white),
-              //     onPressed: () {
-              //       // 글쓰기 버튼 클릭 시 동작
-              //     },
-              //   ),
-              // ),
-              // Positioned(
-              //   top: 40,
-              //   right: 10,
-              //   child: IconButton(
-              //     icon: Icon(Icons.settings, color: Colors.white),
-              //     onPressed: () {
-              //       // 설정 버튼 클릭 시 동작
-              //     },
-              //   ),
-              // ),
+              Positioned(
+                top: 40,
+                right: 10,
+                child: IconButton(
+                  icon: Icon(Icons.settings, color: Colors.white),
+                  onPressed: _onSettingsPressed, // 설정 버튼 클릭 시 동작
+                ),
+              ),
               Positioned(
                 bottom: 20,
                 left: 10,
@@ -121,12 +133,6 @@ class _CommunityMainState extends State<CommunityMain> {
                     ),
                   ],
                 ),
-                // ElevatedButton(
-                //   onPressed: () {
-                //     // 멤버 추가 버튼 클릭 시 동작
-                //   },
-                //   child: Text('멤버 추가'),
-                // ),
               ],
             ),
           ),
@@ -135,7 +141,7 @@ class _CommunityMainState extends State<CommunityMain> {
               itemCount: posts.length,
               itemBuilder: (context, index) {
                 final post = posts[index];
-                return ;
+                return Container(); // 필요한 경우 PostItem 사용
                 // return PostItem(
                 //   post: post,
                 //   onTap: () {

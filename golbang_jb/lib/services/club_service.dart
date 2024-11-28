@@ -41,4 +41,55 @@ class ClubService {
       throw Exception('Failed to load user profiles');
     }
   }
+  // 모임 삭제 함수 추가
+  Future<void> deleteClub(int clubId) async {
+    // 액세스 토큰 불러오기
+    final accessToken = await storage.readAccessToken();
+
+    // API URI 설정
+    var uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/clubs/$clubId/");
+
+    // 요청 헤더 설정
+    Map<String, String> headers = {
+      "Content-type": "application/json",
+      "Authorization": "Bearer $accessToken",
+    };
+
+    // DELETE 요청
+    var response = await http.delete(uri, headers: headers);
+
+    // 응답 확인
+    if (response.statusCode == 204) {
+      print("모임 삭제 성공: $clubId");
+    } else {
+      print("모임 삭제 실패: ${response.statusCode}");
+      throw Exception('Failed to delete club');
+    }
+  }
+
+  // 특정 모임 나가기
+  Future<void> leaveClub(int clubId) async {
+    // 액세스 토큰 불러오기
+    final accessToken = await storage.readAccessToken();
+
+    // API URI 설정
+    var uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/clubs/$clubId/leave/");
+
+    // 요청 헤더 설정
+    Map<String, String> headers = {
+      "Content-type": "application/json",
+      "Authorization": "Bearer $accessToken",
+    };
+
+    // DELETE 요청
+    var response = await http.delete(uri, headers: headers);
+
+    // 응답 확인
+    if (response.statusCode == 204) {
+      print("모임 나가기 성공: $clubId");
+    } else {
+      print("모임 나가기 실패: ${response.statusCode}");
+      throw Exception('Failed to leave club');
+    }
+  }
 }
