@@ -86,54 +86,62 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
     int pageCount = (filteredGroups.length / itemsPerPage).ceil();
 
     return List.generate(pageCount, (index) {
-      return GridView.count(
-        crossAxisCount: 3, // 한 줄에 3개의 아이템
-        childAspectRatio: 1, // 각 항목의 가로:세로 비율
-        mainAxisSpacing: 10, // 항목 간 세로 간격
-        crossAxisSpacing: 10, // 항목 간 가로 간격
-        padding: EdgeInsets.all(10), // GridView의 내부 패딩
-        children: filteredGroups
-            .skip(index * itemsPerPage) // 현재 페이지의 그룹 데이터를 가져옴
-            .take(itemsPerPage)
-            .map((group) {
-          return Center(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.black,
-                backgroundColor: Colors.grey[200],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 0,
-                padding: EdgeInsets.all(0),
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CommunityMain(
-                      communityName: group.name,
-                      communityImage: group.image!,
-                      adminName: group.getAdminName(),
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          double screenWidth = MediaQuery.of(context).size.width;
+          double screenHeight = MediaQuery.of(context).size.height;
 
+          // childAspectRatio를 화면 크기에 따라 설정
+          double aspectRatio = screenWidth / (screenHeight * 0.7);
+
+          return GridView.count(
+            crossAxisCount: 3, // 한 줄에 3개의 아이템
+            childAspectRatio: aspectRatio, // 가로:세로 비율
+            mainAxisSpacing: 10, // 항목 간 세로 간격
+            crossAxisSpacing: 10, // 항목 간 가로 간격
+            padding: EdgeInsets.all(5), // GridView의 내부 패딩
+            children: filteredGroups
+                .skip(index * itemsPerPage)
+                .take(itemsPerPage)
+                .map((group) {
+              return Center(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.black,
+                    backgroundColor: Colors.grey[200],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
+                    elevation: 0,
+                    padding: EdgeInsets.all(0),
                   ),
-                );
-              },
-              // GroupItem 위젯 사용
-              child: GroupItem(
-                image: group.image!, // 그룹 이미지 전달
-                label: group.name.length > 8
-                    ? group.name.substring(0, 8) + '...' // 그룹 이름 자르기
-                    : group.name,
-                isAdmin: group.isAdmin, // 관리자인지 여부 전달
-              ),
-            ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CommunityMain(
+                          communityName: group.name,
+                          communityImage: group.image!,
+                          adminName: group.getAdminName(),
+                        ),
+                      ),
+                    );
+                  },
+                  child: GroupItem(
+                    image: group.image!,
+                    label: group.name,
+                    isAdmin: group.isAdmin,
+                  ),
+                ),
+              );
+            }).toList(),
           );
-        }).toList(),
+        },
       );
     });
   }
+
+
 
 
 
@@ -195,14 +203,14 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
               SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(10.0),
-                height: 320, // 높이를 약간 늘려서 6개의 그룹을 표시할 공간 확보
+                height: MediaQuery.of(context).size.height * 0.48, // 화면 높이에 비례한 값
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Column(
                   children: [
-                    Expanded(
+                    Expanded( // 내부 콘텐츠가 공간을 적절히 차지하도록 확장
                       child: PageView(
                         controller: _pageController,
                         children: _buildGroupPages(),
@@ -221,6 +229,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
                   ],
                 ),
               ),
+
             ],
           ),
         ),
