@@ -60,9 +60,9 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
     try {
       final storage = ref.read(secureStorageProvider);
       final GroupService groupService = GroupService(storage);
-      List<Group> groups = await groupService.getUserGroups();
+      List<Group> groups = await groupService.getUserGroups(); // 백엔드에서 그룹 데이터 가져옴
       setState(() {
-        allGroups = groups;
+        allGroups = groups; // 그룹 데이터를 전체 리스트에 설정
         filteredGroups = groups; // 초기에는 모든 그룹 표시
         isLoading = false;
       });
@@ -87,13 +87,13 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
 
     return List.generate(pageCount, (index) {
       return GridView.count(
-        crossAxisCount: 3,
-        childAspectRatio: 1,
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-        padding: EdgeInsets.all(10),
+        crossAxisCount: 3, // 한 줄에 3개의 아이템
+        childAspectRatio: 1, // 각 항목의 가로:세로 비율
+        mainAxisSpacing: 10, // 항목 간 세로 간격
+        crossAxisSpacing: 10, // 항목 간 가로 간격
+        padding: EdgeInsets.all(10), // GridView의 내부 패딩
         children: filteredGroups
-            .skip(index * itemsPerPage)
+            .skip(index * itemsPerPage) // 현재 페이지의 그룹 데이터를 가져옴
             .take(itemsPerPage)
             .map((group) {
           return Center(
@@ -120,17 +120,13 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
                   ),
                 );
               },
-              child: Column(
-                children: [
-                  Expanded(
-                    child: GroupItem(
-                      image: group.image!,
-                      label: group.name.length > 5
-                          ? group.name.substring(0, 5) + '...'
-                          : group.name,
-                    ),
-                  ),
-                ],
+              // GroupItem 위젯 사용
+              child: GroupItem(
+                image: group.image!, // 그룹 이미지 전달
+                label: group.name.length > 8
+                    ? group.name.substring(0, 8) + '...' // 그룹 이름 자르기
+                    : group.name,
+                isAdmin: group.isAdmin, // 관리자인지 여부 전달
               ),
             ),
           );
@@ -138,6 +134,8 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
       );
     });
   }
+
+
 
   @override
   Widget build(BuildContext context) {
