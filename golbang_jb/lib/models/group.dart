@@ -7,6 +7,7 @@ class Group {
   final String? image;
   final List<Member> members;
   final DateTime createdAt;
+  final bool isAdmin;
 
   Group({
     required this.id,
@@ -15,6 +16,7 @@ class Group {
     this.image,
     required this.members,
     required this.createdAt,
+    required this.isAdmin, // 필수 필드로 설정
   });
 
   factory Group.fromJson(Map<String, dynamic> json) {
@@ -27,6 +29,7 @@ class Group {
           .map((member) => Member.fromJson(member))
           .toList(),
       createdAt: DateTime.parse(json['created_at']),
+      isAdmin: json['is_admin'] ?? false, // isAdmin 필드를 JSON에서 가져옴
     );
   }
 

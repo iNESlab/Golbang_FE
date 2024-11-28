@@ -60,9 +60,9 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
     try {
       final storage = ref.read(secureStorageProvider);
       final GroupService groupService = GroupService(storage);
-      List<Group> groups = await groupService.getUserGroups();
+      List<Group> groups = await groupService.getUserGroups(); // 백엔드에서 그룹 데이터 가져옴
       setState(() {
-        allGroups = groups;
+        allGroups = groups; // 그룹 데이터를 전체 리스트에 설정
         filteredGroups = groups; // 초기에는 모든 그룹 표시
         isLoading = false;
       });
@@ -86,58 +86,64 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
     int pageCount = (filteredGroups.length / itemsPerPage).ceil();
 
     return List.generate(pageCount, (index) {
-      return GridView.count(
-        crossAxisCount: 3,
-        childAspectRatio: 1,
-        mainAxisSpacing: 10,
-        crossAxisSpacing: 10,
-        padding: EdgeInsets.all(10),
-        children: filteredGroups
-            .skip(index * itemsPerPage)
-            .take(itemsPerPage)
-            .map((group) {
-          return Center(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                foregroundColor: Colors.black,
-                backgroundColor: Colors.grey[200],
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                elevation: 0,
-                padding: EdgeInsets.all(0),
-              ),
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => CommunityMain(
-                      communityName: group.name,
-                      communityImage: group.image!,
-                      adminName: group.getAdminName(),
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          double screenWidth = MediaQuery.of(context).size.width;
+          double screenHeight = MediaQuery.of(context).size.height;
 
+          // childAspectRatio를 화면 크기에 따라 설정
+          double aspectRatio = screenWidth / (screenHeight * 0.7);
+
+          return GridView.count(
+            crossAxisCount: 3, // 한 줄에 3개의 아이템
+            childAspectRatio: aspectRatio, // 가로:세로 비율
+            mainAxisSpacing: 10, // 항목 간 세로 간격
+            crossAxisSpacing: 10, // 항목 간 가로 간격
+            padding: EdgeInsets.all(5), // GridView의 내부 패딩
+            children: filteredGroups
+                .skip(index * itemsPerPage)
+                .take(itemsPerPage)
+                .map((group) {
+              return Center(
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    foregroundColor: Colors.black,
+                    backgroundColor: Colors.grey[200],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
                     ),
+                    elevation: 0,
+                    padding: EdgeInsets.all(0),
                   ),
-                );
-              },
-              child: Column(
-                children: [
-                  Expanded(
-                    child: GroupItem(
-                      image: group.image!,
-                      label: group.name.length > 5
-                          ? group.name.substring(0, 5) + '...'
-                          : group.name,
-                    ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CommunityMain(
+                          communityName: group.name,
+                          communityImage: group.image!,
+                          adminName: group.getAdminName(),
+                        ),
+                      ),
+                    );
+                  },
+                  child: GroupItem(
+                    image: group.image!,
+                    label: group.name,
+                    isAdmin: group.isAdmin,
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            }).toList(),
           );
-        }).toList(),
+        },
       );
     });
   }
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -197,14 +203,14 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
               SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(10.0),
-                height: 320, // 높이를 약간 늘려서 6개의 그룹을 표시할 공간 확보
+                height: MediaQuery.of(context).size.height * 0.48, // 화면 높이에 비례한 값
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Column(
                   children: [
-                    Expanded(
+                    Expanded( // 내부 콘텐츠가 공간을 적절히 차지하도록 확장
                       child: PageView(
                         controller: _pageController,
                         children: _buildGroupPages(),
@@ -223,6 +229,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
                   ],
                 ),
               ),
+
             ],
           ),
         ),

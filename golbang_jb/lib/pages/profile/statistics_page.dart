@@ -183,6 +183,11 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
       final String formattedEndDate = "${endDate!.year}-${endDate!.month.toString().padLeft(2, '0')}-${endDate!.day.toString().padLeft(2, '0')}";
 
       try {
+        setState(() {
+          overallStatistics = null; // 전체 통계 초기화
+          yearStatistics = null; // 연도별 통계 초기화
+        });
+
         print("Loading period statistics from $formattedStartDate to $formattedEndDate");
         periodStatistics = await statisticsService.fetchPeriodStatistics(formattedStartDate, formattedEndDate);
 
@@ -220,7 +225,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
         setState(() {
           isLoading = true;
           selectedYear = title.replaceAll('년', '');
-          // 연도별 통계를 선택할 때 기간 선택 데이터를 초기화합니다.
+          // 연도별 통계를 선택할 때 기간 선택 데이터를 초기화
           startDate = null;
           endDate = null;
           periodStatistics = null; // 기간 통계 데이터를 초기화
@@ -255,7 +260,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
           _buildStatCard('베스트 스코어', overallStatistics?.bestScore.toString() ?? 'N/A', Colors.yellow),
         ],
       );
-    } else if (yearStatistics != null) {
+    } else if (selectedYear != '' && yearStatistics != null) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -318,23 +323,28 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: groups.map((group) {
-                ClubStatistics? ranking = groupRankings[group.id];
-                return GestureDetector(
-                  onTap: () {
-                    _loadEventsForGroup(group.id); // 클릭된 그룹의 이벤트 리스트 로드
-                  },
-                  child: _buildClubCircle(
-                    group.name,
-                    group.image,
-                    ranking != null && ranking.ranking.totalRank != null
-                        ? ranking.ranking.totalRank.toString()
-                        : "랭킹 불러오는 중...",
-                  ),
-                );
-              }).toList(),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal, // 가로 스크롤 활성화
+              child: Row(
+                children: groups.map((group) {
+                  ClubStatistics? ranking = groupRankings[group.id];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0), // child 간 가로 간격 추가
+                    child: GestureDetector(
+                      onTap: () {
+                        _loadEventsForGroup(group.id); // 클릭된 그룹의 이벤트 리스트 로드
+                      },
+                      child: _buildClubCircle(
+                        group.name,
+                        group.image,
+                        ranking != null && ranking.ranking.totalRank != null
+                            ? ranking.ranking.totalRank.toString()
+                            : "랭킹 불러오는 중...",
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
             ),
           ],
         ),
