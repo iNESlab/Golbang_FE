@@ -183,6 +183,11 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
       final String formattedEndDate = "${endDate!.year}-${endDate!.month.toString().padLeft(2, '0')}-${endDate!.day.toString().padLeft(2, '0')}";
 
       try {
+        setState(() {
+          overallStatistics = null; // 전체 통계 초기화
+          yearStatistics = null; // 연도별 통계 초기화
+        });
+
         print("Loading period statistics from $formattedStartDate to $formattedEndDate");
         periodStatistics = await statisticsService.fetchPeriodStatistics(formattedStartDate, formattedEndDate);
 
@@ -220,7 +225,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
         setState(() {
           isLoading = true;
           selectedYear = title.replaceAll('년', '');
-          // 연도별 통계를 선택할 때 기간 선택 데이터를 초기화합니다.
+          // 연도별 통계를 선택할 때 기간 선택 데이터를 초기화
           startDate = null;
           endDate = null;
           periodStatistics = null; // 기간 통계 데이터를 초기화
@@ -255,7 +260,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
           _buildStatCard('베스트 스코어', overallStatistics?.bestScore.toString() ?? 'N/A', Colors.yellow),
         ],
       );
-    } else if (yearStatistics != null) {
+    } else if (selectedYear != '' && yearStatistics != null) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
