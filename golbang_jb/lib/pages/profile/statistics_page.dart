@@ -318,23 +318,28 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: groups.map((group) {
-                ClubStatistics? ranking = groupRankings[group.id];
-                return GestureDetector(
-                  onTap: () {
-                    _loadEventsForGroup(group.id); // 클릭된 그룹의 이벤트 리스트 로드
-                  },
-                  child: _buildClubCircle(
-                    group.name,
-                    group.image,
-                    ranking != null && ranking.ranking.totalRank != null
-                        ? ranking.ranking.totalRank.toString()
-                        : "랭킹 불러오는 중...",
-                  ),
-                );
-              }).toList(),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal, // 가로 스크롤 활성화
+              child: Row(
+                children: groups.map((group) {
+                  ClubStatistics? ranking = groupRankings[group.id];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0), // child 간 가로 간격 추가
+                    child: GestureDetector(
+                      onTap: () {
+                        _loadEventsForGroup(group.id); // 클릭된 그룹의 이벤트 리스트 로드
+                      },
+                      child: _buildClubCircle(
+                        group.name,
+                        group.image,
+                        ranking != null && ranking.ranking.totalRank != null
+                            ? ranking.ranking.totalRank.toString()
+                            : "랭킹 불러오는 중...",
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
             ),
           ],
         ),
