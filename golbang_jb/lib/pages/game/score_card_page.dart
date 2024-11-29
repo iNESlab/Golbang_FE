@@ -30,6 +30,7 @@ class ScoreCardPage extends ConsumerStatefulWidget {
 class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
   int _currentPageIndex = 0;
   late final WebSocketChannel _channel;
+  late final Map<int, String> _participantNames; // participantId를 키로 하는 맵
 
   late final int _myParticipantId;
   late final List<Participant> _myGroupParticipants;
@@ -38,10 +39,12 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
   // 입력 필드의 포커스를 감지하기 위한 FocusNode들을 저장하는 맵
   final Map<int, List<FocusNode>> _focusNodes = {};
   late final ClubProfile _clubProfile;
+  final Map<int, List<TextEditingController>> _controllers = {}; // TextEditingController를 참가자별로 관리
 
   @override
   initState() {
     super.initState();
+    _initializeParticipantNames(); // 맵 초기화
     this._myParticipantId = widget.event.myParticipantId;
     this._myGroupParticipants = widget.event.participants.where((p)=>
     p.groupType==widget.event.memberGroup).toList();
@@ -49,6 +52,15 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
     _initTeamMembers();
     _initWebSocket();
   }
+  void _initializeParticipantNames() {
+    _participantNames = {};
+    for (var participant in widget.event.participants) {
+      String name = participant.member?.name ?? 'N/A';
+      print("이름: $name"); // 이름 출력
+      _participantNames[participant.participantId] = name; // 맵에 추가
+    }
+  }
+
 
   // myGroupParticipants를 이용한 초기화
   void _initTeamMembers() {
@@ -57,7 +69,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
     for (var participant in _myGroupParticipants) {
       ScoreCard scoreCard = ScoreCard(
         participantId: participant.participantId,
-        userName: participant.member?.name ?? 'Unknown',
+        userName: _participantNames[participant.participantId],
         teamType: participant.teamType,
         groupType: participant.groupType,
         isGroupWin: false,
@@ -69,9 +81,14 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
 
       _teamMembers.add(scoreCard);
       _scorecard[participant.participantId] = List.from(initialScores);
-
+      // TextEditingController 초기화
+      _controllers[participant.participantId] = List.generate(
+        18,
+            (index) => TextEditingController(text: "0"),
+      );
       // 각 참가자별로 18개의 FocusNode를 생성하여 저장
       _focusNodes[participant.participantId] = List.generate(18, (_) => FocusNode());
+
     }
     setState(() {});
   }
@@ -101,33 +118,108 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
 
   @override
   void dispose() {
+    _controllers.forEach((_, controllers) => controllers.forEach((controller) => controller.dispose()));
     _focusNodes.forEach((_, nodes) => nodes.forEach((node) => node.dispose()));
     _channel.sink.close(); // WebSocket 연결 종료
     super.dispose();
   }
 
   void _handleWebSocketData(String data) {
-    // 데이터를 파싱
-    var parsedData = jsonDecode(data);
-    // 만약 데이터가 리스트 형식이면 처리
-    if (parsedData is List) {
-      for (var entry in parsedData) {
-        ScoreCard scoreCard = _parseScoreCard(entry);
+    try {
+      // 데이터를 파싱
+      var parsedData = jsonDecode(data);
 
-        setState(() {
-          _updateTeamMember(scoreCard);
-          _scorecard[scoreCard.participantId] = scoreCard.scores ?? [];
-        });
+      // 데이터가 리스트인지 확인
+      if (parsedData is List) {
+        for (var entry in parsedData) {
+          _processScoreCardEntry(entry);
+        }
       }
+      // 데이터가 단일 객체일 경우
+      else if (parsedData is Map<String, dynamic>) {
+        _processSingleScoreCardEntry(parsedData);
+      } else {
+        print("Unexpected data format: 데이터 형식이 List나 Map이 아닙니다.");
+      }
+    } catch (e) {
+      print("WebSocket 데이터 처리 중 오류 발생: $e");
     }
-    // 만약 데이터가 Map 형식이면 처리
-    else print("Unexpected data format: response가 List가 아닙니다.");
   }
+  void _processSingleScoreCardEntry(Map<String, dynamic> entry) {
+    try {
+      int participantId = int.parse(entry['participant_id'].toString());
+      String userName = _participantNames[participantId]??'Unknown'; // 맵에서 이름 참조
+      int groupType = int.parse(entry['group_type'].toString());
+      String teamType = entry['team_type'];
+      bool isGroupWin = entry['is_group_win'];
+      bool isGroupWinHandicap = entry['is_group_win_handicap'];
+      int sumScore = entry['sum_score'] ?? 0;
+      int handicapScore = entry['handicap_score'] ?? 0;
+
+      int holeNumber = entry['hole_number']; // 단일 객체에는 hole_number와 score가 포함됨
+      int score = entry['score'];
+
+      HoleScore holeScore = HoleScore(holeNumber: holeNumber, score: score);
+
+      // 기존 참가자 정보 업데이트
+      setState(() {
+        // 해당 참가자의 점수 카드가 이미 존재한다면 업데이트
+        if (_scorecard.containsKey(participantId)) {
+          _scorecard[participantId]![holeNumber - 1] = holeScore;
+          _controllers[participantId]?[holeNumber - 1].text = score.toString(); // 컨트롤러 값 업데이트
+        } else {
+          // 새로운 참가자라면 초기화 후 추가
+          _scorecard[participantId] = List.generate(18, (index) => HoleScore(holeNumber: index + 1, score: 0));
+          _scorecard[participantId]![holeNumber - 1] = holeScore;
+        }
+
+        // 팀 멤버 정보 업데이트
+        _updateTeamMember(
+          ScoreCard(
+            participantId: participantId,
+            userName: userName,
+            teamType: teamType,
+            groupType: groupType,
+            isGroupWin: isGroupWin,
+            isGroupWinHandicap: isGroupWinHandicap,
+            sumScore: sumScore,
+            handicapScore: handicapScore,
+            scores: _scorecard[participantId],
+          ),
+        );
+      });
+    } catch (e) {
+      print("단일 ScoreCard 처리 중 오류 발생: $e");
+    }
+  }
+
+
+  void _processScoreCardEntry(Map<String, dynamic> entry) {
+    try {
+      // ScoreCard 객체 생성
+      ScoreCard scoreCard = _parseScoreCard(entry);
+
+      setState(() {
+        _updateTeamMember(scoreCard); // 팀 멤버 업데이트
+        _scorecard[scoreCard.participantId] = scoreCard.scores ?? [];
+        // TextEditingController 값도 업데이트
+        if (_controllers.containsKey(scoreCard.participantId)) {
+          for (var holeScore in scoreCard.scores ?? []) {
+            _controllers[scoreCard.participantId]?[holeScore.holeNumber - 1]?.text =
+                holeScore.score.toString();
+          }
+        }
+      });
+    } catch (e) {
+      print("ScoreCard 처리 중 오류 발생: $e");
+    }
+  }
+
 
 // ScoreCard 객체를 생성하는 함수
   ScoreCard _parseScoreCard(Map<String, dynamic> entry) {
     int participantId = int.parse(entry['participant_id'].toString());
-    String userName = entry['user_name'] ?? 'Unknown';
+    String userName = _participantNames[participantId]??'Unknown'; // 맵에서 이름 참조
     int groupType = int.parse(entry['group_type'].toString());
     String teamType = entry['team_type'];
     bool isGroupWin = entry['is_group_win'];
@@ -353,7 +445,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
     return TableRow(
       children: [
         _buildTableHeaderCell('홀'),
-        for (ScoreCard member in _teamMembers) _buildTableHeaderCell(member.userName ?? 'Unknown'),
+        for (ScoreCard member in _teamMembers) _buildTableHeaderCell(member.userName??'Unknown'),
         // _buildTableHeaderCell('니어/롱기'),
       ],
     );
@@ -380,7 +472,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
           child: Center(
             child: Text(
               (holeIndex + 1).toString(),
-              style: TextStyle(color: Colors.white),
+              style: const TextStyle(color: Colors.white),
               textAlign: TextAlign.center,
             ),
           ),
@@ -391,7 +483,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
               padding: const EdgeInsets.all(8.0),
               child: Center(
                 child: TextFormField(
-                  initialValue: _scorecard[member.participantId]![holeIndex].score.toString(),
+                  controller: _controllers[member.participantId]?[holeIndex], // 컨트롤러 연결
                   style: TextStyle(color: Colors.white),
                   textAlign: TextAlign.center,
                   keyboardType: TextInputType.number,
@@ -408,7 +500,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
                     final score = int.tryParse(value) ?? 0;
                     _updateScore(member.participantId, holeIndex + 1, score);
                   },
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     isDense: true,
                     contentPadding: EdgeInsets.symmetric(vertical: 4.0),
                     border: InputBorder.none,
@@ -445,7 +537,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
       child: Table(
         border: TableBorder.all(color: Colors.grey),
         children: [
-          _buildSummaryTableRow(['', ..._teamMembers.map((m) => m.userName ?? 'unknown').toList()]),
+          _buildSummaryTableRow(['', ..._teamMembers.map((m) => m.userName ?? 'N/A').toList()]),
           _buildSummaryTableRow(['전반', ...frontNine.map((e) => e.toString()).toList()]),
           _buildSummaryTableRow(['후반', ...backNine.map((e) => e.toString()).toList()]),
           _buildSummaryTableRow(['스코어', ...totalScores.map((e) => e.toString()).toList()]),
