@@ -32,7 +32,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
   GameMode? _selectedGameMode;
   List<ClubMemberProfile> _selectedParticipants = [];
   late ClubService _clubService;
-  bool _isButtonEnabled = false;
+  bool _isButtonEnabled = true;
   final Map<String, LatLng> _locationCoordinates = {
     "Jagorawi Golf & Country Club": LatLng(-6.454673, 106.876867),
     "East Point Golf Club": LatLng(17.763526, 83.301727),
@@ -112,6 +112,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
         _locationController.text.isNotEmpty &&
         _startDateController.text.isNotEmpty &&
         _endDateController.text.isNotEmpty &&
+        _selectedParticipants.isNotEmpty &&
         _selectedLocation != null &&
         _selectedClub != null &&
         _selectedGameMode != null;
@@ -130,6 +131,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
               (club) => club.id == widget.event.memberGroup,
           orElse: () => clubs.first,
         );
+        _validateForm();
       });
     } catch (e) {
       print("Failed to load clubs: $e");
@@ -184,6 +186,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
       setState(() {
         _startTimeController.text = pickedTime.format(context);
       });
+      _validateForm();
     }
   }
 
@@ -275,8 +278,8 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                   setState(() {
                     _selectedClub = value;
                     _selectedParticipants = []; // 클럽 변경 시 참여자 초기화
-                    _validateForm();
                   });
+                  _validateForm();
                 },
                 items: _clubs.map<DropdownMenuItem<Club>>((Club club) {
                   return DropdownMenuItem<Club>(
@@ -444,6 +447,9 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                 child: ElevatedButton(
                   onPressed: _isButtonEnabled
                       ? () {
+                    _validateForm();
+                    if (!_isButtonEnabled) return;
+
                     final DateTime startDate = DateTime.parse(_startDateController.text);
                     final TimeOfDay startTime = _parseTimeOfDay(_startTimeController.text);
                     final DateTime startDateTime = _combineDateAndTime(startDate, startTime);
@@ -478,7 +484,9 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                       : null,
                   child: Text('다음'),
                   style: ElevatedButton.styleFrom(
+                    foregroundColor: _isButtonEnabled ? Colors.white : Colors.black54,
                     minimumSize: Size(double.infinity, 50),
+                    backgroundColor: _isButtonEnabled ? Colors.teal : Colors.grey,
                   ),
                 ),
               ),

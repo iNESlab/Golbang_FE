@@ -30,9 +30,11 @@ class GroupsSection extends StatelessWidget {
                     context,
                     MaterialPageRoute(
                       builder: (context) => CommunityMain(
+                        communityID: group.id,
                         communityName: group.name,
                         communityImage: group.image!,
                         adminName: group.getAdminName(),
+                        isAdmin: group.isAdmin,
                       ),
                     ),
                   );

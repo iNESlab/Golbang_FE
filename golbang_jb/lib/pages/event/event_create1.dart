@@ -10,6 +10,8 @@ import 'event_create2.dart';
 import 'widgets/location_search_dialog.dart';
 import 'widgets/participant_dialog.dart';
 import '../../models/profile/member_profile.dart';
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz;
 
 class EventsCreate1 extends ConsumerStatefulWidget {
   final DateTime? startDay;
@@ -52,6 +54,11 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
   @override
   void initState() {
     super.initState();
+
+    // Timezone 데이터 초기화 및 Asia/Seoul로 설정
+    tz.initializeTimeZones();
+    tz.setLocalLocation(tz.getLocation('Asia/Seoul')); // 한국 시간대로 설정
+
     // widget.startDay를 날짜 포맷을 사용하여 문자열로 변환
     String? formattedDate = widget.startDay != null
         ? DateFormat('yyyy-MM-dd').format(widget.startDay!)
@@ -62,6 +69,13 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
     _clubService = ClubService(ref.read(secureStorageProvider));
     _fetchClubs();
     _setupListeners();
+  }
+
+  // 날짜와 시간을 한국 시간대로 변환하는 메서드 추가
+  DateTime _convertToKoreaTime(DateTime date, TimeOfDay time) {
+    final DateTime localTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    final tz.TZDateTime koreaTime = tz.TZDateTime.from(localTime, tz.getLocation('Asia/Seoul'));
+    return koreaTime.toLocal(); // 한국 시간대로 변환
   }
 
   void _setupListeners() {
@@ -389,8 +403,8 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                       ? () {
                     final DateTime startDate = DateTime.parse(_startDateController.text);
                     final TimeOfDay startTime = _parseTimeOfDay(_startTimeController.text);
-                    final DateTime startDateTime = _combineDateAndTime(startDate, startTime);
-                    final DateTime endDateTime = _combineDateAndTime(DateTime.parse(_endDateController.text), _fixedTime);
+                    final DateTime startDateTime = _convertToKoreaTime(startDate, startTime);
+                    final DateTime endDateTime = _convertToKoreaTime(DateTime.parse(_endDateController.text), _fixedTime);
 
                     Navigator.push(
                       context,

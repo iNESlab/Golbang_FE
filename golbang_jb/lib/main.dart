@@ -19,6 +19,10 @@ import 'repoisitory/secure_storage.dart';
 import 'package:golbang/provider/user/user_service_provider.dart';
 import 'services/user_service.dart';
 
+// timezone 패키지 추가
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/standalone.dart' as tz;
+
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
 FlutterLocalNotificationsPlugin();
 
@@ -40,6 +44,11 @@ Future<void> main() async {
       .resolvePlatformSpecificImplementation<
       AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
+
+  // timezone 데이터 초기화 및 한국 시간 설정
+  tz.initializeTimeZones(); // 최신 시간대 데이터 로드
+  tz.setLocalLocation(tz.getLocation('Asia/Seoul')); // 한국 시간대로 설정
+  print("Timezone set to: Asia/Seoul");
 
   initializeDateFormatting().then((_) {
     runApp(

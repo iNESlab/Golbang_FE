@@ -134,10 +134,20 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
             Navigator.pop(context);
           },
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.refresh),
+            color: Colors.white,
+            onPressed: () async {
+              // 새로고침 버튼 클릭 시 기본 정렬로 갱신
+              await _changeSort(_handicapOn ? 'handicap_score' : 'sum_score');
+            },
+          ),
+        ],
       ),
       backgroundColor: Colors.black,
       body: _players.isEmpty
-          ? Center(
+          ? const Center(
               child: Text(
                   '스코어를 기록한 참가자가 없습니다.',
                   style: TextStyle(color: Colors.white)
@@ -205,7 +215,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.white,
                 ),
-                child: Text(
+                child: const Text(
                   '스코어카드 가기',
                   style: TextStyle(color: Colors.grey, fontSize: 14),
                 ),
@@ -256,7 +266,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
   Widget _buildHandicapToggle() {
     return Column(
       children: [
-        Text(
+        const Text(
           'Handicap',
           style: TextStyle(color: Colors.white, fontSize: 12),
         ),
@@ -317,7 +327,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
                   color: Colors.blue,
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Text(
+                child: const Text(
                   'Me',
                   style: TextStyle(color: Colors.white, fontSize: 12),
                 ),

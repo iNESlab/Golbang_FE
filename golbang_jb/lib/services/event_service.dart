@@ -285,7 +285,6 @@ class EventService {
         // 응답 데이터 파싱
         final jsonData = jsonDecode(utf8.decode(response.bodyBytes))['data'];
         print("이벤트 상세 조회 성공: $jsonData");
-
         // JSON 데이터를 Event 객체로 변환
         return Event.fromJson(jsonData);
       } else {

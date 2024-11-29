@@ -21,7 +21,7 @@ import 'package:golbang/services/statistics_service.dart';
 import '../../repoisitory/secure_storage.dart';
 
 import 'package:golbang/pages/notification/notification_history_page.dart';
-
+import 'package:get/get.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -35,6 +35,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _selectedIndex = Get.arguments?['initialIndex'] ?? 0;
   }
 
   static final List<Widget> _widgetOptions = <Widget>[
@@ -137,12 +138,6 @@ class HomeContent extends ConsumerWidget {
 
     return Scaffold(
       body: FutureBuilder(
-        // future: Future.wait([
-        //   userService.getUserInfo(), // Fetch user info
-        //   eventService.getEventsForMonth(date: date), // Fetch events for the month
-        //   groupService.getUserGroups(), // Fetch user groups
-        //   statisticsService.fetchOverallStatistics(), // Fetch overall statistics
-        // ]),
         future: Future.wait([
           userService.getUserInfo(),
           eventService.getEventsForMonth(date: date),

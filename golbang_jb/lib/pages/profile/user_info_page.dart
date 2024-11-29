@@ -116,26 +116,15 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
                   backgroundColor: Colors.grey[300],
                   backgroundImage: _imageFile != null
                       ? FileImage(File(_imageFile!.path))
-                      : (_userAccount.profileImage != null && _userAccount.profileImage!.isNotEmpty
+                      : (_userAccount.profileImage != null &&
+                      _userAccount.profileImage!.isNotEmpty
                       ? NetworkImage(_userAccount.profileImage!) as ImageProvider
                       : null),
-                  child: (_imageFile == null && (_userAccount.profileImage == null || _userAccount.profileImage!.isEmpty))
+                  child: (_imageFile == null &&
+                      (_userAccount.profileImage == null ||
+                          _userAccount.profileImage!.isEmpty))
                       ? Icon(Icons.person, size: 50, color: Colors.white)
                       : null,
-                ),
-
-                // 오른쪽 위에 [x] 아이콘 추가
-                Positioned(
-                  right: 0,
-                  top: 0,
-                  child: GestureDetector(
-                    onTap: _removeImage, // 이미지를 제거하는 함수
-                    child: CircleAvatar(
-                      backgroundColor: Colors.red,
-                      radius: 12,
-                      child: Icon(Icons.close, color: Colors.white, size: 15),
-                    ),
-                  ),
                 ),
               ],
             ),
@@ -143,13 +132,12 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
           const SizedBox(height: 5),
           Center(
             child: TextButton(
-              onPressed: _pickImage,
+              onPressed: _showProfileImageOptions, // 수정된 팝업 메뉴 함수 호출
               child: const Text(
                 '프로필 이미지 변경',
                 style: TextStyle(color: Colors.blue),
               ),
             ),
-
           ),
           const SizedBox(height: 10),
           _buildEditableListTile('아이디', _userAccount.userId, false),
@@ -270,6 +258,41 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
               ),
             );
           },
+        );
+      },
+    );
+  }
+
+  void _showProfileImageOptions() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(Icons.photo_library),
+                title: const Text('앨범에서 사진/동영상 선택'),
+                onTap: () {
+                  Navigator.pop(context); // 팝업 닫기
+                  _pickImage(); // 이미지 선택 함수 호출
+                },
+              ),
+              if (_userAccount.profileImage != null &&
+                  _userAccount.profileImage!.isNotEmpty)
+                ListTile(
+                  leading: const Icon(Icons.restore),
+                  title: const Text('기본 이미지 적용'),
+                  onTap: () {
+                    Navigator.pop(context); // 팝업 닫기
+                    _removeImage(); // 기본 이미지 적용 (프로필 이미지 제거)
+                  },
+                ),
+            ],
+          ),
         );
       },
     );
