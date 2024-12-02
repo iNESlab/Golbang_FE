@@ -205,7 +205,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
         // TextEditingController 값도 업데이트
         if (_controllers.containsKey(scoreCard.participantId)) {
           for (var holeScore in scoreCard.scores ?? []) {
-            _controllers[scoreCard.participantId]?[holeScore.holeNumber - 1]?.text =
+            _controllers[scoreCard.participantId]?[holeScore.holeNumber - 1].text =
                 holeScore.score.toString();
           }
         }
@@ -391,7 +391,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey[800],
                   ),
-                  child: Text(
+                  child: const Text(
                     '전체 현황 조회',
                     style: TextStyle(color: Colors.white)
                   ),
@@ -408,27 +408,27 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
     );
   }
 
-  Widget _buildRankIndicator(String title, String value, Color color) {
-    return Container(
-      padding: EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: Column(
-        children: [
-          Text(title, style: TextStyle(color: Colors.white, fontSize: 12)),
-          Text(value, style: TextStyle(color: Colors.white, fontSize: 14)),
-        ],
-      ),
-    );
-  }
+  // Widget _buildRankIndicator(String title, String value, Color color) {
+  //   return Container(
+  //     padding: const EdgeInsets.all(8),
+  //     decoration: BoxDecoration(
+  //       color: color,
+  //       borderRadius: BorderRadius.circular(8),
+  //     ),
+  //     child: Column(
+  //       children: [
+  //         Text(title, style: const TextStyle(color: Colors.white, fontSize: 12)),
+  //         Text(value, style: const TextStyle(color: Colors.white, fontSize: 14)),
+  //       ],
+  //     ),
+  //   );
+  // }
 
   Widget _buildScoreTable(int startHole, int endHole) {
     return SingleChildScrollView(
       child: Container(
         color: Colors.black,
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Table(
           border: TableBorder.all(color: Colors.grey),
           children: [
@@ -457,7 +457,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
       child: Center(
         child: Text(
           title,
-          style: TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white),
           textAlign: TextAlign.center,
         ),
       ),
@@ -510,8 +510,8 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
               ),
             );
           } else {
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
+            return const Padding(
+              padding: EdgeInsets.all(8.0),
               child: Center(
                 child: Text(
                   '-',
