@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:golbang/pages/event/event_result.dart';
@@ -5,7 +7,6 @@ import '../../models/event.dart';
 import '../../models/participant.dart';
 import '../../provider/event/event_state_notifier_provider.dart';
 import '../../repoisitory/secure_storage.dart';
-import '../../services/event_service.dart';
 import '../game/score_card_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart'; // 공유 라이브러리 추가
@@ -14,7 +15,6 @@ import 'event_update1.dart';
 
 class EventDetailPage extends ConsumerStatefulWidget {
   final Event event;
-
   EventDetailPage({required this.event});
 
   @override
@@ -25,12 +25,22 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   final List<bool> _isExpandedList = [false, false, false, false];
   LatLng? _selectedLocation;
   int? _myGroup;
+  late Timer _timer;
+  late DateTime currentTime; // 현재 시간을 저장할 변수
+
 
   @override
   void initState() {
     super.initState();
     _selectedLocation = _parseLocation(widget.event.location);
     _myGroup = widget.event.memberGroup; // initState에서 초기화
+    currentTime = DateTime.now(); // 초기화 시점의 현재 시간
+    // 타이머를 통해 1초마다 상태 업데이트
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        currentTime = DateTime.now();
+      });
+    });
 
   }
 
@@ -56,13 +66,19 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   }
 
   @override
+  void dispose() {
+    _timer.cancel(); // 타이머 해제
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
 
     // 더미 데이터
-    final courseName = "더미 코스 이름";
-    final hole = "18홀";
-    final par = "72";
-    final courseType = "더미 코스 타입";
+    const courseName = "더미 코스 이름";
+    const hole = "18홀";
+    const par = "72";
+    const courseType = "더미 코스 타입";
 
     return Scaffold(
       appBar: AppBar(
@@ -120,7 +136,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                     height: 50,
                     fit: BoxFit.cover,
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -221,10 +237,10 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 8),
-                Text("코스 이름: $courseName"),
-                Text("홀: $hole"),
-                Text("Par: $par"),
-                Text("코스 타입: $courseType"),
+                const Text("코스 이름: $courseName"),
+                const Text("홀: $hole"),
+                const Text("Par: $par"),
+                const Text("코스 타입: $courseType"),
               ],
             ],
           ),
@@ -238,10 +254,31 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   }
 
   Widget _buildBottomButtons() {
-    final DateTime currentDate = DateTime.now();
-    final DateTime eventDate = widget.event.endDateTime;
 
-    if (currentDate.isBefore(eventDate)) {
+    if (currentTime.isAfter(widget.event.endDateTime)){
+      // 현재 날짜가 이벤트 날짜보다 이후인 경우 "결과 조회" 버튼만 표시
+      return ElevatedButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => EventResultPage(eventId: widget.event.eventId),
+            ),
+          );
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.blue,
+          foregroundColor: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          minimumSize: const Size(double.infinity, 50),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10.0),
+          ),
+        ),
+        child: const Text('결과 조회'),
+      );
+    }
+    else if (currentTime.isAfter(widget.event.startDateTime)) {
       // 현재 날짜가 이벤트 날짜보다 이전인 경우 "게임 시작" 버튼만 표시
       return ElevatedButton(
         onPressed: () {
@@ -265,18 +302,9 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
         child: const Text('게임 시작'),
       );
     } else {
-      // 현재 날짜가 이벤트 날짜보다 이후인 경우 "결과 조회" 버튼만 표시
-      return ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => EventResultPage(eventId: widget.event.eventId),
-            ),
-          );
-        },
+      return  ElevatedButton(
+        onPressed: null,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue,
           foregroundColor: Colors.white,
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
           minimumSize: const Size(double.infinity, 50),
@@ -284,8 +312,22 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
-        child: const Text('결과 조회'),
+        child: Text(_formatTimeDifference(widget.event.startDateTime)),
       );
+    }
+  }
+
+  String _formatTimeDifference(DateTime targetDateTime) {
+    final difference = targetDateTime.difference(currentTime);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays}일 후 시작';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}시간 후 시작';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}분 후 시작';
+    } else {
+      return '곧 시작';
     }
   }
 

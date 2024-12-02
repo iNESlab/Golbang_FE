@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/event/event_create1.dart';
@@ -28,6 +30,8 @@ class EventPageState extends ConsumerState<EventPage> {
   DateTime? _selectedDay;
   // late EventService _eventService;
   late ParticipantService _participantService;
+  late Timer _timer;
+  late DateTime currentTime; // 현재 시간을 저장할 변수
 
   final Map<DateTime, List<Event>> _events = LinkedHashMap(
     equals: isSameDay,
@@ -68,6 +72,14 @@ class EventPageState extends ConsumerState<EventPage> {
     super.initState();
     _selectedDay = _focusedDay;
     _selectedEvents = ValueNotifier(_getUpcomingEvents());
+    currentTime = DateTime.now(); // 초기화 시점의 현재 시간
+
+    // 타이머를 통해 1초마다 상태 업데이트
+    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+      setState(() {
+        currentTime = DateTime.now();
+      });
+    });
     // eventId 확인 및 상세 페이지로 이동
     _checkAndNavigateToEventDetail();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -123,20 +135,18 @@ class EventPageState extends ConsumerState<EventPage> {
   }
 
   List<Event> _getUpcomingEvents() {
-    DateTime now = DateTime.now();
     return _events.entries
-        .where((entry) => entry.key.isAfter(now) || isSameDay(entry.key, now))
+        .where((entry) => entry.key.isAfter(currentTime) || isSameDay(entry.key, currentTime))
         .expand((entry) => entry.value)
         .toList()
       ..sort((a, b) => a.startDateTime.compareTo(b.endDateTime));
   }
 
   void _showMostRecentEvent() {
-    DateTime now = DateTime.now();
     if (_events.isEmpty) return;
 
     DateTime mostRecentDay = _events.keys
-        .where((date) => date.isAfter(now) || isSameDay(date, now))
+        .where((date) => date.isAfter(currentTime) || isSameDay(date, currentTime))
         .reduce((a, b) => a.isBefore(b) ? a : b);
 
     _selectedDay = mostRecentDay;
@@ -148,6 +158,7 @@ class EventPageState extends ConsumerState<EventPage> {
   @override
   void dispose() {
     _selectedEvents.dispose();
+    _timer.cancel(); // 타이머 해제
     super.dispose();
   }
 
@@ -181,6 +192,7 @@ class EventPageState extends ConsumerState<EventPage> {
 
   @override
   Widget build(BuildContext context) {
+    // 현재 시간을 한 번만 가져옴
     return Scaffold(
       body: Column(
         children: [
@@ -393,10 +405,10 @@ class EventPageState extends ConsumerState<EventPage> {
                                 ),
                                 TextButton(
                                   onPressed: () {
-                                    if ((DateTime.now()).isAfter(event.endDateTime)) {
+                                    if (currentTime.isAfter(event.endDateTime)) {
                                       // 결과 조회 페이지로 이동
                                       _navigateToResultPage(event);
-                                    } else {
+                                    } else if(currentTime.isAfter(event.startDateTime)){
                                       // 게임 시작 페이지로 이동
                                       _navigateToGameStartPage(event);
                                     }
@@ -405,10 +417,15 @@ class EventPageState extends ConsumerState<EventPage> {
                                     foregroundColor: Colors.green,
                                   ),
                                   child: Text(
-                                    (DateTime.now()).isAfter(event.endDateTime) ? '결과 조회':'게임 시작',
-                                    style: const TextStyle(
+                                    currentTime.isAfter(event.endDateTime) ? '결과 조회'
+                                        : currentTime.isAfter(event.startDateTime) ? '게임 시작'
+                                        : _formatTimeDifference(event.startDateTime),
+
+                                    style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.black,
+                                      color: currentTime.isBefore(event.startDateTime)
+                                          ? Colors.grey // 비활성화된 텍스트 색상
+                                          : Colors.black, // 활성화된 텍스트 색상
                                     ),
                                   ),
                                 ),
@@ -458,14 +475,14 @@ class EventPageState extends ConsumerState<EventPage> {
   Color _getStatusColor(String statusType) {
     switch (statusType) {
       case 'PARTY':
-        return Color(0xFF4D08BD);
+        return const Color(0xFF4D08BD);
       case 'ACCEPT':
-        return Color(0xFF08BDBD);
+        return const Color(0xFF08BDBD);
       case 'DENY':
-        return Color(0xFFF21B3F);
+        return const Color(0xFFF21B3F);
       case 'PENDING':
       default:
-        return Color(0xFF7E7E7E);
+        return const Color(0xFF7E7E7E);
     }
   }
 
@@ -475,7 +492,7 @@ class EventPageState extends ConsumerState<EventPage> {
     // 선택된 상태에 따라 버튼의 색상을 결정
     final Color backgroundColor = isSelected
         ? _getStatusColor(status) // 선택된 상태이면 해당 색상을 사용
-        : Color(0xFF7E7E7E); // 선택되지 않은 상태일 때는 기본 회색을 사용
+        : const Color(0xFF7E7E7E); // 선택되지 않은 상태일 때는 기본 회색을 사용
 
     // 버튼의 모양과 스타일을 정의
     return ElevatedButton(
@@ -537,4 +554,19 @@ class EventPageState extends ConsumerState<EventPage> {
       });
     }
   }
+
+  String _formatTimeDifference(DateTime targetDateTime) {
+    final difference = targetDateTime.difference(currentTime);
+
+    if (difference.inDays > 0) {
+      return '${difference.inDays}일 후 시작';
+    } else if (difference.inHours > 0) {
+      return '${difference.inHours}시간 후 시작';
+    } else if (difference.inMinutes > 0) {
+      return '${difference.inMinutes}분 후 시작';
+    } else {
+      return '곧 시작';
+    }
+  }
+
 }
