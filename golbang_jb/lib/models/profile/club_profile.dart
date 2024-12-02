@@ -13,7 +13,7 @@ class ClubProfile{
     return ClubProfile(
         clubId: json['id'],
         name: json['name'],
-        image: json['image'] ?? 'assets/images/dragon.jpeg'
+        image: json['image'] ?? 'assets/images/golbang_group_default.png'
     );
   }
 }
