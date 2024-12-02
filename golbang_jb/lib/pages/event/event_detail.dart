@@ -105,10 +105,11 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(
-                value: 'edit',
-                child: Text('수정'),
-              ),
+              if(currentTime.isBefore(widget.event.startDateTime))
+                const PopupMenuItem<String>(
+                  value: 'edit',
+                  child: Text('수정'),
+                ),
               const PopupMenuItem<String>(
                 value: 'delete',
                 child: Text('삭제'),
@@ -160,17 +161,17 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                   ),
                 ],
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               // 참석자 수를 표시
               Text(
                 '참여 인원: ${widget.event.participants.length}명',
-                style: TextStyle(fontSize: 16),
+                style: const TextStyle(fontSize: 16),
               ),
-              SizedBox(height: 10),
+              const SizedBox(height: 10),
               // 나의 조 표시
               Row(
                 children: [
-                  Text(
+                  const Text(
                     '나의 조: ',
                     style: TextStyle(fontSize: 16),
                   ),
@@ -423,7 +424,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
 
   void _deleteEvent() async {
     // ref.watch를 이용하여 storage 인스턴스를 얻고 이를 EventService에 전달
-    final storage = ref.watch(secureStorageProvider);
+    // final storage = ref.watch(secureStorageProvider);
     // final eventService = EventService(storage);
 
     // final success = await eventService.deleteEvent(widget.event.eventId);
