@@ -9,8 +9,11 @@ import '../../provider/participant/participant_state_provider.dart';
 import '../../utils/date_utils.dart';
 import 'package:golbang/services/participant_service.dart';
 import 'package:golbang/services/event_service.dart';
+import '../game/score_card_page.dart';
 import 'event_detail.dart';
 import 'package:get/get.dart';
+
+import 'event_result.dart';
 
 class EventPage extends ConsumerStatefulWidget {
   const EventPage({super.key});
@@ -148,6 +151,34 @@ class EventPageState extends ConsumerState<EventPage> {
     super.dispose();
   }
 
+  void _navigateToGameStartPage(Event event) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ScoreCardPage(event: event), // GameStartPage 생성 필요
+      ),
+    );
+
+    if (result == true) {
+      await _loadEventsForMonth(); // 페이지 종료 후 이벤트 목록 새로고침
+    }
+  }
+
+  void _navigateToResultPage(Event event) async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EventResultPage(eventId: event.eventId), // ResultPage 생성 필요
+      ),
+    );
+
+    if (result == true) {
+      await _loadEventsForMonth(); // 페이지 종료 후 이벤트 목록 새로고침
+    }
+  }
+
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -271,7 +302,7 @@ class EventPageState extends ConsumerState<EventPage> {
               valueListenable: _selectedEvents,
               builder: (context, value, _) {
                 if (value.isEmpty) {
-                  return Center(
+                  return const Center(
                       child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -361,13 +392,21 @@ class EventPageState extends ConsumerState<EventPage> {
                                   ),
                                 ),
                                 TextButton(
-                                  onPressed: () {},
+                                  onPressed: () {
+                                    if ((DateTime.now()).isAfter(event.endDateTime)) {
+                                      // 결과 조회 페이지로 이동
+                                      _navigateToResultPage(event);
+                                    } else {
+                                      // 게임 시작 페이지로 이동
+                                      _navigateToGameStartPage(event);
+                                    }
+                                  },
                                   style: TextButton.styleFrom(
                                     foregroundColor: Colors.green,
                                   ),
                                   child: Text(
                                     (DateTime.now()).isAfter(event.endDateTime) ? '결과 조회':'게임 시작',
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                       color: Colors.black,
                                     ),
