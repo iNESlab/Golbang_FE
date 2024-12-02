@@ -22,7 +22,7 @@ class EventDetailPage extends ConsumerStatefulWidget {
 }
 
 class _EventDetailPageState extends ConsumerState<EventDetailPage> {
-  List<bool> _isExpandedList = [false, false, false, false];
+  final List<bool> _isExpandedList = [false, false, false, false];
   LatLng? _selectedLocation;
   int? _myGroup;
 
@@ -126,19 +126,19 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                     children: [
                       Text(
                         widget.event.eventTitle,
-                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                       ),
                       Text(
                         '${widget.event.startDateTime.toLocal().toIso8601String().split('T').first} • ${widget.event.endDateTime.hour}:${widget.event.startDateTime.minute.toString().padLeft(2, '0')} ~ ${widget.event.endDateTime.add(Duration(hours: 2)).hour}:${widget.event.startDateTime.minute.toString().padLeft(2, '0')}',
-                        style: TextStyle(fontSize: 16),
+                        style: const TextStyle(fontSize: 16),
                       ),
                       Text(
                         '장소: ${widget.event.site}',
-                        style: TextStyle(fontSize: 16),
+                        style: const TextStyle(fontSize: 16),
                       ),
                       Text(
                         '게임모드: ${widget.event.gameMode}',
-                        style: TextStyle(fontSize: 16),
+                        style: const TextStyle(fontSize: 16),
                       ),
                     ],
                   ),
@@ -191,12 +191,12 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
 
               // 골프장 위치 표시
               if (_selectedLocation != null) ...[
-                SizedBox(height: 16),
-                Text(
+                const SizedBox(height: 16),
+                const Text(
                   "골프장 위치",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 16),
+                const SizedBox(height: 16),
                 Container(
                   height: 200,
                   decoration: BoxDecoration(
@@ -209,18 +209,18 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                     ),
                     markers: {
                       Marker(
-                        markerId: MarkerId('selected-location'),
+                        markerId: const MarkerId('selected-location'),
                         position: _selectedLocation!,
                       ),
                     },
                   ),
                 ),
-                SizedBox(height: 16),
-                Text(
+                const SizedBox(height: 16),
+                const Text(
                   "코스 정보",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 8),
+                const SizedBox(height: 8),
                 Text("코스 이름: $courseName"),
                 Text("홀: $hole"),
                 Text("Par: $par"),
@@ -253,16 +253,16 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
             ),
           );
         },
-        child: Text('게임 시작'),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.green,
           foregroundColor: Colors.white,
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-          minimumSize: Size(double.infinity, 50),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          minimumSize: const Size(double.infinity, 50),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
+        child: const Text('게임 시작'),
       );
     } else {
       // 현재 날짜가 이벤트 날짜보다 이후인 경우 "결과 조회" 버튼만 표시
@@ -275,16 +275,16 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
             ),
           );
         },
-        child: Text('결과 조회'),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.blue,
           foregroundColor: Colors.white,
-          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-          minimumSize: Size(double.infinity, 50),
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+          minimumSize: const Size(double.infinity, 50),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
+        child: const Text('결과 조회'),
       );
     }
   }
@@ -300,10 +300,10 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
             color: backgroundColor,
             borderRadius: BorderRadius.circular(10),
           ),
-          padding: EdgeInsets.all(10),
+          padding: const EdgeInsets.all(10),
           child: Text(
             '$title ($count):',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         );
       },
@@ -312,7 +312,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
           color: backgroundColor,
           borderRadius: BorderRadius.circular(10),
         ),
-        padding: EdgeInsets.all(10),
+        padding: const EdgeInsets.all(10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: filteredParticipants.map((participant) {
@@ -326,9 +326,9 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                     radius: 15,
                     backgroundImage: member?.profileImage != null
                         ? NetworkImage(member!.profileImage!)
-                        : AssetImage('assets/images/user_default.png') as ImageProvider,
+                        : const AssetImage('assets/images/user_default.png') as ImageProvider,
                   ),
-                  SizedBox(width: 10),
+                  const SizedBox(width: 10),
                   Container(
                     decoration: isSameGroup
                         ? BoxDecoration(
@@ -336,10 +336,10 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                       borderRadius: BorderRadius.circular(5),
                     )
                         : null,
-                    padding: EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: Text(
                       member != null ? member.name : 'Unknown',
-                      style: TextStyle(fontSize: 14),
+                      style: const TextStyle(fontSize: 14),
                     ),
                   ),
                 ],
@@ -392,16 +392,16 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     if (success) {
       // 이벤트 삭제 후 목록 새로고침
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('성공적으로 삭제되었습니다')),
+        const SnackBar(content: Text('성공적으로 삭제되었습니다')),
       );
       Navigator.of(context).pop(true); // 삭제 후 페이지를 나가기
     } else if(success == 403) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('관리자가 아닙니다. 관리자만 삭제할 수 있습니다.')),
+        const SnackBar(content: Text('관리자가 아닙니다. 관리자만 삭제할 수 있습니다.')),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('이벤트 삭제에 실패했습니다.')),
+        const SnackBar(content: Text('이벤트 삭제에 실패했습니다.')),
       );
     }
   }
