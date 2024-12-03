@@ -70,9 +70,9 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("이벤트 전체 결과"),
+        title: const Text("이벤트 전체 결과"),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -80,9 +80,9 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
       ),
       backgroundColor: Colors.grey[200],
       body: _isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : _eventData == null
-          ? Center(child: Text("데이터를 불러오지 못했습니다."))
+          ? const Center(child: Text("데이터를 불러오지 못했습니다."))
           : SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -105,7 +105,7 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
                 _loadEventResults(); // 데이터를 다시 로드
               },
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             UserProfileWidget(
               userProfile: _isHandicapEnabled
                   ? GetEventResultParticipantsRanks.fromJson({
@@ -115,7 +115,7 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
               })
                   : _userProfile!,
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             if (_isTeamEvent) ...[
               TeamResultWidget(
                 teamAGroupWins: _isHandicapEnabled
@@ -127,10 +127,10 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
                 groupWinTeam: _isHandicapEnabled
                     ? _teamResultData!['group_scores']['group_win_team_handicap'] ?? 'N/A' // null 체크 추가
                     : _teamResultData!['group_scores']['group_win_team'] ?? 'N/A', // null 체크 추가
-                teamATotalScore: _isHandicapEnabled
+                teamATotalStroke: _isHandicapEnabled
                     ? _teamResultData!['total_scores']['team_a_total_score_handicap'] ?? 0 // null 체크 추가
                     : _teamResultData!['total_scores']['team_a_total_score'] ?? 0, // null 체크 추가
-                teamBTotalScore: _isHandicapEnabled
+                teamBTotalStroke: _isHandicapEnabled
                     ? _teamResultData!['total_scores']['team_b_total_score_handicap'] ?? 0 // null 체크 추가
                     : _teamResultData!['total_scores']['team_b_total_score'] ?? 0, // null 체크 추가
                 totalWinTeam: _isHandicapEnabled
@@ -138,14 +138,14 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
                     : _teamResultData!['total_scores']['total_win_team'] ?? 'N/A', // null 체크 추가
               ),
             ],
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             MiniScoreCard(
               scorecard: _isHandicapEnabled && _eventData!['user']['handicap_scorecard'] != null
                   ? List<int>.from(_eventData!['user']['handicap_scorecard'] ?? []) // null 체크 추가
                   : _userProfile?.scorecard ?? [], // null 체크 추가
               eventId: widget.eventId,
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             RankingList(
               participants: _eventData!['participants'] != null
                   ? _eventData!['participants'].map<Participant>((participantJson) {
