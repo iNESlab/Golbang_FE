@@ -24,6 +24,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final TextEditingController _emailController = TextEditingController(text: 'Kojungbeom');
   final TextEditingController _passwordController = TextEditingController(text: 'Golbang12!@');
   // final TextEditingController _emailController = TextEditingController(text: 'hihello@email.com');
+  // final TextEditingController _emailController = TextEditingController(text: 'merrong925@gachon.ac.kr');
   // final TextEditingController _passwordController = TextEditingController(text: '1q2w3e4r!');
   // final TextEditingController _emailController = TextEditingController(text: 'gunoh928@gmail.com');
   // final TextEditingController _passwordController = TextEditingController(text: 'qwer1234!');

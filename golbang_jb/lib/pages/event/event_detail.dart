@@ -233,15 +233,107 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  "코스 정보",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 8),
-                const Text("코스 이름: $courseName"),
-                const Text("홀: $hole"),
-                const Text("Par: $par"),
-                const Text("코스 타입: $courseType"),
+                // 코스 정보 표시
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      "코스 정보",
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 10),
+                    widget.event.golfClub != null
+                        ? Column(
+                      children: widget.event.golfClub!.courses.map((course) {
+                        return Card(
+                          margin: EdgeInsets.symmetric(vertical: 8),
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Padding(
+                            padding: EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.golf_course, color: Colors.green),
+                                    SizedBox(width: 8),
+                                    Text(
+                                      course.courseName,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 10),
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      "홀 수: ${course.holes}",
+                                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                                    ),
+                                    Text(
+                                      "코스 Par: ${course.par}",
+                                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                                    ),
+                                  ],
+                                ),
+                                SizedBox(height: 10),
+                                Divider(),
+                                SizedBox(height: 10),
+
+                                // 홀 번호, Par 및 Handicap 테이블 형식 표시
+                                SizedBox(height: 8),
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  child: Row(
+                                    children: List.generate(course.holes, (index) {
+                                      final holeNumber = index + 1;
+                                      final par = course.holePars[index];
+                                      return Container(
+                                        width: 50,
+                                        height: 50,
+                                        margin: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                                        decoration: BoxDecoration(
+                                          color: Colors.white,
+                                          borderRadius: BorderRadius.circular(8),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: Colors.grey.withOpacity(0.2),
+                                              spreadRadius: 2,
+                                              blurRadius: 5,
+                                              offset: Offset(0, 3),
+                                            ),
+                                          ],
+                                          border: Border.all(color: Colors.grey[300]!, width: 1),
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(8),
+                                          child: CustomPaint(
+                                            painter: DiagonalTextPainter(holeNumber: holeNumber, par: par),
+                                          ),
+                                        ),
+                                      );
+                                    }),
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    )
+                        : Text(
+                      "코스 정보가 없습니다.",
+                      style: TextStyle(color: Colors.redAccent),
+                    ),
+                  ],
+                )
               ],
             ],
           ),
@@ -447,5 +539,46 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
         const SnackBar(content: Text('이벤트 삭제에 실패했습니다.')),
       );
     }
+  }
+}
+
+// 대각선 구분선 및 텍스트 표시를 위한 CustomPainter
+class DiagonalTextPainter extends CustomPainter {
+  final int holeNumber;
+  final int par;
+
+  DiagonalTextPainter({required this.holeNumber, required this.par});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.black
+      ..strokeWidth = 1;
+
+    canvas.drawLine(Offset(size.width, 0), Offset(0, size.height), paint);
+
+    final textStyle = TextStyle(color: Colors.black, fontSize: 12);
+    final holeTextSpan = TextSpan(text: "$holeNumber홀", style: textStyle);
+    final parTextSpan = TextSpan(text: "$par", style: textStyle);
+
+    final holePainter = TextPainter(
+      text: holeTextSpan,
+      textDirection: TextDirection.ltr,
+    );
+    final parPainter = TextPainter(
+      text: parTextSpan,
+      textDirection: TextDirection.ltr,
+    );
+
+    holePainter.layout();
+    parPainter.layout();
+
+    holePainter.paint(canvas, Offset(5, 5));
+    parPainter.paint(canvas, Offset(size.width - parPainter.width - 5, size.height - parPainter.height - 5));
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    return false;
   }
 }
