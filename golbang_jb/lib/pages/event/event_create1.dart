@@ -55,9 +55,9 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
   void initState() {
     super.initState();
 
-    // Timezone 데이터 초기화 및 Asia/Seoul로 설정
-    tz.initializeTimeZones();
-    tz.setLocalLocation(tz.getLocation('Asia/Seoul')); // 한국 시간대로 설정
+    // // Timezone 데이터 초기화 및 Asia/Seoul로 설정
+    // tz.initializeTimeZones();
+    // tz.setLocalLocation(tz.getLocation('Asia/Seoul')); // 한국 시간대로 설정
 
     // widget.startDay를 날짜 포맷을 사용하여 문자열로 변환
     String? formattedDate = widget.startDay != null
@@ -72,10 +72,12 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
   }
 
   // 날짜와 시간을 한국 시간대로 변환하는 메서드 추가
-  DateTime _convertToKoreaTime(DateTime date, TimeOfDay time) {
-    final DateTime localTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-    final tz.TZDateTime koreaTime = tz.TZDateTime.from(localTime, tz.getLocation('Asia/Seoul'));
-    return koreaTime.toLocal(); // 한국 시간대로 변환
+  DateTime _convertToDateTime(DateTime date, TimeOfDay time) {
+    // final DateTime localTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
+    // final tz.TZDateTime koreaTime = tz.TZDateTime.from(localTime, tz.getLocation('Asia/Seoul'));
+    // return koreaTime.toLocal(); // 한국 시간대로 변환
+    return DateTime(date.year, date.month, date.day, time.hour, time.minute);
+
   }
 
   void _setupListeners() {
@@ -160,9 +162,6 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
     }
   }
 
-  DateTime _combineDateAndTime(DateTime date, TimeOfDay time) {
-    return DateTime(date.year, date.month, date.day, time.hour, time.minute);
-  }
 
   TimeOfDay _parseTimeOfDay(String time) {
     final timeParts = time.split(' ');
@@ -219,7 +218,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                   ),
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               DropdownButtonFormField<Club>(
                 decoration: InputDecoration(
                   labelText: '모임 선택',
@@ -242,7 +241,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                   );
                 }).toList(),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               GestureDetector(
                 onTap: _showLocationSearchDialog,
                 child: AbsorbPointer(
@@ -279,9 +278,9 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                     },
                   ),
                 ),
-              SizedBox(height: 16),
-              Text('시간', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              SizedBox(height: 8),
+              const SizedBox(height: 16),
+              const Text('시간', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
@@ -302,7 +301,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                       ),
                     ),
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: GestureDetector(
                       onTap: () => _selectTime(context, true),
@@ -323,7 +322,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                   ),
                 ],
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
@@ -346,9 +345,9 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                   ),
                 ],
               ),
-              SizedBox(height: 16),
-              Text('참여자', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              SizedBox(height: 8),
+              const SizedBox(height: 16),
+              const Text('참여자', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
               GestureDetector(
                 onTap: _selectedClub != null ? _showParticipantDialog : null, // 클럽이 선택되지 않았으면 비활성화
                 child: Container(
@@ -372,11 +371,11 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                   ),
                 ),
               ),
-              SizedBox(height: 16),
-              Text('게임모드', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              SizedBox(height: 8),
+              const SizedBox(height: 16),
+              const Text('게임모드', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
               DropdownButtonFormField<GameMode>(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: '게임모드',
                   border: OutlineInputBorder(),
                 ),
@@ -403,8 +402,8 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                       ? () {
                     final DateTime startDate = DateTime.parse(_startDateController.text);
                     final TimeOfDay startTime = _parseTimeOfDay(_startTimeController.text);
-                    final DateTime startDateTime = _convertToKoreaTime(startDate, startTime);
-                    final DateTime endDateTime = _convertToKoreaTime(DateTime.parse(_endDateController.text), _fixedTime);
+                    final DateTime startDateTime = _convertToDateTime(startDate, startTime);
+                    final DateTime endDateTime = _convertToDateTime(DateTime.parse(_endDateController.text), _fixedTime);
 
                     Navigator.push(
                       context,
@@ -425,7 +424,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                       : null,
                   child: Text('다음'),
                   style: ElevatedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 50),
+                    minimumSize: const Size(double.infinity, 50),
                   ),
                 ),
               ),
