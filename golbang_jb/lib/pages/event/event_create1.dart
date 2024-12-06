@@ -55,9 +55,6 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
   void initState() {
     super.initState();
 
-    // // Timezone 데이터 초기화 및 Asia/Seoul로 설정
-    // tz.initializeTimeZones();
-    // tz.setLocalLocation(tz.getLocation('Asia/Seoul')); // 한국 시간대로 설정
 
     // widget.startDay를 날짜 포맷을 사용하여 문자열로 변환
     String? formattedDate = widget.startDay != null
@@ -71,11 +68,8 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
     _setupListeners();
   }
 
-  // 날짜와 시간을 한국 시간대로 변환하는 메서드 추가
   DateTime _convertToDateTime(DateTime date, TimeOfDay time) {
-    // final DateTime localTime = DateTime(date.year, date.month, date.day, time.hour, time.minute);
-    // final tz.TZDateTime koreaTime = tz.TZDateTime.from(localTime, tz.getLocation('Asia/Seoul'));
-    // return koreaTime.toLocal(); // 한국 시간대로 변환
+
     return DateTime(date.year, date.month, date.day, time.hour, time.minute);
 
   }
