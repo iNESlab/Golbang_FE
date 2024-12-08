@@ -103,7 +103,7 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
                 '학번',
                 _studentIdController,
                 TextInputType.text,
-                hintText: '16',
+                hintText: '',
               ),
               const SizedBox(height: 32),
               ElevatedButton(

@@ -95,7 +95,7 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('성공적으로 생성 완료하였습니다. 모임에서 이벤트를 만들어보세요!')),
+          SnackBar(content: Text('성공적으로 생성 완료하였습니다.')),
         );
         ref.read(clubStateProvider.notifier).fetchClubs(); // 클럽 리스트 다시 불러오기
         Navigator.of(context).pop(); // 성공 시 페이지 닫기

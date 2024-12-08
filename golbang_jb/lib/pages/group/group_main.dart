@@ -152,63 +152,74 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
 
   @override
   Widget build(BuildContext context) {
-    return isLoading
-        ? Center(child: CircularProgressIndicator())
-        : Column(
-      children: [
-        Container(
-          padding: EdgeInsets.all(10),
-          child: Column(
-            children: [
-              Row(
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            // 검색 필드와 타이틀
+            Container(
+              padding: EdgeInsets.all(10),
+              child: Column(
                 children: [
-                  Text('내 모임',
-                      style: TextStyle(
-                          fontSize: 24, fontWeight: FontWeight.bold)),
-                  Spacer(),
-                  TextButton.icon(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => GroupCreatePage()),
-                      ).then((_) {
-                        _fetchGroups(); // 모임 생성 후 새로고침
-                      });
-                    },
-                    icon: Icon(Icons.add_circle, color: Colors.green),
-                    label: Text('모임생성',
-                        style: TextStyle(fontSize: 16, color: Colors.green)),
+                  Row(
+                    children: [
+                      Text(
+                        '내 모임',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Spacer(),
+                      TextButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (context) => GroupCreatePage()),
+                          ).then((_) {
+                            _fetchGroups(); // 모임 생성 후 새로고침
+                          });
+                        },
+                        icon: Icon(Icons.add_circle, color: Colors.green),
+                        label: Text(
+                          '모임생성',
+                          style: TextStyle(fontSize: 16, color: Colors.green),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 10),
+                  SizedBox(
+                    height: 50,
+                    child: TextField(
+                      decoration: InputDecoration(
+                        hintText: '모임명 검색',
+                        prefixIcon: Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        contentPadding: EdgeInsets.symmetric(vertical: 10),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          filteredGroups = allGroups
+                              .where((group) => group.name
+                              .toLowerCase()
+                              .contains(value.toLowerCase()))
+                              .toList();
+                        });
+                      },
+                    ),
                   ),
                 ],
               ),
-              SizedBox(height: 10),
-              SizedBox(
-                height: 50,
-                child: TextField(
-                  decoration: InputDecoration(
-                    hintText: '모임명 검색',
-                    prefixIcon: Icon(Icons.search),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    contentPadding: EdgeInsets.symmetric(vertical: 10),
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      filteredGroups = allGroups
-                          .where((group) => group.name
-                          .toLowerCase()
-                          .contains(value.toLowerCase()))
-                          .toList();
-                    });
-                  },
-                ),
-              ),
-              SizedBox(height: 10),
-              Container(
+            ),
+            SizedBox(height: 10),
+            // 그룹 리스트
+            Expanded(
+              child: Container(
                 padding: const EdgeInsets.all(10.0),
-                height: MediaQuery.of(context).size.height * 0.48, // 화면 높이에 비례한 값
                 decoration: BoxDecoration(
                   color: Colors.grey[200],
                   borderRadius: BorderRadius.circular(10),
@@ -234,23 +245,23 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
                   ],
                 ),
               ),
-
-            ],
-          ),
+            ),
+            SizedBox(height: 10),
+            // 하단 메시지
+            Text(
+              '하단의 달력 버튼을 눌러, 일정을 추가해보세요!',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+                fontWeight: FontWeight.w500,
+              ),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: 10),
+            Divider(),
+          ],
         ),
-        SizedBox(height: 10),
-        Text(
-          '이벤트 페이지로 이동해 모임의 이벤트를 생성해보세요!',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey[600],
-            fontWeight: FontWeight.w500,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        SizedBox(height: 10),
-        Divider(),
-      ],
+      ),
     );
   }
 }
