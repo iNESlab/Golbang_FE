@@ -334,7 +334,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
               ),
             Spacer(),
             Text(
-              '+${player.lastScore} (${_handicapOn ? player.handicapScore : player.sumScore})',
+              '${player.lastScore > 0 ? '+${player.lastScore}' : player.lastScore} (${_handicapOn ? player.handicapScore : player.sumScore})',
               style: TextStyle(color: Colors.white, fontSize: 16),
             ),
           ],

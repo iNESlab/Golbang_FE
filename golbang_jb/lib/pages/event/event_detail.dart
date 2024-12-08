@@ -27,11 +27,16 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   int? _myGroup;
   late Timer _timer;
   late DateTime currentTime; // 현재 시간을 저장할 변수
+  late DateTime _startDateTime;
+  late DateTime _endDateTime;
 
 
   @override
   void initState() {
     super.initState();
+    _startDateTime = widget.event.startDateTime;
+    _endDateTime = widget.event.endDateTime;
+
     _selectedLocation = _parseLocation(widget.event.location);
     _myGroup = widget.event.memberGroup; // initState에서 초기화
     currentTime = DateTime.now(); // 초기화 시점의 현재 시간
@@ -105,7 +110,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              if(currentTime.isBefore(widget.event.startDateTime))
+              if(currentTime.isBefore(_startDateTime))
                 const PopupMenuItem<String>(
                   value: 'edit',
                   child: Text('수정'),
@@ -146,9 +151,16 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                         style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        '${widget.event.startDateTime.toLocal().toIso8601String().split('T').first} • ${widget.event.endDateTime.hour}:${widget.event.startDateTime.minute.toString().padLeft(2, '0')} ~ ${widget.event.endDateTime.add(Duration(hours: 2)).hour}:${widget.event.startDateTime.minute.toString().padLeft(2, '0')}',
+                        '${_startDateTime.toIso8601String().split('T').first} • '
+                            '${_startDateTime.hour}:${_startDateTime.minute.toString().padLeft(2, '0')} ~ '
+                            '${_endDateTime.hour}:${_endDateTime.minute.toString().padLeft(2, '0')}' +
+                            (_startDateTime.toIso8601String().split('T').first !=
+                                _endDateTime.toIso8601String().split('T').first
+                                ? ' (${_endDateTime.toIso8601String().split('T').first})'
+                                : ''),
                         style: const TextStyle(fontSize: 16),
                       ),
+
                       Text(
                         '장소: ${widget.event.site}',
                         style: const TextStyle(fontSize: 16),
@@ -348,7 +360,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
 
   Widget _buildBottomButtons() {
 
-    if (currentTime.isAfter(widget.event.endDateTime)){
+    if (currentTime.isAfter(_endDateTime)){
       // 현재 날짜가 이벤트 날짜보다 이후인 경우 "결과 조회" 버튼만 표시
       return ElevatedButton(
         onPressed: () {
@@ -405,7 +417,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
-        child: Text(_formatTimeDifference(widget.event.startDateTime)),
+        child: Text(_formatTimeDifference(_startDateTime)),
       );
     }
   }
@@ -508,7 +520,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     Share.share(
       '이벤트를 확인해보세요!\n\n'
           '제목: ${widget.event.eventTitle}\n'
-          '날짜: ${widget.event.startDateTime.toLocal().toIso8601String().split('T').first}\n'
+          '날짜: ${_startDateTime.toIso8601String().split('T').first}\n'
           '장소: ${widget.event.site}\n\n'
           '자세히 보기: $eventLink',
     );

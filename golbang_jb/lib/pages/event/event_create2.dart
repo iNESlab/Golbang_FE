@@ -236,9 +236,9 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
               children: [ // TODO: 여기까지 삭제
                 Expanded(
                   child: DropdownButtonFormField<GameMode>(
-                    decoration: InputDecoration(
-                      labelText: '게임모드',
-                      border: OutlineInputBorder(),
+                        decoration: const InputDecoration(
+                          labelText: '게임모드',
+                          border: OutlineInputBorder(),
                     ),
                     value: gameMode,
                     onChanged: (newValue) {
@@ -260,7 +260,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                 SizedBox(width: 20),
                 Expanded(
                   child: DropdownButtonFormField<bool>(
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: '팀/개인전',
                       border: OutlineInputBorder(),
                     ),
@@ -284,7 +284,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                 ),
               ],
           ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             /*
             DropdownButtonFormField<String>(
               decoration: InputDecoration(
@@ -310,7 +310,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: '조(최대 갯수)',
                       border: OutlineInputBorder(),
                     ),
@@ -328,10 +328,10 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                     }).toList(),
                   ),
                 ),
-                SizedBox(width: 20),
+                const SizedBox(width: 20),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: '조별 인원 수(최대)',
                       border: OutlineInputBorder(),
                     ),
@@ -351,14 +351,14 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                 ),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _createGroups,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.teal,
                 minimumSize: Size(double.infinity, 50),
               ),
-              child: Text(
+              child: const Text(
                 '조 생성',
                 style: TextStyle(color: Colors.white),  // 글자 색을 흰색으로 설정
               ),
@@ -369,8 +369,8 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('멤버를 추가해주세요.\n미선택시, 1조로 등록됩니다.'),
-                    SizedBox(height: 10),
+                    const Text('멤버를 추가해주세요.\n미선택시, 1조로 등록됩니다.'),
+                    const SizedBox(height: 10),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
