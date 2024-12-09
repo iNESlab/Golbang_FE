@@ -411,7 +411,9 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   }
 
   void _shareEvent() {
-    final String eventLink = "https://your-app-link.com/event/${widget.event.eventId}";
+    // Firebase Hosting 링크를 기반으로 이벤트 링크 생성
+    final String eventLink =
+        "https://golbang-test/?event_id=${widget.event.eventId}";
 
     Share.share(
       '이벤트를 확인해보세요!\n\n'
@@ -421,6 +423,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
           '자세히 보기: $eventLink',
     );
   }
+
 
   void _deleteEvent() async {
     // ref.watch를 이용하여 storage 인스턴스를 얻고 이를 EventService에 전달

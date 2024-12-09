@@ -128,7 +128,7 @@ class _CommunityMainState extends State<CommunityMain> {
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     Text(
-                      '멤버: ${members.length}',
+                      '멤버: ${members.map((member) => member['name']).join(', ')}', // 멤버 이름 전체 표시
                       style: TextStyle(fontSize: 16),
                     ),
                   ],
