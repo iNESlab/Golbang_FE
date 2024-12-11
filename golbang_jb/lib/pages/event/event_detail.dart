@@ -186,8 +186,8 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
 
       // 이메일 전송
       final Email email = Email(
-        body: '제목: ${widget.event.eventTitle}\n 날짜: ${widget.event.startDateTime.toLocal().toIso8601String().split('T').first}\n 장소: ${widget.event.site}',
-        subject: '${widget.event.club!.name}_${widget.event.startDateTime.toLocal().toIso8601String().split('T').first}_${widget.event.eventTitle}',
+        body: '제목: ${widget.event.eventTitle}\n 날짜: ${widget.event.startDateTime.toIso8601String().split('T').first}\n 장소: ${widget.event.site}',
+        subject: '${widget.event.club!.name}_${widget.event.startDateTime.toIso8601String().split('T').first}_${widget.event.eventTitle}',
         recipients: [], // 받을 사람의 이메일 주소
         attachmentPaths: [filePath], // 첨부할 파일 경로
         isHTML: false,

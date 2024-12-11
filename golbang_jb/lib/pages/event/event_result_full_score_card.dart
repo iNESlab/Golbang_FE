@@ -161,8 +161,8 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
 
       // 이메일 전송
       final Email email = Email(
-        body: '제목: ${EventDetail?.eventTitle}\n 날짜: ${EventDetail?.startDateTime.toLocal().toIso8601String().split('T').first}\n 장소: ${EventDetail?.site}',
-        subject: '${EventDetail?.club!.name}_${EventDetail?.startDateTime.toLocal().toIso8601String().split('T').first}_${EventDetail?.eventTitle}',
+        body: '제목: ${EventDetail?.eventTitle}\n 날짜: ${EventDetail?.startDateTime.toIso8601String().split('T').first}\n 장소: ${EventDetail?.site}',
+        subject: '${EventDetail?.club!.name}_${EventDetail?.startDateTime.toIso8601String().split('T').first}_${EventDetail?.eventTitle}',
         recipients: [], // 받을 사람의 이메일 주소
         attachmentPaths: [filePath], // 첨부할 파일 경로
         isHTML: false,
