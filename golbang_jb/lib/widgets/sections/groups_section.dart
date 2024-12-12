@@ -58,9 +58,6 @@ class GroupsSection extends StatelessWidget {
                       margin: EdgeInsets.symmetric(horizontal: horizontalMargin), // Dynamic horizontal margin
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          width: screenWidth > 600 ? 3 : 2, // Border width adjusted based on screen size
-                        ),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.2),
