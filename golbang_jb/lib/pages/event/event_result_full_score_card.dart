@@ -22,7 +22,7 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
   Map<String, dynamic>? teamAScores;
   Map<String, dynamic>? teamBScores;
   bool isLoading = true;
-  Event? EventDetail;
+  Event? eventDetail;
 
   @override
   void initState() {
@@ -38,14 +38,14 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
 
     try {
       final response = await eventService.getScoreData(widget.eventId);
-      final eventDetail = await eventService.getEventDetails(widget.eventId);
+      final temp_eventDetail = await eventService.getEventDetails(widget.eventId);
       if (response != null) {
         setState(() {
           participants = response['participants'];
           teamAScores = response['team_a_scores'];
           teamBScores = response['team_b_scores'];
           isLoading = false;
-          EventDetail = eventDetail;
+          eventDetail = temp_eventDetail;
         });
       } else {
         print('Failed to load scores: response is null');
@@ -153,7 +153,7 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
     // 외부 저장소 경로 가져오기
     Directory? directory = await getExternalStorageDirectory();
     if (directory != null) {
-      String filePath = '${directory.path}/event_scores_${EventDetail?.eventId}.xlsx';
+      String filePath = '${directory.path}/event_scores_${eventDetail?.eventId}.xlsx';
       File file = File(filePath);
 
       // 파일 쓰기
@@ -161,8 +161,8 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
 
       // 이메일 전송
       final Email email = Email(
-        body: '제목: ${EventDetail?.eventTitle}\n 날짜: ${EventDetail?.startDateTime.toIso8601String().split('T').first}\n 장소: ${EventDetail?.site}',
-        subject: '${EventDetail?.club!.name}_${EventDetail?.startDateTime.toIso8601String().split('T').first}_${EventDetail?.eventTitle}',
+        body: '제목: ${eventDetail?.eventTitle}\n 날짜: ${eventDetail?.startDateTime.toIso8601String().split('T').first}\n 장소: ${eventDetail?.site}',
+        subject: '${eventDetail?.club!.name}_${eventDetail?.startDateTime.toIso8601String().split('T').first}_${eventDetail?.eventTitle}',
         recipients: [], // 받을 사람의 이메일 주소
         attachmentPaths: [filePath], // 첨부할 파일 경로
         isHTML: false,
