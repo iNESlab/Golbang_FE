@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/community/member_list_page.dart';
+import 'package:golbang/pages/group/group_main.dart';
 import '../../services/club_service.dart';
 import '../../repoisitory/secure_storage.dart';
+import 'package:get/get.dart';
 
 class AdminSettingsPage extends ConsumerWidget {
   final int clubId; // 모임 ID를 받도록 수정
@@ -83,7 +85,7 @@ class AdminSettingsPage extends ConsumerWidget {
                 Navigator.of(context).pop(); // 다이얼로그 닫기
                 try {
                   await clubService.deleteClub(clubId); // 모임 삭제 API 호출
-                  Navigator.of(context).pop(); // 설정 페이지 닫기
+                  Get.offAllNamed('/home', arguments: {'initialIndex': 2});
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('모임이 삭제되었습니다.')),
                   );
