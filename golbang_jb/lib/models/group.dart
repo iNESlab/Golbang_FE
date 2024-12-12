@@ -35,13 +35,21 @@ class Group {
     );
   }
 
+  // // 관리자의 이름을 반환하는 메서드
+  // String getAdminName() {
+  //   try {
+  //     final admin = members.firstWhere((member) => member.role == 'admin');
+  //     return admin.name;
+  //   } catch (e) {
+  //     return '관리자 없음'; // 관리자 없을 경우
+  //   }
+  // }
+
   // 관리자의 이름을 반환하는 메서드
-  String getAdminName() {
-    try {
-      final admin = members.firstWhere((member) => member.role == 'admin');
-      return admin.name;
-    } catch (e) {
-      return '관리자 없음'; // 관리자 없을 경우
-    }
+  List<String> getAdminNames() {
+    return members
+        .where((member) => member.role == 'admin')
+        .map((admin) => admin.name)
+        .toList();
   }
 }

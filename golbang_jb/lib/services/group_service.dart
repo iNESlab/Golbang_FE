@@ -192,12 +192,6 @@ class GroupService {
         }
       }).whereType<Group>().toList(); // null이 아닌 Group 객체만 리스트에 포함
 
-      // 그룹의 관리자 이름을 가져오기
-      if (groups.isNotEmpty) {
-        final adminName = groups[0].getAdminName();  // 관리자 이름 추출
-        print("Admin Name: $adminName");
-      }
-
       return groups; // 그룹 리스트 반환
     } else {
       print('Failed to load groups with status code: ${response.statusCode}');

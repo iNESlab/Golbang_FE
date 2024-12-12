@@ -34,7 +34,8 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
       if (group != null) {
         final communityName = group[0].name;
         final communityImage = group[0].image ?? ''; // 이미지가 없을 때 대비
-        final adminName = group[0].getAdminName(); // 관리자의 이름 가져오기
+        final adminNames = group[0].getAdminNames(); // 관리자의 이름 가져오기
+
         final isAdmin = group[0].isAdmin;
 
         Get.arguments?['communityId'] = -1;
@@ -47,7 +48,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
                 communityID: group[0].id,
                 communityName: communityName,
                 communityImage: communityImage,
-                adminName: adminName,  // 관리자의 이름 전달
+                adminNames: adminNames,
                 isAdmin: isAdmin,
               ),
             ),
@@ -126,7 +127,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
                           communityID: group.id,
                           communityName: group.name,
                           communityImage: group.image!,
-                          adminName: group.getAdminName(),
+                          adminNames: group.getAdminNames(),
                           isAdmin: group.isAdmin,
                         ),
                       ),
