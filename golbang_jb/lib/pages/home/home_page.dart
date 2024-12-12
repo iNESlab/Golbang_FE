@@ -7,6 +7,7 @@ import 'package:golbang/models/event.dart';
 import 'package:golbang/models/group.dart';
 import 'package:golbang/models/user_account.dart';
 import 'package:golbang/models/get_statistics_overall.dart';
+import 'package:golbang/pages/setting/setting_page.dart';
 import 'package:golbang/services/event_service.dart';
 import 'package:golbang/widgets/sections/bookmark_section.dart';
 import 'package:golbang/widgets/sections/groups_section.dart';
@@ -78,7 +79,12 @@ class _HomePageState extends State<HomePage> {
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined, color: Colors.black),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsPage()), // SettingsPage로 이동
+              );
+            },
           ),
         ],
       ),
