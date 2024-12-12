@@ -20,11 +20,13 @@ class Group {
   });
 
   factory Group.fromJson(Map<String, dynamic> json) {
+    int groupId = json['id'] ?? 0;
+    String defaultImage = 'assets/images/golbang_group_${groupId % 7}.png';
     return Group(
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
       description: json['description'] ?? '',
-      image: json['image'] ?? 'assets/images/golbang_group_default.png',
+      image: json['image'] ?? defaultImage,
       members: (json['members'] as List<dynamic>)
           .map((member) => Member.fromJson(member))
           .toList(),

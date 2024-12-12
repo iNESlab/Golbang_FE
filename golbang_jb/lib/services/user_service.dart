@@ -58,9 +58,9 @@ class UserService {
       // 액세스 토큰 불러오기
       final accessToken = await storage.readAccessToken();
       Map<String, dynamic> decodedToken = JwtDecoder.decode(accessToken);
-      print('decodedToken: $decodedToken');
+      // print('decodedToken: $decodedToken');
       String userId = decodedToken['user_id'].toString(); // payload에서 user_id 추출
-      print('userId from token $userId');
+      // print('userId from token $userId');
       var uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/users/info/$userId/");
 
       // 요청 헤더 설정
@@ -74,7 +74,7 @@ class UserService {
       if (response.statusCode == 200) {
         // JSON 데이터 파싱
         var jsonData = json.decode(utf8.decode(response.bodyBytes))['data'];
-        print("==============================json: ${jsonData}");
+        // print("==============================json: ${jsonData}");
         // 이유는 모르나 code / message /data 형태로 반환이 안됨. data만 반환됨 => 해결완료
         return GetAllUserProfile.fromJson(jsonData);
       } else {

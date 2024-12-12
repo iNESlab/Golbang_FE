@@ -14,8 +14,7 @@ class Member {
   });
 
   factory Member.fromJson(Map<String, dynamic> json) {
-
-    print(json);
+    // print(json);
     return Member(
       memberId: json['member_id'] ?? 0, // 'id'가 null인 경우 기본값으로 0 설정
       name: json['name'] ?? '',

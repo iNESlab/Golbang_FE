@@ -113,7 +113,7 @@ class GroupService {
         List<dynamic> data = jsonDecode(response.body);
 
         // JSON 데이터를 Group 객체로 변환
-        print(data);
+        // print(data);
         List<Group> groups = data.map((groupJson) {
           try {
             return Group.fromJson(groupJson);

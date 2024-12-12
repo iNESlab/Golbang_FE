@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:golbang/pages/community/community_main.dart';
 import 'package:golbang/models/group.dart';
-import 'package:golbang/widgets/sections/group_item.dart';
-import 'package:golbang/pages/community/community_main.dart';
 
 class GroupsSection extends StatelessWidget {
   final List<Group> groups;
@@ -11,11 +9,24 @@ class GroupsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get the screen width and height
+    double screenWidth = MediaQuery.of(context).size.width; // Screen width
+
+    // Set avatar size, padding, and margin based on screen width
+    double avatarRadius = screenWidth > 600 ? screenWidth * 0.1 : screenWidth * 0.08; // Avatar size
+    double padding = screenWidth > 600 ? screenWidth * 0.04 : screenWidth * 0.02; // Padding inside the card
+    double horizontalMargin = screenWidth > 600 ? screenWidth * 0.04 : screenWidth * 0.03; // Horizontal margin between cards
+
+    // Calculate dynamic card height: avatar height + text height + spacing
+    double textHeight = screenWidth > 600 ? screenWidth * 0.03 : screenWidth * 0.04; // Dynamic text height
+    double spacing = textHeight / 2; // Space between avatar and text
+    double cardHeight = avatarRadius * 2 + textHeight + spacing + padding;
+
     return Scrollbar(
       thumbVisibility: true,
       thickness: 5.0,
       child: SizedBox(
-        height: 100,
+        height: cardHeight, // Dynamically calculated card height
         child: ListView.builder(
           scrollDirection: Axis.horizontal,
           itemCount: groups.length,
@@ -23,7 +34,7 @@ class GroupsSection extends StatelessWidget {
             final group = groups[index];
 
             return Padding(
-              padding: const EdgeInsets.only(right: 10),
+              padding: EdgeInsets.only(right: padding), // Dynamic padding between items
               child: GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -39,27 +50,52 @@ class GroupsSection extends StatelessWidget {
                     ),
                   );
                 },
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 10.0),
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      width: 3,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.2),
-                        spreadRadius: 0.5,
-                        blurRadius: 5,
-                        offset: const Offset(0, 3),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // Circle Avatar
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: horizontalMargin), // Dynamic horizontal margin
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          width: screenWidth > 600 ? 3 : 2, // Border width adjusted based on screen size
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.2),
+                            spreadRadius: 0.5,
+                            blurRadius: 5,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: CircleAvatar(
-                    radius: 35,
-                    backgroundColor: Colors.grey,
-                    backgroundImage: AssetImage(group.image!),
-                  ),
+                      child: Container(
+                        width: avatarRadius * 2,
+                        height: avatarRadius * 2,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                            image: AssetImage(group.image!), // Image path
+                            fit: BoxFit.fill, // Fit image within the circle
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: spacing), // Spacing between avatar and text
+                    // Group Name
+                    Text(
+                      group.name,
+                      style: TextStyle(
+                        fontSize: textHeight, // Dynamic text size
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                      overflow: TextOverflow.ellipsis, // Handle long names gracefully
+                      maxLines: 1, // Ensure the name is single-line
+                      textAlign: TextAlign.center, // Center-align the text
+                    ),
+                  ],
                 ),
               ),
             );

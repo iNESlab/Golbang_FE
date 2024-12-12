@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/community/member_list_page.dart';
 import '../../services/club_service.dart';
 import '../../repoisitory/secure_storage.dart';
+import 'package:get/get.dart';
 
 class MemberSettingsPage extends ConsumerWidget {
   final int clubId;
@@ -76,7 +77,7 @@ class MemberSettingsPage extends ConsumerWidget {
                 Navigator.of(context).pop(); // 다이얼로그 닫기
                 try {
                   await clubService.leaveClub(clubId); // 모임 나가기 API 호출
-                  Navigator.of(context).pop(); // 설정 페이지 닫기
+                  Get.offAllNamed('/home', arguments: {'initialIndex': 2});
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('모임에서 나왔습니다.')),
                   );

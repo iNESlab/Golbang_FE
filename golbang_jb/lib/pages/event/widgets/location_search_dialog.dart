@@ -112,7 +112,7 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
             },
             child: Text('완료'),
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.teal,
+              backgroundColor: Colors.white,
               minimumSize: Size(double.infinity, 50),
             ),
           ),

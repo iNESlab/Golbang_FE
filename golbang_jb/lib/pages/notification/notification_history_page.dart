@@ -57,7 +57,6 @@ class NotificationHistoryPageState extends ConsumerState<NotificationHistoryPage
       );
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -70,16 +69,18 @@ class NotificationHistoryPageState extends ConsumerState<NotificationHistoryPage
         centerTitle: true,
       ),
       body: isLoading
-          ? Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
-          CircularProgressIndicator(),
-          SizedBox(height: 20),
-          Text(
-            '알림을 불러오는 중입니다...',
-            style: TextStyle(fontSize: 16, color: Colors.grey),
-          ),
-        ],
+          ? Center( // "불러오는 중입니다"를 화면 중앙에 위치
+        child: Column(
+          mainAxisSize: MainAxisSize.min, // 필요한 만큼만 크기 차지
+          children: const [
+            CircularProgressIndicator(),
+            SizedBox(height: 20),
+            Text(
+              '알림을 불러오는 중입니다...',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+            ),
+          ],
+        ),
       )
           : notifications.isEmpty
           ? Center( // "알림이 없습니다"를 화면 정중앙에 표시
@@ -110,8 +111,10 @@ class NotificationHistoryPageState extends ConsumerState<NotificationHistoryPage
               itemCount: notifications.length,
               itemBuilder: (context, index) {
                 final notification = notifications[index];
-                final createdAt = DateTime.parse(notification['timestamp']); // timestamp 변환
-                final relativeTime = timeago.format(createdAt, locale: 'ko'); // 상대적 시간 계산
+                final createdAt =
+                DateTime.parse(notification['timestamp']); // timestamp 변환
+                final relativeTime =
+                timeago.format(createdAt, locale: 'ko'); // 상대적 시간 계산
                 return Dismissible(
                   key: Key(notification['notification_id'].toString()),
                   direction: DismissDirection.endToStart,
@@ -127,7 +130,8 @@ class NotificationHistoryPageState extends ConsumerState<NotificationHistoryPage
                   child: ListTile(
                     title: Text(
                       notification['title'],
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                     subtitle: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,7 +140,8 @@ class NotificationHistoryPageState extends ConsumerState<NotificationHistoryPage
                         const SizedBox(height: 4),
                         Text(
                           relativeTime, // "몇 분 전" 표시
-                          style: const TextStyle(fontSize: 12, color: Colors.grey),
+                          style: const TextStyle(
+                              fontSize: 12, color: Colors.grey),
                         ),
                       ],
                     ),

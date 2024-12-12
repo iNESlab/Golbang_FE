@@ -27,7 +27,7 @@ class StatisticsService {
       var response = await http.get(uri, headers: headers);
       if (response.statusCode == 200) {
         final jsonData = json.decode(utf8.decode(response.bodyBytes))['data'];
-        print(jsonData);
+        // print(jsonData);
         if (jsonData != null) {
           return ClubStatistics.fromJson(jsonData);
         }
