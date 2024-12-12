@@ -75,7 +75,6 @@ class MyApp extends StatelessWidget {
         title: 'GOLBANG MAIN PAGE',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          fontFamily: 'KoPubWorld',
           primarySwatch: Colors.green,
           appBarTheme: const AppBarTheme(
             color: Colors.white,
