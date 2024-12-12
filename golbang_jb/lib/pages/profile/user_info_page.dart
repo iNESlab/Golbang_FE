@@ -199,7 +199,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
                 bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
               decoration: BoxDecoration(
-                color: Colors.green,//Color(0xFFF6F6F6), // 여기여기
+                color: Color(0xFFF6F6F6),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(40)), // 상단 모서리 둥글게
               ),
               child: Column(
@@ -223,7 +223,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
                           });
                         },
                         selectedTextStyle: TextStyle(
-                          color: Color(0xFF2DC653), // 숫자 색상 2DC653
+                          color: Colors.green, // 숫자 색상 2DC653
                           fontSize: 27,
                           fontWeight: FontWeight.bold,
                         ),
@@ -244,7 +244,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
-                        backgroundColor: Color(0xFF2DC653), // 버튼 배경 색상 2DC653
+                        backgroundColor: Colors.green, // 버튼 배경 색상 2DC653
                         minimumSize: Size(MediaQuery.of(context).size.width - 40, 50), // 버튼 너비와 높이를 조정
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(15), // 버튼 모서리를 둥글게
