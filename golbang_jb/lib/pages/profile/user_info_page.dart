@@ -199,7 +199,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
                 bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
               decoration: BoxDecoration(
-                color: Color(0xFFF6F6F6),
+                color: Colors.green,//Color(0xFFF6F6F6), // 여기여기
                 borderRadius: BorderRadius.vertical(top: Radius.circular(40)), // 상단 모서리 둥글게
               ),
               child: Column(
