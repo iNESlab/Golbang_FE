@@ -16,6 +16,16 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:golbang/provider/user/user_service_provider.dart';
+import 'services/user_service.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart';
+import 'package:golbang/pages/event/event_detail.dart';
+import 'package:golbang/services/event_service.dart';
+import 'package:golbang/repoisitory/secure_storage.dart';
+import 'package:golbang/models/event.dart';
+import 'package:uni_links/uni_links.dart';
+import 'dart:async';
 
 // timezone 패키지 추가
 import 'package:timezone/data/latest.dart' as tz;
@@ -101,11 +111,48 @@ class NotificationHandler extends ConsumerStatefulWidget {
 }
 
 class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
+  StreamSubscription? _sub;
+
   @override
   void initState() {
     super.initState();
+    initUniLinks();
     setupFCM();
     _initializeLocalNotifications();
+  }
+
+  Future<void> initUniLinks() async {
+    _sub = uriLinkStream.listen((Uri? uri) {
+      if (uri != null) {
+        _handleDeepLink(uri);
+      }
+    }, onError: (err) {
+      print('Error occurred: $err');
+    });
+  }
+
+  void _handleDeepLink(Uri uri) async {
+    if (uri.host == 'golbang-test' && uri.queryParameters.containsKey('event_id')) {
+      final eventId = int.tryParse(uri.queryParameters['event_id']!);
+
+      if (eventId != null) {
+        try {
+          final storage = ref.read(secureStorageProvider);
+          final eventService = EventService(storage);
+
+          // 이벤트 상세 정보를 불러오기
+          final event = await eventService.getEventDetails(eventId);
+
+          if (event != null) {
+            Get.to(() => EventDetailPage(event: event));
+          } else {
+            print('이벤트를 찾을 수 없습니다.');
+          }
+        } catch (e) {
+          print('이벤트 데이터를 불러오는 중 오류 발생: $e');
+        }
+      }
+    }
   }
 
   void setupFCM() async {
@@ -215,6 +262,12 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
         payload: jsonEncode(message.data),
       );
     }
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
   }
 
   @override

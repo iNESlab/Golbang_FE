@@ -1,50 +1,55 @@
 import 'package:flutter/material.dart';
-import 'package:golbang/api.dart';
-import 'package:golbang/global_config.dart';
-import 'package:golbang/pages/community/community_post.dart';
-import 'package:golbang/widgets/sections/post_item.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../repoisitory/secure_storage.dart';
+import '../../services/club_member_service.dart';
+import 'package:golbang/models/profile/member_profile.dart';
 import 'admin_settings_page.dart';
 import 'member_settings_page.dart';
 
-class CommunityMain extends StatefulWidget {
+class CommunityMain extends ConsumerStatefulWidget {
   final int communityID;
   final String communityName;
   final String communityImage;
   final String adminName;
-  final bool isAdmin; // 관리자 여부 추가
+  final bool isAdmin;
 
   CommunityMain({
     required this.communityID,
     required this.communityName,
     required this.communityImage,
     required this.adminName,
-    required this.isAdmin, // 관리자 여부를 받도록 수정
+    required this.isAdmin,
   });
 
   @override
   _CommunityMainState createState() => _CommunityMainState();
 }
 
-class _CommunityMainState extends State<CommunityMain> {
-  late List<Map<String, dynamic>> posts;
-  late List<Map<String, dynamic>> members;
+class _CommunityMainState extends ConsumerState<CommunityMain> {
+  List<ClubMemberProfile> members = [];
+  bool isLoading = true;
+  late ClubMemberService _clubMemberService;
 
   @override
   void initState() {
     super.initState();
-    final groupId = _getGroupId();
-    posts = getGroupPosts(groupId)['data'];
-    members = [];
-    // members = getGroupMembers(groupId)['data'];
-
-    // 로그에 데이터 출력
-    print('Posts: $posts');
-    print('Members: $members');
+    _clubMemberService = ClubMemberService(ref.read(secureStorageProvider));
+    fetchGroupMembers();
   }
 
-  int _getGroupId() {
-    // final group = GlobalConfig.groups.firstWhere((group) => group.name == widget.communityName);
-    return 1;
+  void fetchGroupMembers() async {
+    try {
+      final fetchedMembers = await _clubMemberService.getClubMemberProfileList(club_id: widget.communityID);
+      setState(() {
+        members = fetchedMembers;
+        isLoading = false;
+      });
+    } catch (e) {
+      print('Error fetching members: $e');
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   void _onSettingsPressed() {
@@ -52,14 +57,14 @@ class _CommunityMainState extends State<CommunityMain> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => AdminSettingsPage(clubId: widget.communityID,), // 관리자 페이지
+          builder: (context) => AdminSettingsPage(clubId: widget.communityID),
         ),
       );
     } else {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => MemberSettingsPage(clubId: widget.communityID,), // 멤버 설정 페이지
+          builder: (context) => MemberSettingsPage(clubId: widget.communityID),
         ),
       );
     }
@@ -83,26 +88,22 @@ class _CommunityMainState extends State<CommunityMain> {
               ),
               Container(
                 height: 200,
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
-                ),
+                color: Colors.black.withOpacity(0.5),
               ),
               Positioned(
                 top: 40,
                 left: 10,
                 child: IconButton(
-                  icon: Icon(Icons.arrow_back, color: Colors.white),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
+                  icon: const Icon(Icons.arrow_back, color: Colors.white),
+                  onPressed: () => Navigator.of(context).pop(),
                 ),
               ),
               Positioned(
                 top: 40,
                 right: 10,
                 child: IconButton(
-                  icon: Icon(Icons.settings, color: Colors.white),
-                  onPressed: _onSettingsPressed, // 설정 버튼 클릭 시 동작
+                  icon: const Icon(Icons.settings, color: Colors.white),
+                  onPressed: _onSettingsPressed,
                 ),
               ),
               Positioned(
@@ -110,52 +111,34 @@ class _CommunityMainState extends State<CommunityMain> {
                 left: 10,
                 child: Text(
                   widget.communityName,
-                  style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
+                  style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '관리자: ${widget.adminName}', // 관리자 이름을 동적으로 표시
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      '멤버: ${members.length}',
-                      style: TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
-              ],
+            child: isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : Align(
+              alignment: Alignment.centerLeft, // 전체 내용을 왼쪽 정렬
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start, // 자식 위젯들을 왼쪽 정렬
+                children: [
+                  Text(
+                    '관리자: ${widget.adminName}',
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 8), // 텍스트 간 간격 추가
+                  Text(
+                    '멤버: ${members.map((member) => member.name).join(', ')}',
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                ],
+              ),
             ),
           ),
-          Expanded(
-            child: ListView.builder(
-              itemCount: posts.length,
-              itemBuilder: (context, index) {
-                final post = posts[index];
-                return Container(); // 필요한 경우 PostItem 사용
-                // return PostItem(
-                //   post: post,
-                //   onTap: () {
-                //     Navigator.push(
-                //       context,
-                //       MaterialPageRoute(
-                //         builder: (context) => CommunityPost(post: post),
-                //       ),
-                //     );
-                //   },
-                // );
-              },
-            ),
-          ),
+
         ],
       ),
     );
