@@ -44,7 +44,7 @@ class GroupsSection extends StatelessWidget {
                         communityID: group.id,
                         communityName: group.name,
                         communityImage: group.image!,
-                        adminName: group.getAdminName(),
+                        adminNames: group.getAdminNames(),
                         isAdmin: group.isAdmin,
                       ),
                     ),

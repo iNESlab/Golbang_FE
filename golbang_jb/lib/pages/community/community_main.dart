@@ -10,14 +10,14 @@ class CommunityMain extends ConsumerStatefulWidget {
   final int communityID;
   final String communityName;
   final String communityImage;
-  final String adminName;
+  final List<String> adminNames;
   final bool isAdmin;
 
   CommunityMain({
     required this.communityID,
     required this.communityName,
     required this.communityImage,
-    required this.adminName,
+    required this.adminNames,
     required this.isAdmin,
   });
 
@@ -126,7 +126,7 @@ class _CommunityMainState extends ConsumerState<CommunityMain> {
                 crossAxisAlignment: CrossAxisAlignment.start, // 자식 위젯들을 왼쪽 정렬
                 children: [
                   Text(
-                    '관리자: ${widget.adminName}',
+                    '관리자: ${widget.adminNames.join(', ')}', // 여러 관리자 이름 표시
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8), // 텍스트 간 간격 추가
