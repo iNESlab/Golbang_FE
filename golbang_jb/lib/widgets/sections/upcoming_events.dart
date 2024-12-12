@@ -3,7 +3,6 @@ import 'package:golbang/models/event.dart';
 import 'package:golbang/pages/event/event_detail.dart';
 import 'package:golbang/services/participant_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-
 import '../../repoisitory/secure_storage.dart';
 
 class UpcomingEvents extends ConsumerStatefulWidget {
@@ -39,17 +38,27 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
 
   @override
   Widget build(BuildContext context) {
+    // 화면 크기와 폰트 크기 설정
+    double screenWidth = MediaQuery.of(context).size.width; // 화면 너비
+    double screenHeight = MediaQuery.of(context).size.height; // 화면 높이
+
+    // 폰트 크기를 화면 너비에 비례하여 설정
+    double fontSize = screenWidth > 600 ? screenWidth * 0.03 : screenWidth * 0.035; // 큰 화면에서는 폰트 크기 증가
+    double buttonFontSize = screenWidth > 600 ? screenWidth * 0.03 : screenWidth * 0.035; // 버튼 텍스트 크기
+
+    double itemHeight = screenHeight * 0.1; // 각 이벤트 항목의 높이
+
     return Scrollbar(
       thumbVisibility: true,
       thickness: 5.0,
       child: SizedBox(
-        height: 200,
+        height: itemHeight, // 화면 크기에 따라 리스트 높이 조정
         child: ListView.builder(
           itemCount: widget.events.length,
           itemBuilder: (context, index) {
             final event = widget.events[index];
 
-            // 수정된 부분: myParticipantId와 동일한 participantId의 statusType을 가져옴
+            // myParticipantId와 동일한 participantId의 statusType을 가져옴
             final participant = event.participants.firstWhere(
                   (p) => p.participantId == event.myParticipantId,
               orElse: () => event.participants[0],
@@ -66,8 +75,8 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
                 );
               },
               child: Container(
-                margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
-                padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+                margin: EdgeInsets.symmetric(vertical: screenHeight * 0.005, horizontal: screenWidth * 0.03),
+                padding: EdgeInsets.symmetric(vertical: screenHeight * 0.005, horizontal: screenWidth * 0.03),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   border: Border.all(
@@ -80,12 +89,12 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
                       color: Colors.grey.withOpacity(0.5),
                       spreadRadius: 2,
                       blurRadius: 5,
-                      offset: const Offset(0, 3),
+                      offset: Offset(0, 3),
                     ),
                   ],
                 ),
                 child: ListTile(
-                  contentPadding: const EdgeInsets.all(4),
+                  contentPadding: EdgeInsets.all(screenHeight * 0.0025),
                   title: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -93,21 +102,30 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
                         children: [
                           Text(
                             event.eventTitle,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontWeight: FontWeight.bold,
+                              fontSize: fontSize, // 반응형 폰트 크기
                             ),
                           ),
                         ],
                       ),
                       Text(
                         '${event.startDateTime.toLocal()}',
-                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: fontSize, // 반응형 폰트 크기
+                        ),
                       ),
-                      Text('장소: ${event.site}'),
+                      Text(
+                        '장소: ${event.site}',
+                        style: TextStyle(
+                          fontSize: fontSize, // 반응형 폰트 크기
+                        ),
+                      ),
                       Row(
                         children: [
                           const Text('참석 여부: '),
-                          _buildStatusButton(statusType, event),
+                          _buildStatusButton(statusType, event, fontSize, buttonFontSize, screenWidth), // 버튼 크기 및 폰트 크기 전달
                         ],
                       ),
                     ],
@@ -121,7 +139,7 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
     );
   }
 
-  Widget _buildStatusButton(String status, Event event) {
+  Widget _buildStatusButton(String status, Event event, double fontSize, double buttonFontSize, double screenWidth) {
     Color color = _getStatusColor(status);
     int participantId = event.participants.isNotEmpty
         ? event.participants.firstWhere(
@@ -142,14 +160,14 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
           : null, // 참가자가 없는 경우 버튼 비활성화
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
-        minimumSize: const Size(40, 30),
+        minimumSize: Size(screenWidth > 600 ? 100 : 80, 40), // 화면 크기와 버튼 크기 조정
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
         ),
       ),
       child: Text(
         _getStatusText(status),
-        style: const TextStyle(fontSize: 12, color: Colors.white),
+        style: TextStyle(fontSize: buttonFontSize, color: Colors.white), // 반응형 버튼 텍스트 크기
       ),
     );
   }

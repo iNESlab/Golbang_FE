@@ -53,12 +53,15 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+    double fontSize = screenWidth > 600 ? 25 : 20; // 화면 크기에 따라 폰트 크기 조정
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title: const Text(
+        title: Text(
           'GOLBANG',
-          style: TextStyle(color: Colors.green, fontSize: 25),
+          style: TextStyle(color: Colors.green, fontSize: fontSize),
         ),
         centerTitle: true,
         actions: [
@@ -136,47 +139,53 @@ class HomeContent extends ConsumerWidget {
     DateTime _focusedDay = DateTime.now();
     String date = '${_focusedDay.year}-${_focusedDay.month.toString().padLeft(2, '0')}-01';
 
+    // 화면 크기 설정
+    double screenWidth = MediaQuery.of(context).size.width; // 화면 너비
+    double screenHeight = MediaQuery.of(context).size.height; // 화면 높이
+    // double fontSizeTitle = screenWidth > 600 ? screenWidth * 0.05 : screenWidth * 0.04; // 반응형 폰트 크기
+    // double sectionPadding = screenWidth > 600 ? screenWidth * 0.05 : screenWidth * 0.03; // 섹션 패딩
+
     return Scaffold(
       body: FutureBuilder(
-        future: Future.wait([
-          userService.getUserInfo(),
-          eventService.getEventsForMonth(date: date),
-          groupService.getUserGroups(),
-          statisticsService.fetchOverallStatistics().catchError((e) {
-            print('Error fetching overall statistics: $e');
-            return OverallStatistics(
+          future: Future.wait([
+            userService.getUserInfo(),
+            eventService.getEventsForMonth(date: date),
+            groupService.getUserGroups(),
+            statisticsService.fetchOverallStatistics().catchError((e) {
+              print('Error fetching overall statistics: $e');
+              return OverallStatistics(
+                averageScore: 0.0,
+                bestScore: 0,
+                handicapBestScore: 0,
+                gamesPlayed: 0,
+              );
+            }),
+          ]),
+          builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData || snapshot.data == null) {
+              return Center(child: Text('No data available'));
+            }
+            // 데이터 추출
+            UserAccount userAccount = snapshot.data![0];
+            List<Event> events = snapshot.data![1];
+            List<Group> groups = snapshot.data![2];
+            OverallStatistics overallStatistics = snapshot.data![3] ?? OverallStatistics(
               averageScore: 0.0,
               bestScore: 0,
               handicapBestScore: 0,
               gamesPlayed: 0,
             );
-          }),
-        ]),
-        builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data == null) {
-            return Center(child: Text('No data available'));
-          }
-          // 데이터 추출
-          UserAccount userAccount = snapshot.data![0];
-          List<Event> events = snapshot.data![1];
-          List<Group> groups = snapshot.data![2];
-          OverallStatistics overallStatistics = snapshot.data![3] ?? OverallStatistics(
-            averageScore: 0.0,
-            bestScore: 0,
-            handicapBestScore: 0,
-            gamesPlayed: 0,
-          );
 
             return Column(
               children: <Widget>[
                 SizedBox(
-                  height: 140,
+                  height: screenHeight * 0.15,
                   child: SectionWithScroll(
-                    title: '즐겨찾기',
+                    title: '대시보드',
                     child: BookmarkSection(
                       userAccount: userAccount,
                       overallStatistics: overallStatistics, // Pass overall statistics
@@ -191,7 +200,7 @@ class HomeContent extends ConsumerWidget {
                   ),
                 ),
                 SizedBox(
-                  height: 130,
+                  height: screenHeight * 0.18,
                   child: SectionWithScroll(
                     title: '내 모임 ${groups.length}',
                     child: GroupsSection(groups: groups),
