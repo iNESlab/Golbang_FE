@@ -43,7 +43,7 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
     double screenHeight = MediaQuery.of(context).size.height; // 화면 높이
 
     // 폰트 크기를 화면 너비에 비례하여 설정
-    double fontSize = screenWidth > 600 ? screenWidth * 0.03 : screenWidth * 0.035; // 큰 화면에서는 폰트 크기 증가
+    double fontSize = screenWidth > 600 ? screenWidth * 0.04 : screenWidth * 0.04; // 큰 화면에서는 폰트 크기 증가
     double buttonFontSize = screenWidth > 600 ? screenWidth * 0.03 : screenWidth * 0.035; // 버튼 텍스트 크기
 
     double itemHeight = screenHeight * 0.1; // 각 이벤트 항목의 높이
@@ -113,18 +113,22 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
                         '${event.startDateTime.toLocal()}',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
-                          fontSize: fontSize, // 반응형 폰트 크기
+                          fontSize: fontSize - 2, // 반응형 폰트 크기
                         ),
                       ),
                       Text(
                         '장소: ${event.site}',
                         style: TextStyle(
-                          fontSize: fontSize, // 반응형 폰트 크기
+                          fontSize: fontSize - 2, // 반응형 폰트 크기
                         ),
                       ),
                       Row(
                         children: [
-                          const Text('참석 여부: '),
+                          Text('참석 여부: ',
+                            style: TextStyle(
+                              fontSize: fontSize - 2, // 반응형 폰트 크기
+                            ),
+                          ),
                           _buildStatusButton(statusType, event, fontSize, buttonFontSize, screenWidth), // 버튼 크기 및 폰트 크기 전달
                         ],
                       ),
