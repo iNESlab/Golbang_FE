@@ -1,15 +1,72 @@
-
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:golbang/pages/home/splash_screen.dart';
 import 'package:golbang/pages/logins/widgets/login_widgets.dart';
 import 'package:golbang/pages/logins/widgets/social_login_widgets.dart';
 import 'package:golbang/services/auth_service.dart';
-import 'package:hooks_riverpod/hooks_riverpod.dart';  // hooks_riverpod 사용
+import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 import '../../repoisitory/secure_storage.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
+
+class TokenCheck extends ConsumerStatefulWidget {
+  const TokenCheck({super.key});
+
+  @override
+  _TokenCheckState createState() => _TokenCheckState();
+}
+
+class _TokenCheckState extends ConsumerState<TokenCheck> {
+  bool isToken = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _autoLoginCheck();
+  }
+
+  Future<void> _autoLoginCheck() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    final bool isAutoLoginEnabled = prefs.getBool('isAutoLoginEnabled') ?? true;
+    if (isAutoLoginEnabled) {
+      // `ref.read`로 AuthService 인스턴스 가져오기
+      final authService = ref.read(authServiceProvider);
+
+      try {
+        final response = await authService.validateToken();
+        if (response.statusCode == 202) {
+          setState(() {
+            isToken = true; // 유효한 토큰
+          });
+        } else {
+          setState(() {
+            isToken = false; // 무효한 토큰
+          });
+          // 무효한 토큰 삭제
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.remove('token');
+        }
+      } catch (e) {
+        setState(() {
+          isToken = false; // 네트워크 오류 등
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: isToken ? const SplashScreen() : const LoginPage(),
+    );
+  }
+}
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -19,15 +76,15 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
-  // final TextEditingController _emailController = TextEditingController(text: 'yoonsh1004z');
-  // final TextEditingController _passwordController = TextEditingController(text: 'todwnl@7706');
-  final TextEditingController _emailController = TextEditingController(text: 'Kojungbeom');
-  final TextEditingController _passwordController = TextEditingController(text: 'Golbang12!@');
-  // final TextEditingController _emailController = TextEditingController(text: 'hihello@email.com');
-  // final TextEditingController _emailController = TextEditingController(text: 'merrong925@gachon.ac.kr');
-  // final TextEditingController _passwordController = TextEditingController(text: '1q2w3e4r!');
-  // final TextEditingController _emailController = TextEditingController(text: 'gunoh928@gmail.com');
-  // final TextEditingController _passwordController = TextEditingController(text: 'qwer1234!');
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  bool _isAutoLoginEnabled = false;
+
+  Future<void> _setAutoLogin(String token) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isAutoLoginEnabled', true); // 설정 저장
+    await prefs.setString('token', token);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,12 +103,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               PasswordField(controller: _passwordController),
               const SizedBox(height: 16),
               const ForgotPasswordLink(),
+              const SizedBox(height: 16),
               const SizedBox(height: 32),
               LoginButton(onPressed: _login),
-              // const SizedBox(height: 32),
-              // const SignInDivider(),
-              // const SizedBox(height: 16),
-              // const SocialLoginButtons(),
               const SizedBox(height: 32),
               const SignUpLink(),
             ],
@@ -68,7 +122,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     try {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
       fcmToken = await messaging.getToken();
-      print('FCM 토큰: $fcmToken');
     } catch (e) {
       print('FCM 토큰 가져오기 실패: $e');
     }
@@ -82,7 +135,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         );
         await _handleLoginResponse(response);
       } catch (e) {
-        print('error: $e');
         _showErrorDialog('An error occurred. Please try again.');
       }
     } else {
@@ -98,14 +150,15 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     if (response.statusCode == 200) {
       final body = json.decode(response.body);
       var accessToken = body['data']['access_token'];
-      // SecureStorage 접근
+      await _setAutoLogin(accessToken);
       final storage = ref.watch(secureStorageProvider);
       await storage.saveAccessToken(accessToken);
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => const SplashScreen()),
-      );
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const SplashScreen()),
+        );
+      }
     } else {
       _showErrorDialog('Invalid email or password');
     }

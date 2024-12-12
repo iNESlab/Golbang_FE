@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'home_page.dart'; // 메인 화면 위젯 import
 import 'dart:ui';
+import 'package:get/get.dart';  // GetX 사용
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -18,11 +19,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   _navigateToMainScreen() async {
     await Future.delayed(const Duration(seconds: 2));
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => HomePage(), // MainScreen 위젯으로 변경
-      ),
-    );
+    Get.offAll(() => const HomePage());
   }
 
   @override
