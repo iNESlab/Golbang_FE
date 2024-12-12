@@ -91,7 +91,7 @@ class MyApp extends StatelessWidget {
         ),
         initialRoute: '/', // 초기 라우트 설정
         getPages: [
-          GetPage(name: '/', page: () => const LoginPage()),
+          GetPage(name: '/', page: () => const TokenCheck()),
           GetPage(name: '/signup', page: () => SignUpPage()),
           GetPage(name: '/signupComplete', page: () => const SignupComplete()),
           GetPage(name: '/home', page: () => const HomePage()),
