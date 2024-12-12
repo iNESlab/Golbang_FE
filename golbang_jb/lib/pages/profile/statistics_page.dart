@@ -32,6 +32,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
   DateTime? startDate;
   DateTime? endDate;
   PeriodStatistics? periodStatistics; // 기간별 통계 데이터
+  Map<int, List<EventStatistics>> _cachedEvents = {}; // 그룹별 이벤트 캐시
 
   @override
   void didChangeDependencies() {
@@ -50,13 +51,17 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
       isLoading = true;
       hasError = false;
     });
+    final startTime = DateTime.now();
 
     try {
       groups = await groupService.getUserGroups();
-      for (Group group in groups) {
-        ClubStatistics? ranking = await groupService.fetchGroupRanking(group.id);
+      if (groups.isNotEmpty) {
+        // 첫 번째 그룹의 랭킹 및 이벤트 리스트 가져오기
+        ClubStatistics? ranking = await groupService.fetchGroupRanking(groups.first.id);
         if (ranking != null) {
-          groupRankings[group.id] = ranking;
+          groupRankings[groups.first.id] = ranking;
+          _cachedEvents[groups.first.id] = ranking.events ?? [];
+          _selectedEvents = _cachedEvents[groups.first.id]!;
         }
       }
       await _loadStatisticsData();
@@ -70,6 +75,8 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
       print("Error loading data: $e");
       hasError = true;
     } finally {
+      final endTime = DateTime.now(); // 종료 시간 기록
+      print("Data fetching took: ${endTime.difference(startTime).inMilliseconds} ms");
       setState(() {
         isLoading = false;
       });
@@ -78,6 +85,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
 
   Future<void> _loadStatisticsData() async {
     try {
+      final startTime = DateTime.now();
       if (selectedYear == '전체') {
         // 전체 통계 가져오기
         overallStatistics = await statisticsService.fetchOverallStatistics();
@@ -91,6 +99,8 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
         // 기간 통계 가져오기 (선택된 날짜에 대한 통계)
         await _loadPeriodStatistics();
       }
+      final endTime = DateTime.now(); // 종료 시간 기록
+      print("Statistic Data fetching took: ${endTime.difference(startTime).inMilliseconds} ms");
     } catch (e) {
       setState(() {
         hasError = true;
@@ -99,14 +109,49 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
   }
 
   Future<void> _loadEventsForGroup(int groupId) async {
-    setState(() {
-      _selectedEvents = groupRankings[groupId]?.events ?? [];
-    });
+    print("Loading events for group ID: $groupId");
+    if (_cachedEvents.containsKey(groupId)) {
+      // 이미 캐싱된 데이터가 있으면 캐싱된 데이터를 사용
+      setState(() {
+        _selectedEvents = _cachedEvents[groupId]!;
+      });
+      print("Using cached events for group ID: $groupId");
+      return;
+    }
+
+    try {
+      final startTime = DateTime.now();
+      // 그룹 데이터 가져오기
+      ClubStatistics? ranking = await groupService.fetchGroupRanking(groupId);
+      if (ranking != null) {
+        final List<EventStatistics> events = ranking.events ?? [];
+        setState(() {
+          _cachedEvents[groupId] = events; // 캐싱
+          _selectedEvents = events; // UI 업데이트
+        });
+        print("Loaded events for group ID: $groupId");
+      } else {
+        print("No ranking data available for group ID: $groupId");
+        setState(() {
+          _selectedEvents = [];
+        });
+      }
+      final endTime = DateTime.now(); // 종료 시간 기록
+      print("Each Data fetching took: ${endTime.difference(startTime).inMilliseconds} ms");
+    } catch (e) {
+      print("Failed to load events for group ID $groupId: $e");
+      setState(() {
+        _selectedEvents = [];
+      });
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    final startTime = DateTime.now(); // 시작 시간 기록
+
+    final widgetTree = Scaffold(
       appBar: AppBar(
         title: const Text('통계'),
         leading: IconButton(
@@ -138,7 +183,13 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
         ),
       ),
     );
+
+    final endTime = DateTime.now(); // 종료 시간 기록
+    print("Widget build took: ${endTime.difference(startTime).inMilliseconds} ms");
+
+    return widgetTree;
   }
+
 
   Widget _buildYearSelector() {
     return Row(
@@ -204,20 +255,6 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
     }
   }
 
-
-  // 기간 선택 버튼 아래에 선택된 기간을 표시
-  Widget _buildDateRangeDisplay() {
-    if (startDate != null && endDate != null) {
-      return Padding(
-        padding: const EdgeInsets.only(top: 8.0),
-        child: Text(
-          "선택된 기간: ${startDate!.year}-${startDate!.month.toString().padLeft(2, '0')}-${startDate!.day.toString().padLeft(2, '0')} ~ ${endDate!.year}-${endDate!.month.toString().padLeft(2, '0')}-${endDate!.day.toString().padLeft(2, '0')}",
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
-      );
-    }
-    return const SizedBox.shrink(); // 선택된 날짜가 없으면 빈 공간을 반환
-  }
 
   Widget _buildYearButton(String title) {
     return ElevatedButton(
@@ -324,22 +361,20 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
             ),
             const SizedBox(height: 16),
             SingleChildScrollView(
-              scrollDirection: Axis.horizontal, // 가로 스크롤 활성화
+              scrollDirection: Axis.horizontal,
               child: Row(
                 children: groups.map((group) {
                   ClubStatistics? ranking = groupRankings[group.id];
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0), // child 간 가로 간격 추가
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
                     child: GestureDetector(
-                      onTap: () {
-                        _loadEventsForGroup(group.id); // 클릭된 그룹의 이벤트 리스트 로드
+                      onTap: () async {
+                        await _loadEventsForGroup(group.id); // 그룹 ID로 이벤트 데이터 로드
+                        setState(() {}); // 상태 변경을 트리거하여 UI 업데이트
                       },
                       child: _buildClubCircle(
                         group.name,
                         group.image,
-                        ranking != null && ranking.ranking.totalRank != null
-                            ? ranking.ranking.totalRank.toString()
-                            : "랭킹 불러오는 중...",
                       ),
                     ),
                   );
@@ -352,7 +387,9 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
     );
   }
 
-  Widget _buildClubCircle(String groupName, String? imagePath, String rank) {
+
+
+  Widget _buildClubCircle(String groupName, String? imagePath) {
     return Column(
       children: [
         CircleAvatar(
@@ -368,7 +405,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
               : null, // 이미지가 있으면 텍스트를 숨김
         ),
         const SizedBox(height: 8),
-        Text(rank + groupName, style: const TextStyle(fontSize: 14)), // 그룹별 랭킹 표시
+        Text(groupName, style: const TextStyle(fontSize: 14)), // 그룹별 랭킹 표시
       ],
     );
   }
@@ -384,22 +421,17 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
       children: _selectedEvents.map((event) {
         double fillPercentage = 0;
 
-        // 참가자 수가 0이거나 event.points가 2보다 작으면 예외 처리
         if (event.totalParticipants != 0 && event.points >= 2) {
           fillPercentage = (event.points - 2) / event.totalParticipants;
           if (fillPercentage > 1) {
             fillPercentage = 1;
           }
         }
-        // 예외 처리: fillPercentage가 유효하지 않은 경우 0으로 설정
+
         if (fillPercentage.isNaN || fillPercentage.isInfinite) {
           fillPercentage = 0;
         }
-        print(event.points);
-        print(event.totalParticipants);
-        print("fillPercentage:, $fillPercentage");
 
-        // Color.lerp에 fillPercentage를 사용
         Color barColor = Color.lerp(Colors.yellow, Colors.green, fillPercentage)!;
 
         return Padding(
@@ -411,21 +443,19 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
               const SizedBox(height: 8),
               Stack(
                 children: [
-                  // 전체 배경
                   Container(
                     height: 20,
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],  // 전체 배경 색
+                      color: Colors.grey[300],
                       borderRadius: BorderRadius.circular(5),
                     ),
                   ),
-                  // 채워지는 부분
                   FractionallySizedBox(
-                    widthFactor: fillPercentage,  // fillPercentage만큼 너비 조절 (0.0 ~ 1.0)
+                    widthFactor: fillPercentage,
                     child: Container(
                       height: 20,
                       decoration: BoxDecoration(
-                        color: barColor,  // fillPercentage에 따른 색상
+                        color: barColor,
                         borderRadius: BorderRadius.circular(5),
                       ),
                     ),
