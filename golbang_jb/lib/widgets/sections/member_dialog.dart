@@ -110,15 +110,20 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
                     return Center(child: Text('No users found.'));
                   } else {
                     final users = snapshot.data!;
-                    final selectableUsers = widget.isAdminMode
-                        ? widget.selectedMembers // 관리자 추가 시 선택된 멤버만 가져옴
-                        : users;
 
-                    // 검색어를 포함한 멤버만 필터링
-                    final filteredUsers = selectableUsers.where((user) {
-                      return user.name.contains(searchQuery);
+                    // 관리자 추가 시: 멤버로 추가된 사용자만 필터링
+                    // 멤버 추가 시: 전체 사용자 검색
+                    final filteredUsers = widget.isAdminMode
+                        ? widget.selectedMembers.where((user) {
+                      return searchQuery.isEmpty ||
+                          user.name.toLowerCase().contains(searchQuery.toLowerCase());
+                    }).toList()
+                        : users.where((user) {
+                      return searchQuery.isNotEmpty &&
+                          user.name.toLowerCase().contains(searchQuery.toLowerCase());
                     }).toList();
 
+                    // 검색 쿼리가 없고 filteredUsers도 없는 경우
                     if (filteredUsers.isEmpty) {
                       return Center(
                         child: Text(widget.isAdminMode
@@ -137,11 +142,12 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
                         return ListTile(
                           leading: CircleAvatar(
                             backgroundColor: Colors.grey[200],
-                            backgroundImage: profileImage.isNotEmpty && profileImage
-                                .startsWith('http')
+                            backgroundImage: profileImage.isNotEmpty &&
+                                profileImage.startsWith('http')
                                 ? NetworkImage(profileImage)
                                 : null,
-                            child: profileImage.isEmpty || !profileImage.startsWith('http')
+                            child: profileImage.isEmpty ||
+                                !profileImage.startsWith('http')
                                 ? Icon(Icons.person, color: Colors.grey)
                                 : null,
                           ),
@@ -154,14 +160,14 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
                                 checkBoxStates[user.id] = value ?? false;
                                 if (value == true) {
                                   // 중복 추가 방지: 리스트에 없을 때만 추가
-                                  if (!tempSelectedMembers.any((member) =>
-                                  member.id == user.id)) {
+                                  if (!tempSelectedMembers.any(
+                                          (member) => member.id == user.id)) {
                                     tempSelectedMembers.add(user);
                                   }
                                 } else {
                                   // 체크 해제 시 리스트에서 제거
-                                  tempSelectedMembers.removeWhere((member) =>
-                                  member.id == user.id);
+                                  tempSelectedMembers.removeWhere(
+                                          (member) => member.id == user.id);
                                 }
                               });
                             },

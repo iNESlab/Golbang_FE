@@ -6,6 +6,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/models/event.dart';
 import 'package:golbang/pages/game/overall_score_page.dart';
+import 'package:golbang/utils/AllowNavigateNumbersFormatter.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -487,7 +488,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
                   style: TextStyle(color: Colors.white),
                   textAlign: TextAlign.center,
                   keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  inputFormatters: [AllowNegativeNumbersFormatter()],
                   focusNode: _focusNodes[member.participantId]?[holeIndex] ?? FocusNode(),
                   onChanged: (value) {
                     final score = int.tryParse(value) ?? 0;
