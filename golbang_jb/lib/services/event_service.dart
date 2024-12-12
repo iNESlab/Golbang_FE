@@ -79,9 +79,9 @@ class EventService {
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(utf8.decode(response.bodyBytes))['data'] as List;
-        print("이벤트 목록 조회 성공: ${jsonData.length}개");
+        // print("이벤트 목록 조회 성공: ${jsonData.length}개");
         // JSON 데이터를 Event 객체 리스트로 변환
-        print(jsonData);
+        // print(jsonData);
 
 
         return jsonData.map((json) => Event.fromJson(json)).toList();
