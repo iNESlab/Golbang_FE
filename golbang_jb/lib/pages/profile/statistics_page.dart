@@ -200,7 +200,8 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
         _buildYearButton('2023년'),
         ElevatedButton(
           onPressed: () => _selectDateRange(context), // 기간 선택 버튼
-          child: const Text('기간 선택'),
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
+          child: const Text('기간 선택', style: TextStyle(color:Colors.white)),
         ),
       ],
     );
@@ -281,8 +282,9 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
+        backgroundColor: Colors.green
       ),
-      child: Text(title),
+      child: Text(title, style: TextStyle(color: Colors.white)),
     );
   }
 
@@ -294,7 +296,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildStatCard('평균', overallStatistics?.averageScore.toString() ?? 'N/A', Colors.green),
-          _buildStatCard('베스트 스코어', overallStatistics?.bestScore.toString() ?? 'N/A', Colors.yellow),
+          _buildStatCard('베스트 스코어', overallStatistics?.bestScore.toString() ?? 'N/A', Colors.orange),
         ],
       );
     } else if (selectedYear != '' && yearStatistics != null) {
@@ -302,7 +304,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildStatCard('평균', yearStatistics?.averageScore.toString() ?? 'N/A', Colors.green),
-          _buildStatCard('베스트 스코어', yearStatistics?.bestScore.toString() ?? 'N/A', Colors.yellow),
+          _buildStatCard('베스트 스코어', yearStatistics?.bestScore.toString() ?? 'N/A', Colors.orange),
         ],
       );
     } else if (periodStatistics != null) {
@@ -310,7 +312,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           _buildStatCard('평균', periodStatistics?.averageScore.toString() ?? 'N/A', Colors.green),
-          _buildStatCard('베스트 스코어', periodStatistics?.bestScore.toString() ?? 'N/A', Colors.yellow),
+          _buildStatCard('베스트 스코어', periodStatistics?.bestScore.toString() ?? 'N/A', Colors.orange),
         ],
       );
     } else {
@@ -321,6 +323,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
   Widget _buildStatCard(String title, String value, Color color) {
     return Expanded(
       child: Card(
+        color: Colors.green[50],
         elevation: 4,
         child: Padding(
           padding: const EdgeInsets.all(12.0),
@@ -349,6 +352,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
     }
 
     return Card(
+      color: Colors.green[50],
       elevation: 4,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -446,7 +450,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
                   Container(
                     height: 20,
                     decoration: BoxDecoration(
-                      color: Colors.grey[300],
+                      color: Colors.green[50],
                       borderRadius: BorderRadius.circular(5),
                     ),
                   ),
