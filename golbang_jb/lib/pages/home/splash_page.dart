@@ -34,7 +34,7 @@ class _SplashPageState extends State<SplashPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/images/logo.png',
+              'assets/images/logo-green.png',
               height: 100, // 이미지 크기 조정 (필요에 따라 수정)
               width: 100,  // 이미지 크기 조정 (필요에 따라 수정)
             ),
