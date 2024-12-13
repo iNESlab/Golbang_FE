@@ -40,6 +40,7 @@ class _CommunityMainState extends ConsumerState<CommunityMain> {
   void fetchGroupMembers() async {
     try {
       final fetchedMembers = await _clubMemberService.getClubMemberProfileList(club_id: widget.communityID);
+      print(widget.communityID);
       setState(() {
         members = fetchedMembers;
         isLoading = false;
