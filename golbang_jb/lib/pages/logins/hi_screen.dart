@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:golbang/pages/logins/login.dart';
 import 'dart:async';
 
+import 'package:golbang/pages/logins/register_page.dart';
+import 'package:golbang/pages/signup/signup.dart';
+
 class HiScreen extends StatefulWidget {
   const HiScreen({super.key});
 
@@ -99,7 +102,10 @@ class _HiScreenState extends State<HiScreen> {
                       // Join button
                       ElevatedButton(
                         onPressed: () {
-                          Navigator.pushNamed(context, '/signup');
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(builder: (context) => SignUpPage()), // SettingsPage로 이동
+                          );
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
