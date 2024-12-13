@@ -64,8 +64,8 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     final eventService = EventService(storage);
     try {
       final response = await eventService.getScoreData(widget.event.eventId);
+
       if (response != null) {
-        print(widget.event);
         setState(() {
           participants = response['participants'];
           teamAScores = response['team_a_scores'];
@@ -308,12 +308,14 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                     fit: BoxFit.cover,
                   ),
                   const SizedBox(width: 10),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
                       Text(
                         widget.event.eventTitle,
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold,
+                          overflow: TextOverflow.ellipsis,),
                       ),
                       Text(
                         '${_startDateTime.toIso8601String().split('T').first} • '
@@ -323,7 +325,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                                 _endDateTime.toIso8601String().split('T').first
                                 ? ' (${_endDateTime.toIso8601String().split('T').first})'
                                 : ''),
-                        style: const TextStyle(fontSize: 16),
+                        style: const TextStyle(fontSize: 14, overflow: TextOverflow.ellipsis),
                       ),
 
                       Text(
@@ -335,6 +337,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                         style: const TextStyle(fontSize: 16),
                       ),
                     ],
+                  ),
                   ),
                 ],
               ),

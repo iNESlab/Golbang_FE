@@ -25,8 +25,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
 
   Future<void> _checkAndNavigateToCommunity() async {
     int? communityId = Get.arguments?['communityId'];
-
-    if (communityId != -1) {
+    if (communityId != null && communityId != -1) {
       final storage = ref.read(secureStorageProvider);
       final GroupService groupService = GroupService(storage);
       List<Group> group = await groupService.getGroupInfo(communityId!);
@@ -235,7 +234,9 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
                     ),
                     SmoothPageIndicator(
                       controller: _pageController,
-                      count: (filteredGroups.length / itemsPerPage).ceil(),
+                      count: filteredGroups.isNotEmpty
+                          ? (filteredGroups.length / itemsPerPage).ceil()
+                          : 1, // 비어 있을 경우 기본값을 1로 설정 있을 때 기본값 설정
                       effect: WormEffect(
                         dotHeight: 8,
                         dotWidth: 8,

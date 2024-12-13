@@ -192,6 +192,9 @@ class EventPageState extends ConsumerState<EventPage> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final width = size.width;
+    final height = size.height;
     // 현재 시간을 한 번만 가져옴
     return Scaffold(
       body: Column(
@@ -219,7 +222,7 @@ class EventPageState extends ConsumerState<EventPage> {
             },
             calendarBuilders: CalendarBuilders(
               selectedBuilder: (context, date, events) => Container(
-                margin: const EdgeInsets.all(6.0),
+                margin: EdgeInsets.all(width * 0.015),
                 alignment: Alignment.center,
                 decoration: const BoxDecoration(
                   color: Colors.green,
@@ -231,7 +234,7 @@ class EventPageState extends ConsumerState<EventPage> {
                 ),
               ),
               todayBuilder: (context, date, events) => Container(
-                margin: const EdgeInsets.all(6.0),
+                margin: EdgeInsets.all(width * 0.015),
                 alignment: Alignment.center,
                 decoration: const BoxDecoration(
                   color: Colors.grey,
@@ -267,27 +270,29 @@ class EventPageState extends ConsumerState<EventPage> {
                 return null;
               },
             ),
-            headerStyle: const HeaderStyle(
+            headerStyle: HeaderStyle(
               formatButtonVisible: false,
               titleCentered: true,
               leftChevronIcon: Icon(
                 Icons.chevron_left,
                 color: Colors.black,
+                size: width * 0.06,
               ),
               rightChevronIcon: Icon(
                 Icons.chevron_right,
                 color: Colors.black,
+                size: width * 0.06,
               ),
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: EdgeInsets.symmetric(vertical: height * 0.005, horizontal: width * 0.04),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   '오늘의 일정',
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: width * 0.045, fontWeight: FontWeight.bold),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -295,15 +300,15 @@ class EventPageState extends ConsumerState<EventPage> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-                    minimumSize: const Size(50, 30),
+                    padding: EdgeInsets.symmetric(horizontal: width * 0.02, vertical: height * 0.008,),
+                    minimumSize: Size(width * 0.18, height * 0.012),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10.0),
+                      borderRadius: BorderRadius.circular(width * 0.02),
                     ),
                   ),
-                  child: const Text(
+                  child: Text(
                     '일정 추가',
-                    style: TextStyle(color: Colors.white, fontSize: 14),
+                    style: TextStyle(color: Colors.white, fontSize: width * 0.035),
                   ),
                 ),
               ],
@@ -314,20 +319,20 @@ class EventPageState extends ConsumerState<EventPage> {
               valueListenable: _selectedEvents,
               builder: (context, value, _) {
                 if (value.isEmpty) {
-                  return const Center(
+                  return Center(
                       child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
-                              Icons.event_note, // 어울리는 아이콘을 선택하세요.
-                              size: 100,
+                              Icons.event_note,
+                              size: width * 0.3,
                               color: Colors.grey,
                             ),
-                            const SizedBox(height: 16),
-                            const Text(
+                            SizedBox(height: height * 0.02),
+                            Text(
                               '일정 추가 버튼을 눌러\n이벤트를 만들어보세요.',
                               textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 16, color: Colors.grey),
+                              style: TextStyle(fontSize: width * 0.04, color: Colors.grey),
                             )
                           ]
                       )
@@ -346,25 +351,28 @@ class EventPageState extends ConsumerState<EventPage> {
                     Color statusColor = _getStatusColor(statusType);
 
                     return Container(
-                      margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 2.0),
-                      padding: const EdgeInsets.all(8.0),
+                      margin: EdgeInsets.symmetric(
+                          horizontal: width * 0.02, vertical: height * 0.003),
+                      padding: EdgeInsets.all(width * 0.03),
                       decoration: BoxDecoration(
-                        border: Border.all(color: statusColor, width: 2.0),
-                        borderRadius: BorderRadius.circular(15.0),
+                        border: Border.all(
+                            color: statusColor, width: width * 0.005),
+                        borderRadius:
+                        BorderRadius.circular(width * 0.03),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            event.eventTitle,
-                            style: const TextStyle(fontSize: 12.0),
+                            event.club!.name,
+                            style: TextStyle(fontSize: width * 0.03),
                           ),
-                          const SizedBox(height: 4.0),
+                          SizedBox(height: height * 0.005),
                           Text(
                             event.eventTitle,
-                            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16.0),
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: width * 0.045),
                           ),
-                          const SizedBox(height: 8.0),
+                          SizedBox(height: height * 0.005),
                           Text('시작 시간: ${event.startDateTime.hour}:${event.startDateTime.minute.toString().padLeft(2, '0')}'),
                           Text('인원수: 참석 ${event.participants.length}명'),
                           Text('장소: ${event.site}'),
@@ -373,18 +381,18 @@ class EventPageState extends ConsumerState<EventPage> {
                               _buildStatusButton('ACCEPT', statusType, () async {
                                 await _handleStatusChange('ACCEPT', participant.participantId, event);
                               }),
-                              const SizedBox(width: 8),
+                              SizedBox(width: width * 0.015),
                               _buildStatusButton('PARTY', statusType, () async {
                                 await _handleStatusChange('PARTY', participant.participantId, event);
                               }),
-                              const SizedBox(width: 8),
+                              SizedBox(width: width * 0.015),
                               _buildStatusButton('DENY', statusType, () async {
                                 await _handleStatusChange('DENY', participant.participantId, event);
                               }),
                             ],
                           ),
                           Container(
-                            margin: const EdgeInsets.only(top: 8.0),
+                            margin: EdgeInsets.only(top: height * 0.005),
                             decoration: const BoxDecoration(
                               border: Border(top: BorderSide(color: Colors.grey)),
                             ),
@@ -397,10 +405,15 @@ class EventPageState extends ConsumerState<EventPage> {
                                   },
                                   style: TextButton.styleFrom(
                                     foregroundColor: Colors.green,
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: height * 0.005, // 반응형 상하 패딩
+                                      horizontal: width * 0.02, // 반응형 좌우 패딩
+                                    ),
+                                    minimumSize: Size(width * 0.2, height * 0.04), // 최소 크기 설정
                                   ),
-                                  child: const Text(
+                                  child: Text(
                                     '세부 정보 보기',
-                                    style: TextStyle(color: Colors.black),
+                                    style: TextStyle(color: Colors.black, fontSize: width * 0.035),
                                   ),
                                 ),
                                 TextButton(
@@ -415,6 +428,11 @@ class EventPageState extends ConsumerState<EventPage> {
                                   },
                                   style: TextButton.styleFrom(
                                     foregroundColor: Colors.green,
+                                    padding: EdgeInsets.symmetric(
+                                      vertical: height * 0.005, // 반응형 상하 패딩
+                                      horizontal: width * 0.02, // 반응형 좌우 패딩
+                                    ),
+                                    minimumSize: Size(width * 0.2, height * 0.04), // 최소 크기 설정
                                   ),
                                   child: Text(
                                     currentTime.isAfter(event.endDateTime) ? '결과 조회'
@@ -423,6 +441,7 @@ class EventPageState extends ConsumerState<EventPage> {
 
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
+                                      fontSize: width * 0.035,
                                       color: currentTime.isBefore(event.startDateTime)
                                           ? Colors.grey // 비활성화된 텍스트 색상
                                           : Colors.black, // 활성화된 텍스트 색상

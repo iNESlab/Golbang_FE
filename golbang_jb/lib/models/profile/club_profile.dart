@@ -10,10 +10,12 @@ class ClubProfile{
   });
 
   factory ClubProfile.fromJson(Map<String, dynamic> json) {
+    int groupId = json['id'] ?? 0;
+    String defaultImage = 'assets/images/golbang_group_${groupId % 7}.png';
     return ClubProfile(
         clubId: json['id'],
         name: json['name'],
-        image: json['image'] ?? 'assets/images/golbang_group_default.png'
+        image: defaultImage
     );
   }
 }

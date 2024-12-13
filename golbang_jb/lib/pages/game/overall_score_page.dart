@@ -49,10 +49,11 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
     SecureStorage secureStorage = ref.read(secureStorageProvider);
     final accessToken = await secureStorage.readAccessToken();
     _channel = IOWebSocketChannel.connect(
-      Uri.parse('${dotenv.env['WS_HOST']}/participants/${_myParticipantId}/event/stroke'),
+      Uri.parse('${dotenv
+          .env['WS_HOST']}/participants/${_myParticipantId}/event/stroke'),
       headers: {
         'Authorization': 'Bearer $accessToken', // 토큰을 헤더에 포함
-      },// 실제 WebSocket 서버 주소로 변경
+      }, // 실제 WebSocket 서버 주소로 변경
     );
 
     // WebSocket 데이터 수신 처리
@@ -88,8 +89,8 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
             (p) => p.participantId == _myParticipantId,
       );
     } catch (e) {
-      player = null;  // 참가자가 없을 경우 null을 할당
-    }// _players가 비어있는 경우 null 반환
+      player = null; // 참가자가 없을 경우 null을 할당
+    } // _players가 비어있는 경우 null 반환
 
     print('player: $player');
 
@@ -120,11 +121,21 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery
+        .of(context)
+        .size
+        .width;
+    final height = MediaQuery
+        .of(context)
+        .size
+        .height;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
           '${widget.event.eventTitle} - 전체 현황',
-          style: TextStyle(color: Colors.white),
+          style: TextStyle(
+              color: Colors.white, fontSize: width * 0.05), // 반응형 폰트 크기
         ),
         backgroundColor: Colors.black,
         leading: IconButton(
@@ -139,7 +150,6 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
             icon: Icon(Icons.refresh),
             color: Colors.white,
             onPressed: () async {
-              // 새로고침 버튼 클릭 시 기본 정렬로 갱신
               await _changeSort(_handicapOn ? 'handicap_score' : 'sum_score');
             },
           ),
@@ -147,135 +157,165 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
       ),
       backgroundColor: Colors.black,
       body: _players.isEmpty
-          ? const Center(
-              child: Text(
-                  '스코어를 기록한 참가자가 없습니다.',
-                  style: TextStyle(color: Colors.white)
-              )
-            )
+          ? Center(
+        child: Text(
+          '스코어를 기록한 참가자가 없습니다.',
+          style: TextStyle(
+              color: Colors.white, fontSize: width * 0.04), // 반응형 폰트 크기
+        ),
+      )
           : Column(
-              children: [
-                _buildHeader(),
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: _players.length,
-                    itemBuilder: (context, index) {
-                      return _buildPlayerItem(_players[index]);
-                    },
-                  ),
-                ),
-              ],
-            ),
-    );
-  }
-
-  String _formattedDate(DateTime dateTime) {
-    return dateTime
-        .toIso8601String()
-        .split('T')
-        .first; // T 문자로 나누고 첫 번째 부분만 가져옴
-  }
-
-  Widget _buildHeader() {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
-      color: Colors.black,
-      child: Row(
         children: [
-          // 왼쪽 Column
+          _buildHeader(width, height),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                CircleAvatar(
-                  backgroundImage: _clubProfile.image.startsWith('http')
-                      ? NetworkImage(_clubProfile.image)
-                      : AssetImage(_clubProfile.image) as ImageProvider,
-                ),
-                SizedBox(height: 8),
-                Text(
-                  '${widget.event.club!.name}',
-                  style: TextStyle(color: Colors.white, fontSize: 16),
-                ),
-              ],
+            child: ListView.builder(
+              itemCount: _players.length,
+              itemBuilder: (context, index) {
+                return _buildPlayerItem(_players[index], width, height);
+              },
             ),
-          ),
-          // 중간 Column
-          Column(
-            children: [
-              Text(
-                '${_formattedDate(widget.event.startDateTime)}',
-                style: TextStyle(color: Colors.white, fontSize: 14),
-              ),
-              SizedBox(height: 8),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.white,
-                ),
-                child: const Text(
-                  '스코어카드 가기',
-                  style: TextStyle(color: Colors.grey, fontSize: 14),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(width: 16), // 간격 추가
-          // Rank Indicator
-          Column(
-            children: [
-              _buildRankIndicator('My Rank', _getMyRank(), Colors.red),
-            ],
-          ),
-          SizedBox(width: 16), // 간격 추가
-          // Handicap Toggle
-          Column(
-            children: [
-              _buildHandicapToggle(),
-            ],
           ),
         ],
       ),
     );
   }
 
-  Widget _buildRankIndicator(String title, String value, Color color) {
+  String _formattedDate(DateTime dateTime) {
+    return dateTime.toIso8601String().split('T').first; // T 문자로 나누고 첫 번째 부분만 가져옴
+  }
+  Widget _buildHeader(double width, double height) {
     return Container(
-      padding: EdgeInsets.all(8),
+      padding: EdgeInsets.symmetric(
+        vertical: height * 0.02, // 반응형 상하 패딩
+        horizontal: width * 0.03, // 반응형 좌우 패딩
+      ),
+      color: Colors.black,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // 요소 간 간격 균등 배분
+        crossAxisAlignment: CrossAxisAlignment.center, // 수직 중앙 정렬
+        children: [
+          // 아바타와 클럽 이름
+          Expanded(
+            flex: 2, // 비율 조정
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: width * 0.06, // 반응형 아바타 크기
+                  backgroundImage: _clubProfile.image.startsWith('http')
+                      ? NetworkImage(_clubProfile.image)
+                      : AssetImage(_clubProfile.image) as ImageProvider,
+                ),
+                SizedBox(height: height * 0.01), // 반응형 간격
+                Text(
+                  '${widget.event.club!.name}',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: width * 0.035,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          // 날짜와 버튼
+          Expanded(
+            flex: 2, // 비율 조정
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  '${_formattedDate(widget.event.startDateTime)}',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: width * 0.035,
+                  ),
+                ),
+                SizedBox(height: height * 0.01),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    padding: EdgeInsets.symmetric(
+                      vertical: height * 0.01,
+                      horizontal: width * 0.03,
+                    ), // 반응형 버튼 패딩
+                  ),
+                  child: Text(
+                    '스코어카드 가기',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: width * 0.03,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // 랭크 표시와 토글
+          Expanded(
+            flex: 3, // 비율 조정
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly, // 요소 간 간격 균등
+              children: [
+                _buildRankIndicator(
+                  'My Rank',
+                  _getMyRank(),
+                  Colors.red,
+                  width,
+                  height,
+                ),
+                _buildHandicapToggle(width, height),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRankIndicator(String title, String value, Color color,
+      double width, double height) {
+    return Container(
+      padding: EdgeInsets.all(width * 0.03), // 반응형 패딩
       decoration: BoxDecoration(
         color: color,
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: BorderRadius.circular(width * 0.02), // 반응형 모서리 반경
       ),
       child: Column(
         children: [
           Text(
             title,
-            style: TextStyle(color: Colors.white, fontSize: 12),
+            style: TextStyle(
+                color: Colors.white, fontSize: width * 0.03), // 반응형 폰트 크기
           ),
           Text(
             value,
-            style: TextStyle(color: Colors.white, fontSize: 14),
+            style: TextStyle(
+                color: Colors.white, fontSize: width * 0.035), // 반응형 폰트 크기
           ),
         ],
       ),
     );
   }
 
-  Widget _buildHandicapToggle() {
+  Widget _buildHandicapToggle(double width, double height) {
     return Column(
       children: [
-        const Text(
+        Text(
           'Handicap',
-          style: TextStyle(color: Colors.white, fontSize: 12),
+          style: TextStyle(
+              color: Colors.white, fontSize: width * 0.03), // 반응형 폰트 크기
         ),
         Switch(
           value: _handicapOn,
           onChanged: (value) {
             setState(() async {
               _handicapOn = value;
-              if(_handicapOn)
+              if (_handicapOn)
                 await _changeSort('handicap_score');
               else
                 await _changeSort('sum_score');
@@ -287,55 +327,68 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
     );
   }
 
-  Widget _buildPlayerItem(Rank player) {
-    // TODO: 이벤트 게임 결과 UI 참고해서 최종 완성하기
+  Widget _buildPlayerItem(Rank player, double width, double height) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 12.0),
+      padding: EdgeInsets.symmetric(
+        vertical: height * 0.01, // 반응형 상하 패딩
+        horizontal: width * 0.03, // 반응형 좌우 패딩
+      ),
       child: Container(
-        padding: EdgeInsets.all(8.0),
+        padding: EdgeInsets.all(width * 0.02), // 반응형 내부 패딩
         decoration: BoxDecoration(
-          color: Colors.grey[900],
-          borderRadius: BorderRadius.circular(8),
+          color: Colors.grey[800],
+          borderRadius: BorderRadius.circular(width * 0.03), // 반응형 모서리 반경
         ),
         child: Row(
           children: [
             CircleAvatar(
+              radius: width * 0.05, // 반응형 아바타 크기
               backgroundImage: player.profileImage.startsWith('http')
                   ? NetworkImage(player.profileImage)
                   : AssetImage(player.profileImage) as ImageProvider,
             ),
-            SizedBox(width: 10),
+            SizedBox(width: width * 0.03), // 반응형 간격
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${_handicapOn ? player.handicapRank : player.rank} ${player.userName}',
-                    style: TextStyle(color: Colors.white, fontSize: 16),
+                    '${_handicapOn ? player.handicapRank : player.rank} ${player
+                        .userName}',
+                    style: TextStyle(color: Colors.white,
+                        fontSize: width * 0.04), // 반응형 폰트 크기
                   ),
                   Text(
                     '${player.lastHoleNumber}홀',
-                    style: TextStyle(color: Colors.white54, fontSize: 14),
+                    style: TextStyle(color: Colors.white54,
+                        fontSize: width * 0.035), // 반응형 폰트 크기
                   ),
                 ],
               ),
             ),
             if (player.participantId == _myParticipantId)
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                padding: EdgeInsets.symmetric(
+                  horizontal: width * 0.02,
+                  vertical: height * 0.01,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.blue,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(width * 0.02),
                 ),
-                child: const Text(
+                child: Text(
                   'Me',
-                  style: TextStyle(color: Colors.white, fontSize: 12),
+                  style: TextStyle(
+                      color: Colors.white, fontSize: width * 0.03), // 반응형 폰트 크기
                 ),
               ),
             Spacer(),
             Text(
-              '${player.lastScore > 0 ? '+${player.lastScore}' : player.lastScore} (${_handicapOn ? player.handicapScore : player.sumScore})',
-              style: TextStyle(color: Colors.white, fontSize: 16),
+              '${player.lastScore > 0 ? '+${player.lastScore}' : player
+                  .lastScore} (${_handicapOn ? player.handicapScore : player
+                  .sumScore})',
+              style: TextStyle(
+                  color: Colors.white, fontSize: width * 0.035), // 반응형 폰트 크기
             ),
           ],
         ),

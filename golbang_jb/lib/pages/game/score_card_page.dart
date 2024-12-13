@@ -42,6 +42,23 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
   late final ClubProfile _clubProfile;
   final Map<int, List<TextEditingController>> _controllers = {}; // TextEditingController를 참가자별로 관리
 
+  late double width;
+  late double height;
+  late double fontSizeLarge;
+  late double fontSizeSmall;
+  late double avatarSize;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final size = MediaQuery.of(context).size; // 화면 크기 가져오기
+    width = size.width;
+    height = size.height;
+    fontSizeLarge = width * 0.04; // 너비의 4%를 폰트 크기로 사용
+    fontSizeSmall = width * 0.03; // 너비의 3%를 폰트 크기로 사용
+    avatarSize = width * 0.1; // 아바타 크기를 화면 너비의 10%로 설정
+  }
+
   @override
   initState() {
     super.initState();
@@ -341,7 +358,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
               ],
             ),
           ),
-          SizedBox(height: 8), // 거리 조정
+          SizedBox(height: height * 0.01), // 거리 조정
           _buildSummaryTable(_teamMembers.map((m) => m.handicapScore).toList()), // 페이지 넘김 없이 고정된 스코어 요약 표
         ],
       ),
@@ -354,9 +371,10 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
   }
 
   Widget _buildHeader() {
+
     return Container(
       color: Colors.black,
-      padding: EdgeInsets.symmetric(vertical: 16.0, horizontal: 12.0),
+      padding: EdgeInsets.symmetric(vertical: height * 0.02, horizontal: width * 0.04),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -367,18 +385,18 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
                     ? NetworkImage(_clubProfile.image)
                     : AssetImage(_clubProfile.image) as ImageProvider,
               ),
-              SizedBox(width: 10),
+              SizedBox(width: width * 0.03),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('${widget.event.club!.name}', style: TextStyle(color: Colors.white, fontSize: 16)),
-                  SizedBox(height: 4),
-                  Text('${_formattedDate(widget.event.startDateTime)}', style: TextStyle(color: Colors.white, fontSize: 14)),
+                  Text('${widget.event.club!.name}', style: TextStyle(color: Colors.white, fontSize: fontSizeLarge)),
+                  SizedBox(height: height * 0.005),
+                  Text('${_formattedDate(widget.event.startDateTime)}', style: TextStyle(color: Colors.white, fontSize: fontSizeSmall)),
                 ],
               ),
             ],
           ),
-          SizedBox(height: 8),
+          SizedBox(height: height * 0.025),
           Row(
             children: [
               Expanded(
@@ -429,8 +447,14 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
     return SingleChildScrollView(
       child: Container(
         color: Colors.black,
-        padding: const EdgeInsets.all(16.0),
+        padding: EdgeInsets.symmetric(vertical: height * 0.0025, horizontal: width * 0.04),
         child: Table(
+          columnWidths: {
+            0: FixedColumnWidth(50.0), // 첫 번째 열 (홀 번호) 고정 너비
+            1: FlexColumnWidth(1),    // 두 번째 열 비율로 설정
+            for (int i = 2; i <= _teamMembers.length + 1; i++)
+              i: FlexColumnWidth(1), // 나머지 열 비율로 설정
+          },
           border: TableBorder.all(color: Colors.grey),
           children: [
             _buildTableHeaderRow(),
@@ -453,71 +477,75 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
   }
 
   Widget _buildTableHeaderCell(String title) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.0, horizontal: 2.0),
+    return Container(
+      color: Colors.grey[800], // 진한 회색 배경
+      padding: EdgeInsets.symmetric(vertical: height * 0.005, horizontal: width * 0.01),
       child: Center(
         child: Text(
           title,
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.white), // 텍스트 색상 유지
           textAlign: TextAlign.center,
+          overflow: TextOverflow.ellipsis, // 텍스트가 넘어가면 ...으로 표시
+          maxLines: 1, // 한 줄만 표시
         ),
       ),
     );
   }
 
   TableRow _buildEditableTableRow(int holeIndex) {
+    final cellHeight = height * 0.038;
     return TableRow(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Center(
-            child: Text(
-              (holeIndex + 1).toString(),
-              style: const TextStyle(color: Colors.white),
-              textAlign: TextAlign.center,
-            ),
+        // 첫 번째 열: 홀 번호
+        Container(
+          alignment: Alignment.center, // 수직 및 수평 중앙 정렬
+          height: cellHeight, // 반응형 높이 설정
+          child: Text(
+            (holeIndex + 1).toString(),
+            style: TextStyle(color: Colors.white, fontSize: fontSizeSmall),
+            textAlign: TextAlign.center,
           ),
         ),
+
+        // 나머지 열: 참가자 점수
         ..._teamMembers.map((ScoreCard member) {
-          if (_scorecard[member.participantId] != null && holeIndex < _scorecard[member.participantId]!.length) {
-            return Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Center(
-                child: TextFormField(
-                  controller: _controllers[member.participantId]?[holeIndex], // 컨트롤러 연결
-                  style: TextStyle(color: Colors.white),
-                  textAlign: TextAlign.center,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [AllowNegativeNumbersFormatter()],
-                  focusNode: _focusNodes[member.participantId]?[holeIndex] ?? FocusNode(),
-                  onChanged: (value) {
-                    final score = int.tryParse(value) ?? 0;
-                    _scorecard[member.participantId]![holeIndex] = HoleScore(
-                      holeNumber: holeIndex,
-                      score: score,
-                    );
-                  },
-                  onFieldSubmitted: (value) {
-                    final score = int.tryParse(value) ?? 0;
-                    _updateScore(member.participantId, holeIndex + 1, score);
-                  },
-                  decoration: const InputDecoration(
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 4.0),
-                    border: InputBorder.none,
-                    hintStyle: TextStyle(color: Colors.grey),
-                  ),
+          if (_scorecard[member.participantId] != null &&
+              holeIndex < _scorecard[member.participantId]!.length) {
+            return Container(
+              alignment: Alignment.center, // 수직 및 수평 중앙 정렬
+              height: cellHeight, // 반응형 높이 설정
+              child: TextFormField(
+                controller: _controllers[member.participantId]?[holeIndex],
+                style: TextStyle(color: Colors.white, fontSize: fontSizeSmall + 2),
+                textAlign: TextAlign.center,
+                inputFormatters: [AllowNegativeNumbersFormatter()],
+                focusNode: _focusNodes[member.participantId]?[holeIndex] ?? FocusNode(),
+                onChanged: (value) {
+                  final score = int.tryParse(value) ?? 0;
+                  _scorecard[member.participantId]![holeIndex] = HoleScore(
+                    holeNumber: holeIndex,
+                    score: score,
+                  );
+                },
+                onFieldSubmitted: (value) {
+                  final score = int.tryParse(value) ?? 0;
+                  _updateScore(member.participantId, holeIndex + 1, score);
+                },
+                decoration: const InputDecoration(
+                  isDense: true,
+                  contentPadding: EdgeInsets.zero, // 패딩 제거
+                  border: InputBorder.none,
+                  hintStyle: TextStyle(color: Colors.grey),
                 ),
               ),
             );
           } else {
-            return const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Center(
-                child: Text(
-                  '-',
-                  style: TextStyle(color: Colors.white),
-                ),
+            return Container(
+              alignment: Alignment.center,
+              height: cellHeight, // 반응형 높이 설정
+              child: const Text(
+                '-',
+                style: TextStyle(color: Colors.white),
               ),
             );
           }
@@ -526,39 +554,64 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
     );
   }
 
+
   Widget _buildSummaryTable(List<int> handiScores) {
-    List<int> frontNine = _calculateScores(0,9);
+    final cellHeight = height * 0.042; // 반응형 높이 (화면 높이의 7%)
+    final cellFontSize = fontSizeSmall + 1;
+    List<int> frontNine = _calculateScores(0, 9);
     List<int> backNine = _calculateScores(9, 18);
-    List<int> totalScores = List.generate(frontNine.length, (index) => frontNine[index] + backNine[index]);
+    List<int> totalScores = List.generate(
+        frontNine.length, (index) => frontNine[index] + backNine[index]);
     List<int> handicapScores = handiScores;
 
     return Container(
       color: Colors.black,
-      padding: EdgeInsets.all(16.0),
+      padding: EdgeInsets.all(width * 0.04), // 반응형 패딩
       child: Table(
         border: TableBorder.all(color: Colors.grey),
+        columnWidths: {
+          0: FixedColumnWidth(width * 0.2), // 첫 번째 열 (라벨 열) 너비 고정
+          for (int i = 1; i <= _teamMembers.length; i++)
+            i: FlexColumnWidth(1), // 나머지 열 비율로 설정
+        },
         children: [
-          _buildSummaryTableRow(['', ..._teamMembers.map((m) => m.userName ?? 'N/A').toList()]),
-          _buildSummaryTableRow(['전반', ...frontNine.map((e) => e.toString()).toList()]),
-          _buildSummaryTableRow(['후반', ...backNine.map((e) => e.toString()).toList()]),
-          _buildSummaryTableRow(['스코어', ...totalScores.map((e) => e.toString()).toList()]),
-          _buildSummaryTableRow(['핸디 스코어', ...handicapScores.map((e) => e.toString()).toList()]),
+          _buildSummaryTableFirstRow(['', ..._teamMembers.map((m) => m.userName ?? 'N/A').toList()], cellHeight, cellFontSize),
+          _buildSummaryTableRow(['전반', ...frontNine.map((e) => e.toString()).toList()], cellHeight, cellFontSize),
+          _buildSummaryTableRow(['후반', ...backNine.map((e) => e.toString()).toList()], cellHeight, cellFontSize),
+          _buildSummaryTableRow(['스코어', ...totalScores.map((e) => e.toString()).toList()], cellHeight, cellFontSize),
+          _buildSummaryTableRow(['핸디 스코어', ...handicapScores.map((e) => e.toString()).toList()], cellHeight, cellFontSize),
         ],
       ),
     );
   }
 
-  TableRow _buildSummaryTableRow(List<String> cells) {
+  TableRow _buildSummaryTableFirstRow(List<String> cells, double cellHeight, double cellFontSize) {
     return TableRow(
       children: cells.map((cell) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 0.0), // 간격 조정
-          child: Center(
-            child: Text(
-              cell,
-              style: TextStyle(color: Colors.white),
-              textAlign: TextAlign.center,
-            ),
+        return Container(
+          alignment: Alignment.center, // 수직 및 수평 중앙 정렬
+          height: cellHeight, // 반응형 높이 설정
+          color: Colors.grey[800],
+          child: Text(
+            cell,
+            style: TextStyle(color: Colors.white, fontSize: cellFontSize), // 반응형 폰트 크기 설정
+            textAlign: TextAlign.center,
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  TableRow _buildSummaryTableRow(List<String> cells, double cellHeight, double cellFontSize) {
+    return TableRow(
+      children: cells.map((cell) {
+        return Container(
+          alignment: Alignment.center, // 수직 및 수평 중앙 정렬
+          height: cellHeight, // 반응형 높이 설정
+          child: Text(
+            cell,
+            style: TextStyle(color: Colors.white, fontSize: cellFontSize), // 반응형 폰트 크기 설정
+            textAlign: TextAlign.center,
           ),
         );
       }).toList(),
