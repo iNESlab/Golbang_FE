@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
+import 'dart:ui' as ui;
+
 import 'package:golbang/pages/event/event_detail.dart';
 import 'package:golbang/pages/home/home_page.dart';
 import 'package:timeago/timeago.dart' as timeago;
@@ -155,8 +157,9 @@ class NotificationHistoryPageState extends ConsumerState<NotificationHistoryPage
                 final notification = notifications[index];
                 final createdAt =
                 DateTime.parse(notification['timestamp']); // timestamp 변환
+                final locale = ui.window.locale.toString(); // 예: "ko_KR"
                 final relativeTime =
-                timeago.format(createdAt, locale: 'ko'); // 상대적 시간 계산
+                timeago.format(createdAt, locale: locale.substring(0, 2)); // 상대적 시간 계산
                 return Dismissible(
                   key: Key(notification['notification_id'].toString()),
                   direction: DismissDirection.endToStart,
