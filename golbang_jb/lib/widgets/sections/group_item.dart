@@ -26,9 +26,22 @@ class GroupItem extends StatelessWidget {
           height: screenWidth / 5, // 화면 너비의 1/6 크기
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
-            child: Image.asset(
+            child: image.contains('mygolbangbucket') // 문자열 검사
+                ? Image.network(
               image,
               fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Icon(
+                Icons.broken_image,
+                color: Colors.grey,
+              ), // 네트워크 에러 처리
+            )
+                : Image.asset(
+              image,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => Icon(
+                Icons.broken_image,
+                color: Colors.grey,
+              ), // 로컬 파일 에러 처리
             ),
           ),
         ),
