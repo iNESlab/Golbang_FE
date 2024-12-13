@@ -30,15 +30,16 @@ class _SplashScreenState extends State<SplashScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset('assets/images/logo_v2.png'),
+            Image.asset(
+              'assets/images/logo_white.png',
+               width: 200,
+            ),
             const SizedBox(height: 16),
-            const Text(
-              'GOLBANG',
-              style: TextStyle(
-                fontSize: 48,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+            Image.asset(
+              'assets/images/text-logo-white.png',  // 텍스트 로고 이미지
+              width: 300, // 이미지 크기 조정
+              fit: BoxFit.contain,
+
             ),
           ],
         ),

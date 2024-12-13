@@ -15,22 +15,19 @@ class LoginTitle extends StatelessWidget {
               child: Align(
                 alignment: Alignment.centerRight, // 왼쪽 정렬
                 child: const CircleAvatar(
-                  radius: 35,
+                  radius: 25,
                   backgroundColor: Colors.transparent,
-                  backgroundImage: AssetImage('assets/images/logo.png'), // 이미지 설정
+                  backgroundImage: AssetImage('assets/images/logo-green.png'), // 이미지 설정
                 ),
               ),
             ),
             Expanded(
               flex: 2, // 가운데 영역
-              child: const Center( // 텍스트를 가운데 정렬
-                child: Text(
-                  ' GOLBANG',
-                  style: TextStyle(
-                    fontSize: 35,  // 텍스트 크기를 더 크게 설정
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+              child: const Center(
+                child: Image(
+                  image: AssetImage('assets/images/text-logo-green.png'), // 텍스트 로고 이미지 설정
+                  width: 150, // 이미지 크기 조정
+                  fit: BoxFit.contain,
                 ),
               ),
             ),
