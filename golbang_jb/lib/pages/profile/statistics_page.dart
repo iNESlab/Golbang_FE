@@ -398,10 +398,12 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
       children: [
         CircleAvatar(
           radius: 30,
-          backgroundImage: imagePath != null
-              ? AssetImage(imagePath) // 이미지가 있으면 로컬 이미지 사용
-              : null, // 이미지가 없으면 배경 이미지를 표시하지 않음
-          child: imagePath == null // 이미지가 없을 경우만 텍스트 표시
+          backgroundImage: imagePath != null && imagePath.contains('http')
+              ? NetworkImage(imagePath) // 네트워크 이미지
+              : imagePath != null
+              ? AssetImage(imagePath) as ImageProvider // 로컬 파일
+              : null, // 이미지가 없으면 null 처리
+          child: imagePath == null
               ? Text(
             groupName.substring(0, 1), // 그룹 이름의 첫 글자만 보여줌
             style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -409,7 +411,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
               : null, // 이미지가 있으면 텍스트를 숨김
         ),
         const SizedBox(height: 8),
-        Text(groupName, style: const TextStyle(fontSize: 14)), // 그룹별 랭킹 표시
+        Text(groupName, style: const TextStyle(fontSize: 14)), // 그룹 이름 표시
       ],
     );
   }
