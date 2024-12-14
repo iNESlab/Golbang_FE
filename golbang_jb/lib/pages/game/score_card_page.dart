@@ -317,6 +317,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text('${widget.event.eventTitle}', style: TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,

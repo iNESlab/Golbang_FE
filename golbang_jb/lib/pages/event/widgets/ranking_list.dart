@@ -66,8 +66,9 @@ class RankingList extends StatelessWidget {
                         radius: 30,
                         backgroundColor: Colors.transparent,
                         child: ClipOval(
-                          child: Image.network(
-                            profileImage.isNotEmpty ? profileImage : 'assets/images/user_default.png',
+                          child: profileImage.isNotEmpty
+                              ? Image.network(
+                            profileImage,
                             width: 40,
                             height: 40,
                             fit: BoxFit.cover,
@@ -79,6 +80,12 @@ class RankingList extends StatelessWidget {
                                 fit: BoxFit.cover,
                               );
                             },
+                          )
+                              : Image.asset(
+                            'assets/images/user_default.png',
+                            width: 40,
+                            height: 40,
+                            fit: BoxFit.cover,
                           ),
                         ),
                       ),
