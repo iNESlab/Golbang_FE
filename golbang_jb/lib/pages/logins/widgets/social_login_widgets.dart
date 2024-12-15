@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:golbang/pages/signup/terms_agreement_page.dart';
 import 'package:golbang/pages/logins/widgets/forgot_password.dart';
 
 import '../hi_screen.dart';
@@ -109,7 +110,7 @@ class SignUpLink extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const HiScreen()),
+                  MaterialPageRoute(builder: (context) => TermsAgreementPage()),
                 );
               },
               child: const Text(
