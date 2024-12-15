@@ -31,7 +31,7 @@ class ClubMemberService {
     // 응답 코드가 200(성공)인지 확인
     if (response.statusCode == 200) {
       // JSON 데이터 파싱
-      var jsonData = json.decode(utf8.decode(response.bodyBytes));
+      final jsonData = jsonDecode(utf8.decode(response.bodyBytes));
       print("json: ${jsonData['data']}");
 
       return (jsonData['data'] as List)
