@@ -103,8 +103,8 @@ class SignUpLink extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              "Don't have an account?  ",
-              style: TextStyle(color: Colors.grey[400]),
+              "계정이 없으신가요? ",
+              style: TextStyle(color: Colors.grey[600]),
             ),
             GestureDetector(
               onTap: () {
@@ -114,22 +114,22 @@ class SignUpLink extends StatelessWidget {
                 );
               },
               child: const Text(
-                'Sign Up',
+                '회원가입',
                 style: TextStyle(
-                  color: Colors.blueAccent,
+                  color: Colors.black87,
                   fontWeight: FontWeight.bold,
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 16), // 원하는 간격 조정
+        const SizedBox(height: 8), // 원하는 간격 조정
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               "비밀번호를 잊으셨나요?  ",
-              style: TextStyle(color: Colors.grey[400]),
+              style: TextStyle(color: Colors.grey[600]),
             ),
             GestureDetector(
               onTap: () {
@@ -142,9 +142,9 @@ class SignUpLink extends StatelessWidget {
                 );
               },
               child: const Text(
-                'Reset it',
+                '비밀번호 초기화',
                 style: TextStyle(
-                  color: Colors.blueAccent,
+                  color: Colors.black87,
                   fontWeight: FontWeight.bold,
                 ),
               ),
