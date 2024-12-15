@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../forget_password.dart';
 
 class LoginTitle extends StatelessWidget {
   const LoginTitle({Key? key}) : super(key: key);
@@ -10,7 +9,7 @@ class LoginTitle extends StatelessWidget {
       children: [
         Row(
           children: [
-            Expanded(
+            const Expanded(
               flex: 1, // 왼쪽 영역
               child: Align(
                 alignment: Alignment.centerRight, // 왼쪽 정렬
@@ -21,7 +20,7 @@ class LoginTitle extends StatelessWidget {
                 ),
               ),
             ),
-            Expanded(
+            const Expanded(
               flex: 2, // 가운데 영역
               child: const Center(
                 child: Image(
@@ -148,34 +147,6 @@ class _PasswordFieldState extends State<PasswordField> {
           style: const TextStyle(color: Colors.white),
         ),
       ],
-    );
-  }
-}
-
-
-class ForgotPasswordLink extends StatelessWidget {
-  const ForgotPasswordLink({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-                builder: (context) => const ForgotPasswordPage()),
-          );
-        },
-        child: const Text(
-          'Forgot Password',
-          style: TextStyle(
-            color: Colors.redAccent,
-            fontSize: 14,
-          ),
-        ),
-      ),
     );
   }
 }

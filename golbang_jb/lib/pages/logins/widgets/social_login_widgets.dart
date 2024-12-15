@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:golbang/pages/logins/widgets/forgot_password.dart';
 
 import '../hi_screen.dart';
 
@@ -95,29 +96,61 @@ class SignUpLink extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Column(
       children: [
-        Text(
-          "Don't have an account? ",
-          style: TextStyle(color: Colors.grey[400]),
-        ),
-        GestureDetector(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const HiScreen()),
-            );
-          },
-          child: const Text(
-            'Sign Up',
-            style: TextStyle(
-              color: Colors.blueAccent,
-              fontWeight: FontWeight.bold,
+          Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "Don't have an account?  ",
+              style: TextStyle(color: Colors.grey[400]),
             ),
-          ),
+            GestureDetector(
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const HiScreen()),
+                );
+              },
+              child: const Text(
+                'Sign Up',
+                style: TextStyle(
+                  color: Colors.blueAccent,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
         ),
-      ],
+        const SizedBox(height: 16), // 원하는 간격 조정
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              "비밀번호를 잊으셨나요?  ",
+              style: TextStyle(color: Colors.grey[400]),
+            ),
+            GestureDetector(
+              onTap: () {
+                // showDialog로 다이얼로그 띄우기
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return const ForgotPasswordDialog();
+                  },
+                );
+              },
+              child: const Text(
+                'Reset it',
+                style: TextStyle(
+                  color: Colors.blueAccent,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ]
     );
   }
 }
