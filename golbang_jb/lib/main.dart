@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:golbang/pages/group/group_main.dart';
@@ -16,14 +17,6 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:golbang/provider/user/user_service_provider.dart';
-import 'services/user_service.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get/get.dart';
-import 'package:golbang/pages/event/event_detail.dart';
-import 'package:golbang/services/event_service.dart';
-import 'package:golbang/repoisitory/secure_storage.dart';
-import 'package:golbang/models/event.dart';
 import 'dart:async';
 
 // timezone 패키지 추가
@@ -72,6 +65,23 @@ class MyApp extends StatelessWidget {
       child: GetMaterialApp(
         title: 'GOLBANG MAIN PAGE',
         debugShowCheckedModeBanner: false,
+
+        // 로캘 설정(앱의 기본 언어와 지역을 설정)
+        locale: const Locale('ko', 'KR'),
+
+        // 지원 로캘
+        supportedLocales: const [
+          Locale('en', 'US'), // 영어
+          Locale('ko', 'KR'), // 한국어
+        ],
+
+        // 로컬라이제이션 델리게이트 설정
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,  // Material 위젯 번역 지원
+          GlobalWidgetsLocalizations.delegate,  // 기본 Flutter 위젯 번역 지원
+          GlobalCupertinoLocalizations.delegate, // iOS 위젯 번역 지원
+        ],
+
         theme: ThemeData(
           fontFamily: 'KoPubWorld',
           primarySwatch: Colors.green,
