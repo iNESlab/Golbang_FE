@@ -80,6 +80,28 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isAutoLoginEnabled = false;
 
+  // 저장된 이메일 불러오기
+  Future<void> _loadSavedEmail() async {
+    try {
+      final storage = ref.read(secureStorageProvider); // SecureStorage 인스턴스 가져오기
+      final savedEmail = await storage.readLoginId(); // 로그인 ID 불러오기
+
+      if (savedEmail != null) {
+        setState(() {
+          _emailController.text = savedEmail; // 이메일 필드에 자동완성
+        });
+      }
+    } catch (e) {
+      print('이메일 불러오기 실패: $e');
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedEmail(); // 앱 실행 시 저장된 이메일 불러오기
+  }
+
   Future<void> _setAutoLogin(String token) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isAutoLoginEnabled', true); // 설정 저장
@@ -133,7 +155,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           password: password,
           fcm_token: fcmToken ?? '',
         );
-        await _handleLoginResponse(response);
+        await _handleLoginResponse(response, email);
       } catch (e) {
         _showErrorDialog('An error occurred. Please try again.');
       }
@@ -146,12 +168,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     return email.isNotEmpty && password.isNotEmpty;
   }
 
-  Future<void> _handleLoginResponse(http.Response response) async {
+  Future<void> _handleLoginResponse(http.Response response, String email) async {
     if (response.statusCode == 200) {
+      // 로그인 성공 시 이메일 저장
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('로그인 성공!')),
+      );
+
       final body = json.decode(response.body);
       var accessToken = body['data']['access_token'];
       await _setAutoLogin(accessToken);
+
       final storage = ref.watch(secureStorageProvider);
+      await storage.saveLoginId(email);
       await storage.saveAccessToken(accessToken);
       if (mounted) {
         Navigator.pushReplacement(

@@ -70,5 +70,31 @@ class SecureStorage {
       throw StateError('Failed to retrieve access token: $e');
     }
   }
+
+  Future<void> saveLoginId(String loginId) async {
+    try {
+      print('[LOGIN] saveLoginId: $loginId');
+      await storage.write(key: 'LOGIN_ID', value: loginId);
+    } catch (e) {
+      print("[ERR] LoginId 저장 실패: $e");
+    }
+  }
+
+  Future<String> readLoginId() async {
+    try {
+      final loginId = await storage.read(key: 'LOGIN_ID');
+      print('[LOGIN] readLoginId: $loginId');
+      //final refreshToken = await storage.read(key: REFRESH_TOKEN);
+      //print('[SECURE_STORAGE] readRefreshToken: $refreshToken');
+
+      if(loginId == null)
+        throw StateError('loginId is not available');
+
+      return loginId;
+    } catch (e) {
+      print("[ERR] loginId 불러오기 실패: $e");
+      throw StateError('Failed to retrieve loginId: $e');
+    }
+  }
 }
 
