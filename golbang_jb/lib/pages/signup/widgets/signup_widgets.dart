@@ -150,9 +150,11 @@ class SubmitButton extends StatelessWidget {
     return ElevatedButton(
       onPressed: onPressed,
       style: ElevatedButton.styleFrom(
+        backgroundColor: Colors.green,
+        disabledBackgroundColor: Colors.grey.shade300,
         minimumSize: Size(double.infinity, 50),
       ),
-      child: Text('다음'),
+      child: Text('다음', style: TextStyle(color: Colors.white, fontSize: 16)),
     );
   }
 }

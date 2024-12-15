@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:golbang/pages/signup/widgets/welcome_header_widget.dart';
 import 'signup.dart'; // SignUpPage를 불러옵니다.
 
 class TermsAgreementPage extends StatefulWidget {
@@ -65,21 +66,7 @@ class _TermsAgreementPageState extends State<TermsAgreementPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(height: MediaQuery.of(context).size.height * 0.3), // 상단 여백
-            // 로고
-            Image.asset(
-              'assets/images/logo-green.png',
-              width: 100,
-              height: 100,
-              alignment: Alignment.centerLeft,
-            ),
-            SizedBox(height: 20),
-            // 환영 메시지
-            Text('환영합니다!',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            Text('편하고 쉽게 골프를 즐겨보세요.',
-                style: TextStyle(fontSize: 20)),
-            SizedBox(height: 30),
+            WelcomeHeader(), // 웰컴 헤
             // 약관 전체 동의
             CheckboxListTile(
               title: Text('약관 전체동의'),
