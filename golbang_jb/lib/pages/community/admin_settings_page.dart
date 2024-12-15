@@ -45,13 +45,14 @@ class AdminSettingsPage extends ConsumerWidget {
                 );
               },
             ),
-            SettingsButton(
-              text: '멤버 관리',
-              onPressed: () {
-                print('멤버 관리 클릭');
-                // 멤버 관리 페이지 연결 (생략)
-              },
-            ),
+            // TODO: 멤버 관리 페이지 추후 만들어야 함
+            // SettingsButton(
+            //   text: '멤버 관리',
+            //   onPressed: () {
+            //     print('멤버 관리 클릭');
+            //     // 멤버 관리 페이지 연결 (생략)
+            //   },
+            // ),
             SettingsButton(
               text: '모임 삭제하기',
               textColor: Colors.red,
