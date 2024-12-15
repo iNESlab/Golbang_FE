@@ -382,5 +382,22 @@ class UserService {
     return response;
   }
 
+  Future<http.Response> deleteAccount() async {
+    // 액세스 토큰 불러오기
+    final accessToken = await storage.readAccessToken();
 
+    var uri = Uri.parse(
+        "${dotenv.env['API_HOST']}/api/v1/users/info/delete/");
+
+    // 요청 헤더 설정
+    Map<String, String> headers = {
+      "Authorization": "Bearer $accessToken",
+    };
+
+    var response = await http.delete(uri, headers: headers);
+    // 응답 처리
+    print("${json.decode(utf8.decode(response.bodyBytes))}");
+
+    return response;
+  }
 }
