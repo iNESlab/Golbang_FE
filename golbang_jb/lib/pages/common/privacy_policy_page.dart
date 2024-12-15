@@ -1,3 +1,5 @@
+// 개인정보처리방침
+
 import 'package:flutter/material.dart';
 
 class PrivacyPolicyPage extends StatelessWidget {
@@ -5,12 +7,24 @@ class PrivacyPolicyPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('개인정보처리방침'),
+        backgroundColor: Colors.white,
+        title: const Text(
+            '개인정보처리방침',
+            style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
       ),
+
+      backgroundColor: Colors.white,  // 전체 페이지 배경 흰색
       body: ListView(
         padding: const EdgeInsets.all(16.0),
+
         children: const [
+
           Section(title: '1. 개인정보 수집 항목', content: '''
 저희 골프 모임 관리 서비스는 회원가입 및 원활한 서비스 제공을 위해 다음과 같은 개인정보를 수집합니다.
 
@@ -106,6 +120,7 @@ class Section extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 12.0),
       child: Column(
+
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(

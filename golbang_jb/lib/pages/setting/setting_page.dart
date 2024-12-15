@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
-import 'package:golbang/pages/setting/privacy_policy_page.dart';
+import 'package:golbang/pages/common/privacy_policy_page.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/auth_service.dart';
