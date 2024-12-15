@@ -365,4 +365,22 @@ class UserService {
 
     return response;
   }
+
+  static Future<http.Response> resetPassword({required String email})async{
+    var uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/users/info/password/forget/");
+    Map<String, String> headers = {"Content-type": "application/json"};
+    // body
+    Map data = {
+      'email': email,
+    };
+
+    var body = json.encode(data);
+    var response = await http.post(uri, headers: headers, body: body);
+
+    print("${json.decode(utf8.decode(response.bodyBytes))}");
+
+    return response;
+  }
+
+
 }

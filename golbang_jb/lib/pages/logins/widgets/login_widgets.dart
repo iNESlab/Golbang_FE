@@ -10,7 +10,7 @@ class LoginTitle extends StatelessWidget {
       children: [
         Row(
           children: [
-            Expanded(
+            const Expanded(
               flex: 1, // 왼쪽 영역
               child: Align(
                 alignment: Alignment.centerRight, // 왼쪽 정렬
@@ -21,7 +21,7 @@ class LoginTitle extends StatelessWidget {
                 ),
               ),
             ),
-            Expanded(
+            const Expanded(
               flex: 2, // 가운데 영역
               child: const Center(
                 child: Image(
