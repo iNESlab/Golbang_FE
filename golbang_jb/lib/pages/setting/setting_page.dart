@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
@@ -78,7 +80,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           SettingsTile(
             title: '회원탈퇴',
             textColor: Colors.red,
-            onTap: () {
+            onTap: () async {
               await _deleteAccount(context, userService);
             },
           ),
