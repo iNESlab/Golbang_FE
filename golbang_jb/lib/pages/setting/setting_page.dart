@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
+import 'package:golbang/pages/setting/privacy_policy_page.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/auth_service.dart';
@@ -47,7 +48,10 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           SettingsTile(
             title: '개인정보처리방침',
             onTap: () {
-              //_showPolicyPage(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => PrivacyPolicyPage()),
+              );
             },
           ),
           SettingsTile(
