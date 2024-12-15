@@ -9,12 +9,12 @@ class ForgotPasswordDialog extends StatelessWidget {
     final TextEditingController emailController = TextEditingController();
 
     return AlertDialog(
-      title: const Text('Forgot Password'),
+      title: const Text('비밀번호 재발급'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           const Text(
-            'Enter your email address to reset your password.',
+            '로그인 이메일을 적어주시면,\n해당 메일로 비밀번호를 재발급해드립니다..',
             style: TextStyle(fontSize: 14),
           ),
           const SizedBox(height: 16),
@@ -22,7 +22,7 @@ class ForgotPasswordDialog extends StatelessWidget {
             controller: emailController,
             keyboardType: TextInputType.emailAddress,
             decoration: const InputDecoration(
-              labelText: 'Email Address',
+              labelText: 'email',
               border: OutlineInputBorder(),
               prefixIcon: Icon(Icons.email),
             ),
@@ -34,14 +34,14 @@ class ForgotPasswordDialog extends StatelessWidget {
           onPressed: () {
             Navigator.of(context).pop(); // 팝업 닫기
           },
-          child: const Text('Cancel'),
+          child: const Text('취소'),
         ),
         ElevatedButton(
           onPressed: () {
             final email = emailController.text.trim();
             _resetPassword(context, email);
           },
-          child: const Text('Submit'),
+          child: const Text('완료'),
         ),
       ],
     );
@@ -57,17 +57,17 @@ class ForgotPasswordDialog extends StatelessWidget {
         if (response.statusCode == 200) {
           Navigator.of(context).pop(); // 팝업 닫기
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Reset link sent to $email')),
+            SnackBar(content: Text('적어주신 $email 로 전송되었습니다')),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(
-                'Failed to send reset link: ${response.reasonPhrase}')),
+                '전송 실패했습니다: ${response.reasonPhrase}')),
           );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please enter a valid email.')),
+          const SnackBar(content: Text('유효한 이메일이 아닙니다.')),
         );
       }
     } catch (e) {

@@ -124,7 +124,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               const SizedBox(height: 16),
               PasswordField(controller: _passwordController),
               const SizedBox(height: 16),
-              const ForgotPasswordLink(),
               const SizedBox(height: 16),
               const SizedBox(height: 32),
               LoginButton(onPressed: _login),

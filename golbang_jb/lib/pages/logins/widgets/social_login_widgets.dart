@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:golbang/pages/logins/widgets/forgot_pw.dart';
+import 'package:golbang/pages/logins/widgets/forgot_password.dart';
 
 import '../hi_screen.dart';
 
@@ -127,7 +127,7 @@ class SignUpLink extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              "Forgot your password?  ",
+              "비밀번호를 잊으셨나요?  ",
               style: TextStyle(color: Colors.grey[400]),
             ),
             GestureDetector(
