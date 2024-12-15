@@ -100,7 +100,7 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
               _buildRequiredTextFormField(
                 '생일',
                 _birthdayController,
-                TextInputType.datetime,
+                TextInputType.phone,
                 hintText: '1990-01-01',
               ),
               const SizedBox(height: 16),
