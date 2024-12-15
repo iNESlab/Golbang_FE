@@ -169,6 +169,7 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
     }
   }
 
+
   void _initializeLocalNotifications() {
     const AndroidInitializationSettings initializationSettingsAndroid =
     AndroidInitializationSettings('@mipmap/ic_launcher');
