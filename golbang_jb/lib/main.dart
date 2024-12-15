@@ -77,7 +77,7 @@ class MyApp extends StatelessWidget {
         ),
         initialRoute: '/', // 초기 라우트 설정
         getPages: [
-          GetPage(name: '/', page: () => const LoginPage()),
+          GetPage(name: '/', page: () => const TokenCheck()),
           GetPage(name: '/signup', page: () => SignUpPage()),
           GetPage(name: '/signupComplete', page: () => const SignupComplete()),
           GetPage(name: '/home', page: () => const HomePage()),
@@ -108,6 +108,83 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
     _initAppLinks();
     setupFCM();
     _initializeLocalNotifications();
+  }
+
+  void setupFCM() async {
+    await _requestNotificationPermission();
+
+    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      print("Foreground message received: ${message.notification}, ${message.data}");
+      _showForegroundNotification(message);
+    });
+
+    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      print("onMessageOpenedApp 확인: ${message.data}");
+      _handleNotificationClick(message.data);
+    });
+  }
+
+  void _handleNotificationClick(Map<String, dynamic> data) async {
+    print("Notification Click Data: $data");
+    final userService = ref.read(userServiceProvider);
+    final isLoggedIn = await userService.isLoggedIn();
+    print("로그인 확인: $isLoggedIn");
+
+    int? eventId;
+    int? clubId;
+
+    if (data.containsKey('event_id')) {
+      eventId = int.tryParse(data['event_id'].toString());
+      print("Event ID: $eventId");
+    } else if (data.containsKey('club_id')) {
+      clubId = int.tryParse(data['club_id'].toString());
+      print("Club ID: $clubId");
+    }
+
+    if (isLoggedIn) {
+      if (eventId != null) {
+        Get.offAll(() => const HomePage(), arguments: {
+          'initialIndex': 1,
+          'eventId': eventId
+        });
+      } else if (clubId != null) {
+        Get.offAll(() => const HomePage(), arguments: {
+          'initialIndex': 2,
+          'communityId': clubId
+        });
+      }
+    } else {
+      print("LoginPage로 이동.");
+      Get.toNamed('/'); // 로그인 페이지로 이동
+    }
+  }
+
+
+  void _initializeLocalNotifications() {
+    const AndroidInitializationSettings initializationSettingsAndroid =
+    AndroidInitializationSettings('@mipmap/ic_launcher');
+    final InitializationSettings initializationSettings =
+    InitializationSettings(android: initializationSettingsAndroid);
+
+    flutterLocalNotificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: (NotificationResponse response) async {
+        if (response.payload != null) {
+          print("Notification payload: ${response.payload}");
+          try {
+            final data = response.payload!.isNotEmpty
+                ? (jsonDecode(response.payload!) as Map<dynamic, dynamic>)
+                .map((key, value) => MapEntry(key.toString(), value))
+                : <String, dynamic>{};
+            _handleNotificationClick(data);
+          } catch (e) {
+            print("Error parsing notification payload: $e");
+          }
+        } else {
+          print("Notification payload is null or empty.");
+        }
+      },
+    );
   }
 
   Future<void> _initAppLinks() async {
@@ -150,38 +227,7 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
     }
   }
 
-  void setupFCM() async {
-    await _requestNotificationPermission();
 
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      _showForegroundNotification(message);
-    });
-
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      _handleNotificationClick(message.data);
-    });
-  }
-
-  void _handleNotificationClick(Map<String, dynamic> data) {
-    final eventId = int.tryParse(data['event_id']?.toString() ?? '');
-    final clubId = int.tryParse(data['club_id']?.toString() ?? '');
-    _navigateToTarget(eventId: eventId, clubId: clubId);
-  }
-
-  void _initializeLocalNotifications() {
-    const AndroidInitializationSettings initializationSettingsAndroid = AndroidInitializationSettings('@mipmap/ic_launcher');
-    final InitializationSettings initializationSettings = InitializationSettings(android: initializationSettingsAndroid);
-
-    flutterLocalNotificationsPlugin.initialize(
-      initializationSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse response) async {
-        if (response.payload != null) {
-          final data = jsonDecode(response.payload!) as Map<String, dynamic>;
-          _handleNotificationClick(data);
-        }
-      },
-    );
-  }
 
   Future<void> _requestNotificationPermission() async {
     if (await Permission.notification.isDenied) {
