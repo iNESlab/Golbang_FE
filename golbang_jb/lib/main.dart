@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -10,20 +10,27 @@ import 'package:golbang/pages/logins/login.dart';
 import 'package:golbang/pages/logins/signup_complete.dart';
 import 'package:golbang/pages/signup/signup.dart';
 import 'package:golbang/pages/event/event_main.dart';
-import 'package:golbang/pages/event/event_detail.dart';
-import 'package:golbang/services/event_service.dart';
-import 'package:golbang/repoisitory/secure_storage.dart';
-import 'package:golbang/provider/user/user_service_provider.dart';
-import 'package:golbang/models/event.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:app_links/app_links.dart';
+import 'package:golbang/provider/user/user_service_provider.dart';
+import 'services/user_service.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart';
+import 'package:golbang/pages/event/event_detail.dart';
+import 'package:golbang/services/event_service.dart';
+import 'package:golbang/repoisitory/secure_storage.dart';
+import 'package:golbang/models/event.dart';
+import 'dart:async';
+
+// timezone 패키지 추가
 import 'package:timezone/data/latest.dart' as tz;
 
-final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+FlutterLocalNotificationsPlugin();
 
 const AndroidNotificationChannel channel = AndroidNotificationChannel(
   'importance_channel',
@@ -43,12 +50,17 @@ Future<void> main() async {
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
 
-  // timezone 데이터 초기화
-  tz.initializeTimeZones();
+  // timezone 데이터 초기화 및 한국 시간 설정
+  tz.initializeTimeZones(); // 최신 시간대 데이터 로드
 
   initializeDateFormatting().then((_) {
-    runApp(const ProviderScope(child: MyApp()));
+    runApp(
+      const ProviderScope(
+        child: MyApp(),
+      ),
+    );
   });
+  await Firebase.initializeApp(); // Firebase 초기화
 }
 
 class MyApp extends StatelessWidget {
@@ -159,7 +171,6 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
     }
   }
 
-
   void _initializeLocalNotifications() {
     const AndroidInitializationSettings initializationSettingsAndroid =
     AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -250,6 +261,11 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
             channel.name,
             channelDescription: channel.description,
             icon: '@mipmap/ic_launcher',
+            styleInformation: BigTextStyleInformation(
+              notification.body ?? '', // 긴 텍스트를 멀티라인으로 표시
+              contentTitle: notification.title, // 제목
+              summaryText: '알림 요약', // 알림 요약 (옵션)
+            ),
           ),
         ),
         payload: jsonEncode(message.data),
