@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
+import 'package:golbang/pages/common/privacy_policy_page.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/auth_service.dart';
+import 'feedback_page.dart';
 import '../../services/user_service.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
@@ -25,51 +27,70 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          '설정',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-        ),
+        title: const Text('설정',
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
-      body: Padding(
+      body: ListView(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            // 알림 설정 버튼
-            SettingsButton(
-              text: '알림 설정',
-              onPressed: () async {
-                final result = await openAppSettings();
-                if (!result) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('설정 앱을 열 수 없습니다.')),
-                  );
-                }
-              },
-            ),
-            // 로그아웃 버튼
-            SettingsButton(
-              text: '로그아웃',
-              textColor: Colors.red,
-              onPressed: () async {
-                await _logout(context, authService);
-              },
-            ),
-            SettingsButton(
-                text: '회원탈퇴',
-                textColor: Colors.red,
-                onPressed: () async {
-                  await _deleteAccount(context, userService);
-                },
-            ),
-          ],
-        ),
+        children: [
+          const SectionHeader(title: '앱 설정'),
+          SettingsTile(
+            title: '알림 설정',
+            onTap: () async {
+              final result = await openAppSettings();
+              if (!result) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('설정 앱을 열 수 없습니다.')),
+                );              }
+            },
+          ),
+          const Divider(),
+          const SectionHeader(title: '고객지원'),
+          SettingsTile(
+            title: '개인정보처리방침',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => PrivacyPolicyPage()),
+              );
+            },
+          ),
+          SettingsTile(
+            title: '피드백 보내기',
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const FeedbackPage()),
+              );
+            },
+          ),
+          SettingsTile(
+            title: '앱정보',
+            trailing: const Text('1.0.0', style: TextStyle(color: Colors.grey)),
+          ),
+          const Divider(),
+          SettingsTile(
+            title: '로그아웃',
+            textColor: Colors.red,
+            onTap: () async {
+              await _logout(context, authService, storage);
+            },
+          ),
+          SettingsTile(
+            title: '회원탈퇴',
+            textColor: Colors.red,
+            onTap: () async {
+              await _deleteAccount(context, userService);
+            },
+          ),
+        ],
       ),
     );
   }
 
   // 로그아웃 처리
-  Future<void> _logout(BuildContext context, AuthService authService) async {
+  Future<void> _logout(BuildContext context, AuthService authService, SecureStorage storage) async {
     try {
       final response = await authService.logout(); // 로그아웃 API 호출
       if (response.statusCode == 202) {
@@ -172,43 +193,46 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
 }
 
-class SettingsButton extends StatelessWidget {
-  final String text;
-  final Color textColor;
-  final VoidCallback onPressed;
+class SectionHeader extends StatelessWidget {
+  final String title;
 
-  const SettingsButton({
-    required this.text,
-    required this.onPressed,
+  const SectionHeader({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Text(
+        title,
+        style: const TextStyle(
+            fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey),
+      ),
+    );
+  }
+}
+
+class SettingsTile extends StatelessWidget {
+  final String title;
+  final VoidCallback? onTap;
+  final Widget? trailing;
+  final Color textColor;
+
+  const SettingsTile({
+    required this.title,
+    this.onTap,
+    this.trailing,
     this.textColor = Colors.black,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0), // 버튼 간 여백
-      child: SizedBox(
-        width: double.infinity, // 버튼이 화면 너비를 가득 차지
-        child: ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.grey[200], // 버튼 배경색
-            elevation: 0, // 그림자 제거
-            padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0), // 내부 여백 설정
-          ),
-          onPressed: onPressed,
-          child: Align(
-            alignment: Alignment.centerLeft, // 텍스트를 버튼 왼쪽 정렬
-            child: Text(
-              text,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
-          ),
-        ),
+    return ListTile(
+      title: Text(
+        title,
+        style: TextStyle(fontSize: 16, color: textColor),
       ),
+      trailing: trailing ?? const Icon(Icons.arrow_forward_ios, size: 16),
+      onTap: onTap,
     );
   }
 }

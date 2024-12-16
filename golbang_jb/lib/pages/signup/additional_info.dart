@@ -46,8 +46,15 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: true,
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: const Text('정보를 기입해주세요'),
+        title: const Text(''),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -56,6 +63,11 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              const Text(
+                '추가 정보를 기입해주세요',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 16),
               const Text(
                 '모든 * 필드는 필수 입력 항목입니다.',
                 style: TextStyle(color: Colors.red, fontSize: 14),
@@ -88,7 +100,7 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
               _buildRequiredTextFormField(
                 '생일',
                 _birthdayController,
-                TextInputType.datetime,
+                TextInputType.phone,
                 hintText: '1990-01-01',
               ),
               const SizedBox(height: 16),
@@ -109,10 +121,11 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
               ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   minimumSize: const Size(double.infinity, 50),
-                  textStyle: const TextStyle(fontSize: 18),
+                  backgroundColor: Colors.green,
+                  disabledBackgroundColor: Colors.grey.shade300,
                 ),
                 onPressed: _signUpStep2,
-                child: const Text('가입하기'),
+                child: const Text('가입하기', style: TextStyle(color: Colors.white, fontSize: 16)),
               ),
               const SizedBox(height: 16),
               const Text(

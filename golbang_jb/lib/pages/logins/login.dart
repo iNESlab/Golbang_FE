@@ -111,10 +111,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[900],
+      backgroundColor: Colors.white,
       body: Center(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(25.0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -123,12 +123,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               EmailField(controller: _emailController),
               const SizedBox(height: 16),
               PasswordField(controller: _passwordController),
-              const SizedBox(height: 16),
-              const SizedBox(height: 16),
-              const SizedBox(height: 32),
+              const SizedBox(height: 64),
               LoginButton(onPressed: _login),
-              const SizedBox(height: 32),
-              const SignUpLink(),
+              const SizedBox(height: 48),
+              const SignUpLink() ,
             ],
           ),
         ),

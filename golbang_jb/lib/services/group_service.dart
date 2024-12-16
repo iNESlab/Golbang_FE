@@ -110,7 +110,7 @@ class GroupService {
       // 응답 상태 코드가 200인 경우, 데이터를 성공적으로 가져온 경우
       if (response.statusCode == 200) {
         // JSON 디코딩
-        List<dynamic> data = jsonDecode(response.body);
+        List<dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
 
         // JSON 데이터를 Group 객체로 변환
         // print(data);
@@ -181,7 +181,8 @@ class GroupService {
     // 응답 상태 코드가 200인 경우, 데이터를 성공적으로 가져온 경우
     if (response.statusCode == 200) {
       // JSON 디코딩
-      final Map<String, dynamic> data = jsonDecode(response.body);
+
+      final Map<String, dynamic> data = jsonDecode(utf8.decode(response.bodyBytes));
       List<dynamic> groupsData = [data['data']];
       List<Group> groups = groupsData.map((groupJson) {
         try {

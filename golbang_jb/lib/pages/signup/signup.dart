@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:golbang/pages/signup/widgets/welcome_header_widget.dart';
 import '../../services/user_service.dart';
 import 'additional_info.dart';
 import 'widgets/signup_widgets.dart';
@@ -27,7 +28,10 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
+    final double padding = MediaQuery.of(context).size.width * 0.08;
+
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: Text(''),
         leading: IconButton(
@@ -39,12 +43,15 @@ class _SignUpPageState extends State<SignUpPage> {
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: EdgeInsets.symmetric(horizontal: padding),
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                WelcomeHeader(topPadding: 0.1), // 화면 높이의 10%만 여백으로 설정
+
+                // 회원가입 폼
                 IdField(controller: _idController),
                 SizedBox(height: 16.0),
                 EmailField(controller: _emailController),
@@ -61,7 +68,7 @@ class _SignUpPageState extends State<SignUpPage> {
                   obscureText: _obscurePassword,
                   toggleObscureText: _togglePasswordVisibility,
                 ),
-                SizedBox(height: 16.0),
+                SizedBox(height: 26.0),
                 SubmitButton(onPressed: () => _signupStep1(context)),
               ],
             ),

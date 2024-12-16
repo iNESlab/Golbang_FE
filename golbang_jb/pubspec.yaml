@@ -31,6 +31,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations: # 다른 언어 지원
+    sdk: flutter
   http: ^0.13.4
   smooth_page_indicator: ^1.1.0
   flutter_dotenv: ^5.0.2
@@ -98,12 +100,6 @@ flutter:
     - assets/config/.env
     - assets/images/
     - assets/images/user_default.png
-#    - assets/images/apple.png
-#    - assets/images/followme.png
-#    - assets/images/founder.JPG
-#    - assets/images/google.png
-#    - assets/images/kakao.png
-#    - assets/images/naver.png
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
