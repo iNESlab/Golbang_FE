@@ -125,7 +125,7 @@ class PrivacyPolicyPage extends StatelessWidget {
           Section(
               title: '9. 문의 및 정보 보호 책임자',
               content: '''
-개인정보 보호 책임자: 김민정
+개인정보 보호 책임자: 김현철
 연락처: iamgolbang@gmail.com
                 '''
           ),
