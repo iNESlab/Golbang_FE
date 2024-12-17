@@ -64,30 +64,20 @@ class RankingList extends StatelessWidget {
                       SizedBox(width: 10),
                       CircleAvatar(
                         radius: 30,
-                        backgroundColor: Colors.transparent,
-                        child: ClipOval(
-                          child: profileImage.isNotEmpty
-                              ? Image.network(
+                        backgroundColor: Colors.transparent, // 배경 투명 설정
+                        child: profileImage.isNotEmpty
+                            ? ClipOval(
+                          child: Image.network(
                             profileImage,
                             width: 40,
                             height: 40,
                             fit: BoxFit.cover,
                             errorBuilder: (context, error, stackTrace) {
-                              return Image.asset(
-                                'assets/images/user_default.png',
-                                width: 40,
-                                height: 40,
-                                fit: BoxFit.cover,
-                              );
+                              return _buildCircularIcon(); // 네트워크 이미지 로드 실패 시 아이콘 표시
                             },
-                          )
-                              : Image.asset(
-                            'assets/images/user_default.png',
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.cover,
                           ),
-                        ),
+                        )
+                            : _buildCircularIcon(), // 이미지가 없을 때 아이콘 표시
                       ),
                     ],
                   ),
@@ -117,6 +107,22 @@ class RankingList extends StatelessWidget {
       ),
     );
   }
+  Widget _buildCircularIcon() {
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        color: Colors.grey[300], // 배경색 설정
+        shape: BoxShape.circle,  // 원형으로 설정
+      ),
+      child: Icon(
+        Icons.person,
+        size: 30,
+        color: Colors.grey,
+      ),
+    );
+  }
+
 
   // Rank에 따른 아이콘 색상 및 텍스트 설정
   Widget _buildRankIcon(String rank) {
