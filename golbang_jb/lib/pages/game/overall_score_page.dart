@@ -343,10 +343,22 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
           children: [
             CircleAvatar(
               radius: width * 0.05, // 반응형 아바타 크기
-              backgroundImage: player.profileImage.startsWith('http')
-                  ? NetworkImage(player.profileImage)
-                  : AssetImage(player.profileImage) as ImageProvider,
+              backgroundColor: Colors.grey[300], // 배경색 (선택사항)
+              child: player.profileImage.startsWith('http')
+                  ? ClipOval(
+                child: Image.network(
+                  player.profileImage,
+                  width: width * 0.1,
+                  height: width * 0.1,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return _buildCircularIcon(width); // 네트워크 이미지 로딩 실패 시 아이콘 표시
+                  },
+                ),
+              )
+                  : _buildCircularIcon(width), // 이미지가 http가 아니면 동그란 아이콘 표시
             ),
+
             SizedBox(width: width * 0.03), // 반응형 간격
             Expanded(
               child: Column(
@@ -392,6 +404,19 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+  Widget _buildCircularIcon(double width) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[300], // 배경색
+        shape: BoxShape.circle,  // 원형 설정
+      ),
+      child: Icon(
+        Icons.person,
+        size: width * 0.1 * 0.6,
+        color: Colors.grey,
       ),
     );
   }

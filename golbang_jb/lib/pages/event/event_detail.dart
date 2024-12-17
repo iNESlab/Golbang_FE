@@ -195,9 +195,6 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
 
       try {
         await FlutterEmailSender.send(email);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('이메일이 전송되었습니다.')),
-        );
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('이메일 전송 실패: $error')),
