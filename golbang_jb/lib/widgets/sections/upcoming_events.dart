@@ -38,110 +38,129 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
 
   @override
   Widget build(BuildContext context) {
-    // 화면 크기와 폰트 크기 설정
     double screenWidth = MediaQuery.of(context).size.width; // 화면 너비
     double screenHeight = MediaQuery.of(context).size.height; // 화면 높이
 
-    // 폰트 크기를 화면 너비에 비례하여 설정
-    double fontSize = screenWidth > 600 ? screenWidth * 0.04 : screenWidth * 0.04; // 큰 화면에서는 폰트 크기 증가
-    double buttonFontSize = screenWidth > 600 ? screenWidth * 0.03 : screenWidth * 0.035; // 버튼 텍스트 크기
-
-    double itemHeight = screenHeight * 0.1; // 각 이벤트 항목의 높이
+    double fontSize = screenWidth > 600 ? screenWidth * 0.04 : screenWidth * 0.04; // 폰트 크기
 
     return Scrollbar(
       thumbVisibility: true,
       thickness: 5.0,
-      child: SizedBox(
-        height: itemHeight, // 화면 크기에 따라 리스트 높이 조정
-        child: ListView.builder(
-          itemCount: widget.events.length,
-          itemBuilder: (context, index) {
-            final event = widget.events[index];
+      child: widget.events.isEmpty
+          ? Center( // 이벤트가 없을 때
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.event_note,
+              size: screenWidth * 0.3,
+              color: Colors.grey,
+            ),
+            Text(
+              '일정 추가 버튼을 눌러\n이벤트를 만들어보세요.',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: fontSize, color: Colors.grey),
+            ),
+          ],
+        ),
+      )
+          : ListView.builder( // 이벤트가 있을 때
+        primary: true,
+        itemCount: widget.events.length,
+        itemBuilder: (context, index) {
+          final event = widget.events[index];
+          final participant = event.participants.firstWhere(
+                (p) => p.participantId == event.myParticipantId,
+            orElse: () => event.participants[0],
+          );
+          String statusType = participant.statusType;
 
-            // myParticipantId와 동일한 participantId의 statusType을 가져옴
-            final participant = event.participants.firstWhere(
-                  (p) => p.participantId == event.myParticipantId,
-              orElse: () => event.participants[0],
-            );
-            String statusType = participant.statusType;
-
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EventDetailPage(event: event),
+          return GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => EventDetailPage(event: event),
+                ),
+              );
+            },
+            child: Container(
+              margin: EdgeInsets.symmetric(
+                vertical: screenHeight * 0.005,
+                horizontal: screenWidth * 0.03,
+              ),
+              padding: EdgeInsets.symmetric(
+                vertical: screenHeight * 0.005,
+                horizontal: screenWidth * 0.03,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(
+                  color: _getBorderColor(statusType),
+                  width: 1.5,
+                ),
+                borderRadius: BorderRadius.circular(15.0),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.grey.withOpacity(0.5),
+                    spreadRadius: 2,
+                    blurRadius: 5,
+                    offset: Offset(0, 3),
                   ),
-                );
-              },
-              child: Container(
-                margin: EdgeInsets.symmetric(vertical: screenHeight * 0.005, horizontal: screenWidth * 0.03),
-                padding: EdgeInsets.symmetric(vertical: screenHeight * 0.005, horizontal: screenWidth * 0.03),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(
-                    color: _getBorderColor(statusType),
-                    width: 1.5,
-                  ),
-                  borderRadius: BorderRadius.circular(15.0),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.grey.withOpacity(0.5),
-                      spreadRadius: 2,
-                      blurRadius: 5,
-                      offset: Offset(0, 3),
+                ],
+              ),
+              child: ListTile(
+                contentPadding: EdgeInsets.all(screenHeight * 0.0025),
+                title: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          event.eventTitle,
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: fontSize,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Text(
+                      '${event.startDateTime.toLocal()}',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: fontSize - 2,
+                      ),
+                    ),
+                    Text(
+                      '장소: ${event.site}',
+                      style: TextStyle(
+                        fontSize: fontSize - 2,
+                      ),
+                    ),
+                    Row(
+                      children: [
+                        Text(
+                          '참석 여부: ',
+                          style: TextStyle(
+                            fontSize: fontSize - 2,
+                          ),
+                        ),
+                        _buildStatusButton(
+                            statusType, event, fontSize, fontSize - 2, screenWidth),
+                      ],
                     ),
                   ],
                 ),
-                child: ListTile(
-                  contentPadding: EdgeInsets.all(screenHeight * 0.0025),
-                  title: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Text(
-                            event.eventTitle,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: fontSize, // 반응형 폰트 크기
-                            ),
-                          ),
-                        ],
-                      ),
-                      Text(
-                        '${event.startDateTime.toLocal()}',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: fontSize - 2, // 반응형 폰트 크기
-                        ),
-                      ),
-                      Text(
-                        '장소: ${event.site}',
-                        style: TextStyle(
-                          fontSize: fontSize - 2, // 반응형 폰트 크기
-                        ),
-                      ),
-                      Row(
-                        children: [
-                          Text('참석 여부: ',
-                            style: TextStyle(
-                              fontSize: fontSize - 2, // 반응형 폰트 크기
-                            ),
-                          ),
-                          _buildStatusButton(statusType, event, fontSize, buttonFontSize, screenWidth), // 버튼 크기 및 폰트 크기 전달
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }
+
+
 
   Widget _buildStatusButton(String status, Event event, double fontSize, double buttonFontSize, double screenWidth) {
     Color color = _getStatusColor(status);
