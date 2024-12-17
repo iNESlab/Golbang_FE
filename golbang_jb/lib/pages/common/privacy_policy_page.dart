@@ -36,10 +36,11 @@ class PrivacyPolicyPage extends StatelessWidget {
 - 비밀번호(password) (소셜 로그인 시 비밀번호 제외)
 - 이름(name)
 - 전화번호(phone_number)
+- 생년월일(date_of_birth)
+
 
 선택 항목:
 - 주소(address)
-- 생년월일(date_of_birth)
 - 학번(student_id)
 - 프로필 사진(profile_image)
                 '''
@@ -71,6 +72,9 @@ class PrivacyPolicyPage extends StatelessWidget {
               title: '3. 회원 탈퇴 및 개인정보 처리',
               content: '''
 회원 탈퇴 시 개인정보는 아래와 같이 처리됩니다.
+
+탈퇴 절차
+- 사용자는 앱 내 "내 정보" -> "설정" -> "회원탈퇴" 메뉴를 통해 계정을 삭제할 수 있습니다.
 
 탈퇴 즉시 삭제:
 - 회원의 개인정보(이름, 이메일, 전화번호 등)는 탈퇴 즉시 삭제됩니다.
@@ -126,6 +130,7 @@ class PrivacyPolicyPage extends StatelessWidget {
               title: '9. 문의 및 정보 보호 책임자',
               content: '''
 개인정보 보호 책임자: 김현철
+개발자: 고중범, 김민정, 윤성문, 정구노
 연락처: iamgolbang@gmail.com
                 '''
           ),
