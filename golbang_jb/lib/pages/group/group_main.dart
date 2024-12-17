@@ -21,7 +21,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
   bool isLoading = true;
 
   // Set the number of items per page as a configurable variable
-  static const int itemsPerPage = 6;
+  static const int itemsPerPage = 9;
 
   Future<void> _checkAndNavigateToCommunity() async {
     int? communityId = Get.arguments?['communityId'];
@@ -95,12 +95,12 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
           double screenHeight = MediaQuery.of(context).size.height;
 
           // childAspectRatio를 화면 크기에 따라 설정
-          double aspectRatio = screenWidth / (screenHeight * 0.7);
+          double aspectRatio = screenWidth / (screenHeight * 0.6);
 
           return GridView.count(
             crossAxisCount: 3, // 한 줄에 3개의 아이템
             childAspectRatio: aspectRatio, // 가로:세로 비율
-            mainAxisSpacing: 10, // 항목 간 세로 간격
+            mainAxisSpacing: 5, // 항목 간 세로 간격
             crossAxisSpacing: 10, // 항목 간 가로 간격
             padding: EdgeInsets.all(5), // GridView의 내부 패딩
             children: filteredGroups
@@ -243,7 +243,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
                         activeDotColor: Colors.blue,
                       ),
                     ),
-                    SizedBox(height: 15),
+                    SizedBox(height: 10),
                   ],
                 ),
               ),
