@@ -72,11 +72,29 @@ class GroupsSection extends StatelessWidget {
                         height: avatarRadius * 2,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          image: DecorationImage(
-                            image: AssetImage(group.image!), // Image path
-                            fit: BoxFit.fill, // Fit image within the circle
-                          ),
+                          image: group.image != null && group.image!.contains('http')
+                              ? DecorationImage(
+                            image: NetworkImage(group.image!), // 네트워크 이미지
+                            fit: BoxFit.fill,
+                          )
+                              : group.image != null
+                              ? DecorationImage(
+                            image: AssetImage(group.image!), // 로컬 파일
+                            fit: BoxFit.fill,
+                          )
+                              : null, // 이미지가 없으면 기본값
                         ),
+                        child: group.image == null
+                            ? Center(
+                          child: Text(
+                            group.name.substring(0, 1), // 그룹 이름 첫 글자
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        )
+                            : null, // 이미지가 있으면 텍스트를 숨김
                       ),
                     ),
                     SizedBox(height: spacing), // Spacing between avatar and text
