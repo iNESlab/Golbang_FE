@@ -330,7 +330,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                         style: const TextStyle(fontSize: 16),
                       ),
                       Text(
-                        '게임모드: ${widget.event.gameMode}',
+                        '게임모드: ${widget.event.displayGameMode}',
                         style: const TextStyle(fontSize: 16),
                       ),
                     ],
