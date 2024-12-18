@@ -403,6 +403,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
               : imagePath != null
               ? AssetImage(imagePath) as ImageProvider // 로컬 파일
               : null, // 이미지가 없으면 null 처리
+          backgroundColor: Colors.transparent, // 배경을 투명색으로 설정
           child: imagePath == null
               ? Text(
             groupName.substring(0, 1), // 그룹 이름의 첫 글자만 보여줌

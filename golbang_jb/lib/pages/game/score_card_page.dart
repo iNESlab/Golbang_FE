@@ -385,6 +385,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
                 backgroundImage: _clubProfile.image.startsWith('http')
                     ? NetworkImage(_clubProfile.image)
                     : AssetImage(_clubProfile.image) as ImageProvider,
+                backgroundColor: Colors.transparent, // 배경을 투명색으로 설정
               ),
               SizedBox(width: width * 0.03),
               Column(
