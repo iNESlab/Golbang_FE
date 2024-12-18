@@ -96,11 +96,12 @@ class NotificationHistoryPageState extends ConsumerState<NotificationHistoryPage
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'GOLBANG',
-          style: TextStyle(color: Colors.green, fontSize: 25),
-        ),
         backgroundColor: Colors.white,
+        title: Image.asset(
+          'assets/images/text-logo-green.png', // 텍스트 로고 이미지 경로
+          height: 50, // 이미지 높이 조정
+          fit: BoxFit.contain, // 이미지 비율 유지
+        ),
         centerTitle: true,
       ),
       body: isLoading

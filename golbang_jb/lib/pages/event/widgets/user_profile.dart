@@ -29,11 +29,21 @@ class UserProfileWidget extends StatelessWidget {
         children: [
           // 프로필 이미지
           CircleAvatar(
-            backgroundImage: userProfile.profileImage.startsWith('http')
-                ? NetworkImage(userProfile.profileImage)
-                : AssetImage(userProfile.profileImage) as ImageProvider,
             radius: 30,
-            backgroundColor: Colors.transparent, // 배경을 투명하게 설정
+            backgroundColor: Colors.transparent, // 배경 투명
+            child: userProfile.profileImage.startsWith('http')
+                ? ClipOval(
+              child: Image.network(
+                userProfile.profileImage,
+                fit: BoxFit.cover,
+                width: 60,
+                height: 60,
+                errorBuilder: (context, error, stackTrace) {
+                  return _buildCircularIcon(); // 에러 시 동그란 아이콘 표시
+                },
+              ),
+            )
+                : _buildCircularIcon(), // http로 시작하지 않을 때 동그란 아이콘
           ),
           SizedBox(width: 10),
           // 이름
@@ -58,6 +68,20 @@ class UserProfileWidget extends StatelessWidget {
             score: userProfile.rank,
           ),
         ],
+      ),
+    );
+  }
+  Widget _buildCircularIcon() {
+    return ClipOval(
+      child: Container(
+        color: Colors.grey[300], // 배경색 (선택사항)
+        width: 60,
+        height: 60,
+        child: Icon(
+          Icons.person,
+          size: 50,
+          color: Colors.grey,
+        ),
       ),
     );
   }
