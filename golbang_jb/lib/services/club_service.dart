@@ -9,7 +9,7 @@ class ClubService {
 
   ClubService(this.storage);
 
-  Future<List<Club>> getClubList() async {
+  Future<List<Club>> getClubList({bool isAdmin=false}) async {
     // 액세스 토큰 불러오기
     final accessToken = await storage.readAccessToken();
 
@@ -30,7 +30,10 @@ class ClubService {
     if (response.statusCode == 200) {
       // JSON 데이터 파싱
       var jsonData = json.decode(utf8.decode(response.bodyBytes));
-      print("jsonData: ${jsonData}");
+
+      if(isAdmin) {
+        jsonData = jsonData.where((item) => item['is_admin'] == true).toList();
+      }
 
       return (jsonData as List)
           .map((json) => Club.fromJson(json))

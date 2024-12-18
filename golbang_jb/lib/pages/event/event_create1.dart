@@ -97,7 +97,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
 
   Future<void> _fetchClubs() async {
     try {
-      List<Club> clubs = await _clubService.getClubList();
+      List<Club> clubs = await _clubService.getClubList(isAdmin: true);
       setState(() {
         _clubs = clubs;
       });
