@@ -420,7 +420,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
   // 모임 클릭 시 해당 모임의 이벤트 리스트를 표시하는 섹션
   Widget _buildEventListSection() {
     if (_selectedEvents.isEmpty) {
-      return const Center(child: Text('이벤트 데이터를 불러오는 중...'));
+      return const Center(child: Text('해당 모임에 아직 이벤트가 없습니다.'));
     }
 
     return Column(
