@@ -2,10 +2,22 @@ import 'package:flutter/material.dart';
 import 'package:golbang/pages/community/community_main.dart';
 import 'package:golbang/models/group.dart';
 
-class GroupsSection extends StatelessWidget {
+class GroupsSection extends StatefulWidget {
   final List<Group> groups;
-
   const GroupsSection({super.key, required this.groups});
+
+  @override
+  State<GroupsSection> createState() => _GroupsSectionState();
+}
+
+class _GroupsSectionState extends State<GroupsSection> {
+  final ScrollController _scrollController = ScrollController(); // ScrollController 선언
+
+  @override
+  void dispose() {
+    _scrollController.dispose(); // 메모리 누수 방지를 위해 ScrollController 해제
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,13 +37,15 @@ class GroupsSection extends StatelessWidget {
     return Scrollbar(
       thumbVisibility: true,
       thickness: 5.0,
+      controller: _scrollController, // ScrollController 연결
       child: SizedBox(
         height: cardHeight, // Dynamically calculated card height
         child: ListView.builder(
+          controller: _scrollController, // 동일한 ScrollController 연결
           scrollDirection: Axis.horizontal,
-          itemCount: groups.length,
+          itemCount: widget.groups.length,
           itemBuilder: (context, index) {
-            final group = groups[index];
+            final group = widget.groups[index];
 
             return Padding(
               padding: EdgeInsets.only(right: padding), // Dynamic padding between items

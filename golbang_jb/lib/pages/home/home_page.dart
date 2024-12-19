@@ -203,7 +203,7 @@ class HomeContent extends ConsumerWidget {
                   flex: 5,
                   child: SectionWithScroll(
                     title: '다가오는 일정 ${events.length}',
-                    child: UpcomingEvents(events: []),
+                    child: UpcomingEvents(events: events),
                   ),
                 ),
                 SizedBox(

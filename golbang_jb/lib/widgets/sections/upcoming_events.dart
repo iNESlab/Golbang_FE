@@ -15,6 +15,7 @@ class UpcomingEvents extends ConsumerStatefulWidget {
 }
 
 class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
+  final ScrollController _scrollController = ScrollController(); // 고유 ScrollController
   late ParticipantService _participantService;
 
   @override
@@ -43,11 +44,8 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
 
     double fontSize = screenWidth > 600 ? screenWidth * 0.04 : screenWidth * 0.04; // 폰트 크기
 
-    return Scrollbar(
-      thumbVisibility: true,
-      thickness: 5.0,
-      child: widget.events.isEmpty
-          ? Center( // 이벤트가 없을 때
+    if (widget.events.isEmpty) {
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
@@ -63,102 +61,110 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
             ),
           ],
         ),
-      )
-          : ListView.builder( // 이벤트가 있을 때
-        primary: true,
-        itemCount: widget.events.length,
-        itemBuilder: (context, index) {
-          final event = widget.events[index];
-          final participant = event.participants.firstWhere(
-                (p) => p.participantId == event.myParticipantId,
-            orElse: () => event.participants[0],
-          );
-          String statusType = participant.statusType;
+      );
+    }
 
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => EventDetailPage(event: event),
-                ),
+    return Scrollbar(
+          thumbVisibility: true,
+          thickness: 5.0,
+          controller: _scrollController, // 고유 ScrollController
+          child: ListView.builder( // 이벤트가 있을 때
+            controller: _scrollController, // 고유 ScrollController
+            primary: false,
+            itemCount: widget.events.length,
+            itemBuilder: (context, index) {
+              final event = widget.events[index];
+              final participant = event.participants.firstWhere(
+                    (p) => p.participantId == event.myParticipantId,
+                orElse: () => event.participants[0],
               );
-            },
-            child: Container(
-              margin: EdgeInsets.symmetric(
-                vertical: screenHeight * 0.005,
-                horizontal: screenWidth * 0.03,
-              ),
-              padding: EdgeInsets.symmetric(
-                vertical: screenHeight * 0.005,
-                horizontal: screenWidth * 0.03,
-              ),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border.all(
-                  color: _getBorderColor(statusType),
-                  width: 1.5,
-                ),
-                borderRadius: BorderRadius.circular(15.0),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.grey.withOpacity(0.5),
-                    spreadRadius: 2,
-                    blurRadius: 5,
-                    offset: Offset(0, 3),
+              String statusType = participant.statusType;
+
+              return GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => EventDetailPage(event: event),
+                    ),
+                  );
+                },
+                child: Container(
+                  margin: EdgeInsets.symmetric(
+                    vertical: screenHeight * 0.005,
+                    horizontal: screenWidth * 0.03,
                   ),
-                ],
-              ),
-              child: ListTile(
-                contentPadding: EdgeInsets.all(screenHeight * 0.0025),
-                title: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+                  padding: EdgeInsets.symmetric(
+                    vertical: screenHeight * 0.005,
+                    horizontal: screenWidth * 0.03,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(
+                      color: _getBorderColor(statusType),
+                      width: 1.5,
+                    ),
+                    borderRadius: BorderRadius.circular(15.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.grey.withOpacity(0.5),
+                        spreadRadius: 2,
+                        blurRadius: 5,
+                        offset: Offset(0, 3),
+                      ),
+                    ],
+                  ),
+                  child: ListTile(
+                    contentPadding: EdgeInsets.all(screenHeight * 0.0025),
+                    title: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Row(
+                          children: [
+                            Text(
+                              event.eventTitle,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: fontSize,
+                              ),
+                            ),
+                          ],
+                        ),
                         Text(
-                          event.eventTitle,
+                          '${event.startDateTime.toLocal()}',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: fontSize,
+                            fontSize: fontSize - 2,
                           ),
                         ),
-                      ],
-                    ),
-                    Text(
-                      '${event.startDateTime.toLocal()}',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: fontSize - 2,
-                      ),
-                    ),
-                    Text(
-                      '장소: ${event.site}',
-                      style: TextStyle(
-                        fontSize: fontSize - 2,
-                      ),
-                    ),
-                    Row(
-                      children: [
                         Text(
-                          '참석 여부: ',
+                          '장소: ${event.site}',
                           style: TextStyle(
                             fontSize: fontSize - 2,
                           ),
                         ),
-                        _buildStatusButton(
-                            statusType, event, fontSize, fontSize - 2, screenWidth),
+                        Row(
+                          children: [
+                            Text(
+                              '참석 여부: ',
+                              style: TextStyle(
+                                fontSize: fontSize - 2,
+                              ),
+                            ),
+                            _buildStatusButton(
+                                statusType, event, fontSize, fontSize - 2, screenWidth),
+                          ],
+                        ),
                       ],
                     ),
-                  ],
+                  ),
                 ),
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
+              );
+            },
+          ),
+
+      );
+    }
 
 
 
