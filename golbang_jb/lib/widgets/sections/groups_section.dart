@@ -24,31 +24,34 @@ class _GroupsSectionState extends State<GroupsSection> {
     // Get the screen width and height
     double screenWidth = MediaQuery.of(context).size.width; // Screen width
 
-    // Set avatar size, padding, and margin based on screen width
-    double avatarRadius = screenWidth > 600 ? screenWidth * 0.1 : screenWidth * 0.08; // Avatar size
-    double padding = screenWidth > 600 ? screenWidth * 0.04 : screenWidth * 0.02; // Padding inside the card
-    double horizontalMargin = screenWidth > 600 ? screenWidth * 0.04 : screenWidth * 0.03; // Horizontal margin between cards
 
-    // Calculate dynamic card height: avatar height + text height + spacing
-    double textHeight = screenWidth > 600 ? screenWidth * 0.03 : screenWidth * 0.04; // Dynamic text height
-    double spacing = textHeight / 2; // Space between avatar and text
+  @override
+  Widget build(BuildContext context) {
+    double screenWidth = MediaQuery.of(context).size.width;
+
+    // Dynamic UI settings
+    double avatarRadius = screenWidth > 600 ? screenWidth * 0.1 : screenWidth * 0.08;
+    double padding = screenWidth > 600 ? screenWidth * 0.04 : screenWidth * 0.02;
+    double horizontalMargin = screenWidth > 600 ? screenWidth * 0.04 : screenWidth * 0.03;
+    double textHeight = screenWidth > 600 ? screenWidth * 0.03 : screenWidth * 0.04;
+    double spacing = textHeight / 2;
     double cardHeight = avatarRadius * 2 + textHeight + spacing + padding;
 
     return Scrollbar(
       thumbVisibility: true,
       thickness: 5.0,
       controller: _scrollController, // ScrollController 연결
+
       child: SizedBox(
-        height: cardHeight, // Dynamically calculated card height
+        height: cardHeight,
         child: ListView.builder(
           controller: _scrollController, // 동일한 ScrollController 연결
           scrollDirection: Axis.horizontal,
           itemCount: widget.groups.length,
           itemBuilder: (context, index) {
             final group = widget.groups[index];
-
             return Padding(
-              padding: EdgeInsets.only(right: padding), // Dynamic padding between items
+              padding: EdgeInsets.only(right: padding),
               child: GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -67,9 +70,8 @@ class _GroupsSectionState extends State<GroupsSection> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Circle Avatar
                     Container(
-                      margin: EdgeInsets.symmetric(horizontal: horizontalMargin), // Dynamic horizontal margin
+                      margin: EdgeInsets.symmetric(horizontal: horizontalMargin),
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         boxShadow: [
@@ -86,25 +88,42 @@ class _GroupsSectionState extends State<GroupsSection> {
                         height: avatarRadius * 2,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          image: DecorationImage(
-                            image: AssetImage(group.image!), // Image path
-                            fit: BoxFit.fill, // Fit image within the circle
-                          ),
+                          image: group.image != null && group.image!.contains('http')
+                              ? DecorationImage(
+                            image: NetworkImage(group.image!),
+                            fit: BoxFit.fill,
+                          )
+                              : group.image != null
+                              ? DecorationImage(
+                            image: AssetImage(group.image!),
+                            fit: BoxFit.fill,
+                          )
+                              : null,
                         ),
+                        child: group.image == null
+                            ? Center(
+                          child: Text(
+                            group.name.substring(0, 1),
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        )
+                            : null,
                       ),
                     ),
-                    SizedBox(height: spacing), // Spacing between avatar and text
-                    // Group Name
+                    SizedBox(height: spacing),
                     Text(
                       group.name,
                       style: TextStyle(
-                        fontSize: textHeight, // Dynamic text size
+                        fontSize: textHeight,
                         fontWeight: FontWeight.bold,
                         color: Colors.black87,
                       ),
-                      overflow: TextOverflow.ellipsis, // Handle long names gracefully
-                      maxLines: 1, // Ensure the name is single-line
-                      textAlign: TextAlign.center, // Center-align the text
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
                     ),
                   ],
                 ),

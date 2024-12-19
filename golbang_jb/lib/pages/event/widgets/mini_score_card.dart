@@ -158,8 +158,10 @@ class MiniScoreCard extends StatelessWidget {
                   ),
                 );
               },
-              child: Text("View Full Scorecard"),
+              child: Text("전체 스코어카드 보기"),
               style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.green[100], // 배경색 설정
+                foregroundColor: Colors.green[800], // 글자색 설정
                 padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 textStyle: TextStyle(fontSize: 16),
               ),

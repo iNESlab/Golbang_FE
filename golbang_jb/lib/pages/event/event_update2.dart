@@ -271,7 +271,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
       Navigator.of(context).pop(true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('이벤트 수정에 실패했습니다.')),
+        SnackBar(content: Text('이벤트 수정에 실패했습니다. 관리자만 수정할 수 있습니다. ')),
       );
     }
   }

@@ -403,6 +403,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
               : imagePath != null
               ? AssetImage(imagePath) as ImageProvider // 로컬 파일
               : null, // 이미지가 없으면 null 처리
+          backgroundColor: Colors.transparent, // 배경을 투명색으로 설정
           child: imagePath == null
               ? Text(
             groupName.substring(0, 1), // 그룹 이름의 첫 글자만 보여줌
@@ -419,7 +420,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
   // 모임 클릭 시 해당 모임의 이벤트 리스트를 표시하는 섹션
   Widget _buildEventListSection() {
     if (_selectedEvents.isEmpty) {
-      return const Center(child: Text('이벤트 데이터를 불러오는 중...'));
+      return const Center(child: Text('해당 모임에 아직 이벤트가 없습니다.'));
     }
 
     return Column(

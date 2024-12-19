@@ -310,10 +310,10 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
             decoration: InputDecoration(
               hintText: '새로운 $field 입력',
               enabledBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Color(0xFF2DC653)), // 입력창 밑줄 색상 설정
+                borderSide: BorderSide(color: Colors.green), // 입력창 밑줄 색상 설정
               ),
               focusedBorder: UnderlineInputBorder(
-                borderSide: BorderSide(color: Color(0xFF2DC653)), // 포커스 시 밑줄 색상 설정
+                borderSide: BorderSide(color: Colors.green), // 포커스 시 밑줄 색상 설정
               ),
             ),
           ),
@@ -334,7 +334,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
               },
               child: const Text(
                 '저장',
-                style: TextStyle(color: Color(0xFF2DC653)), // 메인 컬러로 설정
+                style: TextStyle(color: Colors.green), // 메인 컬러로 설정
               ),
             ),
           ],
@@ -356,9 +356,9 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
       builder: (BuildContext context, Widget? child) {
         return Theme(
           data: ThemeData.light().copyWith(
-            primaryColor: Color(0xFF2DC653), // 달력의 메인 컬러 설정
-            hintColor: Color(0xFF2DC653), // 선택된 날짜의 컬러 설정
-            colorScheme: ColorScheme.light(primary: Color(0xFF2DC653)),
+            primaryColor: Colors.green, // 달력의 메인 컬러 설정
+            hintColor: Colors.green, // 선택된 날짜의 컬러 설정
+            colorScheme: ColorScheme.light(primary: Colors.green),
             buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
           ),
           child: child!,
