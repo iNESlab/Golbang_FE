@@ -4,7 +4,6 @@ import 'package:golbang/models/group.dart';
 
 class GroupsSection extends StatefulWidget {
   final List<Group> groups;
-
   const GroupsSection({super.key, required this.groups});
 
   @override
@@ -12,19 +11,19 @@ class GroupsSection extends StatefulWidget {
 }
 
 class _GroupsSectionState extends State<GroupsSection> {
-  late ScrollController _scrollController;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController = ScrollController();
-  }
+  final ScrollController _scrollController = ScrollController(); // ScrollController 선언
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    _scrollController.dispose(); // 메모리 누수 방지를 위해 ScrollController 해제
     super.dispose();
   }
+
+  @override
+  Widget build(BuildContext context) {
+    // Get the screen width and height
+    double screenWidth = MediaQuery.of(context).size.width; // Screen width
+
 
   @override
   Widget build(BuildContext context) {
@@ -41,11 +40,12 @@ class _GroupsSectionState extends State<GroupsSection> {
     return Scrollbar(
       thumbVisibility: true,
       thickness: 5.0,
-      controller: _scrollController, // Controller 연결
+      controller: _scrollController, // ScrollController 연결
+
       child: SizedBox(
         height: cardHeight,
         child: ListView.builder(
-          controller: _scrollController, // ScrollController 연결
+          controller: _scrollController, // 동일한 ScrollController 연결
           scrollDirection: Axis.horizontal,
           itemCount: widget.groups.length,
           itemBuilder: (context, index) {
