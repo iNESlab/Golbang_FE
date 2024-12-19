@@ -21,12 +21,6 @@ class _GroupsSectionState extends State<GroupsSection> {
 
   @override
   Widget build(BuildContext context) {
-    // Get the screen width and height
-    double screenWidth = MediaQuery.of(context).size.width; // Screen width
-
-
-  @override
-  Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
 
     // Dynamic UI settings
