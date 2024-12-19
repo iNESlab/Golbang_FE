@@ -28,6 +28,17 @@ class EventHeader extends StatelessWidget {
     required this.onHandicapToggle,
   });
 
+  static const Map<String, String> gameModeDisplayNames = {
+    'SP': '스트로크',
+    'MP': '매치플레이' // 새로 추가될 수 있는 값
+    // 'BB': '베스트볼',  // 새로 추가될 수 있는 값
+    // 'AP': '알터네이트샷'  // 새로 추가될 수 있는 값
+  };
+
+  String get displayGameMode {
+    return gameModeDisplayNames[gameMode] ?? '알 수 없음';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -77,7 +88,7 @@ class EventHeader extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            '게임모드: $gameMode',
+                            '게임모드: $displayGameMode',
                             style: TextStyle(fontSize: 16),
                           ),
                           Text(

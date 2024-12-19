@@ -330,7 +330,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                         style: const TextStyle(fontSize: 16),
                       ),
                       Text(
-                        '게임모드: ${widget.event.gameMode}',
+                        '게임모드: ${widget.event.displayGameMode}',
                         style: const TextStyle(fontSize: 16),
                       ),
                     ],
@@ -716,7 +716,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('이벤트 삭제에 실패했습니다.')),
+        const SnackBar(content: Text('이벤트 삭제에 실패했습니다. 모임 관리자만 삭제할 수 있습니다.')),
       );
     }
   }
