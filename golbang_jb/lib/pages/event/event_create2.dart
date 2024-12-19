@@ -190,7 +190,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
     } else {
       // 실패 시 SnackBar로 오류 메시지 표시
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('이벤트 생성에 실패했습니다. 나중에 다시 시도해주세요.')),
+        SnackBar(content: Text('이벤트 생성에 실패했습니다. 모임 관리자만 생성할 수 있습니다. 나중에 다시 시도해주세요.')),
       );
     }
   }
