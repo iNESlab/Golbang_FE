@@ -1,12 +1,15 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:golbang/models/event.dart';
+import 'package:golbang/pages/event/widgets/SummaryDataTable.dart';
 import 'package:golbang/services/event_service.dart';
 import 'package:excel/excel.dart' as xx; // excel 패키지 추가
 import 'package:path_provider/path_provider.dart';  // path_provider 패키지 임포트
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_email_sender/flutter_email_sender.dart'; // 이메일 전송 패키지 추가
 import '../../repoisitory/secure_storage.dart'; // Riverpod 관련 패키지
+import 'package:flutter/services.dart'; // 화면 방향 변경을 위한 패키지
+
 
 class EventResultFullScoreCard extends ConsumerStatefulWidget {
   final int eventId;
@@ -194,55 +197,123 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
         actions: [
           IconButton(
             icon: Icon(Icons.email), // 이메일 아이콘으로 변경
-            onPressed: exportAndSendEmail,   // 이메일 전송 기능으로 변경
+            onPressed: exportAndSendEmail, // 이메일 전송 기능으로 변경
           ),
         ],
       ),
-      body: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-        scrollDirection: Axis.vertical, // 세로 스크롤
-        child: Column(
-          children: [
-            buildParticipantDataTable(), // 참가자별 홀 점수 테이블
-            buildScoreDataTable(), // 팀 점수 테이블
-          ],
-        ),
+      body: Stack(
+        children: [
+          isLoading
+              ? Center(child: CircularProgressIndicator())
+              : OrientationBuilder(
+            builder: (context, orientation) {
+              if (orientation == Orientation.landscape) {
+                // 가로 모드에서 ParticipantDataTable 호출
+                return buildParticipantDataTable();
+              } else {
+                // 세로 모드에서 ScoreTable 호출
+                return buildScoreDataTable();
+              }
+            },
+          ),
+          Positioned(
+            bottom: 16,
+            right: 16,
+            child: FloatingActionButton(
+              onPressed: () {
+                // 화면을 항상 시계 방향으로 회전
+                final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+                if (isLandscape) {
+                  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+                } else {
+                  SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
+                }
+              },
+              backgroundColor: Colors.blue,
+              child: Icon(Icons.screen_rotation, color: Colors.white),
+            ),
+          ),
+        ],
       ),
     );
   }
 
-  // 팀 및 참가자 점수를 표시하는 DataTable 위젯
   Widget buildScoreDataTable() {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal, // 가로 스크롤 설정
-        child: Card(
-          color: Colors.white, // 카드 배경 설정
-          elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: DataTable(
-              columns: const [
-                DataColumn(label: Text('팀/참가자')),
-                DataColumn(label: Text('전반전')),
-                DataColumn(label: Text('후반전')),
-                DataColumn(label: Text('전체 스코어')),
-                DataColumn(label: Text('핸디캡 스코어')),
-              ],
-              rows: [
-                if (teamAScores != null) buildTeamDataRow('Team A', teamAScores), // teamAScores가 null이 아니면 표시
-                if (teamBScores != null) buildTeamDataRow('Team B', teamBScores), // teamBScores가 null이 아니면 표시
-                for (var participant in participants) buildParticipantDataRow(participant),
-              ],
+    // 공통 열 생성 함수
+    List<DataColumn> createColumns(List<String> scoreTypes) {
+      return [
+        const DataColumn(label: Text('참가자')),
+        ...scoreTypes.map((type) => DataColumn(label: Text(type))),
+      ];
+    }
+
+    // 공통 행 생성 함수
+    List<DataRow> createRows(List<String> scoreTypes, String Function(String, Map<String, dynamic>) scoreGetter) {
+      return participants.map((participant) {
+        return DataRow(
+          cells: [
+            DataCell(Text(participant['participant_name'])), // 참가자 이름
+            ...scoreTypes.map((type) {
+              final score = scoreGetter(type, participant);
+              return DataCell(Text(score));
+            }).toList(),
+          ],
+        );
+      }).toList();
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+
+        return Column(
+          children: [
+            CustomDataTable(
+              columns: createColumns(['전반전', '후반전']),
+              rows: createRows(['전반전', '후반전'], (type, participant) {
+                switch (type) {
+                  case '전반전':
+                    return participant['front_nine_score']?.toString() ?? '-';
+                  case '후반전':
+                    return participant['back_nine_score']?.toString() ?? '-';
+                  default:
+                    return '-';
+                }
+              }),
             ),
-          ),
-        ),
-      ),
+            CustomDataTable(
+              columns: createColumns(['전체 스코어', '핸디캡 스코어']),
+              rows: createRows(['전체 스코어', '핸디캡 스코어'], (type, participant) {
+                switch (type) {
+                  case '전체 스코어':
+                    return participant['total_score']?.toString() ?? '-';
+                  case '핸디캡 스코어':
+                    return participant['handicap_score']?.toString() ?? '-';
+                  default:
+                    return '-';
+                }
+              }),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(
+                "우측 회전 버튼을 눌러 전체 스코어를 확인하세요.",
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[600],
+                ),
+                textAlign: TextAlign.center,
+              ),
+            )
+
+          ],
+        );
+      },
     );
   }
+
+
+
 
   // 팀 점수 행을 생성하는 함수
   DataRow buildTeamDataRow(String teamName, Map<String, dynamic>? teamScores) {
@@ -257,25 +328,13 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
     );
   }
 
-  // 참가자 점수 행을 생성하는 함수
-  DataRow buildParticipantDataRow(Map<String, dynamic> participant) {
-    return DataRow(
-      cells: [
-        DataCell(Text(participant['participant_name'] ?? '')),
-        DataCell(Text('${participant['front_nine_score']}')),
-        DataCell(Text('${participant['back_nine_score']}')),
-        DataCell(Text('${participant['total_score']}')),
-        DataCell(Text('${participant['handicap_score']}')),
-      ],
-    );
-  }
-
   // 참가자별 홀 점수를 표시하는 DataTable 위젯
   Widget buildParticipantDataTable() {
+    // 참가자 데이터가 행, 홀이 열
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal, // 가로 스크롤 설정
+        scrollDirection: Axis.horizontal, // 가로 스크롤 허용
         child: Card(
           color: Colors.white, // 카드 배경 설정
           elevation: 4,
@@ -284,28 +343,28 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
             padding: const EdgeInsets.all(16.0),
             child: DataTable(
               columns: [
-                const DataColumn(label: Text('홀')),
-                for (var participant in participants)
-                  DataColumn(label: Text(participant['participant_name'])),
-              ],
-              rows: [
+                const DataColumn(label: Text('참가자')),
                 for (int hole = 1; hole <= 18; hole++)
-                  DataRow(
-                    cells: [
-                      DataCell(Text(hole.toString())), // 홀 번호
-                      for (var participant in participants)
-                        DataCell(Text(
-                          participant['scorecard'].length >= hole
-                              ? participant['scorecard'][hole - 1].toString()
-                              : '-',
-                        )), // 각 참가자의 홀별 점수
-                    ],
-                  ),
+                  DataColumn(label: Text('Hole $hole')), // 홀을 열로 표시
               ],
+              rows: participants.map((participant) {
+                return DataRow(
+                  cells: [
+                    DataCell(Text(participant['participant_name'] ?? '-')), // 참가자 이름
+                    for (int hole = 1; hole <= 18; hole++)
+                      DataCell(Text(
+                        participant['scorecard'].length >= hole
+                            ? participant['scorecard'][hole - 1].toString()
+                            : '-',
+                      )), // 각 참가자의 홀별 점수
+                  ],
+                );
+              }).toList(),
             ),
           ),
         ),
       ),
     );
   }
+
 }
