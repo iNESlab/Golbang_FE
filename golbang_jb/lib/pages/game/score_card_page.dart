@@ -330,7 +330,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             color: Colors.white,
             onPressed: _handleRefresh,
           )
@@ -355,6 +355,8 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
                     ],
                   ),
                 ),
+                Text('각 점수 입력마다 \'완료(enter)\'를 눌러주세요.', style: TextStyle(color: Colors.white, fontSize: fontSizeLarge)),
+                SizedBox(height: height * 0.01),
                 _buildPageIndicator(),
               ],
             ),
