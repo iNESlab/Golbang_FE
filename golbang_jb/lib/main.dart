@@ -42,6 +42,9 @@ Future<void> main() async {
   await flutterLocalNotificationsPlugin
       .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel);
+  await Firebase.initializeApp(); // Firebase 초기화
+
+  await _requestNotificationPermission();
 
   // timezone 데이터 초기화 및 한국 시간 설정
   tz.initializeTimeZones(); // 최신 시간대 데이터 로드
@@ -53,7 +56,6 @@ Future<void> main() async {
       ),
     );
   });
-  await Firebase.initializeApp(); // Firebase 초기화
 }
 
 class MyApp extends StatelessWidget {
@@ -134,6 +136,14 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
 
   void setupFCM() async {
     await _requestNotificationPermission();
+
+    // FCM 토큰 가져오기
+    FirebaseMessaging.instance.getToken().then((String? token) {
+      if (token != null) {
+        print("FCM Token: $token");
+        // TODO: 토큰을 서버로 전송
+      }
+    });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
       print("Foreground message received: ${message.notification}, ${message.data}");
@@ -248,14 +258,6 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
     }
   }
 
-
-
-  Future<void> _requestNotificationPermission() async {
-    if (await Permission.notification.isDenied) {
-      await Permission.notification.request();
-    }
-  }
-
   void _showForegroundNotification(RemoteMessage message) {
     RemoteNotification? notification = message.notification;
     AndroidNotification? android = message.notification?.android;
@@ -299,4 +301,26 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
   print("Background message received: ${message.messageId}");
+}
+
+Future<void> _requestNotificationPermission() async {
+  if (await Permission.notification.isDenied) {
+    await Permission.notification.request();
+  }
+
+  // Firebase 권한 요청
+  NotificationSettings settings = await FirebaseMessaging.instance.requestPermission(
+    alert: true,
+    badge: true,
+    sound: true,
+  );
+
+  // 권한 상태 로그 출력
+  if (settings.authorizationStatus == AuthorizationStatus.authorized) {
+    print('사용자가 알림 권한을 승인했습니다.');
+  } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
+    print('사용자가 임시 알림 권한을 승인했습니다.');
+  } else {
+    print('알림 권한이 거부되었습니다.');
+  }
 }
