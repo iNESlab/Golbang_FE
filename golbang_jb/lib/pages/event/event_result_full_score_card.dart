@@ -154,7 +154,15 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
     }
 
     // 외부 저장소 경로 가져오기
-    Directory? directory = await getExternalStorageDirectory();
+    Directory? directory;
+
+    if (Platform.isAndroid) {
+      // Android: 외부 저장소 경로 가져오기
+      directory = await getExternalStorageDirectory();
+    } else if (Platform.isIOS) {
+      // iOS: 문서 디렉토리 가져오기
+      directory = await getApplicationDocumentsDirectory();
+    }
     if (directory != null) {
       String filePath = '${directory.path}/event_scores_${eventDetail?.eventId}.xlsx';
       File file = File(filePath);
