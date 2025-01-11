@@ -37,8 +37,8 @@ class NotificationHistoryPageState extends ConsumerState<NotificationHistoryPage
           // 임시적으로 eventId나 groupId를 추가
           return {
             ...notification,
-            'eventId': 36, // 임시 eventId
-            'groupId': 5, // 임시 groupId
+            'eventId': notification['event_id'], // 임시 eventId
+            'groupId': notification['club_id'], // 임시 groupId
           };
         }).toList();
         isLoading = false;
