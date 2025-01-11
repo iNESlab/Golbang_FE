@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../repoisitory/secure_storage.dart';
@@ -40,13 +41,12 @@ class _CommunityMainState extends ConsumerState<CommunityMain> {
   void fetchGroupMembers() async {
     try {
       final fetchedMembers = await _clubMemberService.getClubMemberProfileList(club_id: widget.communityID);
-      print(widget.communityID);
       setState(() {
         members = fetchedMembers;
         isLoading = false;
       });
     } catch (e) {
-      print('Error fetching members: $e');
+      log('Error fetching members: $e');
       setState(() {
         isLoading = false;
       });
@@ -82,8 +82,10 @@ class _CommunityMainState extends ConsumerState<CommunityMain> {
                 height: 200,
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: AssetImage(widget.communityImage),
-                    fit: BoxFit.cover,
+                    image: widget.communityImage.contains('https') // 문자열 검사
+                        ? NetworkImage(widget.communityImage) // 네트워크 이미지
+                        : AssetImage(widget.communityImage) as ImageProvider, // 로컬 이미지
+                    fit: BoxFit.cover, // 이미지 맞춤 설정
                   ),
                 ),
               ),
