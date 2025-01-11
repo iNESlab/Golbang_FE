@@ -33,6 +33,7 @@ dependencies:
     sdk: flutter
   flutter_localizations: # 다른 언어 지원
     sdk: flutter
+  dio: ^5.7.0
   http: ^0.13.4
   smooth_page_indicator: ^1.1.0
   flutter_dotenv: ^5.0.2
