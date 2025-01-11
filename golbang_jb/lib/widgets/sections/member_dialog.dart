@@ -45,7 +45,7 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
 
     return AlertDialog(
       backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(20.0)),
       ),
       titlePadding: EdgeInsets.zero,
@@ -54,17 +54,17 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
           color: Colors.grey[200],
           borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
         ),
-        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Container(),
             Text(
               widget.isAdminMode ? '관리자 추가' : '멤버 추가',
-              style: TextStyle(color: Colors.green, fontSize: 25),
+              style: const TextStyle(color: Colors.green, fontSize: 25),
             ),
             IconButton(
-              icon: Icon(Icons.close),
+              icon: const Icon(Icons.close),
               onPressed: () {
                 Navigator.of(context).pop(tempSelectedMembers); // 선택된 멤버 반환
               },
@@ -85,7 +85,7 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
                   filled: true,
                   fillColor: Colors.white,
                   hintText: '이름 또는 닉네임으로 검색',
-                  prefixIcon: Icon(Icons.search),
+                  prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
                     borderSide: BorderSide.none,
@@ -103,11 +103,11 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
                 future: userService.getUserProfileList(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(child: CircularProgressIndicator());
+                    return const Center(child: CircularProgressIndicator());
                   } else if (snapshot.hasError) {
                     return Center(child: Text('Error: ${snapshot.error}'));
                   } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return Center(child: Text('No users found.'));
+                    return const Center(child: Text('No users found.'));
                   } else {
                     final users = snapshot.data!;
 
@@ -148,7 +148,7 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
                                 : null,
                             child: profileImage.isEmpty ||
                                 !profileImage.startsWith('http')
-                                ? Icon(Icons.person, color: Colors.grey)
+                                ? const Icon(Icons.person, color: Colors.grey)
                                 : null,
                           ),
                           title: Text(user.name),
@@ -188,11 +188,11 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
             onPressed: () {
               Navigator.of(context).pop(tempSelectedMembers); // 선택된 멤버 반환
             },
-            child: Text('완료'),
+            child: const Text('완료'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.teal,
               foregroundColor: Colors.white,
-              minimumSize: Size(double.infinity, 50),
+              minimumSize: const Size(double.infinity, 50),
             ),
           ),
         ),

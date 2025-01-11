@@ -32,7 +32,6 @@ class NotificationHistoryPageState extends ConsumerState<NotificationHistoryPage
 
     try {
       final data = await notificationService.fetchNotifications();
-      print(data);
       setState(() {
         notifications = data.map((notification) {
           // 임시적으로 eventId나 groupId를 추가
@@ -45,7 +44,6 @@ class NotificationHistoryPageState extends ConsumerState<NotificationHistoryPage
         isLoading = false;
       });
     } catch (e) {
-      print("Error fetching notifications: $e");
       setState(() {
         isLoading = false;
       });
@@ -105,10 +103,10 @@ class NotificationHistoryPageState extends ConsumerState<NotificationHistoryPage
         centerTitle: true,
       ),
       body: isLoading
-          ? Center(
+          ? const Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
+          children: [
             CircularProgressIndicator(),
             SizedBox(height: 20),
             Text(
@@ -119,7 +117,7 @@ class NotificationHistoryPageState extends ConsumerState<NotificationHistoryPage
         ),
       )
           : notifications.isEmpty
-          ? Center(
+          ? const Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: const [
@@ -135,12 +133,12 @@ class NotificationHistoryPageState extends ConsumerState<NotificationHistoryPage
           : Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16.0),
+         const  Padding(
+            padding: EdgeInsets.all(16.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   '알림',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),

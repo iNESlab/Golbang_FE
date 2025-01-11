@@ -1,10 +1,9 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:golbang/pages/profile/profile_screen.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../models/user_account.dart';
-import '../../services/user_service.dart';
 import '../../provider/user/user_service_provider.dart';
 import 'package:numberpicker/numberpicker.dart';
 
@@ -42,14 +41,12 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
 
 
   Future<void> _removeImage() async {
-    print("프로필 이미지 제거하기 전: $_imageFile");
 
     setState(() {
       _imageFile = null; // UI에서 프로필 이미지 제거
       _userAccount.profileImage = '';  // 삭제된 이미지를 null로 설정
     });
 
-    print("프로필 이미지 제거 후: $_imageFile");
 
     // 별도의 API를 호출해 이미지 삭제
     _updateUserInfo(field: '프로필 이미지', value: '');
@@ -66,7 +63,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
   //
   //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('프로필 이미지 삭제 완료')));
   //   } catch (e) {
-  //     print('Failed to delete profile image: $e');
+  //     log('Failed to delete profile image: $e');
   //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('프로필 이미지 삭제 실패')));
   //   }
   // }
@@ -90,11 +87,10 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
       setState(() {
         _userAccount = updatedUser; // 업데이트된 UserAccount를 상태로 설정
       });
-      print("profile Image : $_imageFile");
 
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$field 업데이트 완료')));
     } catch (e) {
-      print('Failed to update $field: $e');
+      log('Failed to update $field: $e');
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$field 업데이트 실패')));
     }
   }
@@ -103,7 +99,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('내 정보'),
+        title: const Text('내 정보'),
       ),
       body: ListView(
         children: [
@@ -123,7 +119,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
                   child: (_imageFile == null &&
                       (_userAccount.profileImage == null ||
                           _userAccount.profileImage!.isEmpty))
-                      ? Icon(Icons.person, size: 50, color: Colors.white)
+                      ? const Icon(Icons.person, size: 50, color: Colors.white)
                       : null,
                 ),
               ],
@@ -169,7 +165,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
     return ListTile(
       title: Text(title),
       subtitle: Text(value),
-      trailing: editable ? Icon(Icons.chevron_right) : null,
+      trailing: editable ? const Icon(Icons.chevron_right) : null,
       onTap: editable
           ? () {
         if (isNumeric) {
@@ -198,7 +194,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
               padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom,
               ),
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 color: Color(0xFFF6F6F6),
                 borderRadius: BorderRadius.vertical(top: Radius.circular(40)), // 상단 모서리 둥글게
               ),
@@ -209,10 +205,10 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
                     child: Container(
                       height: 200, // 높이를 200으로 설정
                       decoration: BoxDecoration(
-                        color: Color(0xFFF6F6F6), // 내부 배경색 (NumberPicker 영역)
+                        color: const Color(0xFFF6F6F6), // 내부 배경색 (NumberPicker 영역)
                         borderRadius: BorderRadius.circular(15), // 모서리를 둥글게 설정
                       ),
-                      padding: EdgeInsets.symmetric(horizontal: 24), // 좌우 패딩 추가
+                      padding: const EdgeInsets.symmetric(horizontal: 24), // 좌우 패딩 추가
                       child: NumberPicker(
                         value: selectedValue,
                         minValue: 0,
@@ -222,19 +218,19 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
                             selectedValue = value;
                           });
                         },
-                        selectedTextStyle: TextStyle(
+                        selectedTextStyle: const TextStyle(
                           color: Colors.green, // 숫자 색상 2DC653
                           fontSize: 27,
                           fontWeight: FontWeight.bold,
                         ),
-                        textStyle: TextStyle(
+                        textStyle: const TextStyle(
                           color: Colors.black45, // 비선택 숫자 색상
                           fontSize: 18,
                         ),
                       ),
                     ),
                   ),
-                  SizedBox(height: 15),
+                  const SizedBox(height: 15),
                   Center(
                     child: ElevatedButton(
                       onPressed: () {
@@ -253,7 +249,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
                       child: const Text('저장', style: TextStyle(fontSize: 18)), // 폰트 크기를 20으로 설정
                     ),
                   ),
-                  SizedBox(height: 10, child: Container(color: Color(0xFFF6F6F6))), // 버튼 아래에 공간을 추가하여 배경색이 보이도록 함
+                  SizedBox(height: 10, child: Container(color: const Color(0xFFF6F6F6))), // 버튼 아래에 공간을 추가하여 배경색이 보이도록 함
                 ],
               ),
             );
@@ -309,10 +305,10 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
             controller: controller,
             decoration: InputDecoration(
               hintText: '새로운 $field 입력',
-              enabledBorder: UnderlineInputBorder(
+              enabledBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: Colors.green), // 입력창 밑줄 색상 설정
               ),
-              focusedBorder: UnderlineInputBorder(
+              focusedBorder: const UnderlineInputBorder(
                 borderSide: BorderSide(color: Colors.green), // 포커스 시 밑줄 색상 설정
               ),
             ),
@@ -338,7 +334,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
               ),
             ),
           ],
-          backgroundColor: Color(0xFFF6F6F6), // 다이얼로그 배경색 설정
+          backgroundColor: const Color(0xFFF6F6F6), // 다이얼로그 배경색 설정
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(20), // 모서리를 둥글게 설정
           ),
@@ -358,8 +354,8 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
           data: ThemeData.light().copyWith(
             primaryColor: Colors.green, // 달력의 메인 컬러 설정
             hintColor: Colors.green, // 선택된 날짜의 컬러 설정
-            colorScheme: ColorScheme.light(primary: Colors.green),
-            buttonTheme: ButtonThemeData(textTheme: ButtonTextTheme.primary),
+            colorScheme: const ColorScheme.light(primary: Colors.green),
+            buttonTheme: const ButtonThemeData(textTheme: ButtonTextTheme.primary),
           ),
           child: child!,
         );

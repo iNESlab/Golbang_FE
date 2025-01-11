@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -34,16 +35,16 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
   late ClubService _clubService;
   bool _isButtonEnabled = true;
   final Map<String, LatLng> _locationCoordinates = {
-    "Jagorawi Golf & Country Club": LatLng(-6.454673, 106.876867),
-    "East Point Golf Club": LatLng(17.763526, 83.301727),
-    "Rusutsu Resort Golf 72": LatLng(42.748674, 140.904709),
-    "Siem Reap Lake Resort Golf Club": LatLng(13.368188, 103.964219),
-    "National Army, Taelung Sport Center": LatLng(37.630121, 127.109333),
-    "Luang Prabang Golf Club": LatLng(19.867596, 102.085709),
-    "Nuwara Eliya Golf Club": LatLng(6.971707, 80.765661),
-    "Bukit Banang Golf & Country Club": LatLng(1.802658, 102.968811),
-    "Panya Indra Golf Club": LatLng(13.828058, 100.687627),
-    "Song Be Golf Resort": LatLng(10.924936, 106.707254)
+    "Jagorawi Golf & Country Club": const LatLng(-6.454673, 106.876867),
+    "East Point Golf Club": const LatLng(17.763526, 83.301727),
+    "Rusutsu Resort Golf 72": const LatLng(42.748674, 140.904709),
+    "Siem Reap Lake Resort Golf Club": const LatLng(13.368188, 103.964219),
+    "National Army, Taelung Sport Center": const LatLng(37.630121, 127.109333),
+    "Luang Prabang Golf Club": const LatLng(19.867596, 102.085709),
+    "Nuwara Eliya Golf Club": const LatLng(6.971707, 80.765661),
+    "Bukit Banang Golf & Country Club": const LatLng(1.802658, 102.968811),
+    "Panya Indra Golf Club": const LatLng(13.828058, 100.687627),
+    "Song Be Golf Resort": const LatLng(10.924936, 106.707254)
   };
 
   LatLng? _selectedLocation;
@@ -125,16 +126,18 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
   Future<void> _fetchClubs() async {
     try {
       List<Club> clubs = await _clubService.getClubList();
+      log('clubs: $clubs');
       setState(() {
         _clubs = clubs;
         _selectedClub = clubs.firstWhere(
-              (club) => club.id == widget.event.memberGroup,
+              (club) => club.id == widget.event.club!.clubId,
           orElse: () => clubs.first,
         );
+        log('selected club: $_selectedClub');
         _validateForm();
       });
     } catch (e) {
-      print("Failed to load clubs: $e");
+      log("Failed to load clubs: $e");
     }
   }
 
@@ -199,12 +202,12 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
       // 시간 문자열이 "11:00 AM"과 같은 형식이라고 가정합니다.
       final timeParts = time.split(' ');
       if (timeParts.length < 2) {
-        throw FormatException("Invalid time format");
+        throw const FormatException("Invalid time format");
       }
 
       final timeOfDayParts = timeParts[0].split(':');
       if (timeOfDayParts.length < 2) {
-        throw FormatException("Invalid time parts");
+        throw const FormatException("Invalid time parts");
       }
 
       final hour = int.parse(timeOfDayParts[0]);
@@ -214,8 +217,8 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
       return TimeOfDay(hour: isPM && hour < 12 ? hour + 12 : hour, minute: minute);
     } catch (e) {
       // 파싱 실패 시 기본값 반환
-      print('Error parsing time: $e');
-      return TimeOfDay(hour: 0, minute: 0);
+      log('Error parsing time: $e');
+      return const TimeOfDay(hour: 0, minute: 0);
     }
   }
 
@@ -241,9 +244,9 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('이벤트 수정'),
+        title: const Text('이벤트 수정'),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -265,7 +268,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                   ),
                 ),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               DropdownButtonFormField<Club>(
                 decoration: InputDecoration(
                   labelText: '모임 선택',
@@ -288,7 +291,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                   );
                 }).toList(),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               GestureDetector(
                 onTap: _showLocationSearchDialog,
                 child: AbsorbPointer(
@@ -300,12 +303,12 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
-                      prefixIcon: Icon(Icons.location_on),
+                      prefixIcon: const Icon(Icons.location_on),
                     ),
                   ),
                 ),
               ),
-              if (_selectedLocation != null) SizedBox(height: 16),
+              if (_selectedLocation != null) const SizedBox(height: 16),
               if (_selectedLocation != null)
                 Container(
                   height: 200,
@@ -319,15 +322,15 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                     ),
                     markers: {
                       Marker(
-                        markerId: MarkerId('selected-location'),
+                        markerId: const MarkerId('selected-location'),
                         position: _selectedLocation!,
                       ),
                     },
                   ),
                 ),
-              SizedBox(height: 16),
-              Text('시간', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              SizedBox(height: 8),
+              const SizedBox(height: 16),
+              const Text('시간', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
@@ -342,13 +345,13 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
-                            prefixIcon: Icon(Icons.calendar_today),
+                            prefixIcon: const Icon(Icons.calendar_today),
                           ),
                         ),
                       ),
                     ),
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: GestureDetector(
                       onTap: () => _selectTime(context, true),
@@ -361,7 +364,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
-                            prefixIcon: Icon(Icons.access_time),
+                            prefixIcon: const Icon(Icons.access_time),
                           ),
                         ),
                       ),
@@ -369,7 +372,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                   ),
                 ],
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
@@ -384,7 +387,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
-                            prefixIcon: Icon(Icons.calendar_today),
+                            prefixIcon: const Icon(Icons.calendar_today),
                           ),
                         ),
                       ),
@@ -392,13 +395,13 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                   ),
                 ],
               ),
-              SizedBox(height: 16),
-              Text('참여자', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              SizedBox(height: 8),
+              const SizedBox(height: 16),
+              const Text('참여자', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
               GestureDetector(
                 onTap: _selectedClub != null ? _showParticipantDialog : null, // 클럽이 선택되지 않았으면 비활성화
                 child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   decoration: BoxDecoration(
                     border: Border.all(color: _selectedClub != null ? Colors.grey : Colors.grey[300]!),
                     borderRadius: BorderRadius.circular(8.0),
@@ -407,22 +410,22 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                   child: Row(
                     children: [
                       Icon(Icons.person_add, color: _selectedClub != null ? Colors.grey : Colors.grey[300]),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Text(
                         _selectedParticipants.isEmpty
                             ? '+ 참여자 추가'
                             : _selectedParticipants.map((p) => p.name).join(', '),
-                        style: TextStyle(color: Colors.black),
+                        style: const TextStyle(color: Colors.black),
                       ),
                     ],
                   ),
                 ),
               ),
-              SizedBox(height: 16),
-              Text('게임모드', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              SizedBox(height: 8),
+              const SizedBox(height: 16),
+              const Text('게임모드', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
               DropdownButtonFormField<GameMode>(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: '게임모드',
                   border: OutlineInputBorder(),
                 ),
@@ -442,7 +445,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                   );
                 }).toList(),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Center(
                 child: ElevatedButton(
                   onPressed: _isButtonEnabled
@@ -482,12 +485,12 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                     );
                   }
                       : null,
-                  child: Text('다음'),
                   style: ElevatedButton.styleFrom(
                     foregroundColor: _isButtonEnabled ? Colors.white : Colors.black54,
-                    minimumSize: Size(double.infinity, 50),
+                    minimumSize: const Size(double.infinity, 50),
                     backgroundColor: _isButtonEnabled ? Colors.teal : Colors.grey,
                   ),
+                  child: const Text('다음'),
                 ),
               ),
             ],

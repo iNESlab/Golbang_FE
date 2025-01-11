@@ -45,7 +45,7 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
     });
 
     try {
-      final response = await _feedbackService.sendFeedback(message);
+      await _feedbackService.sendFeedback(message);
       _feedbackController.clear();
       _showAlertDialog(
         title: "피드백이 보내졌습니다.",
