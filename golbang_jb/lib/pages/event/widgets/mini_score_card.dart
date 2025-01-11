@@ -10,7 +10,7 @@ class MiniScoreCard extends StatelessWidget {
   final List<int> scorecard;
   final int eventId;
 
-  const MiniScoreCard({
+  const MiniScoreCard({super.key, 
     required this.scorecard,
     required this.eventId,
   });
@@ -23,7 +23,7 @@ class MiniScoreCard extends StatelessWidget {
 
     return Container(
       // margin: EdgeInsets.symmetric(vertical: 10),
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),
@@ -32,27 +32,27 @@ class MiniScoreCard extends StatelessWidget {
             color: Colors.grey.withOpacity(0.5),
             spreadRadius: 2,
             blurRadius: 5,
-            offset: Offset(0, 3), // 그림자의 위치를 조정
+            offset: const Offset(0, 3), // 그림자의 위치를 조정
           ),
         ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
+          const Text(
             "Score",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Table(
-            columnWidths: {
+            columnWidths: const {
               0: FixedColumnWidth(25.0),
             },
             border: TableBorder.all(color: Colors.transparent),
             children: [
               TableRow(
                 children: [
-                  Center(
+                  const Center(
                     child: Text(
                       'H',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -62,14 +62,14 @@ class MiniScoreCard extends StatelessWidget {
                     9,
                         (index) => Center(
                       child: Container(
-                        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           '${index + 1}',
-                          style: TextStyle(fontSize: 12, color: Colors.black),
+                          style: const TextStyle(fontSize: 12, color: Colors.black),
                         ),
                       ),
                     ),
@@ -78,27 +78,27 @@ class MiniScoreCard extends StatelessWidget {
               ),
               TableRow(
                 children: [
-                  SizedBox.shrink(), // Left cell for spacing
+                  const SizedBox.shrink(), // Left cell for spacing
                   ...scorecard.sublist(0, 9).map((score) {
                     return Center(
                       child: Container(
-                        padding: EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: Colors.grey[300],
                           shape: BoxShape.circle,
                         ),
                         child: Text(
                           score.toString(),
-                          style: TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 16),
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
               TableRow(
                 children: [
-                  Center(
+                  const Center(
                     child: Text(
                       'H',
                       style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -108,14 +108,14 @@ class MiniScoreCard extends StatelessWidget {
                     9,
                         (index) => Center(
                       child: Container(
-                        padding: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           '${index + 10}',
-                          style: TextStyle(fontSize: 12, color: Colors.black),
+                          style: const TextStyle(fontSize: 12, color: Colors.black),
                         ),
                       ),
                     ),
@@ -124,27 +124,27 @@ class MiniScoreCard extends StatelessWidget {
               ),
               TableRow(
                 children: [
-                  SizedBox.shrink(), // Left cell for spacing
+                  const SizedBox.shrink(), // Left cell for spacing
                   ...scorecard.sublist(9, 18).map((score) {
                     return Center(
                       child: Container(
-                        padding: EdgeInsets.all(8),
+                        padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
                           color: Colors.grey[300],
                           shape: BoxShape.circle,
                         ),
                         child: Text(
                           score.toString(),
-                          style: TextStyle(fontSize: 16),
+                          style: const TextStyle(fontSize: 16),
                         ),
                       ),
                     );
-                  }).toList(),
+                  }),
                 ],
               ),
             ],
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           Center(
             child: ElevatedButton(
               onPressed: () {
@@ -158,13 +158,13 @@ class MiniScoreCard extends StatelessWidget {
                   ),
                 );
               },
-              child: Text("전체 스코어카드 보기"),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green[100], // 배경색 설정
                 foregroundColor: Colors.green[800], // 글자색 설정
-                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-                textStyle: TextStyle(fontSize: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                textStyle: const TextStyle(fontSize: 16),
               ),
+              child: const Text("전체 스코어카드 보기"),
             ),
           ),
         ],
@@ -174,7 +174,7 @@ class MiniScoreCard extends StatelessWidget {
 
   // A widget to show when there is no scorecard data
   Widget _buildNoScorecardData() {
-    return Center(
+    return const Center(
       child: Text(
         "Scorecard data is not available.",
         style: TextStyle(

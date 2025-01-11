@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
@@ -56,6 +57,7 @@ Future<void> main() async {
       ),
     );
   });
+  await Firebase.initializeApp(); // Firebase 초기화
 }
 
 class MyApp extends StatelessWidget {
@@ -102,11 +104,11 @@ class MyApp extends StatelessWidget {
         initialRoute: '/', // 초기 라우트 설정
         getPages: [
           GetPage(name: '/', page: () => const TokenCheck()),
-          GetPage(name: '/signup', page: () => SignUpPage()),
+          GetPage(name: '/signup', page: () => const SignUpPage()),
           GetPage(name: '/signupComplete', page: () => const SignupComplete()),
           GetPage(name: '/home', page: () => const HomePage()),
           GetPage(name: '/event', page: () => const EventPage()),
-          GetPage(name: '/group', page: () => GroupMainPage()),
+          GetPage(name: '/group', page: () => const GroupMainPage()),
         ],
       ),
     );
@@ -115,7 +117,7 @@ class MyApp extends StatelessWidget {
 
 class NotificationHandler extends ConsumerStatefulWidget {
   final Widget child;
-  const NotificationHandler({Key? key, required this.child}) : super(key: key);
+  const NotificationHandler({super.key, required this.child});
 
   @override
   _NotificationHandlerState createState() => _NotificationHandlerState();
@@ -140,37 +142,37 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
     // FCM 토큰 가져오기
     FirebaseMessaging.instance.getToken().then((String? token) {
       if (token != null) {
-        print("FCM Token: $token");
+        log("FCM Token: $token");
         // TODO: 토큰을 서버로 전송
       }
     });
 
     FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      print("Foreground message received: ${message.notification}, ${message.data}");
+      log("Foreground message received: ${message.notification}, ${message.data}");
       _showForegroundNotification(message);
     });
 
     FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      print("onMessageOpenedApp 확인: ${message.data}");
+      log("onMessageOpenedApp 확인: ${message.data}");
       _handleNotificationClick(message.data);
     });
   }
 
   void _handleNotificationClick(Map<String, dynamic> data) async {
-    print("Notification Click Data: $data");
+    log("Notification Click Data: $data");
     final userService = ref.read(userServiceProvider);
     final isLoggedIn = await userService.isLoggedIn();
-    print("로그인 확인: $isLoggedIn");
+    log("로그인 확인: $isLoggedIn");
 
     int? eventId;
     int? clubId;
 
     if (data.containsKey('event_id')) {
       eventId = int.tryParse(data['event_id'].toString());
-      print("Event ID: $eventId");
+      log("Event ID: $eventId");
     } else if (data.containsKey('club_id')) {
       clubId = int.tryParse(data['club_id'].toString());
-      print("Club ID: $clubId");
+      log("Club ID: $clubId");
     }
 
     if (isLoggedIn) {
@@ -186,7 +188,7 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
         });
       }
     } else {
-      print("LoginPage로 이동.");
+      log("LoginPage로 이동.");
       Get.toNamed('/'); // 로그인 페이지로 이동
     }
   }
@@ -194,14 +196,14 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
   void _initializeLocalNotifications() {
     const AndroidInitializationSettings initializationSettingsAndroid =
     AndroidInitializationSettings('@mipmap/ic_launcher');
-    final InitializationSettings initializationSettings =
+    const InitializationSettings initializationSettings =
     InitializationSettings(android: initializationSettingsAndroid);
 
     flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) async {
         if (response.payload != null) {
-          print("Notification payload: ${response.payload}");
+          log("Notification payload: ${response.payload}");
           try {
             final data = response.payload!.isNotEmpty
                 ? (jsonDecode(response.payload!) as Map<dynamic, dynamic>)
@@ -209,10 +211,10 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
                 : <String, dynamic>{};
             _handleNotificationClick(data);
           } catch (e) {
-            print("Error parsing notification payload: $e");
+            log("Error parsing notification payload: $e");
           }
         } else {
-          print("Notification payload is null or empty.");
+          log("Notification payload is null or empty.");
         }
       },
     );
@@ -300,7 +302,7 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
 // Firebase 백그라운드 메시지 핸들러
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
-  print("Background message received: ${message.messageId}");
+  log("Background message received: ${message.messageId}");
 }
 
 Future<void> _requestNotificationPermission() async {
@@ -317,10 +319,10 @@ Future<void> _requestNotificationPermission() async {
 
   // 권한 상태 로그 출력
   if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-    print('사용자가 알림 권한을 승인했습니다.');
+    log('사용자가 알림 권한을 승인했습니다.');
   } else if (settings.authorizationStatus == AuthorizationStatus.provisional) {
-    print('사용자가 임시 알림 권한을 승인했습니다.');
+    log('사용자가 임시 알림 권한을 승인했습니다.');
   } else {
-    print('알림 권한이 거부되었습니다.');
+    log('알림 권한이 거부되었습니다.');
   }
 }

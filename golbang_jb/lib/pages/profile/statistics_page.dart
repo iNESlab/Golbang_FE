@@ -32,7 +32,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
   DateTime? startDate;
   DateTime? endDate;
   PeriodStatistics? periodStatistics; // 기간별 통계 데이터
-  Map<int, List<EventStatistics>> _cachedEvents = {}; // 그룹별 이벤트 캐시
+  final Map<int, List<EventStatistics>> _cachedEvents = {}; // 그룹별 이벤트 캐시
 
   @override
   void didChangeDependencies() {
@@ -284,7 +284,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
         ),
         backgroundColor: Colors.green
       ),
-      child: Text(title, style: TextStyle(color: Colors.white)),
+      child: Text(title, style: const TextStyle(color: Colors.white)),
     );
   }
 

@@ -24,9 +24,9 @@ class AuthService {
     Map<String, String> headers = {"Content-type": "application/json"};
     // body
     Map data = {
-      'username': '$username',
-      'password': '$password',
-      'fcm_token': '$fcm_token'
+      'username': username,
+      'password': password,
+      'fcm_token': fcm_token
     };
     var body = json.encode(data);
     // login은 액세스 토큰을 안쓰므로 dio를 안거치도록 함

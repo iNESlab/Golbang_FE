@@ -14,7 +14,7 @@ class CommunityMain extends ConsumerStatefulWidget {
   final List<String> adminNames;
   final bool isAdmin;
 
-  CommunityMain({
+  const CommunityMain({super.key, 
     required this.communityID,
     required this.communityName,
     required this.communityImage,

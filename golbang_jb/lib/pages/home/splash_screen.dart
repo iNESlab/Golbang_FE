@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'home_page.dart'; // 메인 화면 위젯 import
-import 'dart:ui';
 import 'package:get/get.dart';  // GetX 사용
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({Key? key}) : super(key: key);
+  const SplashScreen({super.key});
 
   @override
   _SplashScreenState createState() => _SplashScreenState();

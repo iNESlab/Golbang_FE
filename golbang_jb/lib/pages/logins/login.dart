@@ -80,7 +80,7 @@ class LoginPage extends ConsumerStatefulWidget {
 class _LoginPageState extends ConsumerState<LoginPage> {
   final TextEditingController _emailController = TextEditingController(text: 'Kojungbeom');
   final TextEditingController _passwordController = TextEditingController(text: 'Golbang12!@');
-  bool _isAutoLoginEnabled = false;
+  final bool _isAutoLoginEnabled = false;
 
   // 저장된 이메일 불러오기
   Future<void> _loadSavedEmail() async {
@@ -88,11 +88,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       final storage = ref.read(secureStorageProvider); // SecureStorage 인스턴스 가져오기
       final savedEmail = await storage.readLoginId(); // 로그인 ID 불러오기
 
-      if (savedEmail != null) {
-        setState(() {
-          _emailController.text = savedEmail; // 이메일 필드에 자동완성
-        });
-      }
+      setState(() {
+        _emailController.text = savedEmail; // 이메일 필드에 자동완성
+      });
     } catch (e) {
       log('이메일 불러오기 실패: $e');
     }

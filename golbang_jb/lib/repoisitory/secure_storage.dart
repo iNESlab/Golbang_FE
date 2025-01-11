@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -61,8 +60,9 @@ class SecureStorage {
       //final refreshToken = await storage.read(key: REFRESH_TOKEN);
       //print('[SECURE_STORAGE] readRefreshToken: $refreshToken');
 
-      if(accessToken == null)
+      if(accessToken == null) {
         throw StateError('Access token is not available');
+      }
 
       return accessToken;
     } catch (e) {
@@ -87,8 +87,9 @@ class SecureStorage {
       //final refreshToken = await storage.read(key: REFRESH_TOKEN);
       //print('[SECURE_STORAGE] readRefreshToken: $refreshToken');
 
-      if(loginId == null)
+      if(loginId == null) {
         throw StateError('loginId is not available');
+      }
 
       return loginId;
     } catch (e) {

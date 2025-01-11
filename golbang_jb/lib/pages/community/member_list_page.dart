@@ -7,7 +7,7 @@ import '../../../services/club_member_service.dart';
 class MemberListPage extends ConsumerStatefulWidget {
   final int clubId;
 
-  const MemberListPage({required this.clubId});
+  const MemberListPage({super.key, required this.clubId});
 
   @override
   _MemberListPageState createState() => _MemberListPageState();

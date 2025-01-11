@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../global/LoginInterceptor.dart';
 import '../models/club.dart';

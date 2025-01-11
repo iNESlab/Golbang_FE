@@ -5,7 +5,7 @@ class ToggleButtonsWidget extends StatefulWidget {
   final Function(int) onSelectedTeamType;
   final bool isTeam; //
 
-  ToggleButtonsWidget({
+  const ToggleButtonsWidget({super.key, 
     // required this.onSelectedMatchingType,
     required this.onSelectedTeamType,
     required this.isTeam,
@@ -22,8 +22,8 @@ class _ToggleButtonsWidgetState extends State<ToggleButtonsWidget> {
   @override
   void initState() {
     super.initState();
-    bool _isTeam = widget.isTeam == true;
-    if (_isTeam) isSelectedTeam = [false, true];
+    bool isTeam = widget.isTeam == true;
+    if (isTeam) isSelectedTeam = [false, true];
   }
   @override
   Widget build(BuildContext context) {
@@ -35,16 +35,6 @@ class _ToggleButtonsWidgetState extends State<ToggleButtonsWidget> {
       borderColor: Colors.teal,
       selectedBorderColor: Colors.teal,
       borderRadius: BorderRadius.circular(8),
-      children: <Widget>[
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30.0),
-          child: Text('개인'),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30.0),
-          child: Text('팀'),
-        ),
-      ],
       onPressed: (int index) {
         setState(() {
           isSelectedTeam = [false, false];
@@ -53,6 +43,16 @@ class _ToggleButtonsWidgetState extends State<ToggleButtonsWidget> {
         widget.onSelectedTeamType(index); // 선택된 팀 구성 전달
       },
       isSelected: isSelectedTeam,
+      children: const <Widget>[
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 30.0),
+          child: Text('개인'),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 30.0),
+          child: Text('팀'),
+        ),
+      ],
     );
       /* TODO: 아래 코드 복구시, 위에 return ~ 바로 위까지 제거하면 됨.
     return Row(

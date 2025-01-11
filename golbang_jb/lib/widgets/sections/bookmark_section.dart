@@ -31,9 +31,9 @@ class BookmarkSection extends StatelessWidget {
 
   List<Widget> _buildInfoCards(double cardWidth, double fontSizeTitle, double fontSizeDescription, double padding) {
     return [
-      _buildSingleCard("평균 스코어", overallStatistics.averageScore?.toString() ?? 'N/A', cardWidth, fontSizeTitle, fontSizeDescription, padding),
-      _buildSingleCard("베스트 스코어", overallStatistics.bestScore?.toString() ?? 'N/A', cardWidth, fontSizeTitle, fontSizeDescription, padding),
-      _buildSingleCard("기록", overallStatistics.gamesPlayed?.toString() ?? 'N/A', cardWidth, fontSizeTitle, fontSizeDescription, padding),
+      _buildSingleCard("평균 스코어", overallStatistics.averageScore.toString() ?? 'N/A', cardWidth, fontSizeTitle, fontSizeDescription, padding),
+      _buildSingleCard("베스트 스코어", overallStatistics.bestScore.toString() ?? 'N/A', cardWidth, fontSizeTitle, fontSizeDescription, padding),
+      _buildSingleCard("기록", overallStatistics.gamesPlayed.toString() ?? 'N/A', cardWidth, fontSizeTitle, fontSizeDescription, padding),
     ];
   }
 

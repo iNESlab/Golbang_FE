@@ -4,7 +4,7 @@ class AdminAddButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   // onPressed를 외부에서 주입받기 위한 생성자
-  AdminAddButton({required this.onPressed});
+  const AdminAddButton({super.key, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {

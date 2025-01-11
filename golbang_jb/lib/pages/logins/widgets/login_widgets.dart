@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class LoginTitle extends StatelessWidget {
-  const LoginTitle({Key? key}) : super(key: key);
+  const LoginTitle({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +57,7 @@ class LoginTitle extends StatelessWidget {
 class EmailField extends StatelessWidget {
   final TextEditingController controller;
 
-  const EmailField({required this.controller, Key? key}) : super(key: key);
+  const EmailField({required this.controller, super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -94,7 +94,7 @@ class EmailField extends StatelessWidget {
 class PasswordField extends StatefulWidget {
   final TextEditingController controller;
 
-  const PasswordField({required this.controller, Key? key}) : super(key: key);
+  const PasswordField({required this.controller, super.key});
 
   @override
   _PasswordFieldState createState() => _PasswordFieldState();
@@ -151,7 +151,7 @@ class _PasswordFieldState extends State<PasswordField> {
 
 class LoginButton extends StatelessWidget {
   final VoidCallback onPressed;
-  const LoginButton({required this.onPressed, Key? key}) : super(key: key);
+  const LoginButton({required this.onPressed, super.key});
 
   @override
   Widget build(BuildContext context) {

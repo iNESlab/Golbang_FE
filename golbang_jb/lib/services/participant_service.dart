@@ -1,5 +1,4 @@
 import 'dart:developer';
-import 'package:http/http.dart' as http;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../global/LoginInterceptor.dart';
 import '../repoisitory/secure_storage.dart';

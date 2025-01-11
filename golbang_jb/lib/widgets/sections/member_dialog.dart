@@ -11,7 +11,7 @@ class MemberDialog extends ConsumerStatefulWidget {
   final ValueChanged<List<GetAllUserProfile>> onMembersSelected;
   final bool isAdminMode;
 
-  MemberDialog({
+  const MemberDialog({super.key, 
     required this.selectedMembers,
     required this.onMembersSelected,
     required this.isAdminMode,
@@ -52,7 +52,7 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
       title: Container(
         decoration: BoxDecoration(
           color: Colors.grey[200],
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20.0)),
         ),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
         child: Row(
@@ -188,12 +188,12 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
             onPressed: () {
               Navigator.of(context).pop(tempSelectedMembers); // 선택된 멤버 반환
             },
-            child: const Text('완료'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.teal,
               foregroundColor: Colors.white,
               minimumSize: const Size(double.infinity, 50),
             ),
+            child: const Text('완료'),
           ),
         ),
       ],

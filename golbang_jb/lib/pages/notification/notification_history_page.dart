@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'dart:ui' as ui;
 
-import 'package:golbang/pages/event/event_detail.dart';
 import 'package:golbang/pages/home/home_page.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../services/notification_service.dart';
@@ -120,7 +119,7 @@ class NotificationHistoryPageState extends ConsumerState<NotificationHistoryPage
           ? const Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: const [
+          children: [
             Icon(Icons.notifications_off, size: 50, color: Colors.grey),
             SizedBox(height: 20),
             Text(
@@ -144,7 +143,7 @@ class NotificationHistoryPageState extends ConsumerState<NotificationHistoryPage
                 ),
                 Text(
                   '스와이프하여 삭제할 수 있습니다.',
-                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                  style: TextStyle(fontSize: 14, color: Colors.grey),
                 ),
               ],
             ),

@@ -14,7 +14,7 @@ import 'package:flutter/services.dart'; // 화면 방향 변경을 위한 패키
 class EventResultFullScoreCard extends ConsumerStatefulWidget {
   final int eventId;
 
-  EventResultFullScoreCard({required this.eventId});
+  const EventResultFullScoreCard({super.key, required this.eventId});
 
   @override
   _EventResultFullScoreCardState createState() => _EventResultFullScoreCardState();
@@ -41,14 +41,14 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
 
     try {
       final response = await eventService.getScoreData(widget.eventId);
-      final temp_eventDetail = await eventService.getEventDetails(widget.eventId);
+      final tempEventdetail = await eventService.getEventDetails(widget.eventId);
       if (response != null) {
         setState(() {
           participants = response['participants'];
           teamAScores = response['team_a_scores'];
           teamBScores = response['team_b_scores'];
           isLoading = false;
-          eventDetail = temp_eventDetail;
+          eventDetail = tempEventdetail;
         });
       } else {
         print('Failed to load scores: response is null');
@@ -210,16 +210,16 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
     return Scaffold(
       backgroundColor: Colors.grey[200], // 배경색 설정
       appBar: AppBar(
-        title: Text('스코어카드'),
+        title: const Text('스코어카드'),
         actions: [
           IconButton(
-            icon: Icon(Icons.email), // 이메일 아이콘으로 변경
+            icon: const Icon(Icons.email), // 이메일 아이콘으로 변경
             onPressed: exportAndSendEmail, // 이메일 전송 기능으로 변경
           ),
         ],
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : OrientationBuilder(
         builder: (context, orientation) {
           if (orientation == Orientation.landscape) {
@@ -242,7 +242,7 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
           }
         },
         backgroundColor: Colors.blue,
-        child: Icon(Icons.screen_rotation, color: Colors.white),
+        child: const Icon(Icons.screen_rotation, color: Colors.white),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // 오른쪽 아래에 배치
     );
@@ -266,7 +266,7 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
             ...scoreTypes.map((type) {
               final score = scoreGetter(type, participant);
               return DataCell(Text(score));
-            }).toList(),
+            }),
           ],
         );
       }).toList();

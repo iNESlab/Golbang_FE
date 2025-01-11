@@ -5,7 +5,7 @@ import '../../models/profile/get_all_user_profile.dart';
 class MemberInvite extends StatelessWidget {
   final List<GetAllUserProfile> selectedMembers;
 
-  MemberInvite({required this.selectedMembers});
+  const MemberInvite({super.key, required this.selectedMembers});
 
   @override
   Widget build(BuildContext context) {
@@ -21,13 +21,13 @@ class MemberInvite extends StatelessWidget {
                   ? NetworkImage(member.profileImage)
                   : null, // 이미지가 없을 경우 null 설정
               child: member.profileImage.isEmpty || !member.profileImage.startsWith('http')
-                  ? Icon(Icons.person, color: Colors.grey) // 기본 사람 아이콘
+                  ? const Icon(Icons.person, color: Colors.grey) // 기본 사람 아이콘
                   : null, // 유효한 이미지가 있을 경우 null로 설정
             ),
-            SizedBox(width: 5),
+            const SizedBox(width: 5),
             Text(
               member.name,
-              style: TextStyle(fontSize: 12),
+              style: const TextStyle(fontSize: 12),
               textAlign: TextAlign.center,
             ),
           ],

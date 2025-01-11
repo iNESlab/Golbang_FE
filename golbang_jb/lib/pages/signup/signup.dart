@@ -7,6 +7,8 @@ import 'additional_info.dart';
 import 'widgets/signup_widgets.dart';
 
 class SignUpPage extends StatefulWidget {
+  const SignUpPage({super.key});
+
   @override
   _SignUpPageState createState() => _SignUpPageState();
 }
@@ -33,9 +35,9 @@ class _SignUpPageState extends State<SignUpPage> {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(''),
+        title: const Text(''),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -49,26 +51,26 @@ class _SignUpPageState extends State<SignUpPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                WelcomeHeader(topPadding: 0.1), // 화면 높이의 10%만 여백으로 설정
+                const WelcomeHeader(topPadding: 0.1), // 화면 높이의 10%만 여백으로 설정
 
                 // 회원가입 폼
                 IdField(controller: _idController),
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
                 EmailField(controller: _emailController),
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
                 PasswordField(
                   controller: _passwordController,
                   obscureText: _obscurePassword,
                   toggleObscureText: _togglePasswordVisibility,
                 ),
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
                 ConfirmPasswordField(
                   controller: _confirmPasswordController,
                   passwordController: _passwordController,
                   obscureText: _obscurePassword,
                   toggleObscureText: _togglePasswordVisibility,
                 ),
-                SizedBox(height: 26.0),
+                const SizedBox(height: 26.0),
                 SubmitButton(onPressed: () => _signupStep1(context)),
               ],
             ),
@@ -111,7 +113,7 @@ class _SignUpPageState extends State<SignUpPage> {
           // 모든 에러 메시지 하나의 문자열로 결합
           String errorMessage = errors.entries.map((entry) {
             String messages = entry.value.join(', '); // 해당 필드의 에러 메시지 리스트를 문자열로 변환
-            return '$messages'; // 각 필드와 메시지를 조합
+            return messages; // 각 필드와 메시지를 조합
           }).join('\n'); // 여러 에러 메시지를 줄바꿈으로 연결
 
           ScaffoldMessenger.of(ctx).showSnackBar(
@@ -121,7 +123,7 @@ class _SignUpPageState extends State<SignUpPage> {
       } catch (e) {
         print('Error: $e');
         ScaffoldMessenger.of(ctx).showSnackBar(
-          SnackBar(content: Text('오류가 발생했습니다. 다시 시도해 주세요.')),
+          const SnackBar(content: Text('오류가 발생했습니다. 다시 시도해 주세요.')),
         );
       }
     }

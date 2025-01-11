@@ -16,6 +16,8 @@ import '../../services/group_service.dart';
 import '../profile/profile_screen.dart';
 
 class GroupCreatePage extends ConsumerStatefulWidget {
+  const GroupCreatePage({super.key});
+
   @override
   _GroupCreatePageState createState() => _GroupCreatePageState();
 }
@@ -23,8 +25,8 @@ class GroupCreatePage extends ConsumerStatefulWidget {
 class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
   List<GetAllUserProfile> selectedAdmins = [];
   List<GetAllUserProfile> selectedMembers = [];
-  TextEditingController _groupNameController = TextEditingController();
-  TextEditingController _groupDescriptionController = TextEditingController();
+  final TextEditingController _groupNameController = TextEditingController();
+  final TextEditingController _groupDescriptionController = TextEditingController();
   XFile? _imageFile;
 
   final ImagePicker _picker = ImagePicker();
@@ -227,12 +229,12 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
               Center(
                 child: ElevatedButton(
                   onPressed: _onComplete,
-                  child: const Text('완료'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.teal,
                     foregroundColor: Colors.white,
                     minimumSize: const Size(double.infinity, 50),
                   ),
+                  child: const Text('완료'),
                 ),
               ),
             ],

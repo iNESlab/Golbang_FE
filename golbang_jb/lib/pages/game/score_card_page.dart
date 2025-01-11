@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/models/event.dart';
@@ -63,10 +62,10 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
   initState() {
     super.initState();
     _initializeParticipantNames(); // 맵 초기화
-    this._myParticipantId = widget.event.myParticipantId;
-    this._myGroupParticipants = widget.event.participants.where((p)=>
+    _myParticipantId = widget.event.myParticipantId;
+    _myGroupParticipants = widget.event.participants.where((p)=>
     p.groupType==widget.event.memberGroup).toList();
-    this._clubProfile = widget.event.club!;
+    _clubProfile = widget.event.club!;
     _initTeamMembers();
     _initWebSocket();
   }
@@ -117,7 +116,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
     final accessToken = await secureStorage.readAccessToken();
     // WebSocket 연결 설정
     _channel = IOWebSocketChannel.connect(
-      Uri.parse('${dotenv.env['WS_HOST']}/participants/${_myParticipantId}/group/stroke'), // 실제 WebSocket 서버 주소로 변경
+      Uri.parse('${dotenv.env['WS_HOST']}/participants/$_myParticipantId/group/stroke'), // 실제 WebSocket 서버 주소로 변경
       headers: {
         'Authorization': 'Bearer $accessToken', // 토큰을 헤더에 포함
       },
@@ -311,7 +310,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
     print('Score 전송: $message');
 
     // 약간의 지연시간을 추가하여 새로고침 완료 시각적으로 표시
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 1));
   }
 
   @override
@@ -319,10 +318,10 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text('${widget.event.eventTitle}', style: TextStyle(color: Colors.white)),
+        title: Text(widget.event.eventTitle, style: const TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
         leading: IconButton( // 뒤로 가기 버튼 추가
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           color: Colors.white,
           onPressed: () {
             Navigator.pop(context);
@@ -393,9 +392,9 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('${widget.event.club!.name}', style: TextStyle(color: Colors.white, fontSize: fontSizeLarge)),
+                  Text(widget.event.club!.name, style: TextStyle(color: Colors.white, fontSize: fontSizeLarge)),
                   SizedBox(height: height * 0.005),
-                  Text('${_formattedDate(widget.event.startDateTime)}', style: TextStyle(color: Colors.white, fontSize: fontSizeSmall)),
+                  Text(_formattedDate(widget.event.startDateTime), style: TextStyle(color: Colors.white, fontSize: fontSizeSmall)),
                 ],
               ),
             ],
@@ -454,10 +453,10 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
         padding: EdgeInsets.symmetric(vertical: height * 0.0025, horizontal: width * 0.04),
         child: Table(
           columnWidths: {
-            0: FixedColumnWidth(50.0), // 첫 번째 열 (홀 번호) 고정 너비
-            1: FlexColumnWidth(1),    // 두 번째 열 비율로 설정
+            0: const FixedColumnWidth(50.0), // 첫 번째 열 (홀 번호) 고정 너비
+            1: const FlexColumnWidth(1),    // 두 번째 열 비율로 설정
             for (int i = 2; i <= _teamMembers.length + 1; i++)
-              i: FlexColumnWidth(1), // 나머지 열 비율로 설정
+              i: const FlexColumnWidth(1), // 나머지 열 비율로 설정
           },
           border: TableBorder.all(color: Colors.grey),
           children: [
@@ -553,7 +552,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
               ),
             );
           }
-        }).toList(),
+        }),
       ],
     );
   }
@@ -576,14 +575,14 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
         columnWidths: {
           0: FixedColumnWidth(width * 0.2), // 첫 번째 열 (라벨 열) 너비 고정
           for (int i = 1; i <= _teamMembers.length; i++)
-            i: FlexColumnWidth(1), // 나머지 열 비율로 설정
+            i: const FlexColumnWidth(1), // 나머지 열 비율로 설정
         },
         children: [
-          _buildSummaryTableFirstRow(['', ..._teamMembers.map((m) => m.userName ?? 'N/A').toList()], cellHeight, cellFontSize),
-          _buildSummaryTableRow(['전반', ...frontNine.map((e) => e.toString()).toList()], cellHeight, cellFontSize),
-          _buildSummaryTableRow(['후반', ...backNine.map((e) => e.toString()).toList()], cellHeight, cellFontSize),
-          _buildSummaryTableRow(['스코어', ...totalScores.map((e) => e.toString()).toList()], cellHeight, cellFontSize),
-          _buildSummaryTableRow(['핸디 스코어', ...handicapScores.map((e) => e.toString()).toList()], cellHeight, cellFontSize),
+          _buildSummaryTableFirstRow(['', ..._teamMembers.map((m) => m.userName ?? 'N/A')], cellHeight, cellFontSize),
+          _buildSummaryTableRow(['전반', ...frontNine.map((e) => e.toString())], cellHeight, cellFontSize),
+          _buildSummaryTableRow(['후반', ...backNine.map((e) => e.toString())], cellHeight, cellFontSize),
+          _buildSummaryTableRow(['스코어', ...totalScores.map((e) => e.toString())], cellHeight, cellFontSize),
+          _buildSummaryTableRow(['핸디 스코어', ...handicapScores.map((e) => e.toString())], cellHeight, cellFontSize),
         ],
       ),
     );
@@ -645,7 +644,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _buildIndicatorDot(0),
-          SizedBox(width: 8),
+          const SizedBox(width: 8),
           _buildIndicatorDot(1),
         ],
       ),

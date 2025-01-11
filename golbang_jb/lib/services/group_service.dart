@@ -124,10 +124,10 @@ class GroupService {
 
   Future<List<Group>> getGroupInfo(int clubId) async {
   //TODO: 이 API가 언제 사용되는지 모르겠음. 로그에 안뜸.
-    String clubId_str = clubId.toString();
+    String clubidStr = clubId.toString();
 
     // API URI 설정
-    var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/$clubId_str/";
+    var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/$clubidStr/";
 
     // API 요청
     var response = await dioClient.dio.get(uri);

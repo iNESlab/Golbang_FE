@@ -8,6 +8,8 @@ import 'signup.dart';
 // 약관 동의 메인 페이지
 
 class TermsAgreementPage extends StatefulWidget {
+  const TermsAgreementPage({super.key});
+
   @override
   _TermsAgreementPageState createState() => _TermsAgreementPageState();
 }
@@ -38,7 +40,7 @@ class _TermsAgreementPageState extends State<TermsAgreementPage> {
 
   void _onSubmit() {
     if (terms['[필수] 이용약관 동의']! && terms['[필수] 개인정보 수집 및 이용 동의']!) {
-      Navigator.push(context, MaterialPageRoute(builder: (context) => SignUpPage()));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const SignUpPage()));
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('필수 약관에 동의해주세요.')),
@@ -51,13 +53,13 @@ class _TermsAgreementPageState extends State<TermsAgreementPage> {
 
     // 약관 항목에 따라 이동할 페이지 설정
     if (key == '[필수] 이용약관 동의') {
-      targetPage = TermsOfServicePage(); // 이용약관 페이지 연결
+      targetPage = const TermsOfServicePage(); // 이용약관 페이지 연결
     }
     else if (key == '[필수] 개인정보 수집 및 이용 동의') {
-      targetPage = PrivacyPolicyPage(); // 개인정보처리방침 페이지 연결
+      targetPage = const PrivacyPolicyPage(); // 개인정보처리방침 페이지 연결
     }
     else {
-      targetPage = MarketingAgreementPage(); // 광고성 정보 수신 동의 페이지 연결
+      targetPage = const MarketingAgreementPage(); // 광고성 정보 수신 동의 페이지 연결
     }
 
     Navigator.push(
@@ -105,7 +107,7 @@ class _TermsAgreementPageState extends State<TermsAgreementPage> {
                 trailing: const Icon(Icons.arrow_forward_ios, size: 16),
                 onTap: () => _navigateToTermsDetail(key),
               );
-            }).toList(),
+            }),
             const Spacer(),
             // 하단 버튼
             Padding(

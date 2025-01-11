@@ -4,7 +4,7 @@ import '../../services/feedback_service.dart';
 import '../../repoisitory/secure_storage.dart';
 
 class FeedbackPage extends ConsumerStatefulWidget {
-  const FeedbackPage({Key? key}) : super(key: key);
+  const FeedbackPage({super.key});
 
   @override
   _FeedbackPageState createState() => _FeedbackPageState();

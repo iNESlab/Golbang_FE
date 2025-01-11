@@ -11,7 +11,7 @@ import 'feedback_page.dart';
 import '../../services/user_service.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  const SettingsPage({super.key});
 
   @override
   _SettingsPageState createState() => _SettingsPageState();
@@ -52,7 +52,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => PrivacyPolicyPage()),
+                MaterialPageRoute(builder: (context) => const PrivacyPolicyPage()),
               );
             },
           ),
@@ -67,7 +67,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           ),
           const SettingsTile(
             title: '앱정보',
-            trailing: const Text('1.0.0', style: TextStyle(color: Colors.grey)),
+            trailing: Text('1.0.0', style: TextStyle(color: Colors.grey)),
           ),
           const Divider(),
           SettingsTile(
@@ -192,7 +192,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 class SectionHeader extends StatelessWidget {
   final String title;
 
-  const SectionHeader({required this.title});
+  const SectionHeader({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -213,7 +213,7 @@ class SettingsTile extends StatelessWidget {
   final Widget? trailing;
   final Color textColor;
 
-  const SettingsTile({
+  const SettingsTile({super.key, 
     required this.title,
     this.onTap,
     this.trailing,

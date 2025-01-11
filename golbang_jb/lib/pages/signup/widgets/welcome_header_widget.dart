@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class WelcomeHeader extends StatelessWidget {
   final double topPadding; // 상단 여백을 위한 조정값
 
-  const WelcomeHeader({Key? key, this.topPadding = 0.3}) : super(key: key);
+  const WelcomeHeader({super.key, this.topPadding = 0.3});
 
   @override
   Widget build(BuildContext context) {
@@ -18,17 +18,17 @@ class WelcomeHeader extends StatelessWidget {
           height: 100,
           alignment: Alignment.centerLeft,
         ),
-        SizedBox(height: 20),
+        const SizedBox(height: 20),
         // 환영 메시지
-        Text(
+        const Text(
           '환영합니다!',
           style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
         ),
-        Text(
+        const Text(
           '편하고 쉽게 골프를 즐겨보세요.',
           style: TextStyle(fontSize: 20),
         ),
-        SizedBox(height: 30),
+        const SizedBox(height: 30),
       ],
     );
   }

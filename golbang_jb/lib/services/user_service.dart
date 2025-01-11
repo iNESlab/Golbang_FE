@@ -273,10 +273,10 @@ class UserService {
     Map<String, String> headers = {"Content-type": "application/json"};
     // body
     Map data = {
-      'user_id': '$userId',
-      'email': '$email',
-      'password1': '$password1',
-      'password2': '$password2',
+      'user_id': userId,
+      'email': email,
+      'password1': password1,
+      'password2': password2,
     };
     var body = json.encode(data);
     var response = await http.post(uri, headers: headers, body: body);
@@ -301,7 +301,7 @@ class UserService {
     // body
     Map data = {
       'user_id': '$userId',
-      'name': '$name',
+      'name': name,
       'phone_number': '$phoneNumber',
       'handicap': '$handicap',
       'date_of_birth': '$dateOfBirth',

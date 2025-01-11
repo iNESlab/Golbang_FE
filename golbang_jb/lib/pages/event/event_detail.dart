@@ -19,7 +19,7 @@ import 'package:flutter_email_sender/flutter_email_sender.dart'; // 이메일 �
 
 class EventDetailPage extends ConsumerStatefulWidget {
   final Event event;
-  EventDetailPage({required this.event});
+  const EventDetailPage({super.key, required this.event});
 
   @override
   _EventDetailPageState createState() => _EventDetailPageState();
@@ -50,7 +50,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     _myGroup = widget.event.memberGroup; // initState에서 초기화
     currentTime = DateTime.now(); // 초기화 시점의 현재 시간
     // 타이머를 통해 1초마다 상태 업데이트
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         currentTime = DateTime.now();
       });
@@ -211,7 +211,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('저장 경로를 찾을 수 없습니다.')),
+        const SnackBar(content: Text('저장 경로를 찾을 수 없습니다.')),
       );
     }
   }
@@ -256,14 +256,14 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
       appBar: AppBar(
         title: Text(widget.event.eventTitle),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.email), // 엑셀 저장 아이콘 추가
+            icon: const Icon(Icons.email), // 엑셀 저장 아이콘 추가
             onPressed: exportAndSendEmail,
           ),
           PopupMenuButton<String>(
@@ -324,13 +324,10 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                           overflow: TextOverflow.ellipsis,),
                       ),
                       Text(
-                        '${_startDateTime.toIso8601String().split('T').first} • '
-                            '${_startDateTime.hour}:${_startDateTime.minute.toString().padLeft(2, '0')} ~ '
-                            '${_endDateTime.hour}:${_endDateTime.minute.toString().padLeft(2, '0')}' +
-                            (_startDateTime.toIso8601String().split('T').first !=
+                        '${_startDateTime.toIso8601String().split('T').first} • ${_startDateTime.hour}:${_startDateTime.minute.toString().padLeft(2, '0')} ~ ${_endDateTime.hour}:${_endDateTime.minute.toString().padLeft(2, '0')}${_startDateTime.toIso8601String().split('T').first !=
                                 _endDateTime.toIso8601String().split('T').first
                                 ? ' (${_endDateTime.toIso8601String().split('T').first})'
-                                : ''),
+                                : ''}',
                         style: const TextStyle(fontSize: 14, overflow: TextOverflow.ellipsis),
                       ),
 
@@ -366,29 +363,29 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                       color: Colors.yellow.withOpacity(0.5),
                       borderRadius: BorderRadius.circular(5),
                     ),
-                    padding: EdgeInsets.symmetric(horizontal: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: Text(
                       '$_myGroup',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               // 토글 가능한 참석 상태별 리스트
               ExpansionPanelList(
                 elevation: 1,
-                expandedHeaderPadding: EdgeInsets.all(0),
+                expandedHeaderPadding: const EdgeInsets.all(0),
                 expansionCallback: (int index, bool isExpanded) {
                   setState(() {
                     _isExpandedList[index] = !_isExpandedList[index];
                   });
                 },
                 children: [
-                  _buildParticipantPanel('참석 및 회식', widget.event.participants, 'PARTY', Color(0xFF4D08BD).withOpacity(0.3), 0),
-                  _buildParticipantPanel('참석', widget.event.participants, 'ACCEPT', Color(0xFF08BDBD).withOpacity(0.3), 1),
-                  _buildParticipantPanel('거절', widget.event.participants, 'DENY', Color(0xFFF21B3F).withOpacity(0.3), 2),
-                  _buildParticipantPanel('대기', widget.event.participants, 'PENDING', Color(0xFF7E7E7E).withOpacity(0.3), 3),
+                  _buildParticipantPanel('참석 및 회식', widget.event.participants, 'PARTY', const Color(0xFF4D08BD).withOpacity(0.3), 0),
+                  _buildParticipantPanel('참석', widget.event.participants, 'ACCEPT', const Color(0xFF08BDBD).withOpacity(0.3), 1),
+                  _buildParticipantPanel('거절', widget.event.participants, 'DENY', const Color(0xFFF21B3F).withOpacity(0.3), 2),
+                  _buildParticipantPanel('대기', widget.event.participants, 'PENDING', const Color(0xFF7E7E7E).withOpacity(0.3), 3),
                 ],
               ),
 
@@ -423,39 +420,39 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
+                    const Text(
                       "코스 정보",
                       style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                     widget.event.golfClub != null
                         ? Column(
                       children: widget.event.golfClub!.courses.map((course) {
                         return Card(
-                          margin: EdgeInsets.symmetric(vertical: 8),
+                          margin: const EdgeInsets.symmetric(vertical: 8),
                           elevation: 3,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: Padding(
-                            padding: EdgeInsets.all(16),
+                            padding: const EdgeInsets.all(16),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Row(
                                   children: [
-                                    Icon(Icons.golf_course, color: Colors.green),
-                                    SizedBox(width: 8),
+                                    const Icon(Icons.golf_course, color: Colors.green),
+                                    const SizedBox(width: 8),
                                     Text(
                                       course.courseName,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: 10),
+                                const SizedBox(height: 10),
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
@@ -469,12 +466,12 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                                     ),
                                   ],
                                 ),
-                                SizedBox(height: 10),
-                                Divider(),
-                                SizedBox(height: 10),
+                                const SizedBox(height: 10),
+                                const Divider(),
+                                const SizedBox(height: 10),
 
                                 // 홀 번호, Par 및 Handicap 테이블 형식 표시
-                                SizedBox(height: 8),
+                                const SizedBox(height: 8),
                                 SingleChildScrollView(
                                   scrollDirection: Axis.horizontal,
                                   child: Row(
@@ -484,7 +481,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                                       return Container(
                                         width: 50,
                                         height: 50,
-                                        margin: EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                                        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           borderRadius: BorderRadius.circular(8),
@@ -493,7 +490,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                                               color: Colors.grey.withOpacity(0.2),
                                               spreadRadius: 2,
                                               blurRadius: 5,
-                                              offset: Offset(0, 3),
+                                              offset: const Offset(0, 3),
                                             ),
                                           ],
                                           border: Border.all(color: Colors.grey[300]!, width: 1),
@@ -514,7 +511,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                         );
                       }).toList(),
                     )
-                        : Text(
+                        : const Text(
                       "코스 정보가 없습니다.",
                       style: TextStyle(color: Colors.redAccent),
                     ),
@@ -746,7 +743,7 @@ class DiagonalTextPainter extends CustomPainter {
 
     canvas.drawLine(Offset(size.width, 0), Offset(0, size.height), paint);
 
-    final textStyle = TextStyle(color: Colors.black, fontSize: 12);
+    const textStyle = TextStyle(color: Colors.black, fontSize: 12);
     final holeTextSpan = TextSpan(text: "$holeNumber홀", style: textStyle);
     final parTextSpan = TextSpan(text: "$par", style: textStyle);
 
@@ -762,7 +759,7 @@ class DiagonalTextPainter extends CustomPainter {
     holePainter.layout();
     parPainter.layout();
 
-    holePainter.paint(canvas, Offset(5, 5));
+    holePainter.paint(canvas, const Offset(5, 5));
     parPainter.paint(canvas, Offset(size.width - parPainter.width - 5, size.height - parPainter.height - 5));
   }
 

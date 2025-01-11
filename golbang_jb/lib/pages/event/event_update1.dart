@@ -16,7 +16,7 @@ import 'event_update2.dart';
 class EventsUpdate1 extends ConsumerStatefulWidget {
   final Event event; // 기존 이벤트 데이터를 받아오기 위한 필드
 
-  EventsUpdate1({required this.event});
+  const EventsUpdate1({super.key, required this.event});
 
   @override
   _EventsUpdate1State createState() => _EventsUpdate1State();
@@ -456,7 +456,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                     final DateTime startDate = DateTime.parse(_startDateController.text);
                     final TimeOfDay startTime = _parseTimeOfDay(_startTimeController.text);
                     final DateTime startDateTime = _combineDateAndTime(startDate, startTime);
-                    final DateTime endDateTime = _combineDateAndTime(DateTime.parse(_endDateController.text), TimeOfDay(hour: 23, minute: 59));
+                    final DateTime endDateTime = _combineDateAndTime(DateTime.parse(_endDateController.text), const TimeOfDay(hour: 23, minute: 59));
 
                     // 업데이트할 이벤트 데이터를 EventsUpdate2로 전달
                     Navigator.push(

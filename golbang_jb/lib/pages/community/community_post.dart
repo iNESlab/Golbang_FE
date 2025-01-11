@@ -5,7 +5,7 @@ import 'package:golbang/widgets/sections/comment_input.dart';
 class CommunityPost extends StatefulWidget {
   final Map<String, dynamic> post;
 
-  CommunityPost({required this.post});
+  const CommunityPost({super.key, required this.post});
 
   @override
   _CommunityPostState createState() => _CommunityPostState();
@@ -37,9 +37,9 @@ class _CommunityPostState extends State<CommunityPost> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('게시물 상세'),
+        title: const Text('게시물 상세'),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -55,35 +55,35 @@ class _CommunityPostState extends State<CommunityPost> {
                 CircleAvatar(
                   backgroundImage: AssetImage(widget.post['profileImage']),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       widget.post['author'],
-                      style: TextStyle(fontWeight: FontWeight.bold),
+                      style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text(
                       widget.post['time'],
-                      style: TextStyle(color: Colors.grey),
+                      style: const TextStyle(color: Colors.grey),
                     ),
                   ],
                 ),
               ],
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             if (widget.post['image'] != null)
               Image.asset(widget.post['image']),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Text(widget.post['content']),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Row(
                   children: [
                     IconButton(
-                      icon: Icon(Icons.thumb_up),
+                      icon: const Icon(Icons.thumb_up),
                       onPressed: _toggleLike,
                     ),
                     Text('${widget.post['likes']}'),
@@ -92,30 +92,30 @@ class _CommunityPostState extends State<CommunityPost> {
                 Row(
                   children: [
                     IconButton(
-                      icon: Icon(Icons.comment),
+                      icon: const Icon(Icons.comment),
                       onPressed: () {
                         showDialog(
                           context: context,
                           builder: (context) {
                             return AlertDialog(
-                              title: Text('댓글 추가'),
+                              title: const Text('댓글 추가'),
                               content: TextField(
                                 controller: _commentController,
-                                decoration: InputDecoration(hintText: '댓글을 입력하세요'),
+                                decoration: const InputDecoration(hintText: '댓글을 입력하세요'),
                               ),
                               actions: [
                                 TextButton(
                                   onPressed: () {
                                     Navigator.of(context).pop();
                                   },
-                                  child: Text('취소'),
+                                  child: const Text('취소'),
                                 ),
                                 TextButton(
                                   onPressed: () {
                                     _addComment();
                                     Navigator.of(context).pop();
                                   },
-                                  child: Text('추가'),
+                                  child: const Text('추가'),
                                 ),
                               ],
                             );
@@ -128,7 +128,7 @@ class _CommunityPostState extends State<CommunityPost> {
                 ),
               ],
             ),
-            Divider(),
+            const Divider(),
             Expanded(
               child: ListView.builder(
                 itemCount: widget.post['comments'].length,

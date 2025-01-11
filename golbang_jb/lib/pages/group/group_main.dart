@@ -11,6 +11,8 @@ import '../../repoisitory/secure_storage.dart';
 import 'package:get/get.dart';
 
 class GroupMainPage extends ConsumerStatefulWidget {
+  const GroupMainPage({super.key});
+
   @override
   _GroupMainPageState createState() => _GroupMainPageState();
 }
@@ -176,7 +178,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => GroupCreatePage()),
+                                builder: (context) => const GroupCreatePage()),
                           ).then((_) {
                             _fetchGroups(); // 모임 생성 후 새로고침
                           });

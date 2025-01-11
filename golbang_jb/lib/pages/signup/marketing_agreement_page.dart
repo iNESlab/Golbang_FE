@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 
 class MarketingAgreementPage extends StatelessWidget {
+  const MarketingAgreementPage({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

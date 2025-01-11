@@ -50,7 +50,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
     final accessToken = await secureStorage.readAccessToken();
     _channel = IOWebSocketChannel.connect(
       Uri.parse('${dotenv
-          .env['WS_HOST']}/participants/${_myParticipantId}/event/stroke'),
+          .env['WS_HOST']}/participants/$_myParticipantId/event/stroke'),
       headers: {
         'Authorization': 'Bearer $accessToken', // 토큰을 헤더에 포함
       }, // 실제 WebSocket 서버 주소로 변경
@@ -76,8 +76,9 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
       setState(() {
         // 수신된 데이터를 Rank 객체로 변환하여 _players 리스트에 저장
         _players = rankingsJson.map((json) => Rank.fromJson(json)).toList();
-        for (var p in _players)
+        for (var p in _players) {
           print('_players: $p');
+        }
       });
     }
   }
@@ -95,10 +96,9 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
     print('player: $player');
 
     // 참가자가 없으면 '-' 반환
-    if (player == null)
+    if (player == null) {
       return 'N/A';
-    // 핸디캡 여부에 따라 랭크 반환
-    else if (_handicapOn) {
+    } else if (_handicapOn) {
       return player.handicapRank;
     } else {
       return player.rank;
@@ -108,7 +108,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
   // 서버에 새로고침 요청을 보내는 함수
   Future<void> _changeSort(String sort) async {
     final message = jsonEncode({
-      'sort': '$sort',
+      'sort': sort,
     });
 
     // WebSocket을 통해 새로고침 요청 전송
@@ -116,7 +116,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
     print('Score 전송: $message');
 
     // 약간의 지연시간을 추가하여 새로고침 완료 시각적으로 표시
-    await Future.delayed(Duration(seconds: 1));
+    await Future.delayed(const Duration(seconds: 1));
   }
 
   @override
@@ -139,7 +139,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
         ),
         backgroundColor: Colors.black,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           color: Colors.white,
           onPressed: () {
             Navigator.pop(context);
@@ -147,7 +147,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh),
             color: Colors.white,
             onPressed: () async {
               await _changeSort(_handicapOn ? 'handicap_score' : 'sum_score');
@@ -208,7 +208,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
                 ),
                 SizedBox(height: height * 0.01), // 반응형 간격
                 Text(
-                  '${widget.event.club!.name}',
+                  widget.event.club!.name,
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: width * 0.035,
@@ -226,7 +226,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Text(
-                  '${_formattedDate(widget.event.startDateTime)}',
+                  _formattedDate(widget.event.startDateTime),
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: width * 0.035,
@@ -315,10 +315,11 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
           onChanged: (value) {
             setState(() async {
               _handicapOn = value;
-              if (_handicapOn)
+              if (_handicapOn) {
                 await _changeSort('handicap_score');
-              else
+              } else {
                 await _changeSort('sum_score');
+              }
             });
           },
           activeColor: Colors.cyan,
@@ -394,7 +395,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
                       color: Colors.white, fontSize: width * 0.03), // 반응형 폰트 크기
                 ),
               ),
-            Spacer(),
+            const Spacer(),
             Text(
               '${player.lastScore > 0 ? '+${player.lastScore}' : player
                   .lastScore} (${_handicapOn ? player.handicapScore : player

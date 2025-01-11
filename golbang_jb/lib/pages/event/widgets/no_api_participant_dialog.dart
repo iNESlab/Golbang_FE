@@ -11,7 +11,7 @@ class ParticipantSelectionDialog extends StatefulWidget {
   final List<CreateParticipant> notOtherGroupParticipants; // 다른 조에서 선택된 참가자 리스트
   final Function(List<CreateParticipant>) onSelectionComplete; // 완료 콜백
 
-  ParticipantSelectionDialog({
+  const ParticipantSelectionDialog({super.key, 
     required this.isTeam,
     required this.groupName,
     required this.participants,
@@ -59,7 +59,7 @@ class _ParticipantSelectionDialogState
 
         if (widget.isTeam) {
           String team = widget.groupName.substring(3);
-          print('team: ${team}');
+          print('team: $team');
 
           participant.teamType = (team == 'A') ? TeamConfig.TEAM_A
               : (team == 'B') ? TeamConfig.TEAM_B
@@ -75,7 +75,7 @@ class _ParticipantSelectionDialogState
   Widget build(BuildContext context) {
     return AlertDialog(
       title: Text("${widget.groupName} 참여자 선택"),
-      content: Container(
+      content: SizedBox(
         width: double.maxFinite,
         child: ListView(
           children: widget.participants
@@ -104,14 +104,14 @@ class _ParticipantSelectionDialogState
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: Text('취소'),
+          child: const Text('취소'),
         ),
         TextButton(
           onPressed: () {
             widget.onSelectionComplete(_currentSelectedParticipants); // 선택 완료 시 콜백
             Navigator.of(context).pop(); // 다이얼로그 닫기
           },
-          child: Text("완료"),
+          child: const Text("완료"),
         ),
       ],
     );

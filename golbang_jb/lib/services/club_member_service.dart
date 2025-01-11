@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../global/LoginInterceptor.dart';
 import '../models/profile/member_profile.dart';
@@ -17,7 +16,7 @@ class ClubMemberService {
     // API URI 설정
     var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/$club_id/members/";
     // API 요청
-    var response = await dioClient.dio.get(uri);;
+    var response = await dioClient.dio.get(uri);
 
     // 응답 코드가 200(성공)인지 확인
     if (response.statusCode == 200) {

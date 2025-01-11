@@ -10,7 +10,7 @@ import 'package:numberpicker/numberpicker.dart';
 class UserInfoPage extends ConsumerStatefulWidget {
   final UserAccount initialUserAccount;
 
-  UserInfoPage({required this.initialUserAccount});
+  const UserInfoPage({super.key, required this.initialUserAccount});
 
   @override
   _UserInfoPageState createState() => _UserInfoPageState();

@@ -4,7 +4,7 @@ class MemberAddButton extends StatelessWidget {
   final VoidCallback onPressed;
 
   // onPressed를 외부에서 주입받기 위한 생성자
-  MemberAddButton({required this.onPressed});
+  const MemberAddButton({super.key, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {

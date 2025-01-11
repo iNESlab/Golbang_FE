@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class CustomDataTable extends StatelessWidget {
@@ -6,10 +5,10 @@ class CustomDataTable extends StatelessWidget {
   final List<DataRow> rows;
 
   const CustomDataTable({
-    Key? key,
+    super.key,
     required this.columns,
     required this.rows,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
