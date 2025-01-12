@@ -197,7 +197,7 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
           borderRadius: BorderRadius.circular(10.0),
         ),
         // 비활성화된 버튼 스타일 유지
-        disabledBackgroundColor: color.withOpacity(0.7),
+        disabledBackgroundColor: color.withOpacity(0.6),
       ),
       child: Text(
         _getStatusText(status),

@@ -534,7 +534,7 @@ class EventPageState extends ConsumerState<EventPage> {
           borderRadius: BorderRadius.circular(20),
         ),
         // 비활성화된 버튼 스타일 유지
-        disabledBackgroundColor: backgroundColor.withOpacity(0.7),
+        disabledBackgroundColor: backgroundColor.withOpacity(0.6),
       ),
       child: Row(
         children: [
