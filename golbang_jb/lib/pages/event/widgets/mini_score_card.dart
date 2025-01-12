@@ -109,7 +109,7 @@ class MiniScoreCard extends StatelessWidget {
                           child: Text(
                             score.toString(),
                             style: const TextStyle(
-                              fontSize: 16,
+                              fontSize: 14,
                               // TODO: Par를 기준으로 색을 다르게 하는 코드가 추후에 추가되면 좋을 것 같음. (color: score <= 3 ? Colors.blueAccent : score >= 5 ? Colors.red : Colors.black,)
                             ),
                           ),
@@ -171,7 +171,7 @@ class MiniScoreCard extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
                           child: Text(
                             score.toString(),
-                            style: const TextStyle(fontSize: 16),
+                            style: const TextStyle(fontSize: 14),
                           ),
                         ),
                       );
