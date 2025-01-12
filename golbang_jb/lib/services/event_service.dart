@@ -1,13 +1,16 @@
+import 'dart:developer';
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:golbang/models/create_participant.dart';
 import 'package:http/http.dart' as http;
+import '../global/LoginInterceptor.dart';
 import '../models/create_event.dart';
 import '../repoisitory/secure_storage.dart';
 import '../models/event.dart';
 
 class EventService {
   final SecureStorage storage;
+  final dioClient = DioClient();
 
   EventService(this.storage);
 
@@ -17,8 +20,7 @@ class EventService {
     required List<CreateParticipant> participants,
   }) async {
     try {
-      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/?club_id=$clubId');
-      final accessToken = await storage.readAccessToken();
+      final url = '${dotenv.env['API_HOST']}/api/v1/events/?club_id=$clubId';
 
       // Event의 JSON과 참가자 리스트의 JSON을 각각 생성
       Map<String, dynamic> eventJson = event.toJson();
@@ -30,26 +32,19 @@ class EventService {
         ...eventJson, // Event의 데이터를 추가
         'participants': participantsJson, // 참가자 데이터를 추가
       };
-      print('requestBody: $requestBody');
       // 병합된 데이터를 JSON으로 변환
-      final response = await http.post(
+      final response = await dioClient.dio.post(
         url,
-        headers: {
-          "Content-Type": "application/json",
-          'Authorization': 'Bearer $accessToken',
-        },
-        body: jsonEncode(requestBody), // JSON 데이터를 전송
+        data: requestBody, // dio에서 json으로 바꿔주므로 jsonEncode 안써도 됨
       );
 
       if (response.statusCode == 201) {
-        print("Event created successfully");
         return true;
       } else {
-        print("Failed to create event: ${response.body}");
         return false;
       }
     } catch (e){
-        print('Error occurred while fetching events: $e');
+        log('Error occurred while fetching events: $e');
         return false;
     }
   }
@@ -57,40 +52,26 @@ class EventService {
   Future<List<Event>> getEventsForMonth({String? date, String? statusType}) async {
     try {
       // URL 생성
-      Uri url = Uri.parse(dotenv.env['API_HOST']!).replace(
-        path: '/api/v1/events/',
+      String url = '${dotenv.env['API_HOST']}/api/v1/events/';
+
+      // API 요청
+      final response = await dioClient.dio.get(
+        url,
         queryParameters: {
           if (date != null) 'date': date,
           if (statusType != null) 'status_type': statusType,
         },
       );
 
-      // 액세스 토큰 가져오기
-      final accessToken = await storage.readAccessToken();
-
-      // API 요청
-      final response = await http.get(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
-      );
-
       if (response.statusCode == 200) {
-        final jsonData = jsonDecode(utf8.decode(response.bodyBytes))['data'] as List;
-        // print("이벤트 목록 조회 성공: ${jsonData.length}개");
-        // JSON 데이터를 Event 객체 리스트로 변환
-        // print(jsonData);
-
-
-        return jsonData.map((json) => Event.fromJson(json)).toList();
+        final responseList = response.data['data'] as List;
+        return responseList.map((json) => Event.fromJson(json)).toList();
       } else {
-        print('이벤트 목록 조회 실패: ${response.statusCode} - ${response.body}');
+        log('이벤트 목록 조회 실패: ${response.statusCode} - ${response.data}');
         return [];
       }
     } catch (e) {
-      print('Error occurred while fetching events: $e');
+      log('Error occurred while fetching events: $e');
       return [];
     }
   }
@@ -101,8 +82,7 @@ class EventService {
     required List<CreateParticipant> participants,
   }) async {
     try {
-      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/${event.eventId}/');
-      final accessToken = await storage.readAccessToken();
+      final url = '${dotenv.env['API_HOST']}/api/v1/events/${event.eventId}/';
 
       // Event의 JSON과 참가자 리스트의 JSON을 각각 생성
       Map<String, dynamic> eventJson = event.toJson();
@@ -115,27 +95,22 @@ class EventService {
         'participants': participantsJson, // 참가자 데이터를 추가
       };
 
-      final response = await http.put(
+      final response = await dioClient.dio.put(
         url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
-        body: jsonEncode(requestBody),
+        data: requestBody,
       );
 
       if (response.statusCode == 200) {
-        print("Event updated successfully");
         return true;
       } else if (response.statusCode == 403) {
-        print("관리자가 아닙니다. 관리자만 수정할 수 있습니다.");
+        log("관리자가 아닙니다. 관리자만 수정할 수 있습니다.");
         return false;
       } else {
-        print("Failed to update event: ${response.body}");
+        log("Failed to update event: ${response.data}");
         return false;
       }
     } catch (e) {
-      print('Error occurred while updating event: $e');
+      log('Error occurred while updating event: $e');
       return false;
     }
   }
@@ -143,28 +118,21 @@ class EventService {
   // 이벤트 삭제 메서드
   Future<bool> deleteEvent(int eventId) async {
     try {
-      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/');
-      final accessToken = await storage.readAccessToken();
+      final url = '${dotenv.env['API_HOST']}/api/v1/events/$eventId/';
 
-      final response = await http.delete(
-        url,
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-        },
-      );
+      final response = await dioClient.dio.delete(url);
 
       if (response.statusCode == 204) {
-        print("Event deleted successfully");
         return true;
       } else if (response.statusCode == 403) {
-        print("관리자가 아닙니다. 관리자만 삭제할 수 있습니다.");
+        log("관리자가 아닙니다. 관리자만 삭제할 수 있습니다.");
         return false;
       } else {
-        print("Failed to delete event: ${response.body}");
+        log("Failed to delete event: ${response.data}");
         return false;
       }
     } catch (e) {
-      print('Error occurred while deleting event: $e');
+      log('Error occurred while deleting event: $e');
       return false;
     }
   }
@@ -189,14 +157,14 @@ class EventService {
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(utf8.decode(response.bodyBytes))['data'];
-        print("개인전 결과 조회 성공: $jsonData");
+        log("개인전 결과 조회 성공: $jsonData");
         return jsonData;
       } else {
-        print('개인전 결과 조회 실패: ${response.statusCode} - ${response.body}');
+        log('개인전 결과 조회 실패: ${response.statusCode} - ${response.body}');
         return null;
       }
     } catch (e) {
-      print('Error occurred while fetching individual results: $e');
+      log('Error occurred while fetching individual results: $e');
       return null;
     }
   }
@@ -221,15 +189,15 @@ class EventService {
 
       if (response.statusCode == 200) {
         final jsonData = jsonDecode(utf8.decode(response.bodyBytes))['data'];
-        print("팀전 결과 조회 성공: $jsonData");
-        print("url $url");
+        log("팀전 결과 조회 성공: $jsonData");
+        log("url $url");
         return jsonData;
       } else {
-        print('팀전 결과 조회 실패: ${response.statusCode} - ${response.body}');
+        log('팀전 결과 조회 실패: ${response.statusCode} - ${response.body}');
         return null;
       }
     } catch (e) {
-      print('Error occurred while fetching team results: $e');
+      log('Error occurred while fetching team results: $e');
       return null;
     }
   }
@@ -253,16 +221,16 @@ class EventService {
       if (response.statusCode == 200) {
         // 응답이 200이면 데이터를 파싱하여 반환
         final jsonData = jsonDecode(utf8.decode(response.bodyBytes))['data'];
-        print("========스코어카드 데이터 조회 성공: $jsonData");
+        log("========스코어카드 데이터 조회 성공: $jsonData");
         return jsonData;
       } else {
         // 오류 발생 시 로그 출력
-        print('스코어카드 조회 실패: ${response.statusCode} - ${response.body}');
+        log('스코어카드 조회 실패: ${response.statusCode} - ${response.body}');
         return null;
       }
     } catch (e) {
       // 예외 처리
-      print('Error occurred while fetching score data: $e');
+      log('Error occurred while fetching score data: $e');
       return null;
     }
   }
@@ -284,17 +252,17 @@ class EventService {
       if (response.statusCode == 200) {
         // 응답 데이터 파싱
         final jsonData = jsonDecode(utf8.decode(response.bodyBytes))['data'];
-        print("이벤트 상세 조회 성공: $jsonData");
+        log("이벤트 상세 조회 성공: $jsonData");
         // JSON 데이터를 Event 객체로 변환
         return Event.fromJson(jsonData);
       } else {
         // 오류 로그 출력
-        print('이벤트 상세 조회 실패: ${response.statusCode} - ${response.body}');
+        log('이벤트 상세 조회 실패: ${response.statusCode} - ${response.body}');
         return null;
       }
     } catch (e) {
       // 예외 처리
-      print('Error occurred while fetching event details: $e');
+      log('Error occurred while fetching event details: $e');
       return null;
     }
   }

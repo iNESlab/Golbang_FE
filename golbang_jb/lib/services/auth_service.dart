@@ -1,12 +1,17 @@
+import 'dart:developer';
 import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/repoisitory/secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../global/LoginInterceptor.dart';
+
 class AuthService {
   final SecureStorage storage;
+  final dioClient = DioClient();
 
   AuthService(this.storage);
 
@@ -19,49 +24,42 @@ class AuthService {
     Map<String, String> headers = {"Content-type": "application/json"};
     // body
     Map data = {
-      'username': '$username',
-      'password': '$password',
-      'fcm_token': '$fcm_token'
+      'username': username,
+      'password': password,
+      'fcm_token': fcm_token
     };
     var body = json.encode(data);
+    // login은 액세스 토큰을 안쓰므로 dio를 안거치도록 함
     var response = await http.post(uri, headers: headers, body: body);
-    print("${json.decode(utf8.decode(response.bodyBytes))}");
+    log("${json.decode(utf8.decode(response.bodyBytes))}");
 
     return response;
   }
 
-  Future<http.Response> logout() async {
-    // API 엔드포인트 설정 (dotenv를 통해 환경 변수에서 호스트 URL을 가져옴)
-    var uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/users/logout/");
-    final accessToken = await storage.readAccessToken();
-    Map<String, String> headers = {
-      "Content-type": "application/json",
-      "Authorization": "Bearer $accessToken"
-    };
+  Future<Response> logout() async {
+    var uri = "${dotenv.env['API_HOST']}/api/v1/users/logout/";
 
-    // API 요청
-    var response = await http.post(uri, headers: headers);
-    print("${json.decode(utf8.decode(response.bodyBytes))}");
-    // 응답 상태 코드가 202인 경우, 데이터를 성공적으로 가져온 경우
-    if (response.statusCode == 202) {
-      // 로그아웃 성공 시 자동 로그인 설정 비활성화
-      final prefs = await SharedPreferences.getInstance();
-      print("바꿨니?");
-      await prefs.setBool('isAutoLoginEnabled', false); // 자동 로그인 비활성화
+    try {
+      // 요청 및 Authorization 헤더 추가
+      var response = await dioClient.dio.post(uri);
+
+      // 응답 상태 확인
+      if (response.statusCode == 202) {
+        // 로그아웃 성공 시 자동 로그인 비활성화
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isAutoLoginEnabled', false);
+      }
+
+      return response;
+    } catch (e) {
+      log("로그아웃 실패: $e");
+      rethrow; // 에러를 호출한 곳으로 전달
     }
-    return response;
   }
-  Future<http.Response> validateToken() async {
-    var uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/users/logout/");
-    final accessToken = await storage.readAccessToken();
-    Map<String, String> headers = {
-      "Content-type": "application/json",
-      "Authorization": "Bearer $accessToken"
-    };
-
-    var response = await http.post(uri, headers: headers);
-    print(response.statusCode);
-    print("잘했어유~");
+  //TODO: 유효성 검사하는데 왜 로그 아웃 API를 사용하는지 확인
+  Future<Response> validateToken() async {
+    var uri = "${dotenv.env['API_HOST']}/api/v1/users/logout/";
+    var response =  await dioClient.dio.post(uri);
     return response;
   }
 }

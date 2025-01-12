@@ -16,7 +16,7 @@ class EventHeader extends StatelessWidget {
   final bool isHandicapEnabled;
   final ValueChanged<bool> onHandicapToggle;
 
-  const EventHeader({
+  const EventHeader({super.key, 
     required this.eventTitle,
     required this.location,
     required this.startDateTime,
@@ -51,7 +51,7 @@ class EventHeader extends StatelessWidget {
             color: Colors.grey.withOpacity(0.5),
             spreadRadius: 2,
             blurRadius: 5,
-            offset: Offset(0, 3),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -64,22 +64,22 @@ class EventHeader extends StatelessWidget {
             height: 50,
             fit: BoxFit.cover,
           ),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   eventTitle,
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                  style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
                 ),
                 Text(
                   '${startDateTime.toLocal().toIso8601String().split('T').first} • ${startDateTime.hour}:${startDateTime.minute.toString().padLeft(2, '0')} ~ ${endDateTime.hour}:${endDateTime.minute.toString().padLeft(2, '0')}',
-                  style: TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 16),
                 ),
                 Text(
                   '장소: $location',
-                  style: TextStyle(fontSize: 16),
+                  style: const TextStyle(fontSize: 16),
                 ),
                 Row(
                   children: [
@@ -89,11 +89,11 @@ class EventHeader extends StatelessWidget {
                         children: [
                           Text(
                             '게임모드: $displayGameMode',
-                            style: TextStyle(fontSize: 16),
+                            style: const TextStyle(fontSize: 16),
                           ),
                           Text(
                             '참여 인원: $participantCount명',
-                            style: TextStyle(fontSize: 16),
+                            style: const TextStyle(fontSize: 16),
                           ),
                         ],
                       ),
@@ -101,7 +101,7 @@ class EventHeader extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        Text(
+                        const Text(
                           'Handicap',
                           style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                         ),

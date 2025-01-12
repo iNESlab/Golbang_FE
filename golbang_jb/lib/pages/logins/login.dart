@@ -1,5 +1,7 @@
+import 'dart:developer';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:golbang/pages/home/splash_screen.dart';
 import 'package:golbang/pages/logins/widgets/login_widgets.dart';
 import 'package:golbang/pages/logins/widgets/social_login_widgets.dart';
@@ -78,7 +80,7 @@ class LoginPage extends ConsumerStatefulWidget {
 class _LoginPageState extends ConsumerState<LoginPage> {
   final TextEditingController _emailController = TextEditingController(text: 'Kojungbeom');
   final TextEditingController _passwordController = TextEditingController(text: 'Golbang12!@');
-  bool _isAutoLoginEnabled = false;
+  final bool _isAutoLoginEnabled = false;
 
   // 저장된 이메일 불러오기
   Future<void> _loadSavedEmail() async {
@@ -86,13 +88,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       final storage = ref.read(secureStorageProvider); // SecureStorage 인스턴스 가져오기
       final savedEmail = await storage.readLoginId(); // 로그인 ID 불러오기
 
-      if (savedEmail != null) {
-        setState(() {
-          _emailController.text = savedEmail; // 이메일 필드에 자동완성
-        });
-      }
+      setState(() {
+        _emailController.text = savedEmail; // 이메일 필드에 자동완성
+      });
     } catch (e) {
-      print('이메일 불러오기 실패: $e');
+      log('이메일 불러오기 실패: $e');
     }
   }
 
@@ -110,6 +110,21 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    // 전달된 메시지를 읽음
+    final String? message = Get.arguments?['message'];
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (message != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(message),
+            duration: const Duration(seconds: 3),
+            backgroundColor: Colors.redAccent,
+          ),
+        );
+      }
+    });
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Center(
@@ -142,7 +157,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       FirebaseMessaging messaging = FirebaseMessaging.instance;
       fcmToken = await messaging.getToken();
     } catch (e) {
-      print('FCM 토큰 가져오기 실패: $e');
+      log('FCM 토큰 가져오기 실패: $e');
     }
 
     if (_validateInputs(email, password)) {

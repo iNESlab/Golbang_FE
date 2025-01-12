@@ -75,7 +75,7 @@ class EventPageState extends ConsumerState<EventPage> {
     currentTime = DateTime.now(); // 초기화 시점의 현재 시간
 
     // 타이머를 통해 1초마다 상태 업데이트
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         currentTime = DateTime.now();
       });

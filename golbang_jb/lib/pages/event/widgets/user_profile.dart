@@ -7,12 +7,12 @@ import '../../../models/profile/get_event_result_participants_ranks.dart';
 class UserProfileWidget extends StatelessWidget {
   final GetEventResultParticipantsRanks userProfile;
 
-  const UserProfileWidget({Key? key, required this.userProfile}) : super(key: key);
+  const UserProfileWidget({super.key, required this.userProfile});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white, // 배경 흰색
         borderRadius: BorderRadius.circular(10), // 모서리 둥글게
@@ -20,7 +20,7 @@ class UserProfileWidget extends StatelessWidget {
           BoxShadow(
             color: Colors.black.withOpacity(0.1), // 그림자
             blurRadius: 5,
-            offset: Offset(0, 2),
+            offset: const Offset(0, 2),
           ),
         ],
       ),
@@ -45,12 +45,12 @@ class UserProfileWidget extends StatelessWidget {
             )
                 : _buildCircularIcon(), // http로 시작하지 않을 때 동그란 아이콘
           ),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           // 이름
           Expanded(
             child: Text(
               userProfile.name,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -61,7 +61,7 @@ class UserProfileWidget extends StatelessWidget {
             label: 'Score',
             score: userProfile.sumScore.toString(),
           ),
-          SizedBox(width: 10),
+          const SizedBox(width: 10),
           // 랭킹 (기본)
           _buildScoreBox(
             label: 'My Rank',
@@ -77,7 +77,7 @@ class UserProfileWidget extends StatelessWidget {
         color: Colors.grey[300], // 배경색 (선택사항)
         width: 60,
         height: 60,
-        child: Icon(
+        child: const Icon(
           Icons.person,
           size: 50,
           color: Colors.grey,
@@ -89,7 +89,7 @@ class UserProfileWidget extends StatelessWidget {
   // 스코어와 랭킹을 표시하는 박스 위젯
   Widget _buildScoreBox({required String label, required String score}) {
     return Container(
-      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
       decoration: BoxDecoration(
         color: Colors.green[100], // 배경색을 연한 녹색으로
         borderRadius: BorderRadius.circular(8),
@@ -104,10 +104,10 @@ class UserProfileWidget extends StatelessWidget {
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
             score,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               color: Colors.black,
               fontWeight: FontWeight.bold,

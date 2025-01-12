@@ -4,7 +4,7 @@ import '../../../models/participant.dart';
 class RankingList extends StatelessWidget {
   final List<Participant> participants;
 
-  const RankingList({required this.participants});
+  const RankingList({super.key, required this.participants});
 
   @override
   Widget build(BuildContext context) {
@@ -26,23 +26,23 @@ class RankingList extends StatelessWidget {
             color: Colors.grey.withOpacity(0.5),
             spreadRadius: 2,
             blurRadius: 5,
-            offset: Offset(0, 3),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // "Ranking" 텍스트를 추가
-          Text(
+          const Text(
             "Ranking",
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 10), // "Ranking" 텍스트와 리스트 간의 간격 추가
+          const SizedBox(height: 10), // "Ranking" 텍스트와 리스트 간의 간격 추가
 
           // 참가자 리스트
           Column(
@@ -61,7 +61,7 @@ class RankingList extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _buildRankIcon(rank),
-                      SizedBox(width: 10),
+                      const SizedBox(width: 10),
                       CircleAvatar(
                         radius: 30,
                         backgroundColor: Colors.transparent, // 배경 투명 설정
@@ -86,9 +86,9 @@ class RankingList extends StatelessWidget {
                     children: [
                       Text(
                         name,
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                       ),
-                      SizedBox(height: 4),
+                      const SizedBox(height: 4),
                       Text(
                         '$holeNumber홀',
                         style: TextStyle(fontSize: 14, color: Colors.grey[600]),
@@ -97,7 +97,7 @@ class RankingList extends StatelessWidget {
                   ),
                   trailing: Text(
                     sumScore,
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                 ),
               );
@@ -115,7 +115,7 @@ class RankingList extends StatelessWidget {
         color: Colors.grey[300], // 배경색 설정
         shape: BoxShape.circle,  // 원형으로 설정
       ),
-      child: Icon(
+      child: const Icon(
         Icons.person,
         size: 30,
         color: Colors.grey,
@@ -154,7 +154,7 @@ class RankingList extends StatelessWidget {
       child: Center(
         child: Text(
           text,
-          style: TextStyle(
+          style: const TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.bold,
           ),
@@ -164,7 +164,7 @@ class RankingList extends StatelessWidget {
   }
   // Ranking 데이터가 없을 때 보여줄 메시지 위젯
   Widget _buildNoRankingData() {
-    return Center(
+    return const Center(
       child: Text(
         "Ranking data is not available.",
         style: TextStyle(

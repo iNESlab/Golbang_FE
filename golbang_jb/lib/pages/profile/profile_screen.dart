@@ -5,7 +5,6 @@ import '../../repoisitory/secure_storage.dart';
 import 'user_info_page.dart';
 import '../../services/user_service.dart';
 import 'package:golbang/pages/profile/statistics_page.dart';
-import 'statistics_page.dart';
 
 // UserAccount 상태를 관리하는 Provider 정의
 final userAccountProvider = StateNotifierProvider<UserAccountNotifier, UserAccount?>((ref) {
@@ -86,16 +85,16 @@ class ProfileScreen extends ConsumerWidget {
             CircleAvatar(
               radius: 50,
               backgroundColor: Colors.grey,
-              backgroundImage: userAccount?.profileImage != null
-                  ? NetworkImage(userAccount!.profileImage!)
+              backgroundImage: userAccount.profileImage != null
+                  ? NetworkImage(userAccount.profileImage!)
                   : null,
-              child: userAccount?.profileImage == null
+              child: userAccount.profileImage == null
                   ? const Icon(Icons.person, size: 50, color: Colors.white)
                   : null,
             ),
             const SizedBox(height: 10),
             Text(
-              userAccount?.name ?? '사용자',
+              userAccount.name ?? '사용자',
               style: const TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.bold
@@ -110,23 +109,21 @@ class ProfileScreen extends ConsumerWidget {
                 childAspectRatio: 1.5, // TODO: 소속된 그룹, 관리 그룹을 활성화할 때는 1.8 비율로 변경해야 함
                 children: [
                   _buildActionButton('내 정보', Icons.person, context, userAccount, () {
-                    if (userAccount != null) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => UserInfoPage(initialUserAccount: userAccount),
-                        ),
-                      ).then((_) {
-                        // 돌아왔을 때 정보 업데이트
-                        ref.read(userAccountProvider.notifier).loadUserAccount();
-                      });
-                    }
-                  }),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => UserInfoPage(initialUserAccount: userAccount),
+                      ),
+                    ).then((_) {
+                      // 돌아왔을 때 정보 업데이트
+                      ref.read(userAccountProvider.notifier).loadUserAccount();
+                    });
+                                    }),
                   _buildActionButton('통계', Icons.bar_chart, context, userAccount, () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => StatisticsPage(),
+                        builder: (context) => const StatisticsPage(),
                       ),
                     );
                   }),

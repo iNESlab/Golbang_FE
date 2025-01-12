@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class RegisterPage extends StatefulWidget {
+  const RegisterPage({super.key});
+
   @override
   _RegisterPageState createState() => _RegisterPageState();
 }
@@ -16,9 +18,9 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('회원가입'),
+        title: const Text('회원가입'),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -32,14 +34,14 @@ class _RegisterPageState extends State<RegisterPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
+                const Text(
                   '회원가입',
                   style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                 ),
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
                 TextFormField(
                   controller: _idController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: '아이디',
                     hintText: '아이디를 입력해주세요',
                     border: OutlineInputBorder(),
@@ -51,10 +53,10 @@ class _RegisterPageState extends State<RegisterPage> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
                 TextFormField(
                   controller: _emailController,
-                  decoration: InputDecoration(
+                  decoration: const InputDecoration(
                     labelText: '이메일',
                     hintText: '이메일을 입력해주세요',
                     border: OutlineInputBorder(),
@@ -69,14 +71,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: '비밀번호',
                     hintText: '비밀번호를 입력해주세요',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _passwordController.text.isNotEmpty ? Icons.visibility : Icons.visibility_off,
@@ -101,14 +103,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     return null;
                   },
                 ),
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
                 TextFormField(
                   controller: _confirmPasswordController,
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: '비밀번호 확인',
                     hintText: '비밀번호를 다시 입력해주세요',
-                    border: OutlineInputBorder(),
+                    border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
                         _confirmPasswordController.text.isNotEmpty ? Icons.visibility : Icons.visibility_off,
@@ -130,7 +132,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     return null;
                   },
                 ),
-                SizedBox(height: 32.0),
+                const SizedBox(height: 32.0),
                 ElevatedButton(
                   onPressed: () {
                     if (_formKey.currentState!.validate()) {
@@ -138,13 +140,13 @@ class _RegisterPageState extends State<RegisterPage> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    minimumSize: Size(double.infinity, 50), // 버튼을 가로로 크게 설정
+                    minimumSize: const Size(double.infinity, 50), // 버튼을 가로로 크게 설정
                   ),
-                  child: Text('다음'),
+                  child: const Text('다음'),
                 ),
-                SizedBox(height: 16.0),
-                Center(child: Text('Or Register with')),
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
+                const Center(child: Text('Or Register with')),
+                const SizedBox(height: 16.0),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -159,13 +161,13 @@ class _RegisterPageState extends State<RegisterPage> {
                     }),
                   ],
                 ),
-                SizedBox(height: 16.0),
+                const SizedBox(height: 16.0),
                 Center(
                   child: TextButton(
                     onPressed: () {
                       // 로그인 페이지로 이동하는 로직을 수행합니다.
                     },
-                    child: Text(
+                    child: const Text(
                       '이미 계정이 있으신가요? Login Now',
                       style: TextStyle(color: Colors.blue),
                     ),
@@ -183,8 +185,8 @@ class _RegisterPageState extends State<RegisterPage> {
     return GestureDetector(
       onTap: onPressed,
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 8.0),
-        padding: EdgeInsets.all(12.0),
+        margin: const EdgeInsets.symmetric(horizontal: 8.0),
+        padding: const EdgeInsets.all(12.0),
         decoration: BoxDecoration(
           border: Border.all(color: Colors.grey),
           borderRadius: BorderRadius.circular(8.0),

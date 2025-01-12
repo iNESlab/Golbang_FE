@@ -10,13 +10,11 @@ import 'event_create2.dart';
 import 'widgets/location_search_dialog.dart';
 import 'widgets/participant_dialog.dart';
 import '../../models/profile/member_profile.dart';
-import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz;
 
 class EventsCreate1 extends ConsumerStatefulWidget {
   final DateTime? startDay;
 
-  EventsCreate1({this.startDay});
+  const EventsCreate1({super.key, this.startDay});
 
   @override
   _EventsCreate1State createState() => _EventsCreate1State();
@@ -37,19 +35,19 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
   late ClubService _clubService;
   bool _isButtonEnabled = false;
   final Map<String, LatLng> _locationCoordinates = {
-    "Jagorawi Golf & Country Club": LatLng(-6.454673, 106.876867),
-    "East Point Golf Club": LatLng(17.763526, 83.301727),
-    "Rusutsu Resort Golf 72": LatLng(42.748674, 140.904709),
-    "Siem Reap Lake Resort Golf Club": LatLng(13.368188, 103.964219),
-    "National Army, Taelung Sport Center": LatLng(37.630121, 127.109333),
-    "Luang Prabang Golf Club": LatLng(19.867596, 102.085709),
-    "Nuwara Eliya Golf Club": LatLng(6.971707, 80.765661),
-    "Bukit Banang Golf & Country Club": LatLng(1.802658, 102.968811),
-    "Panya Indra Golf Club": LatLng(13.828058, 100.687627),
-    "Song Be Golf Resort": LatLng(10.924936, 106.707254)
+    "Jagorawi Golf & Country Club": const LatLng(-6.454673, 106.876867),
+    "East Point Golf Club": const LatLng(17.763526, 83.301727),
+    "Rusutsu Resort Golf 72": const LatLng(42.748674, 140.904709),
+    "Siem Reap Lake Resort Golf Club": const LatLng(13.368188, 103.964219),
+    "National Army, Taelung Sport Center": const LatLng(37.630121, 127.109333),
+    "Luang Prabang Golf Club": const LatLng(19.867596, 102.085709),
+    "Nuwara Eliya Golf Club": const LatLng(6.971707, 80.765661),
+    "Bukit Banang Golf & Country Club": const LatLng(1.802658, 102.968811),
+    "Panya Indra Golf Club": const LatLng(13.828058, 100.687627),
+    "Song Be Golf Resort": const LatLng(10.924936, 106.707254)
   };
 
-  final TimeOfDay _fixedTime = TimeOfDay(hour: 23, minute: 59);
+  final TimeOfDay _fixedTime = const TimeOfDay(hour: 23, minute: 59);
 
   @override
   void initState() {
@@ -188,9 +186,9 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('이벤트 생성'),
+        title: const Text('이벤트 생성'),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -247,12 +245,12 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
-                      prefixIcon: Icon(Icons.location_on),
+                      prefixIcon: const Icon(Icons.location_on),
                     ),
                   ),
                 ),
               ),
-              if (_selectedLocation != null) SizedBox(height: 16),
+              if (_selectedLocation != null) const SizedBox(height: 16),
               if (_selectedLocation != null)
                 Container(
                   height: 200,
@@ -266,7 +264,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                     ),
                     markers: {
                       Marker(
-                        markerId: MarkerId('selected-location'),
+                        markerId: const MarkerId('selected-location'),
                         position: _selectedLocation!,
                       ),
                     },
@@ -289,7 +287,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
-                            prefixIcon: Icon(Icons.calendar_today),
+                            prefixIcon: const Icon(Icons.calendar_today),
                           ),
                         ),
                       ),
@@ -308,7 +306,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
-                            prefixIcon: Icon(Icons.access_time),
+                            prefixIcon: const Icon(Icons.access_time),
                           ),
                         ),
                       ),
@@ -331,7 +329,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8.0),
                             ),
-                            prefixIcon: Icon(Icons.calendar_today),
+                            prefixIcon: const Icon(Icons.calendar_today),
                           ),
                         ),
                       ),
@@ -345,7 +343,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
               GestureDetector(
                 onTap: _selectedClub != null ? _showParticipantDialog : null, // 클럽이 선택되지 않았으면 비활성화
                 child: Container(
-                  padding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                   decoration: BoxDecoration(
                     border: Border.all(color: _selectedClub != null ? Colors.grey : Colors.grey[300]!),
                     borderRadius: BorderRadius.circular(8.0),
@@ -354,12 +352,12 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                   child: Row(
                     children: [
                       Icon(Icons.person_add, color: _selectedClub != null ? Colors.grey : Colors.grey[300]),
-                      SizedBox(width: 8),
+                      const SizedBox(width: 8),
                       Text(
                         _selectedParticipants.isEmpty
                             ? '+ 참여자 추가'
                             : _selectedParticipants.map((p) => p.name).join(', '),
-                        style: TextStyle(color: Colors.black),
+                        style: const TextStyle(color: Colors.black),
                       ),
                     ],
                   ),
@@ -389,7 +387,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                   );
                 }).toList(),
               ),
-              SizedBox(height: 16),
+              const SizedBox(height: 16),
               Center(
                 child: ElevatedButton(
                   onPressed: _isButtonEnabled
@@ -416,10 +414,10 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                     );
                   }
                       : null,
-                  child: Text('다음'),
                   style: ElevatedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 50),
                   ),
+                  child: const Text('다음'),
                 ),
               ),
             ],

@@ -8,7 +8,7 @@ class ParticipantDialog extends ConsumerStatefulWidget {
   final List<ClubMemberProfile> selectedParticipants;
   final int clubId;
 
-  ParticipantDialog({
+  const ParticipantDialog({super.key, 
     required this.selectedParticipants,
     required this.clubId,
   });
@@ -53,26 +53,26 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
 
     return AlertDialog(
       backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(20.0)),
       ),
       titlePadding: EdgeInsets.zero,
       title: Container(
         decoration: BoxDecoration(
           color: Colors.grey[200],
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20.0)),
         ),
-        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Container(),
-            Text(
+            const Text(
               '참여자 추가',
               style: TextStyle(color: Colors.green, fontSize: 25),
             ),
             IconButton(
-              icon: Icon(Icons.close),
+              icon: const Icon(Icons.close),
               onPressed: () {
                 Navigator.of(context).pop(tempSelectedParticipants);
               },
@@ -81,8 +81,8 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
         ),
       ),
       content: isLoading
-          ? Center(child: CircularProgressIndicator())
-          : Container(
+          ? const Center(child: CircularProgressIndicator())
+          : SizedBox(
         width: MediaQuery.of(context).size.width * 0.9,
         child: SingleChildScrollView(
           child: Column(
@@ -93,7 +93,7 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
                   filled: true,
                   fillColor: Colors.white,
                   hintText: '이름 또는 닉네임으로 검색',
-                  prefixIcon: Icon(Icons.search),
+                  prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
                     borderSide: BorderSide.none,
@@ -107,8 +107,8 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
                   });
                 },
               ),
-              SizedBox(height: 10),
-              Container(
+              const SizedBox(height: 10),
+              SizedBox(
                 height: 300,
                 child: ListView.builder(
                   shrinkWrap: true,
@@ -148,12 +148,12 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
             onPressed: () {
               Navigator.of(context).pop(tempSelectedParticipants);
             },
-            child: Text('완료'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.teal,
               foregroundColor: Colors.white, // 텍스트 색상을 흰색으로 설정
-              minimumSize: Size(double.infinity, 50),
+              minimumSize: const Size(double.infinity, 50),
             ),
+            child: const Text('완료'),
           ),
         ),
       ],

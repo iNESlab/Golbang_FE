@@ -6,7 +6,7 @@ class LocationSearchDialog extends StatefulWidget {
   final Map<String, LatLng> locationCoordinates;
   final Function(String) onLocationSelected;
 
-  LocationSearchDialog({
+  const LocationSearchDialog({super.key, 
     required this.locationController,
     required this.locationCoordinates,
     required this.onLocationSelected,
@@ -29,26 +29,26 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
   Widget build(BuildContext context) {
     return AlertDialog(
       backgroundColor: Colors.white,
-      shape: RoundedRectangleBorder(
+      shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(20.0)),
       ),
       titlePadding: EdgeInsets.zero,
       title: Container(
         decoration: BoxDecoration(
           color: Colors.grey[200],
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20.0)),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20.0)),
         ),
-        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Container(),
-            Text(
+            const Text(
               '장소 검색',
               style: TextStyle(color: Colors.green, fontSize: 25),
             ),
             IconButton(
-              icon: Icon(Icons.close),
+              icon: const Icon(Icons.close),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -56,7 +56,7 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
           ],
         ),
       ),
-      content: Container(
+      content: SizedBox(
         width: MediaQuery.of(context).size.width * 0.9,
         child: SingleChildScrollView(
           child: Column(
@@ -67,7 +67,7 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
                   filled: true,
                   fillColor: Colors.white,
                   hintText: '장소를 입력하세요',
-                  prefixIcon: Icon(Icons.search),
+                  prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
                     borderSide: BorderSide.none,
@@ -81,8 +81,8 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
                   });
                 },
               ),
-              SizedBox(height: 10),
-              Container(
+              const SizedBox(height: 10),
+              SizedBox(
                 height: 300,
                 child: ListView.builder(
                   shrinkWrap: true,
@@ -110,11 +110,11 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
             onPressed: () {
               Navigator.of(context).pop();
             },
-            child: Text('완료'),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.white,
-              minimumSize: Size(double.infinity, 50),
+              minimumSize: const Size(double.infinity, 50),
             ),
+            child: const Text('완료'),
           ),
         ),
       ],

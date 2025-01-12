@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'success_change_password.dart';
 
 class CreateNewPasswordPage extends StatefulWidget {
-  const CreateNewPasswordPage({Key? key}) : super(key: key);
+  const CreateNewPasswordPage({super.key});
 
   @override
   _CreateNewPasswordPageState createState() => _CreateNewPasswordPageState();
@@ -26,7 +26,7 @@ class _CreateNewPasswordPageState extends State<CreateNewPasswordPage> {
       // 비밀번호 변경 성공 시 OTPVerificationPage로 이동
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
-          builder: (context) => PasswordChangedPage(),
+          builder: (context) => const PasswordChangedPage(),
         ),
       );
     }

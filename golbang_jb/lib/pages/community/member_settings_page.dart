@@ -8,7 +8,7 @@ import 'package:get/get.dart';
 class MemberSettingsPage extends ConsumerWidget {
   final int clubId;
 
-  const MemberSettingsPage({required this.clubId});
+  const MemberSettingsPage({super.key, required this.clubId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -104,7 +104,7 @@ class SettingsButton extends StatelessWidget {
   final Color textColor;
   final VoidCallback onPressed;
 
-  const SettingsButton({
+  const SettingsButton({super.key, 
     required this.text,
     required this.onPressed,
     this.textColor = Colors.black,

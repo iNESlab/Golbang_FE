@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:golbang/pages/logins/login.dart';
 import 'dart:async';
 
-import 'package:golbang/pages/logins/register_page.dart';
-import 'package:golbang/pages/signup/signup.dart';
 
 import '../signup/terms_agreement_page.dart';
 
@@ -106,7 +104,7 @@ class _HiScreenState extends State<HiScreen> {
                         onPressed: () {
                           Navigator.push(
                             context,
-                            MaterialPageRoute(builder: (context) => TermsAgreementPage()), // SettingsPage로 이동
+                            MaterialPageRoute(builder: (context) => const TermsAgreementPage()), // SettingsPage로 이동
                           );
                         },
                         style: ElevatedButton.styleFrom(

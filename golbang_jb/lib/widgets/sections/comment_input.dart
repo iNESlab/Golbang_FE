@@ -4,7 +4,7 @@ class CommentInput extends StatelessWidget {
   final TextEditingController controller;
   final VoidCallback onSubmit;
 
-  const CommentInput({required this.controller, required this.onSubmit});
+  const CommentInput({super.key, required this.controller, required this.onSubmit});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +27,7 @@ class CommentInput extends StatelessWidget {
             ),
           ),
           IconButton(
-            icon: Icon(Icons.send),
+            icon: const Icon(Icons.send),
             onPressed: onSubmit,
           ),
         ],

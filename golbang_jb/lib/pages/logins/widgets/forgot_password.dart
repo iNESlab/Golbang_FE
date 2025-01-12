@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:golbang/services/user_service.dart';
 
 class ForgotPasswordDialog extends StatelessWidget {
-  const ForgotPasswordDialog({Key? key}) : super(key: key);
+  const ForgotPasswordDialog({super.key});
 
   @override
   Widget build(BuildContext context) {

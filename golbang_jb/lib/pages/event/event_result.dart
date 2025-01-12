@@ -14,7 +14,7 @@ import '../../repoisitory/secure_storage.dart';
 class EventResultPage extends ConsumerStatefulWidget {
   final int eventId;
 
-  const EventResultPage({Key? key, required this.eventId}) : super(key: key);
+  const EventResultPage({super.key, required this.eventId});
 
   @override
   _EventResultPageState createState() => _EventResultPageState();

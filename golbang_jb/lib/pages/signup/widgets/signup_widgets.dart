@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 class IdField extends StatelessWidget {
   final TextEditingController controller;
 
-  const IdField({required this.controller});
+  const IdField({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      decoration: InputDecoration(
+      decoration: const InputDecoration(
         labelText: '아이디',
         hintText: '아이디를 입력해주세요',
         border: OutlineInputBorder(),
@@ -29,13 +29,13 @@ class IdField extends StatelessWidget {
 class EmailField extends StatelessWidget {
   final TextEditingController controller;
 
-  const EmailField({required this.controller});
+  const EmailField({super.key, required this.controller});
 
   @override
   Widget build(BuildContext context) {
     return TextFormField(
       controller: controller,
-      decoration: InputDecoration(
+      decoration: const InputDecoration(
         labelText: '이메일',
         hintText: '이메일을 입력해주세요',
         border: OutlineInputBorder(),
@@ -59,7 +59,7 @@ class PasswordField extends StatelessWidget {
   final bool obscureText;
   final VoidCallback toggleObscureText;
 
-  const PasswordField({
+  const PasswordField({super.key, 
     required this.controller,
     required this.obscureText,
     required this.toggleObscureText,
@@ -73,7 +73,7 @@ class PasswordField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: '비밀번호',
         hintText: '비밀번호를 입력해주세요',
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
         suffixIcon: IconButton(
           icon: Icon(
             obscureText ? Icons.visibility_off : Icons.visibility,
@@ -103,7 +103,7 @@ class ConfirmPasswordField extends StatelessWidget {
   final bool obscureText;
   final VoidCallback toggleObscureText;
 
-  const ConfirmPasswordField({
+  const ConfirmPasswordField({super.key, 
     required this.controller,
     required this.passwordController,
     required this.obscureText,
@@ -118,7 +118,7 @@ class ConfirmPasswordField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: '비밀번호 확인',
         hintText: '비밀번호를 다시 입력해주세요',
-        border: OutlineInputBorder(),
+        border: const OutlineInputBorder(),
         suffixIcon: IconButton(
           icon: Icon(
             obscureText ? Icons.visibility_off : Icons.visibility,
@@ -143,7 +143,7 @@ class ConfirmPasswordField extends StatelessWidget {
 class SubmitButton extends StatelessWidget {
   final VoidCallback onPressed;
 
-  const SubmitButton({required this.onPressed});
+  const SubmitButton({super.key, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
@@ -152,9 +152,9 @@ class SubmitButton extends StatelessWidget {
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.green,
         disabledBackgroundColor: Colors.grey.shade300,
-        minimumSize: Size(double.infinity, 50),
+        minimumSize: const Size(double.infinity, 50),
       ),
-      child: Text('다음', style: TextStyle(color: Colors.white, fontSize: 16)),
+      child: const Text('다음', style: TextStyle(color: Colors.white, fontSize: 16)),
     );
   }
 }

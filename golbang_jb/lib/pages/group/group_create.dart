@@ -16,6 +16,8 @@ import '../../services/group_service.dart';
 import '../profile/profile_screen.dart';
 
 class GroupCreatePage extends ConsumerStatefulWidget {
+  const GroupCreatePage({super.key});
+
   @override
   _GroupCreatePageState createState() => _GroupCreatePageState();
 }
@@ -23,8 +25,8 @@ class GroupCreatePage extends ConsumerStatefulWidget {
 class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
   List<GetAllUserProfile> selectedAdmins = [];
   List<GetAllUserProfile> selectedMembers = [];
-  TextEditingController _groupNameController = TextEditingController();
-  TextEditingController _groupDescriptionController = TextEditingController();
+  final TextEditingController _groupNameController = TextEditingController();
+  final TextEditingController _groupDescriptionController = TextEditingController();
   XFile? _imageFile;
 
   final ImagePicker _picker = ImagePicker();
@@ -95,18 +97,18 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
 
       if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('성공적으로 생성 완료하였습니다.')),
+          const SnackBar(content: Text('성공적으로 생성 완료하였습니다.')),
         );
         ref.read(clubStateProvider.notifier).fetchClubs(); // 클럽 리스트 다시 불러오기
         Navigator.of(context).pop(); // 성공 시 페이지 닫기
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('그룹을 생성하는 데 실패했습니다. 나중에 다시 시도해주세요.')),
+          const SnackBar(content: Text('그룹을 생성하는 데 실패했습니다. 나중에 다시 시도해주세요.')),
         );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('그룹 이름과 설명을 입력해주세요.')),
+        const SnackBar(content: Text('그룹 이름과 설명을 입력해주세요.')),
       );
     }
   }
@@ -145,9 +147,9 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
     // 화면 렌더링
     return Scaffold(
       appBar: AppBar(
-        title: Text('모임 생성'),
+        title: const Text('모임 생성'),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.of(context).pop();
           },
@@ -167,54 +169,54 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
                       radius: 50,
                       backgroundImage: FileImage(File(_imageFile!.path)),
                     )
-                        : Icon(Icons.camera_alt, size: 100, color: Colors.grey),
+                        : const Icon(Icons.camera_alt, size: 100, color: Colors.grey),
                     TextButton(
                       onPressed: _pickImage,
-                      child: Text('사진 추가'),
+                      child: const Text('사진 추가'),
                     ),
                   ],
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               TextField(
                 controller: _groupNameController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: '새로운 모임의 이름을 입력해주세요.',
                   hintStyle: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
               ),
               TextField(
                 controller: _groupDescriptionController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   hintText: '모임의 소개 문구를 작성해주세요.',
                   border: InputBorder.none,
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // + 멤버 추가 버튼
               MemberAddButton(onPressed: () => _showMemberDialog(false)),
 
               // 추가된 멤버 목록 표시
               if (selectedMembers.isNotEmpty) ...[
-                SizedBox(height: 10),
-                Text("추가된 멤버"),
+                const SizedBox(height: 10),
+                const Text("추가된 멤버"),
                 MemberInvite(selectedMembers: selectedMembers),
               ],
 
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
 
               // + 관리자 추가 버튼
               AdminAddButton(onPressed: () => _showMemberDialog(true)),
 
               // 추가된 관리자 목록 표시
               if (selectedAdmins.isNotEmpty) ...[
-                SizedBox(height: 10),
-                Text("추가된 관리자"),
+                const SizedBox(height: 10),
+                const Text("추가된 관리자"),
                 MemberInvite(selectedMembers: selectedAdmins),
               ],
 
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               const Text(
                 '※ 모임을 생성하는 사람은 모임 멤버이자 관리자로 설정됩니다.',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
@@ -223,16 +225,16 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
                 '※ 모임명, 소개 문구, 멤버, 관리자를 모두 설정한 후 완료 버튼을 눌러주세요',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               Center(
                 child: ElevatedButton(
                   onPressed: _onComplete,
-                  child: Text('완료'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.teal,
                     foregroundColor: Colors.white,
-                    minimumSize: Size(double.infinity, 50),
+                    minimumSize: const Size(double.infinity, 50),
                   ),
+                  child: const Text('완료'),
                 ),
               ),
             ],

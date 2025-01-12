@@ -21,7 +21,7 @@ class EventsCreate2 extends ConsumerStatefulWidget {
   final List<ClubMemberProfile> selectedParticipants;
   final GameMode selectedGameMode;
 
-  EventsCreate2({
+  const EventsCreate2({super.key, 
     required this.title,
     required this.selectedClub,
     required this.selectedLocation,
@@ -99,10 +99,10 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
     int numGroups = int.parse(numberOfGroups.replaceAll('개', ''));
     setState(() {
       // 각 참가자의 groupType과 teamType을 0과 NONE으로 리셋
-      _selectedParticipants.forEach((participant) {
+      for (var participant in _selectedParticipants) {
         participant.groupType = 0;
         participant.teamType = TeamConfig.NONE;
-      });
+      }
       groups.clear(); // Clear groups when toggling between team and individual
       groups = isTeam
           ? List.generate(
@@ -126,7 +126,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
     List<CreateParticipant> groupParticipants = groups
         .firstWhere((group) => group.keys.first == groupName || group.keys.last == groupName)[groupName]!;
 
-    bool Function(CreateParticipant) isSameGroup = (CreateParticipant participant) =>
+    isSameGroup(CreateParticipant participant) =>
       participant.groupType == int.parse(groupName.substring(1, 2));
 
     List<CreateParticipant> notOtherGroupParticipants = _selectedParticipants
@@ -167,11 +167,11 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
       alertDateTime: "",
     );
 
-    _selectedParticipants.forEach((participant) {
-      if (participant.groupType==0)
+    for (var participant in _selectedParticipants) {
+      if (participant.groupType==0) {
         participant.groupType = 1;
       }
-    );
+      }
 
     // 이벤트 생성 호출 후 성공 여부에 따른 UI 처리
     final success = await ref
@@ -181,7 +181,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
     if (success) {
       // 성공 시 "이벤트 생성에 성공했습니다" 메시지 표시
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('이벤트 생성에 성공했습니다.')),
+        const SnackBar(content: Text('이벤트 생성에 성공했습니다.')),
       );
 
       // 페이지 닫기
@@ -190,7 +190,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
     } else {
       // 실패 시 SnackBar로 오류 메시지 표시
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('이벤트 생성에 실패했습니다. 나중에 다시 시도해주세요.')),
+        const SnackBar(content: Text('이벤트 생성에 실패했습니다. 나중에 다시 시도해주세요.')),
       );
     }
   }
@@ -203,12 +203,12 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
-        title: Text('이벤트 생성'),
+        title: const Text('이벤트 생성'),
         actions: [
           TextButton(
             onPressed: (hasDuplicateParticipants)
@@ -257,7 +257,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                     }).toList(),
                   ),
                 ),
-                SizedBox(width: 20),
+                const SizedBox(width: 20),
                 Expanded(
                   child: DropdownButtonFormField<bool>(
                     decoration: const InputDecoration(
@@ -356,7 +356,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
               onPressed: _createGroups,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.teal,
-                minimumSize: Size(double.infinity, 50),
+                minimumSize: const Size(double.infinity, 50),
               ),
               child: const Text(
                 '조 생성',
@@ -391,7 +391,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                                 onAddParticipant: () {
                                   _showParticipantSelectionDialog(groupNameA);
                                 },
-                                buttonTextStyle: TextStyle(color: Colors.white),
+                                buttonTextStyle: const TextStyle(color: Colors.white),
                               ),
                               if (isTeam)
                                 GroupCard(
@@ -400,7 +400,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                                   onAddParticipant: () {
                                     _showParticipantSelectionDialog(groupNameB); // Same dialog for B team
                                   },
-                                  buttonTextStyle: TextStyle(color: Colors.white),
+                                  buttonTextStyle: const TextStyle(color: Colors.white),
                                 ),
                             ],
                           );

@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 class CommentItem extends StatelessWidget {
   final Map<String, dynamic> comment;
 
-  const CommentItem({required this.comment});
+  const CommentItem({super.key, required this.comment});
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      leading: CircleAvatar(
+      leading: const CircleAvatar(
         backgroundImage: AssetImage('assets/images/apple.png'),
         radius: 10,
       ),
@@ -16,9 +16,9 @@ class CommentItem extends StatelessWidget {
         children: [
           Text(
             comment['author'],
-            style: TextStyle(fontWeight: FontWeight.bold),
+            style: const TextStyle(fontWeight: FontWeight.bold),
           ),
-          SizedBox(width: 5),
+          const SizedBox(width: 5),
           Text(comment['content']),
         ],
       ),

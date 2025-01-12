@@ -1,37 +1,29 @@
+import 'dart:developer';
 import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
+import '../global/LoginInterceptor.dart';
 import '../repoisitory/secure_storage.dart';
 
 class FeedbackService {
   final SecureStorage storage;
+  final dioClient = DioClient();
 
   FeedbackService(this.storage);
 
-  Future<Map<String, dynamic>> sendFeedback(String message) async {
+  Future<void> sendFeedback(String message) async {
     try {
-      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/feedbacks/');
-      final accessToken = await storage.readAccessToken();
+      final url = '${dotenv.env['API_HOST']}/api/v1/feedbacks/';
 
-      final response = await http.post(
+      final response = await dioClient.dio.post(
         url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
-        body: jsonEncode({'message': message}),
+        data: jsonEncode({'message': message}),
       );
 
-      if (response.statusCode == 201) {
-        print("Feedback created successfully");
-        return jsonDecode(response.body);
-      } else if (response.statusCode == 401) {
-        throw Exception('Unauthorized: Invalid or expired token');
-      } else {
-        throw Exception('Failed to send feedback: ${response.statusCode} ${response.body}');
+      if (response.statusCode != 201) {
+        throw Exception('Failed to send feedback: ${response.statusCode} ${response.data}');
       }
     } catch (e) {
-      print('Error occurred while creating feedback: $e');
+      log('Error occurred while creating feedback: $e');
       throw Exception('Unexpected error: $e');
     }
   }

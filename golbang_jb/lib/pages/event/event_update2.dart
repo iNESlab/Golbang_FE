@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/models/profile/member_profile.dart';
 import 'package:golbang/pages/event/widgets/group_card.dart';
 import 'package:golbang/pages/event/widgets/no_api_participant_dialog.dart';
-import 'package:golbang/pages/event/widgets/toggle_bottons.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../models/club.dart';
 import '../../models/create_event.dart';
@@ -25,7 +24,7 @@ class EventsUpdate2 extends ConsumerStatefulWidget {
   final List<Participant> existingParticipants;
   final GameMode selectedGameMode;
 
-  EventsUpdate2({
+  const EventsUpdate2({super.key, 
     required this.eventId,
     required this.title,
     required this.selectedClub,
@@ -145,10 +144,10 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
     int numGroups = int.parse(numberOfGroups.replaceAll('개', ''));
     setState(() {
       // 각 참가자의 groupType과 teamType을 0과 NONE으로 리셋
-      _selectedParticipants.forEach((participant) {
+      for (var participant in _selectedParticipants) {
         participant.groupType = 0;
         participant.teamType = TeamConfig.NONE;
-      });
+      }
       groups.clear();
       groups = isTeam
           ? List.generate(
@@ -216,7 +215,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
     List<CreateParticipant> groupParticipants = groups
         .firstWhere((group) => group.keys.first == groupName || group.keys.last == groupName)[groupName]!;
 
-    bool Function(CreateParticipant) isSameGroup = (CreateParticipant participant) =>
+    isSameGroup(CreateParticipant participant) =>
     participant.groupType == int.parse(groupName.substring(1, 2));
 
     List<CreateParticipant> notOtherGroupParticipants = _selectedParticipants
@@ -265,13 +264,13 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
 
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('이벤트가 성공적으로 수정되었습니다.')),
+        const SnackBar(content: Text('이벤트가 성공적으로 수정되었습니다.')),
       );
       Navigator.of(context).pop(true);
       Navigator.of(context).pop(true);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('이벤트 수정에 실패했습니다. 관리자만 수정할 수 있습니다. ')),
+        const SnackBar(content: Text('이벤트 수정에 실패했습니다. 관리자만 수정할 수 있습니다. ')),
       );
     }
   }
@@ -281,12 +280,12 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
-        title: Text('이벤트 수정'),
+        title: const Text('이벤트 수정'),
         actions: [
           TextButton(
             onPressed: (hasDuplicateParticipants || !allParticipantsAssigned)
@@ -314,7 +313,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                 children: [ // TODO: 여기까지 삭제
                   Expanded(
                     child: DropdownButtonFormField<GameMode>(
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: '게임모드',
                         border: OutlineInputBorder(),
                       ),
@@ -335,10 +334,10 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                       }).toList(),
                     ),
                   ),
-                  SizedBox(width: 20),
+                  const SizedBox(width: 20),
                   Expanded(
                     child: DropdownButtonFormField<bool>(
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: '팀/개인전',
                         border: OutlineInputBorder(),
                       ),
@@ -362,7 +361,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                   ),
                 ],
               ),
-             SizedBox(height: 20),
+             const SizedBox(height: 20),
             /*
             DropdownButtonFormField<String>(
               decoration: InputDecoration(
@@ -388,7 +387,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
               children: [
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: '조(최대 갯수)',
                       border: OutlineInputBorder(),
                     ),
@@ -406,10 +405,10 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                     }).toList(),
                   ),
                 ),
-                SizedBox(width: 20),
+                const SizedBox(width: 20),
                 Expanded(
                   child: DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       labelText: '조별 인원 수(최대)',
                       border: OutlineInputBorder(),
                     ),
@@ -429,14 +428,14 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                 ),
               ],
             ),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             ElevatedButton(
               onPressed: _createGroups,
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.teal,
-                minimumSize: Size(double.infinity, 50),
+                minimumSize: const Size(double.infinity, 50),
               ),
-              child: Text(
+              child: const Text(
                 '조 생성',
                 style: TextStyle(color: Colors.white),  // 글자 색을 흰색으로 설정
               ),
@@ -447,8 +446,8 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('참가자 조를 지정해 주세요.\n모두 지정해야 완료됩니다.'),
-                    SizedBox(height: 10),
+                    const Text('참가자 조를 지정해 주세요.\n모두 지정해야 완료됩니다.'),
+                    const SizedBox(height: 10),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
                       child: Row(
@@ -469,7 +468,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                                 onAddParticipant: () {
                                   _showParticipantSelectionDialog(groupNameA);
                                 },
-                                buttonTextStyle: TextStyle(color: Colors.white),
+                                buttonTextStyle: const TextStyle(color: Colors.white),
                               ),
                               if (isTeam)
                                 GroupCard(
@@ -478,7 +477,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                                   onAddParticipant: () {
                                     _showParticipantSelectionDialog(groupNameB);
                                   },
-                                  buttonTextStyle: TextStyle(color: Colors.white),
+                                  buttonTextStyle: const TextStyle(color: Colors.white),
                                 ),
                             ],
                           );

@@ -1,7 +1,7 @@
+import 'dart:developer';
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
+import 'package:golbang/global/LoginInterceptor.dart';
 import '../repoisitory/secure_storage.dart';
 import '../models/get_statistics_overall.dart';
 import '../models/get_statistics_yearly.dart';
@@ -10,52 +10,37 @@ import '../models/get_statistics_period.dart';
 
 class StatisticsService {
   final SecureStorage storage;
+  final dioClient = DioClient();
 
   StatisticsService(this.storage);
 
   Future<ClubStatistics?> fetchClubStatistics(int clubId) async {
     try {
-      final accessToken = await storage.readAccessToken();
       // TODO: endpoint 뒤에 슬레시 필요한지 아닌지 통일
-      var uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/clubs/statistics/ranks/?club_id=$clubId");
+      var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/statistics/ranks/?club_id=$clubId/";
 
-      Map<String, String> headers = {
-        "Content-type": "application/json",
-        "Authorization": "Bearer $accessToken"
-      };
-
-      var response = await http.get(uri, headers: headers);
+      var response = await dioClient.dio.get(uri);
       if (response.statusCode == 200) {
-        final jsonData = json.decode(utf8.decode(response.bodyBytes))['data'];
-        // print(jsonData);
+        final jsonData = response.data['data'];
+        // log(jsonData);
         if (jsonData != null) {
           return ClubStatistics.fromJson(jsonData);
         }
       }
     } catch (e) {
-      print('Failed to load club statistics: $e');
+      log('Failed to load club statistics: $e');
     }
     return null;
   }
 
   Future<OverallStatistics?> fetchOverallStatistics() async {
     try {
-      final accessToken = await storage.readAccessToken();
       // TODO: endpoint 뒤에 슬레시 필요한지 아닌지 통일
-      var uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/participants/statistics/overall/");
+      var uri = "${dotenv.env['API_HOST']}/api/v1/participants/statistics/overall/";
 
-      Map<String, String> headers = {
-        "Content-type": "application/json",
-        "Authorization": "Bearer $accessToken"
-      };
-
-      var response = await http.get(uri, headers: headers);
-      print("hello");
+      var response = await dioClient.dio.get(uri);
       if (response.statusCode == 200) {
-        final jsonData = json.decode(utf8.decode(response.bodyBytes))['data'];
-        print("--start overall--");
-        print(jsonData);
-        print("--end overall--");
+        final jsonData = response.data['data'];
         if (jsonData != null) {
           return OverallStatistics.fromJson(jsonData);
         }
@@ -65,7 +50,7 @@ class StatisticsService {
         throw Exception('Failed to load overall statistics');
       }
     } catch (e) {
-      print('Failed to load overall statistics: $e');
+      log('Failed to load overall statistics: $e');
     }
     return null;
   }
@@ -89,7 +74,7 @@ class StatisticsService {
   //       }
   //     }
   //   } catch (e) {
-  //     print('Error fetching overall statistics: $e');
+  //     log('Error fetching overall statistics: $e');
   //   }
   //
   //   // 기본값 반환
@@ -104,22 +89,13 @@ class StatisticsService {
 
   Future<YearStatistics?> fetchYearStatistics(String year) async {
     try {
-      final accessToken = await storage.readAccessToken();
       // TODO: endpoint 뒤에 슬레시 필요한지 아닌지 통일
-      var uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/participants/statistics/yearly/$year/");
+      var uri = "${dotenv.env['API_HOST']}/api/v1/participants/statistics/yearly/$year/";
 
-      Map<String, String> headers = {
-        "Content-type": "application/json",
-        "Authorization": "Bearer $accessToken"
-      };
-
-      var response = await http.get(uri, headers: headers);
+      var response = await dioClient.dio.get(uri);
 
       if (response.statusCode == 200) {
-        final jsonData = json.decode(utf8.decode(response.bodyBytes))['data'];
-        print("--start yearlly--");
-        print(jsonData);
-        print("--end yearlly--");
+        final jsonData = response.data['data'];
         if (jsonData != null) {
           return YearStatistics.fromJson(jsonData);
         }
@@ -129,28 +105,19 @@ class StatisticsService {
         throw Exception('Failed to load yearly statistics');
       }
     } catch (e) {
-      print('Failed to load year statistics for $year: $e');
+      log('Failed to load year statistics for $year: $e');
     }
     return null;
   }
 
   Future<PeriodStatistics?> fetchPeriodStatistics(String startDate, String endDate) async {
     try {
-      final accessToken = await storage.readAccessToken();
-      var uri = Uri.parse(
-          "${dotenv.env['API_HOST']}/api/v1/participants/statistics/period/?start_date=$startDate&end_date=$endDate");
+      var uri =
+          "${dotenv.env['API_HOST']}/api/v1/participants/statistics/period/?start_date=$startDate&end_date=$endDate";
 
-      Map<String, String> headers = {
-        "Content-type": "application/json",
-        "Authorization": "Bearer $accessToken"
-      };
-
-      var response = await http.get(uri, headers: headers);
+      var response = await dioClient.dio.get(uri);
       if (response.statusCode == 200) {
-        final jsonData = json.decode(utf8.decode(response.bodyBytes))['data'];
-        print("--start period--");
-        print(jsonData);
-        print("--end period--");
+        final jsonData = response.data['data'];
         if (jsonData != null) {
           return PeriodStatistics.fromJson(jsonData);
         }
@@ -160,7 +127,7 @@ class StatisticsService {
         throw Exception('Failed to load yearly statistics');
       }
     } catch (e) {
-      print('Failed to load period statistics: $e');
+      log('Failed to load period statistics: $e');
     }
     return null;
   }

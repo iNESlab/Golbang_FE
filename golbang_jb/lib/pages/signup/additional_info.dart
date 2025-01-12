@@ -9,11 +9,11 @@ class AdditionalInfoPage extends StatefulWidget {
   final int userId;
 
   const AdditionalInfoPage({
-    Key? key,
+    super.key,
     required this.name,
     required this.phoneNumber,
     required this.userId,
-  }) : super(key: key);
+  });
 
   @override
   _AdditionalInfoPageState createState() => _AdditionalInfoPageState();
@@ -50,7 +50,7 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
       appBar: AppBar(
         title: const Text(''),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context);
           },
@@ -155,7 +155,7 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
       if (response.statusCode == 200) {
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => SignupComplete(),
+            builder: (context) => const SignupComplete(),
           ),
         );
       } else {

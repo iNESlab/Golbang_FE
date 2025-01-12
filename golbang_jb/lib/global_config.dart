@@ -1,16 +1,9 @@
 
 import 'models/bookmark.dart';
-import 'models/event.dart';
-import 'models/group.dart';
-import 'models/member.dart';
 import 'models/post.dart';
 import 'models/user.dart';
 
 // 민정 사용 로직:
-import 'models/user_account.dart';
-import 'models/club.dart';
-import 'models/club_member.dart';
-import 'models/participant.dart';
 
 const String testEmail = 'test@email.com';
 const String testPassword = '1q2w3e4r';
@@ -108,7 +101,7 @@ List<User> users = [
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
     recentConnectionTime: DateTime.now(),
-    releaseAt: DateTime.now().add(Duration(days: 365)),
+    releaseAt: DateTime.now().add(const Duration(days: 365)),
 
   ),
   User(
@@ -130,7 +123,7 @@ List<User> users = [
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
     recentConnectionTime: DateTime.now(),
-    releaseAt: DateTime.now().add(Duration(days: 365)),
+    releaseAt: DateTime.now().add(const Duration(days: 365)),
   ),
   User(
     userId: 3,
@@ -151,7 +144,7 @@ List<User> users = [
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
     recentConnectionTime: DateTime.now(),
-    releaseAt: DateTime.now().add(Duration(days: 365)),
+    releaseAt: DateTime.now().add(const Duration(days: 365)),
   ),
   User(
     userId: 4,
@@ -172,7 +165,7 @@ List<User> users = [
     createdAt: DateTime.now(),
     updatedAt: DateTime.now(),
     recentConnectionTime: DateTime.now(),
-    releaseAt: DateTime.now().add(Duration(days: 365)),
+    releaseAt: DateTime.now().add(const Duration(days: 365)),
   ),
 ];
 

@@ -2,10 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:golbang/pages/signup/terms_agreement_page.dart';
 import 'package:golbang/pages/logins/widgets/forgot_password.dart';
 
-import '../hi_screen.dart';
 
 class SignInDivider extends StatelessWidget {
-  const SignInDivider({Key? key}) : super(key: key);
+  const SignInDivider({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +37,7 @@ class SignInDivider extends StatelessWidget {
 }
 
 class SocialLoginButtons extends StatelessWidget {
-  const SocialLoginButtons({Key? key}) : super(key: key);
+  const SocialLoginButtons({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -93,7 +92,7 @@ class SocialLoginButtons extends StatelessWidget {
 }
 
 class SignUpLink extends StatelessWidget {
-  const SignUpLink({Key? key}) : super(key: key);
+  const SignUpLink({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -110,7 +109,7 @@ class SignUpLink extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => TermsAgreementPage()),
+                  MaterialPageRoute(builder: (context) => const TermsAgreementPage()),
                 );
               },
               child: const Text(

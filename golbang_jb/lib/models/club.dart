@@ -1,7 +1,6 @@
 // models/club.py
 // 모임
 
-import 'club_member.dart';
 
 class Club {
   final int id;

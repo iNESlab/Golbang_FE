@@ -6,7 +6,7 @@ class GroupCard extends StatelessWidget {
   final List<CreateParticipant> members;
   final VoidCallback onAddParticipant;
 
-  GroupCard({
+  const GroupCard({super.key, 
     required this.groupName,
     required this.members,
     required this.onAddParticipant,
@@ -16,7 +16,7 @@ class GroupCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.only(right: 10),
+      margin: const EdgeInsets.only(right: 10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -26,27 +26,27 @@ class GroupCard extends StatelessWidget {
             children: [
               ElevatedButton.icon(
                 onPressed: onAddParticipant,
-                icon: Icon(Icons.add),
+                icon: const Icon(Icons.add),
                 label: Text(
                   groupName,
-                  style: TextStyle(color: Colors.white),
+                  style: const TextStyle(color: Colors.white),
                 ),
                 style: ElevatedButton.styleFrom(
                   iconColor: Colors.white,
                   backgroundColor: Colors.teal,
-                  minimumSize: Size(80, 35),
+                  minimumSize: const Size(80, 35),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
 
           // 참가자 리스트
           for (var member in members)
             Container(
               width: 100,
               height: 40,
-              margin: EdgeInsets.only(bottom: 8),
+              margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.grey),

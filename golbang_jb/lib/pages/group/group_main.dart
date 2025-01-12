@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // ConsumerStatefulWidget 사용을 위한 패키지
 import 'package:golbang/services/group_service.dart';
@@ -10,6 +11,8 @@ import '../../repoisitory/secure_storage.dart';
 import 'package:get/get.dart';
 
 class GroupMainPage extends ConsumerStatefulWidget {
+  const GroupMainPage({super.key});
+
   @override
   _GroupMainPageState createState() => _GroupMainPageState();
 }
@@ -19,23 +22,31 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
   List<Group> allGroups = []; // 전체 그룹 리스트
   List<Group> filteredGroups = []; // 필터링된 그룹 리스트
   bool isLoading = true;
+  late GroupService groupService;
 
   // Set the number of items per page as a configurable variable
   static const int itemsPerPage = 9;
 
+  @override
+  void initState() {
+    super.initState();
+    final storage = ref.read(secureStorageProvider);
+    groupService = GroupService(storage);
+    _checkAndNavigateToCommunity();
+    _fetchGroups(); // 그룹 데이터를 초기화 시 가져옴
+  }
+
   Future<void> _checkAndNavigateToCommunity() async {
     int? communityId = Get.arguments?['communityId'];
     if (communityId != null && communityId != -1) {
-      final storage = ref.read(secureStorageProvider);
-      final GroupService groupService = GroupService(storage);
-      List<Group> group = await groupService.getGroupInfo(communityId!);
+      List<Group> groups = await groupService.getGroupInfo(communityId);
 
-      if (group != null) {
-        final communityName = group[0].name;
-        final communityImage = group[0].image ?? ''; // 이미지가 없을 때 대비
-        final adminNames = group[0].getAdminNames(); // 관리자의 이름 가져오기
+      if (groups.isNotEmpty) {
+        final communityName = groups[0].name;
+        final communityImage = groups[0].image ?? ''; // 이미지가 없을 때 대비
+        final adminNames = groups[0].getAdminNames(); // 관리자의 이름 가져오기
 
-        final isAdmin = group[0].isAdmin;
+        final isAdmin = groups[0].isAdmin;
 
         Get.arguments?['communityId'] = -1;
         // UI가 빌드된 후 CommunityMain 페이지로 이동
@@ -44,7 +55,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
             context,
             MaterialPageRoute(
               builder: (context) => CommunityMain(
-                communityID: group[0].id,
+                communityID: groups[0].id,
                 communityName: communityName,
                 communityImage: communityImage,
                 adminNames: adminNames,
@@ -61,8 +72,6 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
   // Fetch groups once
   Future<void> _fetchGroups() async {
     try {
-      final storage = ref.read(secureStorageProvider);
-      final GroupService groupService = GroupService(storage);
       List<Group> groups = await groupService.getUserGroups(); // 백엔드에서 그룹 데이터 가져옴
       setState(() {
         allGroups = groups; // 그룹 데이터를 전체 리스트에 설정
@@ -70,18 +79,11 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
         isLoading = false;
       });
     } catch (e) {
-      print("Error fetching groups: $e");
+      log("Error fetching groups: $e");
       setState(() {
         isLoading = false;
       });
     }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    _checkAndNavigateToCommunity();
-    _fetchGroups(); // 그룹 데이터를 초기화 시 가져옴
   }
 
   // 그룹 데이터를 페이지로 나누는 함수 (필터링된 그룹 사용)
@@ -102,7 +104,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
             childAspectRatio: aspectRatio, // 가로:세로 비율
             mainAxisSpacing: 5, // 항목 간 세로 간격
             crossAxisSpacing: 10, // 항목 간 가로 간격
-            padding: EdgeInsets.all(5), // GridView의 내부 패딩
+            padding: const EdgeInsets.all(5), // GridView의 내부 패딩
             children: filteredGroups
                 .skip(index * itemsPerPage)
                 .take(itemsPerPage)
@@ -116,7 +118,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
                       borderRadius: BorderRadius.circular(10),
                     ),
                     elevation: 0,
-                    padding: EdgeInsets.all(0),
+                    padding: const EdgeInsets.all(0),
                   ),
                   onPressed: () {
                     Navigator.push(
@@ -158,48 +160,48 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
           children: [
             // 검색 필드와 타이틀
             Container(
-              padding: EdgeInsets.all(10),
+              padding: const EdgeInsets.all(10),
               child: Column(
                 children: [
                   Row(
                     children: [
-                      Text(
+                      const Text(
                         '내 모임',
                         style: TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
-                      Spacer(),
+                      const Spacer(),
                       TextButton.icon(
                         onPressed: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => GroupCreatePage()),
+                                builder: (context) => const GroupCreatePage()),
                           ).then((_) {
                             _fetchGroups(); // 모임 생성 후 새로고침
                           });
                         },
-                        icon: Icon(Icons.add_circle, color: Colors.green),
-                        label: Text(
+                        icon: const Icon(Icons.add_circle, color: Colors.green),
+                        label: const Text(
                           '모임생성',
                           style: TextStyle(fontSize: 16, color: Colors.green),
                         ),
                       ),
                     ],
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   SizedBox(
                     height: 50,
                     child: TextField(
                       decoration: InputDecoration(
                         hintText: '모임명 검색',
-                        prefixIcon: Icon(Icons.search),
+                        prefixIcon: const Icon(Icons.search),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
-                        contentPadding: EdgeInsets.symmetric(vertical: 10),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 10),
                       ),
                       onChanged: (value) {
                         setState(() {
@@ -215,7 +217,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
                 ],
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             // 그룹 리스트
             Expanded(
               child: Container(
@@ -237,18 +239,18 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
                       count: filteredGroups.isNotEmpty
                           ? (filteredGroups.length / itemsPerPage).ceil()
                           : 1, // 비어 있을 경우 기본값을 1로 설정 있을 때 기본값 설정
-                      effect: WormEffect(
+                      effect: const WormEffect(
                         dotHeight: 8,
                         dotWidth: 8,
                         activeDotColor: Colors.blue,
                       ),
                     ),
-                    SizedBox(height: 10),
+                    const SizedBox(height: 10),
                   ],
                 ),
               ),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             // 하단 메시지
             Text(
               '하단의 달력 버튼을 눌러, 일정을 추가해보세요!',
@@ -259,8 +261,8 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: 10),
-            Divider(),
+            const SizedBox(height: 10),
+            const Divider(),
           ],
         ),
       ),

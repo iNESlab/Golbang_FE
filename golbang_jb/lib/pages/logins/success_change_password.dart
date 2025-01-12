@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'login.dart';
 
 class PasswordChangedPage extends StatelessWidget {
-  const PasswordChangedPage({Key? key}) : super(key: key);
+  const PasswordChangedPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +16,7 @@ class PasswordChangedPage extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.all(24.0),
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.teal,
                   shape: BoxShape.circle,
                 ),

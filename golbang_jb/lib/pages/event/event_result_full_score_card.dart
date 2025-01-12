@@ -14,7 +14,7 @@ import 'package:flutter/services.dart'; // 화면 방향 변경을 위한 패키
 class EventResultFullScoreCard extends ConsumerStatefulWidget {
   final int eventId;
 
-  EventResultFullScoreCard({required this.eventId});
+  const EventResultFullScoreCard({super.key, required this.eventId});
 
   @override
   _EventResultFullScoreCardState createState() => _EventResultFullScoreCardState();
@@ -41,14 +41,14 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
 
     try {
       final response = await eventService.getScoreData(widget.eventId);
-      final temp_eventDetail = await eventService.getEventDetails(widget.eventId);
+      final tempEventdetail = await eventService.getEventDetails(widget.eventId);
       if (response != null) {
         setState(() {
           participants = response['participants'];
           teamAScores = response['team_a_scores'];
           teamBScores = response['team_b_scores'];
           isLoading = false;
-          eventDetail = temp_eventDetail;
+          eventDetail = tempEventdetail;
         });
       } else {
         print('Failed to load scores: response is null');
@@ -182,7 +182,7 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
       try {
         await FlutterEmailSender.send(email);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('이메일이 전송되었습니다.')),
+          const SnackBar(content: Text('이메일이 전송되었습니다.')),
         );
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -191,9 +191,18 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('저장 경로를 찾을 수 없습니다.')),
+        const SnackBar(content: Text('저장 경로를 찾을 수 없습니다.')),
       );
     }
+  }
+
+  @override
+  void dispose() {
+    // 화면을 나갈 때 기본 상태로 회전 초기화
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp, // 세로 모드
+    ]);
+    super.dispose();
   }
 
   @override
@@ -201,48 +210,41 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
     return Scaffold(
       backgroundColor: Colors.grey[200], // 배경색 설정
       appBar: AppBar(
-        title: Text('스코어카드'),
+        title: const Text('스코어카드'),
         actions: [
           IconButton(
-            icon: Icon(Icons.email), // 이메일 아이콘으로 변경
+            icon: const Icon(Icons.email), // 이메일 아이콘으로 변경
             onPressed: exportAndSendEmail, // 이메일 전송 기능으로 변경
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          isLoading
-              ? Center(child: CircularProgressIndicator())
-              : OrientationBuilder(
-            builder: (context, orientation) {
-              if (orientation == Orientation.landscape) {
-                // 가로 모드에서 ParticipantDataTable 호출
-                return buildParticipantDataTable();
-              } else {
-                // 세로 모드에서 ScoreTable 호출
-                return buildScoreDataTable();
-              }
-            },
-          ),
-          Positioned(
-            bottom: 16,
-            right: 16,
-            child: FloatingActionButton(
-              onPressed: () {
-                // 화면을 항상 시계 방향으로 회전
-                final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
-                if (isLandscape) {
-                  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-                } else {
-                  SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
-                }
-              },
-              backgroundColor: Colors.blue,
-              child: Icon(Icons.screen_rotation, color: Colors.white),
-            ),
-          ),
-        ],
+      body: isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : OrientationBuilder(
+        builder: (context, orientation) {
+          if (orientation == Orientation.landscape) {
+            // 가로 모드에서 ParticipantDataTable 호출
+            return buildParticipantDataTable();
+          } else {
+            // 세로 모드에서 ScoreTable 호출
+            return buildScoreDataTable();
+          }
+        },
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          // 화면을 항상 시계 방향으로 회전
+          final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
+          if (isLandscape) {
+            SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
+          } else {
+            SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]);
+          }
+        },
+        backgroundColor: Colors.blue,
+        child: const Icon(Icons.screen_rotation, color: Colors.white),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat, // 오른쪽 아래에 배치
     );
   }
 
@@ -264,7 +266,7 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
             ...scoreTypes.map((type) {
               final score = scoreGetter(type, participant);
               return DataCell(Text(score));
-            }).toList(),
+            }),
           ],
         );
       }).toList();
@@ -343,34 +345,37 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
       padding: const EdgeInsets.all(8.0),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal, // 가로 스크롤 허용
-        child: Card(
-          color: Colors.white, // 카드 배경 설정
-          elevation: 4,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: DataTable(
-              columns: [
-                const DataColumn(label: Text('참가자')),
-                for (int hole = 1; hole <= 18; hole++)
-                  DataColumn(label: Text('Hole $hole')), // 홀을 열로 표시
-              ],
-              rows: participants.map((participant) {
-                return DataRow(
-                  cells: [
-                    DataCell(Text(participant['participant_name'] ?? '-')), // 참가자 이름
-                    for (int hole = 1; hole <= 18; hole++)
-                      DataCell(Text(
-                        participant['scorecard'].length >= hole
-                            ? participant['scorecard'][hole - 1].toString()
-                            : '-',
-                      )), // 각 참가자의 홀별 점수
-                  ],
-                );
-              }).toList(),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.vertical,
+          child: Card(
+            color: Colors.white, // 카드 배경 설정
+            elevation: 4,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            child: Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: DataTable(
+                columns: [
+                  const DataColumn(label: Text('참가자')),
+                  for (int hole = 1; hole <= 18; hole++)
+                    DataColumn(label: Text('Hole $hole')), // 홀을 열로 표시
+                ],
+                rows: participants.map((participant) {
+                  return DataRow(
+                    cells: [
+                      DataCell(Text(participant['participant_name'] ?? '-')), // 참가자 이름
+                      for (int hole = 1; hole <= 18; hole++)
+                        DataCell(Text(
+                          participant['scorecard'].length >= hole
+                              ? participant['scorecard'][hole - 1].toString()
+                              : '-',
+                        )), // 각 참가자의 홀별 점수
+                    ],
+                  );
+                }).toList(),
+              ),
             ),
           ),
-        ),
+        )
       ),
     );
   }

@@ -1,8 +1,5 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:golbang/global_config.dart';
-import 'package:golbang/models/bookmark.dart';
 import 'package:golbang/models/event.dart';
 import 'package:golbang/models/group.dart';
 import 'package:golbang/models/user_account.dart';
@@ -41,8 +38,8 @@ class _HomePageState extends State<HomePage> {
 
   static final List<Widget> _widgetOptions = <Widget>[
     const HomeContent(),
-    EventPage(),
-    GroupMainPage(),
+    const EventPage(),
+    const GroupMainPage(),
     const ProfileScreen(),
   ];
 
@@ -143,8 +140,8 @@ class HomeContent extends ConsumerWidget {
     final EventService eventService = EventService(storage);
     final StatisticsService statisticsService = StatisticsService(storage);
 
-    DateTime _focusedDay = DateTime.now();
-    String date = '${_focusedDay.year}-${_focusedDay.month.toString().padLeft(2, '0')}-01';
+    DateTime focusedDay = DateTime.now();
+    String date = '${focusedDay.year}-${focusedDay.month.toString().padLeft(2, '0')}-01';
 
     // 화면 크기 설정
     double screenWidth = MediaQuery.of(context).size.width; // 화면 너비
@@ -174,7 +171,7 @@ class HomeContent extends ConsumerWidget {
             } else if (snapshot.hasError) {
               return Center(child: Text('Error: ${snapshot.error}'));
             } else if (!snapshot.hasData || snapshot.data == null) {
-              return Center(child: Text('No data available'));
+              return const Center(child: Text('No data available'));
             }
             // 데이터 추출
             UserAccount userAccount = snapshot.data![0];

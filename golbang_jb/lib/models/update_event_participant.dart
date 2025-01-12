@@ -1,11 +1,9 @@
 // 이벤트 수정 시 사용하는 참여자 객체
 
-import 'dart:convert';
 
 import 'package:golbang/models/participant.dart';
 
 import 'member.dart';
-import 'profile/member_profile.dart';
 import 'profile/member_profile.dart';
 
 class UpdateEventParticipant {
@@ -76,20 +74,20 @@ class UpdateEventParticipant {
   // UpdateEventParticipant를 Participant로 변환하는 메서드 추가
   Participant toParticipant() {
     return Participant(
-      participantId: this.participantId,
-      statusType: this.statusType,
-      teamType: this.teamType,
-      holeNumber: this.holeNumber,
-      groupType: this.groupType,
-      sumScore: this.sumScore,
-      rank: this.rank,
-      handicapRank: this.handicapRank,
-      handicapScore: this.handicapScore,
+      participantId: participantId,
+      statusType: statusType,
+      teamType: teamType,
+      holeNumber: holeNumber,
+      groupType: groupType,
+      sumScore: sumScore,
+      rank: rank,
+      handicapRank: handicapRank,
+      handicapScore: handicapScore,
       member: Member(
-        memberId: this.memberId,
-        name: this.name,
-        role: this.role,
-        profileImage: this.profileImage,
+        memberId: memberId,
+        name: name,
+        role: role,
+        profileImage: profileImage,
       ),
     );
   }

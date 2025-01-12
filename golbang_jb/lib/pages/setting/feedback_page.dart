@@ -4,7 +4,7 @@ import '../../services/feedback_service.dart';
 import '../../repoisitory/secure_storage.dart';
 
 class FeedbackPage extends ConsumerStatefulWidget {
-  const FeedbackPage({Key? key}) : super(key: key);
+  const FeedbackPage({super.key});
 
   @override
   _FeedbackPageState createState() => _FeedbackPageState();
@@ -45,7 +45,7 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
     });
 
     try {
-      final response = await _feedbackService.sendFeedback(message);
+      await _feedbackService.sendFeedback(message);
       _feedbackController.clear();
       _showAlertDialog(
         title: "피드백이 보내졌습니다.",

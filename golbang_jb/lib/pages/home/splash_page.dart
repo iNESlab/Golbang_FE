@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'home_page.dart'; // 메인 화면 위젯 import
 
 class SplashPage extends StatefulWidget {
-  const SplashPage({Key? key}) : super(key: key);
+  const SplashPage({super.key});
 
   @override
   _SplashPageState createState() => _SplashPageState();

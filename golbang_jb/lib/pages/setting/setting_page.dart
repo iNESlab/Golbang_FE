@@ -1,4 +1,4 @@
-import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,7 +11,7 @@ import 'feedback_page.dart';
 import '../../services/user_service.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
-  const SettingsPage({Key? key}) : super(key: key);
+  const SettingsPage({super.key});
 
   @override
   _SettingsPageState createState() => _SettingsPageState();
@@ -52,7 +52,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             onTap: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => PrivacyPolicyPage()),
+                MaterialPageRoute(builder: (context) => const PrivacyPolicyPage()),
               );
             },
           ),
@@ -65,9 +65,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               );
             },
           ),
-          SettingsTile(
+          const SettingsTile(
             title: '앱정보',
-            trailing: const Text('1.0.0', style: TextStyle(color: Colors.grey)),
+            trailing: Text('1.0.0', style: TextStyle(color: Colors.grey)),
           ),
           const Divider(),
           SettingsTile(
@@ -94,20 +94,17 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     try {
       final response = await authService.logout(); // 로그아웃 API 호출
       if (response.statusCode == 202) {
-        print('로그아웃 성공');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('성공적으로 로그아웃 하였습니다.')),
         );
 
         Get.offAllNamed('/'); // 모든 이전 페이지 스택 제거 후 로그인 페이지로 이동
       } else {
-        print('로그아웃 실패: ${response.body}');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('로그아웃 실패: ${response.body}')),
+          SnackBar(content: Text('로그아웃 실패: ${response.data}')),
         );
       }
     } catch (e) {
-      print('[ERR] 로그아웃 실패: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.')),
       );
@@ -170,20 +167,19 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       try {
         final response = await userService.deleteAccount(); // 회원탈퇴 API 호출
         if (response.statusCode == 200) {
-          print('회원탈퇴 성공');
+          log('회원탈퇴 성공');
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('회원탈퇴 하였습니다.')),
           );
           Get.offAllNamed('/'); // 모든 이전 페이지 스택 제거 후 로그인 페이지로 이동
         } else {
-          print('회원탈퇴 실패: ${response.body}');
-          final Map<String, dynamic> responseBody = jsonDecode(response.body);
+          final Map<String, dynamic> responseBody = response.data;
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text(responseBody['message'])),
           );
         }
       } catch (e) {
-        print('[ERR] 회원탈퇴 실패: $e');
+        log('[ERR] 회원탈퇴 실패: $e');
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('회원탈퇴 중 오류가 발생했습니다. 다시 시도해주세요.')),
         );
@@ -196,7 +192,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 class SectionHeader extends StatelessWidget {
   final String title;
 
-  const SectionHeader({required this.title});
+  const SectionHeader({super.key, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -217,7 +213,7 @@ class SettingsTile extends StatelessWidget {
   final Widget? trailing;
   final Color textColor;
 
-  const SettingsTile({
+  const SettingsTile({super.key, 
     required this.title,
     this.onTap,
     this.trailing,

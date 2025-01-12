@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/community/member_list_page.dart';
-import 'package:golbang/pages/group/group_main.dart';
 import '../../services/club_service.dart';
 import '../../repoisitory/secure_storage.dart';
 import 'package:get/get.dart';
@@ -9,7 +8,7 @@ import 'package:get/get.dart';
 class AdminSettingsPage extends ConsumerWidget {
   final int clubId; // 모임 ID를 받도록 수정
 
-  const AdminSettingsPage({required this.clubId});
+  const AdminSettingsPage({super.key, required this.clubId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -113,7 +112,7 @@ class SettingsButton extends StatelessWidget {
   final Color textColor;
   final VoidCallback onPressed;
 
-  const SettingsButton({
+  const SettingsButton({super.key, 
     required this.text,
     required this.onPressed,
     this.textColor = Colors.black,

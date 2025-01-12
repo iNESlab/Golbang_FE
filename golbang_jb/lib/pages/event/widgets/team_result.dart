@@ -9,19 +9,19 @@ class TeamResultWidget extends StatelessWidget {
   final String totalWinTeam;
 
   const TeamResultWidget({
-    Key? key,
+    super.key,
     required this.teamAGroupWins,
     required this.teamBGroupWins,
     required this.groupWinTeam,
     required this.teamATotalStroke,
     required this.teamBTotalStroke,
     required this.totalWinTeam,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(10),

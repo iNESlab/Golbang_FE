@@ -1,64 +1,49 @@
-import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
+import '../global/LoginInterceptor.dart';
 import '../repoisitory/secure_storage.dart';
 
 class NotificationService {
   final SecureStorage storage;
-
+  final dioClient = DioClient();
   NotificationService(this.storage);
 
   Future<List<Map<String, dynamic>>> fetchNotifications() async {
     try {
-      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/notifications/');
-      final accessToken = await storage.readAccessToken();
+      final url = '${dotenv.env['API_HOST']}/api/v1/notifications/';
 
       // API 요청
-      final response = await http.get(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
-      );
+      final response = await dioClient.dio.get(url);
 
       if (response.statusCode == 200) {
-        final jsonData = jsonDecode(utf8.decode(response.bodyBytes));
-        print("알림 히스토리 조회 성공: ${jsonData['data']}");
+        final jsonData = response.data;
         return List<Map<String, dynamic>>.from(jsonData['data']);
       } else {
-        print("알림 조회 실패: ${response.statusCode} - ${response.body}");
+        log("알림 조회 실패: ${response.statusCode} - ${response.data}");
         return [];
       }
     } catch (e) {
-      print("Error fetching notifications: $e");
+      log("Error fetching notifications: $e");
       return [];
     }
   }
 
   Future<bool> deleteNotification(String notificationId) async {
     try {
-      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/notifications/$notificationId/');
-      final accessToken = await storage.readAccessToken();
+      final url = '${dotenv.env['API_HOST']}/api/v1/notifications/$notificationId/';
 
       // API 요청
-      final response = await http.delete(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
-      );
+      final response = await dioClient.dio.delete(url);
 
       if (response.statusCode == 204) {
-        print("알림 삭제 성공: $notificationId");
         return true;
       } else {
-        print("알림 삭제 실패: ${response.statusCode} - ${response.body}");
+        log("알림 삭제 실패: ${response.statusCode} - ${response.data}");
         return false;
       }
     } catch (e) {
-      print("Error deleting notification: $e");
+      log("Error deleting notification: $e");
       return false;
     }
   }
