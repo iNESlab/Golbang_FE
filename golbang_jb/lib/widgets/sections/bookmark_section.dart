@@ -15,8 +15,8 @@ class BookmarkSection extends StatelessWidget {
     double screenHeight = MediaQuery.of(context).size.height; // 화면 높이
 
     // 폰트 크기, 카드 크기, 패딩 크기 계산
-    double fontSizeTitle = screenWidth > 600 ? screenWidth * 0.025 : screenWidth * 0.03; // 화면 너비에 맞춰 폰트 크기 조정
-    double fontSizeDescription = screenWidth > 600 ? screenWidth * 0.028 : screenWidth * 0.035; // 설명 폰트 크기 증가
+    double fontSizeTitle = screenWidth * 0.035; // 화면 너비에 맞춰 폰트 크기 조정
+    double fontSizeDescription = screenWidth * 0.045; // 설명 폰트 크기 증가
     double cardWidth = screenWidth > 600 ? screenWidth * 0.25 : screenWidth * 0.3; // 화면 너비에 비례하여 카드 크기 조정
     double padding = screenWidth > 600 ? screenWidth * 0.01 : screenWidth * 0.015; // 화면 너비에 맞춰 패딩 조정
 
