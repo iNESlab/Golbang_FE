@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:async';
 import 'dart:io';
 import 'package:excel/excel.dart' as xx;
@@ -73,10 +74,10 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
           isLoading = false;
         });
       } else {
-        print('Failed to load scores: response is null');
+        log('Failed to load scores: response is null');
       }
     } catch (error) {
-      print('Error fetching scores: $error');
+      log('Error fetching scores: $error');
     }
   }
   Future<void> exportAndSendEmail() async {
@@ -307,8 +308,10 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
               // Event Header
               Row(
                 children: [
-                  Image.asset(
-                    'assets/images/golf_icon.png',
+                  Image(
+                    image: widget.event.club!.image.startsWith('https')
+                        ? NetworkImage(widget.event.club!.image) as ImageProvider
+                        : AssetImage('assets/images/golf_icon.png') as ImageProvider,
                     width: 50,
                     height: 50,
                     fit: BoxFit.cover,

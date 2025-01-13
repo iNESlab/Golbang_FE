@@ -15,7 +15,7 @@ class ClubProfile{
     return ClubProfile(
         clubId: json['id'],
         name: json['name'],
-        image: defaultImage
+        image: json['image']??defaultImage
     );
   }
 }
