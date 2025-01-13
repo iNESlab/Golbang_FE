@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -73,7 +74,6 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
     _participantNames = {};
     for (var participant in widget.event.participants) {
       String name = participant.member?.name ?? 'N/A';
-      print("이름: $name"); // 이름 출력
       _participantNames[participant.participantId] = name; // 맵에 추가
     }
   }
@@ -124,12 +124,12 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
 
     // WebSocket 메시지를 수신
     _channel.stream.listen((data) {
-      print('WebSocket 데이터 수신: $data'); // 수신된 데이터를 로그로 출력
+      log('WebSocket 데이터 수신: $data'); // 수신된 데이터를 로그로 출력
       _handleWebSocketData(data);
     }, onError: (error) {
-      print('WebSocket 오류 발생: $error'); // 오류 발생 시 로그 출력
+      log('WebSocket 오류 발생: $error'); // 오류 발생 시 로그 출력
     }, onDone: () {
-      print('WebSocket 연결 종료'); // 연결이 종료되면 로그 출력
+      log('WebSocket 연결 종료'); // 연결이 종료되면 로그 출력
     });
   }
 
@@ -156,10 +156,10 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
       else if (parsedData is Map<String, dynamic>) {
         _processSingleScoreCardEntry(parsedData);
       } else {
-        print("Unexpected data format: 데이터 형식이 List나 Map이 아닙니다.");
+        log("Unexpected data format: 데이터 형식이 List나 Map이 아닙니다.");
       }
     } catch (e) {
-      print("WebSocket 데이터 처리 중 오류 발생: $e");
+      log("WebSocket 데이터 처리 중 오류 발생: $e");
     }
   }
   void _processSingleScoreCardEntry(Map<String, dynamic> entry) {
@@ -206,7 +206,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
         );
       });
     } catch (e) {
-      print("단일 ScoreCard 처리 중 오류 발생: $e");
+      log("단일 ScoreCard 처리 중 오류 발생: $e");
     }
   }
 
@@ -228,7 +228,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
         }
       });
     } catch (e) {
-      print("ScoreCard 처리 중 오류 발생: $e");
+      log("ScoreCard 처리 중 오류 발생: $e");
     }
   }
 
@@ -296,7 +296,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
 
     // WebSocket을 통해 전송
     _channel.sink.add(message);
-    print('Score 전송: $message');
+    log('Score 전송: $message');
   }
 
   // 서버에 새로고침 요청을 보내는 함수
@@ -307,7 +307,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
 
     // WebSocket을 통해 새로고침 요청 전송
     _channel.sink.add(message);
-    print('Score 전송: $message');
+    log('Score 전송: $message');
 
     // 약간의 지연시간을 추가하여 새로고침 완료 시각적으로 표시
     await Future.delayed(const Duration(seconds: 1));
@@ -383,7 +383,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
           Row(
             children: [
               CircleAvatar(
-                backgroundImage: _clubProfile.image.startsWith('http')
+                backgroundImage: _clubProfile.image.startsWith('https')
                     ? NetworkImage(_clubProfile.image)
                     : AssetImage(_clubProfile.image) as ImageProvider,
                 backgroundColor: Colors.transparent, // 배경을 투명색으로 설정
