@@ -305,7 +305,7 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
 class AppSizeInitializer extends ConsumerWidget {
   final Widget child;
 
-  const AppSizeInitializer({Key? key, required this.child}) : super(key: key);
+  const AppSizeInitializer({super.key, required this.child});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
