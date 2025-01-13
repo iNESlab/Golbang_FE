@@ -78,7 +78,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
         // 수신된 데이터를 Rank 객체로 변환하여 _players 리스트에 저장
         _players = rankingsJson.map((json) => Rank.fromJson(json)).toList();
         for (var p in _players) {
-          log('_players: $p');
+          log('_player: ${p.userName}, ${p.profileImage}');
         }
       });
     }
@@ -330,6 +330,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
   }
 
   Widget _buildPlayerItem(Rank player, double width, double height) {
+    log('participant: ${player.profileImage}');
     return Padding(
       padding: EdgeInsets.symmetric(
         vertical: height * 0.01, // 반응형 상하 패딩
