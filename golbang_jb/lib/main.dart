@@ -13,6 +13,7 @@ import 'package:golbang/pages/logins/login.dart';
 import 'package:golbang/pages/logins/signup_complete.dart';
 import 'package:golbang/pages/signup/signup.dart';
 import 'package:golbang/pages/event/event_main.dart';
+import 'package:golbang/provider/screen_riverpod.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -231,7 +232,7 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
         _handleDeepLink(uri);
       });
     } catch (e) {
-      print('Error initializing app links: $e');
+      log('Error initializing app links: $e');
     }
   }
 
@@ -295,9 +296,27 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
 
   @override
   Widget build(BuildContext context) {
-    return widget.child;
+    return AppSizeInitializer(
+      child: widget.child, // AppInitializer 내부에 NotificationHandler의 child를 전달
+    );
   }
 }
+
+class AppSizeInitializer extends ConsumerWidget {
+  final Widget child;
+
+  const AppSizeInitializer({Key? key, required this.child}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(screenSizeProvider.notifier).init(context); // 화면 크기 초기화
+    });
+
+    return child; // AppInitializer가 감싸고 있는 위젯을 반환
+  }
+}
+
 
 // Firebase 백그라운드 메시지 핸들러
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {

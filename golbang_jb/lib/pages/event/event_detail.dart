@@ -9,6 +9,7 @@ import 'package:golbang/pages/event/event_result.dart';
 import '../../models/event.dart';
 import '../../models/participant.dart';
 import '../../provider/event/event_state_notifier_provider.dart';
+import '../../provider/screen_riverpod.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../game/score_card_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -246,12 +247,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-
-    // 더미 데이터
-    const courseName = "더미 코스 이름";
-    const hole = "18홀";
-    const par = "72";
-    const courseType = "더미 코스 타입";
+    final screenSize = ref.read(screenSizeProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -308,15 +304,13 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
               // Event Header
               Row(
                 children: [
-                  Image(
-                    image: widget.event.club!.image.startsWith('https')
-                        ? NetworkImage(widget.event.club!.image) as ImageProvider
-                        : AssetImage('assets/images/golf_icon.png') as ImageProvider,
-                    width: 50,
-                    height: 50,
-                    fit: BoxFit.cover,
+                  CircleAvatar(
+                    radius: screenSize.width * 0.1, // 반응형 아바타 크기
+                    backgroundImage: widget.event.club!.image.startsWith('https')
+                        ? NetworkImage(widget.event.club!.image)
+                        : const AssetImage('assets/images/golf_icon.png') as ImageProvider,
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: screenSize.width*0.03),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
