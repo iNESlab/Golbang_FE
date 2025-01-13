@@ -315,8 +315,10 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
 
   @override
   Widget build(BuildContext context) {
+    // 키보드가 활성화된 상태인지 확인
+    final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
     return Scaffold(
-      resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: false, // 키보드가 올라왔을 때 UI를 조정
       appBar: AppBar(
         title: Text(widget.event.eventTitle, style: const TextStyle(color: Colors.white)),
         backgroundColor: Colors.black,
@@ -337,11 +339,20 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
       ),
       body: Column(
         children: [
-          _buildHeader(),
+          // 키보드가 보이지 않을 때만 헤더를 보여줌
+          isKeyboardVisible
+          ? Column(
+              children: [
+                SizedBox(height: height * 0.03), // 거리 조정
+                Text('각 점수마다 입력 후 \'완료(enter)\'를 눌러주세요.', style: TextStyle(color: Colors.white, fontSize: fontSizeLarge)),
+                const SizedBox(height: 10),
+              ]
+            )
+          : _buildHeader(),
           Expanded(
             child: Column(
               children: [
-                Expanded(
+                Flexible(
                   child: PageView(
                     onPageChanged: (index) {
                       setState(() {
@@ -354,14 +365,13 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
                     ],
                   ),
                 ),
-                Text('각 점수 입력마다 \'완료(enter)\'를 눌러주세요.', style: TextStyle(color: Colors.white, fontSize: fontSizeLarge)),
-                SizedBox(height: height * 0.01),
                 _buildPageIndicator(),
               ],
             ),
           ),
           SizedBox(height: height * 0.01), // 거리 조정
           _buildSummaryTable(_teamMembers.map((m) => m.handicapScore).toList()), // 페이지 넘김 없이 고정된 스코어 요약 표
+          SizedBox(height: height * 0.03), // 거리 조정
         ],
       ),
       backgroundColor: Colors.black,
@@ -521,6 +531,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
                 controller: _controllers[member.participantId]?[holeIndex],
                 style: TextStyle(color: Colors.white, fontSize: fontSizeSmall + 2),
                 textAlign: TextAlign.center,
+                keyboardType: TextInputType.phone,
                 inputFormatters: [AllowNegativeNumbersFormatter()],
                 focusNode: _focusNodes[member.participantId]?[holeIndex] ?? FocusNode(),
                 onChanged: (value) {
