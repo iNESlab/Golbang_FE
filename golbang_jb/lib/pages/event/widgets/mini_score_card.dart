@@ -56,13 +56,18 @@ class MiniScoreCard extends StatelessWidget {
               ),
               children: [
                 TableRow(
-                  decoration: const BoxDecoration(
-                    color: Colors.green, // row 전체의 배경색 설정
+                  decoration: BoxDecoration(
+                    color: Colors.green[500], // row 전체의 배경색 설정
                   ),
                   children: [
                     Center(
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                        width: double.infinity,
+                        alignment: Alignment.center, // 텍스트를 중앙에 정렬
+                        decoration: BoxDecoration(
+                          color: Colors.green[800], // row 전체의 배경색 설정
+                        ),
                         child: const Text(
                           'H',
                           style: TextStyle(
@@ -93,9 +98,16 @@ class MiniScoreCard extends StatelessWidget {
                 ),
                 TableRow(
                   children: [
+
                     Center(
+
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                        width: double.infinity,
+                        alignment: Alignment.center, // 텍스트를 중앙에 정렬
+                        decoration: const BoxDecoration(
+                          color: Colors.black12, // row 전체의 배경색 설정
+                        ),
                         child: const Text(
                           'S',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -119,13 +131,18 @@ class MiniScoreCard extends StatelessWidget {
                   ],
                 ),
                 TableRow(
-                  decoration: const BoxDecoration(
-                    color: Colors.green, // row 전체의 배경색 설정
+                  decoration: BoxDecoration(
+                    color: Colors.green[500], // row 전체의 배경색 설정
                   ),
                   children: [
                     Center(
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                        width: double.infinity,
+                        alignment: Alignment.center, // 텍스트를 중앙에 정렬
+                        decoration: BoxDecoration(
+                          color: Colors.green[800], // row 전체의 배경색 설정
+                        ),
                         child: const Text(
                           'H',
                           style: TextStyle(
@@ -159,6 +176,11 @@ class MiniScoreCard extends StatelessWidget {
                     Center(
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                        width: double.infinity,
+                        alignment: Alignment.center, // 텍스트를 중앙에 정렬
+                        decoration: const BoxDecoration(
+                          color: Colors.black12, // row 전체의 배경색 설정
+                        ),
                         child: const Text(
                           'S',
                           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
