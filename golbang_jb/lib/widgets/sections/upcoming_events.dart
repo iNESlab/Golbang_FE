@@ -177,8 +177,11 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
     ).participantId
         : -1; // 참가자가 없는 경우를 처리
 
+    // 현재 날짜와 이벤트 날짜 비교
+    bool isPastEvent = event.startDateTime.isBefore(DateTime.now());
+
     return ElevatedButton(
-      onPressed: participantId != -1
+      onPressed: participantId != -1 && !isPastEvent
           ? () async {
         await _handleStatusChange(status == 'ACCEPT'
             ? 'DENY'
@@ -186,13 +189,15 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
             ? 'PARTY'
             : 'ACCEPT', participantId, event);
       }
-          : null, // 참가자가 없는 경우 버튼 비활성화
+          : null, // 과거 이벤트이거나 참가자가 없는 경우 버튼 비활성화
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
         minimumSize: Size(screenWidth > 600 ? 100 : 80, 40), // 화면 크기와 버튼 크기 조정
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
         ),
+        // 비활성화된 버튼 스타일 유지
+        disabledBackgroundColor: color.withOpacity(0.6),
       ),
       child: Text(
         _getStatusText(status),

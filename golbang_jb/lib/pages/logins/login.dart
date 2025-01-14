@@ -57,8 +57,9 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
-  final TextEditingController _emailController = TextEditingController(text: 'Kojungbeom');
-  final TextEditingController _passwordController = TextEditingController(text: 'Golbang12!@');
+  
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
 
   // 저장된 이메일 불러오기
   Future<void> _loadSavedEmail() async {
