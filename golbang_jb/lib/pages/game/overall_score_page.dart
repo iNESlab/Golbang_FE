@@ -206,6 +206,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
                   backgroundImage: _clubProfile.image.startsWith('https')
                       ? NetworkImage(_clubProfile.image)
                       : AssetImage(_clubProfile.image) as ImageProvider,
+                  backgroundColor: Colors.transparent, // 배경을 투명색으로 설정
                 ),
                 SizedBox(height: height * 0.01), // 반응형 간격
                 Text(
@@ -330,7 +331,6 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
   }
 
   Widget _buildPlayerItem(Rank player, double width, double height) {
-    log('participant: ${player.profileImage}');
     return Padding(
       padding: EdgeInsets.symmetric(
         vertical: height * 0.01, // 반응형 상하 패딩

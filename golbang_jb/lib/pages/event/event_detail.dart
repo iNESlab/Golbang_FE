@@ -308,7 +308,8 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                     radius: screenSize.width * 0.1, // 반응형 아바타 크기
                     backgroundImage: widget.event.club!.image.startsWith('https')
                         ? NetworkImage(widget.event.club!.image)
-                        : const AssetImage('assets/images/golf_icon.png') as ImageProvider,
+                        : AssetImage(widget.event.club!.image) as ImageProvider,
+                    backgroundColor: Colors.transparent, // 배경을 투명색으로 설정
                   ),
                   SizedBox(width: screenSize.width*0.03),
                   Expanded(
