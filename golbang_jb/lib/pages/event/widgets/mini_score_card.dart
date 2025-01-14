@@ -40,109 +40,176 @@ class MiniScoreCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            "Score",
+            "Scorecard",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 10),
-          Table(
-            columnWidths: const {
-              0: FixedColumnWidth(25.0),
-            },
-            border: TableBorder.all(color: Colors.transparent),
-            children: [
-              TableRow(
-                children: [
-                  const Center(
-                    child: Text(
-                      'H',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(8),
+            child: Table(
+              columnWidths: const {
+                0: FixedColumnWidth(25.0),
+              },
+              border: TableBorder.all(
+                color: Colors.black12,
+                width: 1.5,
+              ),
+              children: [
+                TableRow(
+                  decoration: BoxDecoration(
+                    color: Colors.green[500], // row 전체의 배경색 설정
                   ),
-                  ...List.generate(
-                    9,
-                        (index) => Center(
+                  children: [
+                    Center(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                        width: double.infinity,
+                        alignment: Alignment.center, // 텍스트를 중앙에 정렬
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(4),
+                          color: Colors.green[800], // row 전체의 배경색 설정
                         ),
-                        child: Text(
-                          '${index + 1}',
-                          style: const TextStyle(fontSize: 12, color: Colors.black),
+                        child: const Text(
+                          'H',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              TableRow(
-                children: [
-                  const SizedBox.shrink(), // Left cell for spacing
-                  ...scorecard.sublist(0, 9).map((score) {
-                    return Center(
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          shape: BoxShape.circle,
-                        ),
-                        child: Text(
-                          score.toString(),
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ),
-                    );
-                  }),
-                ],
-              ),
-              TableRow(
-                children: [
-                  const Center(
-                    child: Text(
-                      'H',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  ...List.generate(
-                    9,
-                        (index) => Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          '${index + 10}',
-                          style: const TextStyle(fontSize: 12, color: Colors.black),
+                    ...List.generate(
+                      9,
+                          (index) => Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                          child: Text(
+                            '${index + 1}',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              ),
-              TableRow(
-                children: [
-                  const SizedBox.shrink(), // Left cell for spacing
-                  ...scorecard.sublist(9, 18).map((score) {
-                    return Center(
+                  ],
+                ),
+                TableRow(
+                  children: [
+
+                    Center(
+
                       child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[300],
-                          shape: BoxShape.circle,
+                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                        width: double.infinity,
+                        alignment: Alignment.center, // 텍스트를 중앙에 정렬
+                        decoration: const BoxDecoration(
+                          color: Colors.black12, // row 전체의 배경색 설정
                         ),
-                        child: Text(
-                          score.toString(),
-                          style: const TextStyle(fontSize: 16),
+                        child: const Text(
+                          'S',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                         ),
                       ),
-                    );
-                  }),
-                ],
-              ),
-            ],
+                    ),
+                    ...scorecard.sublist(0, 9).map((score) {
+                      return Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                          child: Text(
+                            score.toString(),
+                            style: const TextStyle(
+                              fontSize: 14,
+                              // TODO: Par를 기준으로 색을 다르게 하는 코드가 추후에 추가되면 좋을 것 같음. (color: score <= 3 ? Colors.blueAccent : score >= 5 ? Colors.red : Colors.black,)
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+                TableRow(
+                  decoration: BoxDecoration(
+                    color: Colors.green[500], // row 전체의 배경색 설정
+                  ),
+                  children: [
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                        width: double.infinity,
+                        alignment: Alignment.center, // 텍스트를 중앙에 정렬
+                        decoration: BoxDecoration(
+                          color: Colors.green[800], // row 전체의 배경색 설정
+                        ),
+                        child: const Text(
+                          'H',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                    ...List.generate(
+                      9,
+                          (index) => Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                          // decoration: BoxDecoration(
+                          //   color: Colors.white,
+                          //   borderRadius: BorderRadius.circular(4),
+                          // ),
+                          child: Text(
+                            '${index + 10}',
+                            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                TableRow(
+                  children: [
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                        width: double.infinity,
+                        alignment: Alignment.center, // 텍스트를 중앙에 정렬
+                        decoration: const BoxDecoration(
+                          color: Colors.black12, // row 전체의 배경색 설정
+                        ),
+                        child: const Text(
+                          'S',
+                          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    ...scorecard.sublist(9, 18).map((score) {
+                      return Center(
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+                          child: Text(
+                            score.toString(),
+                            style: const TextStyle(fontSize: 14),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 5),
+          const Align(
+              alignment: Alignment.centerLeft, // 왼쪽 정렬
+              child: Text(
+                '* H: Hole, S: Score',
+                style: TextStyle(fontSize: 14, color: Colors.black54),
+              )
           ),
           const SizedBox(height: 10),
           Center(

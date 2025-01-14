@@ -39,6 +39,7 @@ migrate_working_dir/
 .pub/
 /build/
 ios/build/**
+ios/Runner/GoogleService-Info.plist
 
 # Symbolication related
 app.*.symbols

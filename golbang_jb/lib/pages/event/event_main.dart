@@ -378,17 +378,26 @@ class EventPageState extends ConsumerState<EventPage> {
                           Text('장소: ${event.site}'),
                           Row(
                             children: [
-                              _buildStatusButton('ACCEPT', statusType, () async {
-                                await _handleStatusChange('ACCEPT', participant.participantId, event);
-                              }),
+                              _buildStatusButton(
+                                'ACCEPT', statusType, () async {
+                                  await _handleStatusChange('ACCEPT', participant.participantId, event);
+                                },
+                                event.startDateTime, // 이벤트 시작 시간 전달
+                              ),
                               SizedBox(width: width * 0.015),
-                              _buildStatusButton('PARTY', statusType, () async {
-                                await _handleStatusChange('PARTY', participant.participantId, event);
-                              }),
+                              _buildStatusButton(
+                                  'PARTY', statusType, () async {
+                                  await _handleStatusChange('PARTY', participant.participantId, event);
+                                },
+                                event.startDateTime, // 이벤트 시작 시간 전달
+                              ),
                               SizedBox(width: width * 0.015),
-                              _buildStatusButton('DENY', statusType, () async {
-                                await _handleStatusChange('DENY', participant.participantId, event);
-                              }),
+                              _buildStatusButton(
+                                'DENY', statusType, () async {
+                                  await _handleStatusChange('DENY', participant.participantId, event);
+                                },
+                                event.startDateTime, // 이벤트 시작 시간 전달
+                              ),
                             ],
                           ),
                           Container(
@@ -505,9 +514,11 @@ class EventPageState extends ConsumerState<EventPage> {
     }
   }
 
-  Widget _buildStatusButton(String status, String selectedStatus, VoidCallback onPressed) {
+  Widget _buildStatusButton(String status, String selectedStatus, VoidCallback onPressed, DateTime eventStartDateTime) {
     // 버튼이 선택된 상태인지 확인
     final bool isSelected = status == selectedStatus;
+    // 이벤트가 과거인지 확인
+    final bool isPastEvent = eventStartDateTime.isBefore(currentTime);
     // 선택된 상태에 따라 버튼의 색상을 결정
     final Color backgroundColor = isSelected
         ? _getStatusColor(status) // 선택된 상태이면 해당 색상을 사용
@@ -515,13 +526,15 @@ class EventPageState extends ConsumerState<EventPage> {
 
     // 버튼의 모양과 스타일을 정의
     return ElevatedButton(
-      onPressed: onPressed,
+      onPressed: isPastEvent ? null : onPressed, // 과거 이벤트면 버튼 비활성화
       style: ElevatedButton.styleFrom(
         backgroundColor: backgroundColor,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
         ),
+        // 비활성화된 버튼 스타일 유지
+        disabledBackgroundColor: backgroundColor.withOpacity(0.6),
       ),
       child: Row(
         children: [
