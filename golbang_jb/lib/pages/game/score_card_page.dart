@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:convert';
 
@@ -344,7 +345,6 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
           ? Column(
               children: [
                 SizedBox(height: height * 0.03), // 거리 조정
-                Text('각 점수마다 입력 후 \'완료(enter)\'를 눌러주세요.', style: TextStyle(color: Colors.white, fontSize: fontSizeLarge)),
                 const SizedBox(height: 10),
               ]
             )
@@ -507,6 +507,8 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
 
   TableRow _buildEditableTableRow(int holeIndex) {
     final cellHeight = height * 0.038;
+    Timer? debounceTimer;
+
     return TableRow(
       children: [
         // 첫 번째 열: 홀 번호
@@ -535,15 +537,21 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
                 inputFormatters: [AllowNegativeNumbersFormatter()],
                 focusNode: _focusNodes[member.participantId]?[holeIndex] ?? FocusNode(),
                 onChanged: (value) {
-                  final score = int.tryParse(value) ?? 0;
-                  _scorecard[member.participantId]![holeIndex] = HoleScore(
-                    holeNumber: holeIndex,
-                    score: score,
-                  );
-                },
-                onFieldSubmitted: (value) {
-                  final score = int.tryParse(value) ?? 0;
-                  _updateScore(member.participantId, holeIndex + 1, score);
+                  // 이전 Timer 취소
+                  debounceTimer?.cancel();
+
+                  // 새 Timer 시작
+                  debounceTimer = Timer(const Duration(milliseconds: 300), () {
+                    // 텍스트 변경 로직 실행
+                    final score = int.tryParse(value) ?? 0;
+                    _scorecard[member.participantId]![holeIndex] = HoleScore(
+                      holeNumber: holeIndex,
+                      score: score,
+                    );
+
+                    // 웹소켓 요청
+                    _updateScore(member.participantId, holeIndex + 1, score);
+                  });
                 },
                 decoration: const InputDecoration(
                   isDense: true,
