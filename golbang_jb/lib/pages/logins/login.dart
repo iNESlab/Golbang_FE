@@ -8,9 +8,9 @@ import 'package:golbang/pages/logins/widgets/social_login_widgets.dart';
 import 'package:golbang/services/auth_service.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
+import '../../global/LoginInterceptor.dart';
 import '../../repoisitory/secure_storage.dart';
 
 class TokenCheck extends ConsumerStatefulWidget {
@@ -21,41 +21,20 @@ class TokenCheck extends ConsumerStatefulWidget {
 }
 
 class _TokenCheckState extends ConsumerState<TokenCheck> {
-  bool isToken = false;
+  var dioClient = DioClient();
+  bool isTokenExpired = true; // 초기값 설정
 
   @override
   void initState() {
     super.initState();
-    _autoLoginCheck();
+    _checkTokenStatus(); // 비동기 작업 호출
   }
 
-  Future<void> _autoLoginCheck() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    final bool isAutoLoginEnabled = prefs.getBool('isAutoLoginEnabled') ?? true;
-    if (isAutoLoginEnabled) {
-      // `ref.read`로 AuthService 인스턴스 가져오기
-      final authService = ref.read(authServiceProvider);
-
-      try {
-        final response = await authService.validateToken();
-        if (response.statusCode == 202) {
-          setState(() {
-            isToken = true; // 유효한 토큰
-          });
-        } else {
-          setState(() {
-            isToken = false; // 무효한 토큰
-          });
-          // 무효한 토큰 삭제
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.remove('token');
-        }
-      } catch (e) {
-        setState(() {
-          isToken = false; // 네트워크 오류 등
-        });
-      }
-    }
+  Future<void> _checkTokenStatus() async {
+    bool tokenStatus = await dioClient.isAccessTokenExpired();
+    setState(() {
+      isTokenExpired = tokenStatus; // 상태 업데이트
+    });
   }
 
   @override
@@ -65,7 +44,7 @@ class _TokenCheckState extends ConsumerState<TokenCheck> {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: isToken ? const SplashScreen() : const LoginPage(),
+      home: isTokenExpired ? const LoginPage() : const SplashScreen(),
     );
   }
 }
@@ -78,9 +57,9 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
+  
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final bool _isAutoLoginEnabled = false;
 
   // 저장된 이메일 불러오기
   Future<void> _loadSavedEmail() async {
@@ -100,12 +79,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   void initState() {
     super.initState();
     _loadSavedEmail(); // 앱 실행 시 저장된 이메일 불러오기
-  }
-
-  Future<void> _setAutoLogin(String token) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isAutoLoginEnabled', true); // 설정 저장
-    await prefs.setString('token', token);
   }
 
   @override
@@ -189,7 +162,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
       final body = json.decode(response.body);
       var accessToken = body['data']['access_token'];
-      await _setAutoLogin(accessToken);
 
       final storage = ref.watch(secureStorageProvider);
       await storage.saveLoginId(email);

@@ -45,7 +45,7 @@ class DioClient {
       onError: (error, handler) async {
         // 401 에러 처리
         if (error.response?.statusCode == 401) {
-          final isTokenExpired = await _isAccessTokenExpired();
+          final isTokenExpired = await isAccessTokenExpired();
           if (isTokenExpired) {
             log('Access token expired, redirecting to login page.');
             await _logoutAndRedirect();
@@ -58,7 +58,7 @@ class DioClient {
     ));
   }
 
-  Future<bool> _isAccessTokenExpired() async {
+  Future<bool> isAccessTokenExpired() async {
     try {
       final accessToken = await _storage.read(key: 'ACCESS_TOKEN');
       if (accessToken == null) return true;

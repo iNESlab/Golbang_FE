@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -58,12 +59,12 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
 
     // WebSocket 데이터 수신 처리
     _channel.stream.listen((data) {
-      print('WebSocket 데이터 수신');
+      log('WebSocket 데이터 수신');
       _handleWebSocketData(data);
     }, onError: (error) {
-      print('WebSocket 오류 발생: $error');
+      log('WebSocket 오류 발생: $error');
     }, onDone: () {
-      print('WebSocket 연결 종료');
+      log('WebSocket 연결 종료');
     });
   }
 
@@ -77,7 +78,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
         // 수신된 데이터를 Rank 객체로 변환하여 _players 리스트에 저장
         _players = rankingsJson.map((json) => Rank.fromJson(json)).toList();
         for (var p in _players) {
-          print('_players: $p');
+          log('_player: ${p.userName}, ${p.profileImage}');
         }
       });
     }
@@ -93,7 +94,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
       player = null; // 참가자가 없을 경우 null을 할당
     } // _players가 비어있는 경우 null 반환
 
-    print('player: $player');
+    log('player: $player');
 
     // 참가자가 없으면 '-' 반환
     if (player == null) {
@@ -113,7 +114,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
 
     // WebSocket을 통해 새로고침 요청 전송
     _channel.sink.add(message);
-    print('Score 전송: $message');
+    log('Score 전송: $message');
 
     // 약간의 지연시간을 추가하여 새로고침 완료 시각적으로 표시
     await Future.delayed(const Duration(seconds: 1));
@@ -202,9 +203,10 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
               children: [
                 CircleAvatar(
                   radius: width * 0.06, // 반응형 아바타 크기
-                  backgroundImage: _clubProfile.image.startsWith('http')
+                  backgroundImage: _clubProfile.image.startsWith('https')
                       ? NetworkImage(_clubProfile.image)
                       : AssetImage(_clubProfile.image) as ImageProvider,
+                  backgroundColor: Colors.transparent, // 배경을 투명색으로 설정
                 ),
                 SizedBox(height: height * 0.01), // 반응형 간격
                 Text(
