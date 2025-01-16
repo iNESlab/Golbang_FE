@@ -1,20 +1,20 @@
 class ClubMemberProfile {
   final int memberId;
-  String profileImage;
+  String? profileImage;
   final String name;
   final String role;
 
   ClubMemberProfile({
     required this.memberId,
-    required this.profileImage,
+    String? profileImage,
     required this.name,
     required this.role,
-  });
+  }) : profileImage = (profileImage == null || profileImage.isEmpty) ? null : profileImage;
 
   factory ClubMemberProfile.fromJson(Map<String, dynamic> json) {
     return ClubMemberProfile(
         memberId: json['member_id'],
-        profileImage: json['profile_image'] ?? 'assets/images/user_default.png',
+        profileImage: json['profile_image'],
         name: json['name'],
         role: json['role']
     );

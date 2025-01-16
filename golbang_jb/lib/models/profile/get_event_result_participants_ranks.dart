@@ -4,7 +4,7 @@
 class GetEventResultParticipantsRanks {
   final String userId;
   final String name;
-  final String profileImage;
+  final String? profileImage;
   final int sumScore;
   final int handicapScore;
   final String rank;
@@ -14,19 +14,19 @@ class GetEventResultParticipantsRanks {
   GetEventResultParticipantsRanks({
     required this.userId,
     required this.name,
-    required this.profileImage,
+    String? profileImage,
     required this.sumScore,
     required this.handicapScore,
     required this.rank,
     required this.handicapRank,
     required this.scorecard,
-  });
+  }) : profileImage = (profileImage == null || profileImage.isEmpty) ? null : profileImage;
 
   factory GetEventResultParticipantsRanks.fromJson(Map<String, dynamic> json) {
     return GetEventResultParticipantsRanks(
       userId: json['user_id'],
       name: json['name'],
-      profileImage: json['profile_image'] ?? 'assets/images/user_default.png',
+      profileImage: json['profile_image'],
       sumScore: json['sum_score'],
       handicapScore: json['handicap_score'],
       rank: json['rank'],
