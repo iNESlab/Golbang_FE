@@ -347,10 +347,10 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
             CircleAvatar(
               radius: width * 0.05, // 반응형 아바타 크기
               backgroundColor: Colors.grey[300], // 배경색 (선택사항)
-              child: player.profileImage.startsWith('http')
+              child: player.profileImage != null
                   ? ClipOval(
                 child: Image.network(
-                  player.profileImage,
+                  player.profileImage!,
                   width: width * 0.1,
                   height: width * 0.1,
                   fit: BoxFit.cover,

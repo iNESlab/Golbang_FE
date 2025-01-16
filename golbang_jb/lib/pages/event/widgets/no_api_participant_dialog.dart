@@ -84,10 +84,21 @@ class _ParticipantSelectionDialogState
             return CheckboxListTile(
               // 프로필 이미지와 이름 표시
               secondary: CircleAvatar(
-                backgroundImage: participant.profileImage.startsWith('http')
-                    ? NetworkImage(participant.profileImage)
-                    : AssetImage(participant.profileImage) as ImageProvider,
                 radius: 20,
+                backgroundColor: Colors.transparent, // 배경 투명
+                child: participant.profileImage.isNotEmpty
+                    ? ClipOval(
+                  child: Image.network(
+                    participant.profileImage,
+                    fit: BoxFit.cover,
+                    width: 60,
+                    height: 60,
+                    errorBuilder: (context, error, stackTrace) {
+                      return _buildCircularIcon(); // 에러 시 동그란 아이콘 표시
+                    },
+                  ),
+                )
+                    : _buildCircularIcon(), // null일 때 동그란 아이콘
               ),
               title: Text(participant.name), // 이름 표시
               subtitle: Text('ID: ${participant.memberId.toString()}'), // ID 표시
@@ -114,6 +125,21 @@ class _ParticipantSelectionDialogState
           child: const Text("완료"),
         ),
       ],
+    );
+  }
+
+  Widget _buildCircularIcon() {
+    return ClipOval(
+      child: Container(
+        color: Colors.grey[300], // 배경색 (선택사항)
+        width: 60,
+        height: 60,
+        child: const Icon(
+          Icons.person,
+          size: 30,
+          color: Colors.grey,
+        ),
+      ),
     );
   }
 }

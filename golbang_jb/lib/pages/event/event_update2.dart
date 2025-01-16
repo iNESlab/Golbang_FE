@@ -82,7 +82,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
       return CreateParticipant(
         memberId: participant.memberId,
         name: participant.name,
-        profileImage: participant.profileImage,
+        profileImage: participant.profileImage ?? '',
         teamType: teamConfig,
         groupType: isExisting ? existingParticipant.groupType : 0,
       );
@@ -98,7 +98,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
         return CreateParticipant(
           memberId: participant.member!.memberId,
           name: participant.member!.name,
-          profileImage: participant.member!.profileImage ?? 'assets/images/user_default.png',
+          profileImage: participant.member!.profileImage ?? '',
           teamType: participant.teamType == "NONE" ? TeamConfig.NONE
               : participant.teamType == "A" ? TeamConfig.TEAM_A
               : TeamConfig.TEAM_B,

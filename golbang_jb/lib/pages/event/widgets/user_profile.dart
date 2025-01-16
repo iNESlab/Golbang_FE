@@ -31,10 +31,10 @@ class UserProfileWidget extends StatelessWidget {
           CircleAvatar(
             radius: 30,
             backgroundColor: Colors.transparent, // 배경 투명
-            child: userProfile.profileImage.startsWith('http')
+            child: userProfile.profileImage != null
                 ? ClipOval(
               child: Image.network(
-                userProfile.profileImage,
+                userProfile.profileImage!,
                 fit: BoxFit.cover,
                 width: 60,
                 height: 60,
@@ -43,7 +43,7 @@ class UserProfileWidget extends StatelessWidget {
                 },
               ),
             )
-                : _buildCircularIcon(), // http로 시작하지 않을 때 동그란 아이콘
+                : _buildCircularIcon(), // null일 때 동그란 아이콘
           ),
           const SizedBox(width: 10),
           // 이름
@@ -71,6 +71,7 @@ class UserProfileWidget extends StatelessWidget {
       ),
     );
   }
+
   Widget _buildCircularIcon() {
     return ClipOval(
       child: Container(

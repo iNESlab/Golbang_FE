@@ -117,9 +117,20 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
                     final participant = filteredParticipants[index];
                     return ListTile(
                       leading: CircleAvatar(
-                        backgroundImage: participant.profileImage.startsWith('http')
-                            ? NetworkImage(participant.profileImage)
-                            : AssetImage(participant.profileImage) as ImageProvider,
+                        backgroundColor: Colors.transparent,
+                        child: participant.profileImage != null
+                          ? ClipOval(
+                            child: Image.network(
+                                participant.profileImage!,
+                                fit: BoxFit.cover,
+                                width: 60,
+                                height: 60,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return _buildCircularIcon(); // 에러 시 동그란 아이콘 표시
+                                },
+                            ),
+                        )
+                          :_buildCircularIcon(), // null일 때 동그란 아이콘
                       ),
                       title: Text(participant.name),
                       trailing: Checkbox(
@@ -157,6 +168,20 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
           ),
         ),
       ],
+    );
+  }
+  Widget _buildCircularIcon() {
+    return ClipOval(
+      child: Container(
+        color: Colors.grey[300], // 배경색 (선택사항)
+        width: 60,
+        height: 60,
+        child: const Icon(
+          Icons.person,
+          size: 30,
+          color: Colors.grey,
+        ),
+      ),
     );
   }
 }

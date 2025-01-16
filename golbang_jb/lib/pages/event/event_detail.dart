@@ -635,14 +635,24 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
             final member = participant.member;
             final isSameGroup = participant.groupType == _myGroup;
             return Padding(
-              padding: const EdgeInsets.only(bottom: 10.0),
+              padding: const EdgeInsets.only(bottom: 5.0),
               child: Row(
                 children: [
                   CircleAvatar(
                     radius: 15,
-                    backgroundImage: member?.profileImage != null
-                        ? NetworkImage(member!.profileImage!)
-                        : const AssetImage('assets/images/user_default.png') as ImageProvider,
+                    backgroundColor: Colors.transparent,
+                    child: member?.profileImage != null
+                        ? ClipOval(
+                      child: Image.network(
+                          member!.profileImage!,
+                          width: 50,
+                          height: 50,
+                          errorBuilder: (context, error, stackTrace) {
+                            return _buildCircularIcon(); // 에러 시 동그란 아이콘 표시
+                          },
+                      )
+                    )
+                        : _buildCircularIcon(), // null일 때 동그란 아이콘
                   ),
                   const SizedBox(width: 10),
                   Container(
@@ -668,6 +678,23 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
       canTapOnHeader: true,
     );
   }
+
+
+  Widget _buildCircularIcon() {
+    return ClipOval(
+      child: Container(
+        color: Colors.grey[300], // 배경색 (선택사항)
+        width: 40,
+        height: 40,
+        child: const Icon(
+          Icons.person,
+          size: 25,
+          color: Colors.grey,
+        ),
+      ),
+    );
+  }
+
 
   void _editEvent() {
     Navigator.push(
