@@ -66,6 +66,15 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
     _setupListeners();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // 시간을 didChangeDependencies에서 초기화
+    final now = TimeOfDay.now();
+    _startTimeController.text = now.format(context); // 현재 시간으로 초기화
+  }
+
   DateTime _convertToDateTime(DateTime date, TimeOfDay time) {
 
     return DateTime(date.year, date.month, date.day, time.hour, time.minute);
@@ -156,13 +165,47 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
 
 
   TimeOfDay _parseTimeOfDay(String time) {
-    final timeParts = time.split(' ');
-    final timeOfDayParts = timeParts[0].split(':');
+    // 공백 제거 및 입력 문자열 정리
+    time = time.trim();
+
+    // 한국어 형식 처리: "오전 6:00" 또는 "오후 6:00"
+    if (time.startsWith('오전') || time.startsWith('오후')) {
+      final isPM = time.startsWith('오후'); // 오후 여부 확인
+      final timeParts = time.replaceFirst(RegExp(r'오전|오후'), '').trim(); // "오전" 또는 "오후" 제거
+
+      final timeOfDayParts = timeParts.split(':'); // "6:00" -> ["6", "00"]
+      if (timeOfDayParts.length != 2) {
+        throw FormatException('Invalid time format: $time'); // 형식 오류
+      }
+
+      final hour = int.parse(timeOfDayParts[0]);
+      final minute = int.parse(timeOfDayParts[1]);
+
+      return TimeOfDay(
+        hour: isPM ? (hour == 12 ? 12 : hour + 12) : (hour == 12 ? 0 : hour),
+        minute: minute,
+      );
+    }
+
+    // 영어 형식 처리: "6:00 AM" 또는 "6:00 PM"
+    final timeParts = time.split(' '); // "6:00 AM" -> ["6:00", "AM"]
+    if (timeParts.length != 2) {
+      throw FormatException('Invalid time format: $time'); // 형식 오류
+    }
+
+    final timeOfDayParts = timeParts[0].split(':'); // "6:00" -> ["6", "00"]
+    if (timeOfDayParts.length != 2) {
+      throw FormatException('Invalid time format: $time'); // 형식 오류
+    }
+
     final hour = int.parse(timeOfDayParts[0]);
     final minute = int.parse(timeOfDayParts[1]);
     final isPM = timeParts[1].toLowerCase() == 'pm';
 
-    return TimeOfDay(hour: isPM && hour < 12 ? hour + 12 : hour, minute: minute);
+    return TimeOfDay(
+      hour: isPM ? (hour == 12 ? 12 : hour + 12) : (hour == 12 ? 0 : hour),
+      minute: minute,
+    );
   }
 
   void _showParticipantDialog() {
@@ -392,10 +435,19 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                 child: ElevatedButton(
                   onPressed: _isButtonEnabled
                       ? () {
-                    final DateTime startDate = DateTime.parse(_startDateController.text);
-                    final TimeOfDay startTime = _parseTimeOfDay(_startTimeController.text);
+                    final DateTime startDate = _startDateController.text.isNotEmpty
+                        ? DateTime.parse(_startDateController.text)
+                        : DateTime.now(); // 기본값: 오늘 날짜
+
+                    final TimeOfDay startTime = _startTimeController.text.isNotEmpty
+                        ? _parseTimeOfDay(_startTimeController.text)
+                        : TimeOfDay.now(); // 기본값: 현재 시간
+
                     final DateTime startDateTime = _convertToDateTime(startDate, startTime);
-                    final DateTime endDateTime = _convertToDateTime(DateTime.parse(_endDateController.text), _fixedTime);
+                    final DateTime endDateTime = _endDateController.text.isNotEmpty
+                        ? _convertToDateTime(
+                        DateTime.parse(_endDateController.text), _fixedTime)
+                        : _convertToDateTime(startDate, _fixedTime); // 기본값: 당일 23:59
 
                     Navigator.push(
                       context,

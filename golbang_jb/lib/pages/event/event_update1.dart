@@ -60,6 +60,17 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
     _setupListeners();
   }
 
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // TimeOfDay.format을 안전하게 호출하기 위해 didChangeDependencies에서 설정
+    final startTime = TimeOfDay.fromDateTime(widget.event.startDateTime.toLocal());
+    setState(() {
+      _startTimeController.text = startTime.format(context);
+    });
+  }
+
   void _setupInitialValues() {
     // 전달받은 이벤트 데이터를 각 컨트롤러와 변수에 초기화
     _titleController.text = widget.event.eventTitle;
@@ -74,7 +85,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
       return ClubMemberProfile(
         memberId: member?.memberId ?? 0,
         name: member?.name ?? 'Unknown',
-        profileImage: member?.profileImage ?? 'assets/images/user_default.png',
+        profileImage: member?.profileImage ?? '',
         role: member?.role ?? 'member',
       );
     }).toList();
@@ -198,28 +209,47 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
   }
 
   TimeOfDay _parseTimeOfDay(String time) {
-    try {
-      // 시간 문자열이 "11:00 AM"과 같은 형식이라고 가정합니다.
-      final timeParts = time.split(' ');
-      if (timeParts.length < 2) {
-        throw const FormatException("Invalid time format");
-      }
+    // 공백 제거 및 입력 문자열 정리
+    time = time.trim();
 
-      final timeOfDayParts = timeParts[0].split(':');
-      if (timeOfDayParts.length < 2) {
-        throw const FormatException("Invalid time parts");
+    // 한국어 형식 처리: "오전 6:00" 또는 "오후 6:00"
+    if (time.startsWith('오전') || time.startsWith('오후')) {
+      final isPM = time.startsWith('오후'); // 오후 여부 확인
+      final timeParts = time.replaceFirst(RegExp(r'오전|오후'), '').trim(); // "오전" 또는 "오후" 제거
+
+      final timeOfDayParts = timeParts.split(':'); // "6:00" -> ["6", "00"]
+      if (timeOfDayParts.length != 2) {
+        throw FormatException('Invalid time format: $time'); // 형식 오류
       }
 
       final hour = int.parse(timeOfDayParts[0]);
       final minute = int.parse(timeOfDayParts[1]);
-      final isPM = timeParts[1].toLowerCase() == 'pm';
 
-      return TimeOfDay(hour: isPM && hour < 12 ? hour + 12 : hour, minute: minute);
-    } catch (e) {
-      // 파싱 실패 시 기본값 반환
-      log('Error parsing time: $e');
-      return const TimeOfDay(hour: 0, minute: 0);
+      return TimeOfDay(
+        hour: isPM ? (hour == 12 ? 12 : hour + 12) : (hour == 12 ? 0 : hour),
+        minute: minute,
+      );
     }
+
+    // 영어 형식 처리: "6:00 AM" 또는 "6:00 PM"
+    final timeParts = time.split(' '); // "6:00 AM" -> ["6:00", "AM"]
+    if (timeParts.length != 2) {
+      throw FormatException('Invalid time format: $time'); // 형식 오류
+    }
+
+    final timeOfDayParts = timeParts[0].split(':'); // "6:00" -> ["6", "00"]
+    if (timeOfDayParts.length != 2) {
+      throw FormatException('Invalid time format: $time'); // 형식 오류
+    }
+
+    final hour = int.parse(timeOfDayParts[0]);
+    final minute = int.parse(timeOfDayParts[1]);
+    final isPM = timeParts[1].toLowerCase() == 'pm';
+
+    return TimeOfDay(
+      hour: isPM ? (hour == 12 ? 12 : hour + 12) : (hour == 12 ? 0 : hour),
+      minute: minute,
+    );
   }
 
 
