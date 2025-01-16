@@ -11,6 +11,7 @@ import '../../models/participant.dart';
 import '../../provider/event/event_state_notifier_provider.dart';
 import '../../provider/screen_riverpod.dart';
 import '../../repoisitory/secure_storage.dart';
+import '../../widgets/common/circular_default_person_icon.dart';
 import '../game/score_card_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart'; // 공유 라이브러리 추가
@@ -648,11 +649,12 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                           width: 50,
                           height: 50,
                           errorBuilder: (context, error, stackTrace) {
-                            return _buildCircularIcon(); // 에러 시 동그란 아이콘 표시
+                            return const CircularIcon(containerSize: 40.0);
+                            // 에러 시 동그란 아이콘 표시
                           },
                       )
                     )
-                        : _buildCircularIcon(), // null일 때 동그란 아이콘
+                        : const CircularIcon(containerSize: 40.0), // null일 때 동그란 아이콘
                   ),
                   const SizedBox(width: 10),
                   Container(
@@ -678,23 +680,6 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
       canTapOnHeader: true,
     );
   }
-
-
-  Widget _buildCircularIcon() {
-    return ClipOval(
-      child: Container(
-        color: Colors.grey[300], // 배경색 (선택사항)
-        width: 40,
-        height: 40,
-        child: const Icon(
-          Icons.person,
-          size: 25,
-          color: Colors.grey,
-        ),
-      ),
-    );
-  }
-
 
   void _editEvent() {
     Navigator.push(

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/profile/member_profile.dart';
 import '../../../repoisitory/secure_storage.dart';
 import '../../../services/club_member_service.dart';
+import '../../../widgets/common/circular_default_person_icon.dart';
 
 class ParticipantDialog extends ConsumerStatefulWidget {
   final List<ClubMemberProfile> selectedParticipants;
@@ -126,11 +127,11 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
                                 width: 60,
                                 height: 60,
                                 errorBuilder: (context, error, stackTrace) {
-                                  return _buildCircularIcon(); // 에러 시 동그란 아이콘 표시
+                                  return const CircularIcon(); // 에러 시 동그란 아이콘 표시
                                 },
                             ),
                         )
-                          :_buildCircularIcon(), // null일 때 동그란 아이콘
+                          : const CircularIcon(), // null일 때 동그란 아이콘
                       ),
                       title: Text(participant.name),
                       trailing: Checkbox(
@@ -168,20 +169,6 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
           ),
         ),
       ],
-    );
-  }
-  Widget _buildCircularIcon() {
-    return ClipOval(
-      child: Container(
-        color: Colors.grey[300], // 배경색 (선택사항)
-        width: 60,
-        height: 60,
-        child: const Icon(
-          Icons.person,
-          size: 30,
-          color: Colors.grey,
-        ),
-      ),
     );
   }
 }

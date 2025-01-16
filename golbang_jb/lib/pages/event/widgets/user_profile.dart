@@ -3,6 +3,7 @@
 **/
 import 'package:flutter/material.dart';
 import '../../../models/profile/get_event_result_participants_ranks.dart';
+import '../../../widgets/common/circular_default_person_icon.dart';
 
 class UserProfileWidget extends StatelessWidget {
   final GetEventResultParticipantsRanks userProfile;
@@ -39,11 +40,11 @@ class UserProfileWidget extends StatelessWidget {
                 width: 60,
                 height: 60,
                 errorBuilder: (context, error, stackTrace) {
-                  return _buildCircularIcon(); // 에러 시 동그란 아이콘 표시
+                  return const CircularIcon(iconSize: 40); // 에러 시 동그란 아이콘 표시
                 },
               ),
             )
-                : _buildCircularIcon(), // null일 때 동그란 아이콘
+                : const CircularIcon(iconSize: 40), // null일 때 동그란 아이콘
           ),
           const SizedBox(width: 10),
           // 이름
@@ -68,21 +69,6 @@ class UserProfileWidget extends StatelessWidget {
             score: userProfile.rank,
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildCircularIcon() {
-    return ClipOval(
-      child: Container(
-        color: Colors.grey[300], // 배경색 (선택사항)
-        width: 60,
-        height: 60,
-        child: const Icon(
-          Icons.person,
-          size: 50,
-          color: Colors.grey,
-        ),
       ),
     );
   }

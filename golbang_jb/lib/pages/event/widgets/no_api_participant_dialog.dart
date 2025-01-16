@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:golbang/models/enum/event.dart';
-import '../../../models/create_participant.dart'; // CreateParticipant 모델 임포트
+import '../../../models/create_participant.dart';
+import '../../../widgets/common/circular_default_person_icon.dart'; // CreateParticipant 모델 임포트
 
 class ParticipantSelectionDialog extends StatefulWidget {
   final bool isTeam;
@@ -94,11 +95,11 @@ class _ParticipantSelectionDialogState
                     width: 60,
                     height: 60,
                     errorBuilder: (context, error, stackTrace) {
-                      return _buildCircularIcon(); // 에러 시 동그란 아이콘 표시
+                      return const CircularIcon(); // 에러 시 동그란 아이콘 표시
                     },
                   ),
                 )
-                    : _buildCircularIcon(), // null일 때 동그란 아이콘
+                    : const CircularIcon(), // null일 때 동그란 아이콘
               ),
               title: Text(participant.name), // 이름 표시
               subtitle: Text('ID: ${participant.memberId.toString()}'), // ID 표시
@@ -125,21 +126,6 @@ class _ParticipantSelectionDialogState
           child: const Text("완료"),
         ),
       ],
-    );
-  }
-
-  Widget _buildCircularIcon() {
-    return ClipOval(
-      child: Container(
-        color: Colors.grey[300], // 배경색 (선택사항)
-        width: 60,
-        height: 60,
-        child: const Icon(
-          Icons.person,
-          size: 30,
-          color: Colors.grey,
-        ),
-      ),
     );
   }
 }
