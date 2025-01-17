@@ -23,6 +23,8 @@ if (flutterVersionName == null) {
     flutterVersionName = '1.2'
 }
 
+def flutterGoogleMapKey = localProperties.getProperty('flutter.GoogleMapKey')
+
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = file("${rootDir}/key.properties")
 
@@ -32,19 +34,7 @@ if (keystorePropertiesFile.exists()) {
     throw new FileNotFoundException("Keystore properties file path: ${keystorePropertiesFile.absolutePath} / key.properties 파일을 찾을 수 없습니다.")
 }
 
-def envStoreFile = file("${rootDir}/../.env")
 
-def loadEnv(envFile) {
-    def props = new Properties()
-    if (envFile.exists()) {
-        envFile.withInputStream {
-            props.load(it)
-        }
-    }
-    return props
-}
-
-def env = loadEnv(envStoreFile)
 
 android {
     namespace "com.ines.golbang"
@@ -72,7 +62,7 @@ android {
         targetSdkVersion flutter.targetSdkVersion
         versionCode flutterVersionCode.toInteger()
         versionName flutterVersionName
-        resValue "string", "GOOGLE_MAPS_API_KEY", env['GOOGLE_MAPS_API_KEY'] ?: "default_api_key"
+        resValue "string", "GOOGLE_MAPS_API_KEY", flutterGoogleMapKey
     }
     
     signingConfigs {
