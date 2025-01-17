@@ -3,15 +3,16 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:golbang/repoisitory/secure_storage.dart';
 import 'package:http/http.dart' as http;
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../global/LoginInterceptor.dart';
 
 class AuthService {
   final SecureStorage storage;
   final dioClient = DioClient();
+  final FlutterSecureStorage _flutterSecureStorage = const FlutterSecureStorage();
 
   AuthService(this.storage);
 
@@ -45,9 +46,10 @@ class AuthService {
 
       // 응답 상태 확인
       if (response.statusCode == 202) {
-        // 로그아웃 성공 시 자동 로그인 비활성화
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('isAutoLoginEnabled', false);
+        // 로그아웃 성공 시 스토리지에 있는 액세스 토큰 삭제
+        await _flutterSecureStorage.deleteAll();
+        log('로그아웃 성공: 토큰 삭제 완료');
+
       }
 
       return response;
@@ -58,7 +60,7 @@ class AuthService {
   }
   //TODO: 유효성 검사하는데 왜 로그 아웃 API를 사용하는지 확인
   Future<Response> validateToken() async {
-    var uri = "${dotenv.env['API_HOST']}/api/v1/users/logout/";
+    var uri = "${dotenv.env['API_HOST']}/api/v1/users/logout/"; // TODO 삭제
     var response =  await dioClient.dio.post(uri);
     return response;
   }
