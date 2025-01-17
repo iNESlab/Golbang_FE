@@ -7,6 +7,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/models/event.dart';
 import 'package:golbang/pages/game/overall_score_page.dart';
+import 'package:golbang/provider/screen_riverpod.dart';
 import 'package:golbang/utils/AllowNavigateNumbersFormatter.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -31,9 +32,10 @@ class ScoreCardPage extends ConsumerStatefulWidget {
 
 class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
   int _currentPageIndex = 0;
-  late final WebSocketChannel _channel;
-  late final Map<int, String> _participantNames; // participantId를 키로 하는 맵
 
+  late final WebSocketChannel _channel;
+  late final List<Participant> _participants;
+  late final Map<int, String> _participantNames; // participantId를 키로 하는 맵
   late final int _myParticipantId;
   late final List<Participant> _myGroupParticipants;
   final List<ScoreCard> _teamMembers = []; // ScoreCard 리스트
@@ -50,30 +52,37 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
   late double avatarSize;
 
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final size = MediaQuery.of(context).size; // 화면 크기 가져오기
-    width = size.width;
-    height = size.height;
-    fontSizeLarge = width * 0.04; // 너비의 4%를 폰트 크기로 사용
-    fontSizeSmall = width * 0.03; // 너비의 3%를 폰트 크기로 사용
-    avatarSize = width * 0.1; // 아바타 크기를 화면 너비의 10%로 설정
-  }
-
-  @override
   initState() {
     super.initState();
-    _initializeParticipantNames(); // 맵 초기화
+    // 초기화할 때 screenSizeProvider 값을 읽음
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final size = ref.read(screenSizeProvider);
+      setState(() {
+        width = size.width;
+        height = size.height;
+        fontSizeLarge = width * 0.04; // 너비의 4%를 폰트 크기로 사용
+        fontSizeSmall = width * 0.03; // 너비의 3%를 폰트 크기로 사용
+        avatarSize = width * 0.1; // 아바타 크기를 화면 너비의 10%로 설정
+      });
+    });
+
     _myParticipantId = widget.event.myParticipantId;
-    _myGroupParticipants = widget.event.participants.where((p)=>
-    p.groupType==widget.event.memberGroup).toList();
     _clubProfile = widget.event.club!;
+
+    _participants = widget.event.participants.where((p)=>
+      p.statusType=='PARTY'||p.statusType=='ACCEPT'
+    ).toList();
+    _initializeParticipantNames();
+    _myGroupParticipants = _participants.where((p)=>
+    p.groupType==widget.event.memberGroup).toList();
+
     _initTeamMembers();
     _initWebSocket();
   }
   void _initializeParticipantNames() {
+
     _participantNames = {};
-    for (var participant in widget.event.participants) {
+    for (var participant in _participants) {
       String name = participant.member?.name ?? 'N/A';
       _participantNames[participant.participantId] = name; // 맵에 추가
     }
