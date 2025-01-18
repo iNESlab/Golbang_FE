@@ -25,7 +25,7 @@ class Rank {
   factory Rank.fromJson(Map<String, dynamic> json) {
     return Rank(
       userName: json['user']['name'],
-      profileImage: json['user']['profile_image'],
+      profileImage: json['user']['profile_image'] ?? '',
       participantId: json['participant_id'],
       lastHoleNumber: json['last_hole_number'],
       lastScore: json['last_score'],

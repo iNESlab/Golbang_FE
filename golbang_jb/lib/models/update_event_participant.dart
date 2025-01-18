@@ -24,7 +24,7 @@ class UpdateEventParticipant {
   UpdateEventParticipant({
     required this.memberId,
     required this.name,
-    required this.profileImage,
+    String? profileImage,
     required this.role,
     required this.participantId,
     required this.statusType,
@@ -35,13 +35,13 @@ class UpdateEventParticipant {
     required this.rank,
     required this.handicapRank,
     required this.handicapScore,
-  });
+  }) : profileImage = (profileImage == null || profileImage.isEmpty) ? null : profileImage;
 
   factory UpdateEventParticipant.fromJson(Map<String, dynamic> json) {
     return UpdateEventParticipant(
       memberId: json['member']['member_id'],
       name: json['member']['name'],
-      profileImage: json['member']['profile_image'],
+      profileImage: json['member']['profile_image'] ?? '',
       role: json['member']['role'],
       participantId: json['participant_id'],
       statusType: json['status_type'],

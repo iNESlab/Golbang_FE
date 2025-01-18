@@ -14,7 +14,7 @@ class ClubMemberProfile {
   factory ClubMemberProfile.fromJson(Map<String, dynamic> json) {
     return ClubMemberProfile(
         memberId: json['member_id'],
-        profileImage: json['profile_image'],
+        profileImage: json['profile_image'] ?? '',
         name: json['name'],
         role: json['role']
     );
