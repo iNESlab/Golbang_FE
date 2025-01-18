@@ -83,7 +83,7 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
 
               // 날짜 및 시간 포맷
               final formattedDateTime = DateFormat("yyyy-MM-dd a h:mm", Localizations.localeOf(context).toString())
-                  .format(event.startDateTime.toLocal());
+                  .format(event.startDateTime);
 
               return GestureDetector(
                 onTap: () {
