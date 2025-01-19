@@ -41,6 +41,8 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   Map<String, dynamic>? teamAScores;
   Map<String, dynamic>? teamBScores;
   bool isLoading = true;
+  late final _myParticipantId;
+  late final _myStatus;
 
 
   @override
@@ -48,6 +50,10 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     super.initState();
     _startDateTime = widget.event.startDateTime;
     _endDateTime = widget.event.endDateTime;
+    _myParticipantId = widget.event.myParticipantId;
+    _myStatus = widget.event.participants.firstWhere(
+            (p)=>p.participantId == _myParticipantId
+    ).statusType;
 
     _selectedLocation = _parseLocation(widget.event.location);
     _myGroup = widget.event.memberGroup; // initState에서 초기화
@@ -528,7 +534,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     );
   }
 
-  Widget _buildBottomButtons() {
+  Widget? _buildBottomButtons() {
 
     if (currentTime.isAfter(_endDateTime)){
       // 현재 날짜가 이벤트 날짜보다 이후인 경우 "결과 조회" 버튼만 표시
@@ -553,29 +559,33 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
         child: const Text('결과 조회'),
       );
     }
-    else if (currentTime.isAfter(widget.event.startDateTime)) {
-      // 현재 날짜가 이벤트 날짜보다 이전인 경우 "게임 시작" 버튼만 표시
-      return ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ScoreCardPage(event: widget.event),
-
+    else if (currentTime.isAfter(_startDateTime)) {
+      bool isButtonActivate = _myStatus == 'ACCEPT' || _myStatus == 'PARTY';
+      if (isButtonActivate){
+        return ElevatedButton(
+          onPressed: () {
+            if (isButtonActivate){
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ScoreCardPage(event: widget.event),
+                ),
+              );
+            }
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green,
+            foregroundColor: Colors.white,
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+            minimumSize: const Size(double.infinity, 50),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10.0),
             ),
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.green,
-          foregroundColor: Colors.white,
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
-          minimumSize: const Size(double.infinity, 50),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10.0),
           ),
-        ),
-        child: const Text('게임 시작'),
-      );
+          child: const Text('게임 시작'),
+        );
+      }
+      return null;
     } else {
       return  ElevatedButton(
         onPressed: null,

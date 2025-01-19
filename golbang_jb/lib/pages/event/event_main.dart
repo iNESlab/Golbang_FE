@@ -426,17 +426,9 @@ class EventPageState extends ConsumerState<EventPage> {
                                   ),
                                 ),
                                 TextButton(
-                                  onPressed: () {
-                                    if (currentTime.isAfter(event.endDateTime)) {
-                                      // 결과 조회 페이지로 이동
-                                      _navigateToResultPage(event);
-                                    } else if(currentTime.isAfter(event.startDateTime)){
-                                      // 게임 시작 페이지로 이동
-                                      _navigateToGameStartPage(event);
-                                    }
-                                  },
+                                  onPressed: () => _handleButtonPress(event, statusType),
                                   style: TextButton.styleFrom(
-                                    foregroundColor: Colors.green,
+                                    foregroundColor: Colors.black,
                                     padding: EdgeInsets.symmetric(
                                       vertical: height * 0.005, // 반응형 상하 패딩
                                       horizontal: width * 0.02, // 반응형 좌우 패딩
@@ -444,10 +436,7 @@ class EventPageState extends ConsumerState<EventPage> {
                                     minimumSize: Size(width * 0.2, height * 0.04), // 최소 크기 설정
                                   ),
                                   child: Text(
-                                    currentTime.isAfter(event.endDateTime) ? '결과 조회'
-                                        : currentTime.isAfter(event.startDateTime) ? '게임 시작'
-                                        : _formatTimeDifference(event.startDateTime),
-
+                                    _getButtonText(event),
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: width * 0.035,
@@ -457,6 +446,7 @@ class EventPageState extends ConsumerState<EventPage> {
                                     ),
                                   ),
                                 ),
+
                               ],
                             ),
                           ),
@@ -584,6 +574,25 @@ class EventPageState extends ConsumerState<EventPage> {
         // TODO: 잘 반영이 안 됨. 반영되도록 수정 필요
         _selectedEvents.value = _getEventsForDay(_selectedDay!);
       });
+    }
+  }
+
+  void _handleButtonPress(Event event, String statusType) {
+    if (currentTime.isAfter(event.endDateTime)) {
+      _navigateToResultPage(event);
+    } else if (currentTime.isAfter(event.startDateTime) &&
+        (statusType == 'ACCEPT' || statusType == 'PARTY')) {
+      _navigateToGameStartPage(event);
+    }
+  }
+
+  String _getButtonText(Event event) {
+    if (currentTime.isAfter(event.endDateTime)) {
+      return '결과 조회';
+    } else if (currentTime.isAfter(event.startDateTime)) {
+      return '게임 시작';
+    } else {
+      return _formatTimeDifference(event.startDateTime);
     }
   }
 
