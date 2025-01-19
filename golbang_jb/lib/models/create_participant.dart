@@ -3,17 +3,17 @@ import 'package:golbang/models/enum/event.dart';
 class CreateParticipant {
   final int memberId;
   final String name;
-  String? profileImage;
+  final String  profileImage;
   TeamConfig teamType;
   int groupType;
 
   CreateParticipant({
     required this.memberId,
     required this.name,
-    String? profileImage,
+    required this.profileImage,
     required this.teamType,
     required this.groupType,
-  }) : profileImage = (profileImage == null || profileImage.isEmpty) ? null : profileImage;
+  });
 
   Map<String, dynamic> toJson() {
     return {

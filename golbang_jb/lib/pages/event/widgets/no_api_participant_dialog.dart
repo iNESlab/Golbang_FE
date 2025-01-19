@@ -87,10 +87,10 @@ class _ParticipantSelectionDialogState
               secondary: CircleAvatar(
                 radius: 20,
                 backgroundColor: Colors.transparent, // 배경 투명
-                child: participant.profileImage != null
+                child: participant.profileImage.startsWith('http')
                     ? ClipOval(
                   child: Image.network(
-                    participant.profileImage!,
+                    participant.profileImage,
                     fit: BoxFit.cover,
                     width: 60,
                     height: 60,

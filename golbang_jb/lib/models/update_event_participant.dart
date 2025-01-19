@@ -9,7 +9,7 @@ import 'profile/member_profile.dart';
 class UpdateEventParticipant {
   final int memberId;
   final String name;
-  final String? profileImage;
+  final String profileImage;
   final String role;
   final int participantId;
   final String statusType;
@@ -24,7 +24,7 @@ class UpdateEventParticipant {
   UpdateEventParticipant({
     required this.memberId,
     required this.name,
-    String? profileImage,
+    required this.profileImage,
     required this.role,
     required this.participantId,
     required this.statusType,
@@ -35,7 +35,7 @@ class UpdateEventParticipant {
     required this.rank,
     required this.handicapRank,
     required this.handicapScore,
-  }) : profileImage = (profileImage == null || profileImage.isEmpty) ? null : profileImage;
+  });
 
   factory UpdateEventParticipant.fromJson(Map<String, dynamic> json) {
     return UpdateEventParticipant(

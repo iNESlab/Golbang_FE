@@ -2,16 +2,16 @@ class Member {
   final int memberId;
   final String name;
   final String role;
-  String? profileImage; // profileImage
+  final String? profileImage; // profileImage
   final String? description;
 
   Member({
     required this.memberId,
     required this.name,
     required this.role,
-    String? profileImage,
+    this.profileImage,
     this.description,
-  }) : profileImage = (profileImage == null || profileImage.isEmpty) ? null : profileImage;
+  });
 
   factory Member.fromJson(Map<String, dynamic> json) {
     // print(json);

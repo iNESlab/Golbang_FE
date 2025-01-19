@@ -1,15 +1,15 @@
 class ClubMemberProfile {
   final int memberId;
-  String? profileImage;
+  String profileImage;
   final String name;
   final String role;
 
   ClubMemberProfile({
     required this.memberId,
-    String? profileImage,
+    required this.profileImage,
     required this.name,
     required this.role,
-  }) : profileImage = (profileImage == null || profileImage.isEmpty) ? null : profileImage;
+  });
 
   factory ClubMemberProfile.fromJson(Map<String, dynamic> json) {
     return ClubMemberProfile(
