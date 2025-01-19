@@ -41,7 +41,7 @@ class UpdateEventParticipant {
     return UpdateEventParticipant(
       memberId: json['member']['member_id'],
       name: json['member']['name'],
-      profileImage: json['member']['profile_image'] ?? 'assets/images/user_default.png',
+      profileImage: json['member']['profile_image'] ?? '',
       role: json['member']['role'],
       participantId: json['participant_id'],
       statusType: json['status_type'],

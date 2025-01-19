@@ -3,6 +3,7 @@ import 'package:golbang/models/event.dart';
 import 'package:golbang/pages/event/event_detail.dart';
 import 'package:golbang/services/participant_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import '../../repoisitory/secure_storage.dart';
 
 class UpcomingEvents extends ConsumerStatefulWidget {
@@ -80,6 +81,10 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
               );
               String statusType = participant.statusType;
 
+              // 날짜 및 시간 포맷
+              final formattedDateTime = DateFormat("yyyy-MM-dd a h:mm", Localizations.localeOf(context).toString())
+                  .format(event.startDateTime);
+
               return GestureDetector(
                 onTap: () {
                   Navigator.push(
@@ -131,7 +136,7 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
                           ],
                         ),
                         Text(
-                          '${event.startDateTime.toLocal()}',
+                          formattedDateTime,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: fontSize - 2,

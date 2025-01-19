@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/profile/member_profile.dart';
 import '../../../repoisitory/secure_storage.dart';
 import '../../../services/club_member_service.dart';
+import '../../widgets/common/circular_default_person_icon.dart';
 
 class MemberManagePage extends ConsumerStatefulWidget {
   final int clubId;
@@ -55,9 +56,20 @@ class _MemberManagePageState extends ConsumerState<MemberManagePage> {
           final member = members[index];
           return ListTile(
             leading: CircleAvatar(
-              backgroundImage: member.profileImage.startsWith('http')
-                  ? NetworkImage(member.profileImage)
-                  : AssetImage(member.profileImage) as ImageProvider,
+              backgroundColor: Colors.transparent,
+              child: member.profileImage != null
+                  ? ClipOval(
+                child: Image.network(
+                    member.profileImage!,
+                    fit: BoxFit.cover,
+                    width: 60,
+                    height: 60,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const CircularIcon(); // 에러 시 동그란 아이콘 표시
+                    },
+                )
+              )
+              : const CircularIcon(), // null일 때 동그란 아이콘
             ),
             title: Text(member.name),
           );

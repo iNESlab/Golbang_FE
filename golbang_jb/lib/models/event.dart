@@ -98,7 +98,7 @@ class Event {
       return UpdateEventParticipant(
         memberId: participant.member?.memberId ?? 0,
         name: participant.member?.name ?? 'Unknown',
-        profileImage: participant.member?.profileImage ?? 'assets/images/user_default.png',
+        profileImage: participant.member?.profileImage ?? '',
         role: participant.member?.role ?? 'member',
         participantId: participant.participantId,
         statusType: participant.statusType,

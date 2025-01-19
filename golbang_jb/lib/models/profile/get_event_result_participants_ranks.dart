@@ -26,7 +26,7 @@ class GetEventResultParticipantsRanks {
     return GetEventResultParticipantsRanks(
       userId: json['user_id'],
       name: json['name'],
-      profileImage: json['profile_image'] ?? 'assets/images/user_default.png',
+      profileImage: json['profile_image'] ?? '',
       sumScore: json['sum_score'],
       handicapScore: json['handicap_score'],
       rank: json['rank'],

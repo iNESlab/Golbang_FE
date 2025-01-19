@@ -60,7 +60,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
       return CreateParticipant(
         memberId: participant.memberId,
         name: participant.name,
-        profileImage: participant.profileImage,
+        profileImage: participant.profileImage ?? '',
         teamType: teamConfig,
         groupType: 0, // 0으로 하면, 에러 뜸.
       );

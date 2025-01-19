@@ -3,7 +3,7 @@ import 'package:golbang/models/enum/event.dart';
 class CreateParticipant {
   final int memberId;
   final String name;
-  final String profileImage;
+  final String  profileImage;
   TeamConfig teamType;
   int groupType;
 
@@ -27,7 +27,7 @@ class CreateParticipant {
     return CreateParticipant(
       memberId: json['member_id'],
       name: json['name'],
-      profileImage: json['profile_image'],
+      profileImage: json['profile_image'] ?? '',
       teamType: TeamConfig.values.firstWhere((e) => e.value == json['team_type']),
       groupType: json['group_type'],
     );

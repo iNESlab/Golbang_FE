@@ -11,6 +11,7 @@ import '../../models/participant.dart';
 import '../../provider/event/event_state_notifier_provider.dart';
 import '../../provider/screen_riverpod.dart';
 import '../../repoisitory/secure_storage.dart';
+import '../../widgets/common/circular_default_person_icon.dart';
 import '../game/score_card_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart'; // 공유 라이브러리 추가
@@ -635,14 +636,25 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
             final member = participant.member;
             final isSameGroup = participant.groupType == _myGroup;
             return Padding(
-              padding: const EdgeInsets.only(bottom: 10.0),
+              padding: const EdgeInsets.only(bottom: 5.0),
               child: Row(
                 children: [
                   CircleAvatar(
                     radius: 15,
-                    backgroundImage: member?.profileImage != null
-                        ? NetworkImage(member!.profileImage!)
-                        : const AssetImage('assets/images/user_default.png') as ImageProvider,
+                    backgroundColor: Colors.transparent,
+                    child: member?.profileImage != null
+                        ? ClipOval(
+                      child: Image.network(
+                          member!.profileImage!,
+                          width: 50,
+                          height: 50,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const CircularIcon(containerSize: 40.0);
+                            // 에러 시 동그란 아이콘 표시
+                          },
+                      )
+                    )
+                        : const CircularIcon(containerSize: 40.0), // null일 때 동그란 아이콘
                   ),
                   const SizedBox(width: 10),
                   Container(

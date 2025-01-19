@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/profile/member_profile.dart';
 import '../../../repoisitory/secure_storage.dart';
 import '../../../services/club_member_service.dart';
+import '../../../widgets/common/circular_default_person_icon.dart';
 
 class ParticipantDialog extends ConsumerStatefulWidget {
   final List<ClubMemberProfile> selectedParticipants;
@@ -117,9 +118,20 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
                     final participant = filteredParticipants[index];
                     return ListTile(
                       leading: CircleAvatar(
-                        backgroundImage: participant.profileImage.startsWith('http')
-                            ? NetworkImage(participant.profileImage)
-                            : AssetImage(participant.profileImage) as ImageProvider,
+                        backgroundColor: Colors.transparent,
+                        child: participant.profileImage != null
+                          ? ClipOval(
+                            child: Image.network(
+                                participant.profileImage!,
+                                fit: BoxFit.cover,
+                                width: 60,
+                                height: 60,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return const CircularIcon(); // 에러 시 동그란 아이콘 표시
+                                },
+                            ),
+                        )
+                          : const CircularIcon(), // null일 때 동그란 아이콘
                       ),
                       title: Text(participant.name),
                       trailing: Checkbox(
