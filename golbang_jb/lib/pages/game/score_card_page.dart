@@ -325,6 +325,10 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (width == 0.0 || height == 0.0) {
+      // 초기화되지 않았을 때 빈 컨테이너 표시
+      return const SizedBox.shrink();
+    }
     // 키보드가 활성화된 상태인지 확인
     final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
     return Scaffold(

@@ -30,11 +30,26 @@ class AuthService {
       'fcm_token': fcm_token
     };
     var body = json.encode(data);
-    // login은 액세스 토큰을 안쓰므로 dio를 안거치도록 함
-    var response = await http.post(uri, headers: headers, body: body);
-    log("${json.decode(utf8.decode(response.bodyBytes))}");
+    try {
+      // 요청 시작 로그
+      log("Sending POST request to $uri with body: $data");
 
-    return response;
+      var response = await http.post(uri, headers: headers, body: body);
+
+      // 응답 상태 로그
+      log("Response received: Status code ${response.statusCode}");
+
+      // 응답 바디 로그
+      log("Response body: ${json.decode(utf8.decode(response.bodyBytes))}");
+
+      return response;
+    } catch (e, stackTrace) {
+      // 오류 로그
+      log("Error occurred during POST request: $e", error: e, stackTrace: stackTrace);
+
+      // 재던지기 (오류를 호출자에게 전달)
+      rethrow;
+    }
   }
 
   Future<Response> logout() async {
