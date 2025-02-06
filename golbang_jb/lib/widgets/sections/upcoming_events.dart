@@ -3,6 +3,7 @@ import 'package:golbang/models/event.dart';
 import 'package:golbang/pages/event/event_detail.dart';
 import 'package:golbang/services/participant_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:golbang/utils/reponsive_utils.dart';
 import 'package:intl/intl.dart';
 import '../../repoisitory/secure_storage.dart';
 
@@ -42,8 +43,13 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width; // 화면 너비
     double screenHeight = MediaQuery.of(context).size.height; // 화면 높이
+    Orientation orientation = MediaQuery.of(context).orientation;
 
-    double fontSize = screenWidth > 600 ? screenWidth * 0.04 : screenWidth * 0.04; // 폰트 크기
+    double fontSize = ResponsiveUtils.getUpcomingEventsFontSizeDescription(screenWidth, orientation);
+    double eventNoteIconSize = orientation == Orientation.landscape ? screenHeight * 0.25 : screenWidth * 0.3;
+
+    double eventTitleFS = fontSize * 0.9;
+    double eventOtherFS = fontSize * 0.8;
 
     if (widget.events.isEmpty) {
       return Center(
@@ -52,7 +58,7 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
           children: [
             Icon(
               Icons.event_note,
-              size: screenWidth * 0.3,
+              size: eventNoteIconSize,
               color: Colors.grey,
             ),
             Text(
@@ -130,7 +136,7 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
                               event.eventTitle,
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
-                                fontSize: fontSize,
+                                fontSize: eventTitleFS,
                               ),
                             ),
                           ],
@@ -139,13 +145,13 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
                           formattedDateTime,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
-                            fontSize: fontSize - 2,
+                            fontSize: eventOtherFS,
                           ),
                         ),
                         Text(
                           '장소: ${event.site}',
                           style: TextStyle(
-                            fontSize: fontSize - 2,
+                            fontSize: eventOtherFS,
                           ),
                         ),
                         Row(
@@ -153,11 +159,11 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
                             Text(
                               '참석 여부: ',
                               style: TextStyle(
-                                fontSize: fontSize - 2,
+                                fontSize: eventOtherFS,
                               ),
                             ),
                             _buildStatusButton(
-                                statusType, event, fontSize, fontSize - 2, screenWidth),
+                                statusType, event, fontSize, eventOtherFS, screenWidth, orientation),
                           ],
                         ),
                       ],
@@ -173,7 +179,7 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
 
 
 
-  Widget _buildStatusButton(String status, Event event, double fontSize, double buttonFontSize, double screenWidth) {
+  Widget _buildStatusButton(String status, Event event, double fontSize, double buttonFontSize, double screenWidth, Orientation orientation) {
     Color color = _getStatusColor(status);
     int participantId = event.participants.isNotEmpty
         ? event.participants.firstWhere(
@@ -185,6 +191,8 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
     // 현재 날짜와 이벤트 날짜 비교
     bool isPastEvent = event.startDateTime.isBefore(DateTime.now());
 
+    double buttonWidth = ResponsiveUtils.getUpcomingEventsButtonWidth(screenWidth, orientation);
+    double buttonHeight = ResponsiveUtils.getUpcomingEventsButtonHeight(screenWidth, orientation);
     return ElevatedButton(
       onPressed: participantId != -1 && !isPastEvent
           ? () async {
@@ -197,7 +205,7 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
           : null, // 과거 이벤트이거나 참가자가 없는 경우 버튼 비활성화
       style: ElevatedButton.styleFrom(
         backgroundColor: color,
-        minimumSize: Size(screenWidth > 600 ? 100 : 80, 40), // 화면 크기와 버튼 크기 조정
+        minimumSize: Size(buttonWidth, buttonHeight), // 화면 크기와 버튼 크기 조정
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(10.0),
         ),

@@ -9,6 +9,7 @@ import 'package:golbang/models/event.dart';
 import 'package:golbang/pages/game/overall_score_page.dart';
 import 'package:golbang/provider/screen_riverpod.dart';
 import 'package:golbang/utils/AllowNavigateNumbersFormatter.dart';
+import 'package:golbang/utils/reponsive_utils.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -47,8 +48,11 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
 
   late double width;
   late double height;
-  late double fontSizeLarge;
-  late double fontSizeSmall;
+  late Orientation orientation = MediaQuery.of(context).orientation;
+  late double fontSizeLarge = ResponsiveUtils.getLargeFontSize(width, orientation); // 너비의 4%를 폰트 크기로 사용
+  late double fontSizeMedium = ResponsiveUtils.getMediumFontSize(width, orientation);
+  late double fontSizeSmall = ResponsiveUtils.getSmallFontSize(width, orientation); // 너비의 3%를 폰트 크기로 사용
+  late double appBarIconSize = ResponsiveUtils.getAppBarIconSize(width, orientation);
   late double avatarSize;
 
   @override
@@ -60,9 +64,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
       setState(() {
         width = size.width;
         height = size.height;
-        fontSizeLarge = width * 0.04; // 너비의 4%를 폰트 크기로 사용
-        fontSizeSmall = width * 0.03; // 너비의 3%를 폰트 크기로 사용
-        avatarSize = width * 0.1; // 아바타 크기를 화면 너비의 10%로 설정
+        avatarSize = fontSizeMedium * 2; // 아바타 크기를 화면 너비의 10%로 설정
       });
     });
 
@@ -334,10 +336,10 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
     return Scaffold(
       resizeToAvoidBottomInset: false, // 키보드가 올라왔을 때 UI를 조정
       appBar: AppBar(
-        title: Text(widget.event.eventTitle, style: const TextStyle(color: Colors.white)),
+        title: Text(widget.event.eventTitle, style: TextStyle(color: Colors.white, fontSize: fontSizeLarge)),
         backgroundColor: Colors.black,
         leading: IconButton( // 뒤로 가기 버튼 추가
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, size: appBarIconSize),
           color: Colors.white,
           onPressed: () {
             Navigator.pop(context);
@@ -345,7 +347,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, size: appBarIconSize),
             color: Colors.white,
             onPressed: _handleRefresh,
           )
@@ -410,6 +412,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
                     ? NetworkImage(_clubProfile.image)
                     : AssetImage(_clubProfile.image) as ImageProvider,
                 backgroundColor: Colors.transparent, // 배경을 투명색으로 설정
+                radius: avatarSize,
               ),
               SizedBox(width: width * 0.03),
               Column(
@@ -417,7 +420,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
                 children: [
                   Text(widget.event.club!.name, style: TextStyle(color: Colors.white, fontSize: fontSizeLarge)),
                   SizedBox(height: height * 0.005),
-                  Text(_formattedDate(widget.event.startDateTime), style: TextStyle(color: Colors.white, fontSize: fontSizeSmall)),
+                  Text(_formattedDate(widget.event.startDateTime), style: TextStyle(color: Colors.white, fontSize: fontSizeMedium)),
                 ],
               ),
             ],
@@ -436,9 +439,9 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.grey[800],
                   ),
-                  child: const Text(
+                  child: Text(
                     '전체 현황 조회',
-                    style: TextStyle(color: Colors.white)
+                    style: TextStyle(color: Colors.white, fontSize: fontSizeLarge)
                   ),
                 ),
               ),
@@ -509,7 +512,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
       child: Center(
         child: Text(
           title,
-          style: const TextStyle(color: Colors.white), // 텍스트 색상 유지
+          style: TextStyle(color: Colors.white, fontSize: fontSizeLarge), // 텍스트 색상 유지
           textAlign: TextAlign.center,
           overflow: TextOverflow.ellipsis, // 텍스트가 넘어가면 ...으로 표시
           maxLines: 1, // 한 줄만 표시
@@ -530,7 +533,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
           height: cellHeight, // 반응형 높이 설정
           child: Text(
             (holeIndex + 1).toString(),
-            style: TextStyle(color: Colors.white, fontSize: fontSizeSmall),
+            style: TextStyle(color: Colors.white, fontSize: fontSizeMedium),
             textAlign: TextAlign.center,
           ),
         ),
@@ -544,7 +547,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
               height: cellHeight, // 반응형 높이 설정
               child: TextFormField(
                 controller: _controllers[member.participantId]?[holeIndex],
-                style: TextStyle(color: Colors.white, fontSize: fontSizeSmall + 2),
+                style: TextStyle(color: Colors.white, fontSize: fontSizeMedium),
                 textAlign: TextAlign.center,
                 keyboardType: TextInputType.phone,
                 inputFormatters: [AllowNegativeNumbersFormatter()],
@@ -592,7 +595,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
 
   Widget _buildSummaryTable(List<int> handiScores) {
     final cellHeight = height * 0.042; // 반응형 높이 (화면 높이의 7%)
-    final cellFontSize = fontSizeSmall + 1;
+    final cellFontSize = fontSizeMedium;
     List<int> frontNine = _calculateScores(0, 9);
     List<int> backNine = _calculateScores(9, 18);
     List<int> totalScores = List.generate(

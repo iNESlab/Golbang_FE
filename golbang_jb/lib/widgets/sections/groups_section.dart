@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:golbang/pages/community/community_main.dart';
 import 'package:golbang/models/group.dart';
+import 'package:golbang/utils/reponsive_utils.dart';
 
 class GroupsSection extends StatefulWidget {
   final List<Group> groups;
@@ -22,14 +23,21 @@ class _GroupsSectionState extends State<GroupsSection> {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-
+    Orientation orientation = MediaQuery.of(context).orientation;
     // Dynamic UI settings
-    double avatarRadius = screenWidth > 600 ? screenWidth * 0.1 : screenWidth * 0.08;
-    double padding = screenWidth > 600 ? screenWidth * 0.04 : screenWidth * 0.02;
-    double horizontalMargin = screenWidth > 600 ? screenWidth * 0.04 : screenWidth * 0.03;
-    double textHeight = screenWidth > 600 ? screenWidth * 0.03 : screenWidth * 0.04;
-    double spacing = textHeight / 2;
-    double cardHeight = avatarRadius * 2 + textHeight + spacing + padding;
+    // double avatarRadius = screenWidth > 600 ? screenWidth * 0.1 : screenWidth * 0.08;
+    // double padding = screenWidth > 600 ? screenWidth * 0.04 : screenWidth * 0.02;
+    // double horizontalMargin = screenWidth > 600 ? screenWidth * 0.04 : screenWidth * 0.03;
+    // double textHeight = screenWidth > 600 ? screenWidth * 0.03 : screenWidth * 0.04;
+    // double spacing = textHeight / 2;
+    // double cardHeight = avatarRadius * 2 + textHeight + spacing + padding;
+
+    double avatarRadius = ResponsiveUtils.getGroupsAvatarRadius(screenWidth, orientation);
+    double padding = ResponsiveUtils.getGroupsPadding(screenWidth, orientation);
+    double horizontalMargin = ResponsiveUtils.getGroupsHorizontalMargin(screenWidth, orientation);
+    double textHeight = ResponsiveUtils.getGroupsTextHeight(screenWidth, orientation);
+    double cardHeight = ResponsiveUtils.getGroupsCardHeight(avatarRadius, textHeight, padding);
+
 
     return Scrollbar(
       thumbVisibility: true,
@@ -107,7 +115,6 @@ class _GroupsSectionState extends State<GroupsSection> {
                             : null,
                       ),
                     ),
-                    SizedBox(height: spacing),
                     Text(
                       group.name,
                       style: TextStyle(

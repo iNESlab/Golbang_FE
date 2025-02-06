@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:golbang/utils/reponsive_utils.dart';
 
 class SectionWithScroll extends StatelessWidget {
   final String title;
@@ -9,7 +10,8 @@ class SectionWithScroll extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width; // 화면 너비
-    double fontSizeTitle = screenWidth > 600 ? screenWidth * 0.05 : screenWidth * 0.045; // 반응형 폰트 크기
+    Orientation orientation = MediaQuery.of(context).orientation;
+    double fontSizeTitle = ResponsiveUtils.getSWSTitleFS(screenWidth, orientation);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

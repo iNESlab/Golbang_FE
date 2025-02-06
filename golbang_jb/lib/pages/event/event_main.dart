@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/event/event_create1.dart';
 import 'package:golbang/repoisitory/secure_storage.dart';
+import 'package:golbang/utils/reponsive_utils.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'dart:collection';
 import '../../models/event.dart';
@@ -32,6 +33,15 @@ class EventPageState extends ConsumerState<EventPage> {
   late ParticipantService _participantService;
   late Timer _timer;
   late DateTime currentTime; // 현재 시간을 저장할 변수
+
+  late double screenWidth = MediaQuery.of(context).size.width; // 화면 너비
+  late double screenHeight = MediaQuery.of(context).size.height; // 화면 높이
+  late Orientation orientation = MediaQuery.of(context).orientation;
+  late double fontSizeXLarge = ResponsiveUtils.getXLargeFontSize(screenWidth, orientation);
+  late double fontSizeLarge = ResponsiveUtils.getLargeFontSize(screenWidth, orientation); // 너비의 4%를 폰트 크기로 사용
+  late double fontSizeMedium = ResponsiveUtils.getMediumFontSize(screenWidth, orientation);
+  late double fontSizeSmall = ResponsiveUtils.getSmallFontSize(screenWidth, orientation); // 너비의 3%를 폰트 크기로 사용
+  late double appBarIconSize = ResponsiveUtils.getAppBarIconSize(screenWidth, orientation);
 
   final Map<DateTime, List<Event>> _events = LinkedHashMap(
     equals: isSameDay,
@@ -195,6 +205,15 @@ class EventPageState extends ConsumerState<EventPage> {
     final size = MediaQuery.of(context).size;
     final width = size.width;
     final height = size.height;
+    double screenWidth = MediaQuery.of(context).size.width; // 화면 너비
+    double screenHeight = MediaQuery.of(context).size.height; // 화면 높이
+    Orientation orientation = MediaQuery.of(context).orientation;
+    double calenderTitleFontSize = ResponsiveUtils.getCalenderTitleFontSize(screenWidth, orientation);
+    double calenderFontSize = ResponsiveUtils.getCalenderFontSize(screenWidth, orientation);
+
+    double EventMainTtileFontSize = ResponsiveUtils.getEventMainTitleFS(screenWidth, orientation);
+    double ElevationButtonPadding = ResponsiveUtils.getElevationButtonPadding(screenWidth, orientation);
+
     // 현재 시간을 한 번만 가져옴
     return Scaffold(
       body: Column(
@@ -220,6 +239,11 @@ class EventPageState extends ConsumerState<EventPage> {
               _focusedDay = focusedDay;
               _loadEventsForMonth();
             },
+            calendarStyle: CalendarStyle(
+              defaultTextStyle: TextStyle(fontSize: calenderFontSize),
+              weekendTextStyle: TextStyle(fontSize: calenderFontSize),
+              disabledTextStyle: TextStyle(fontSize: calenderFontSize),
+            ),
             calendarBuilders: CalendarBuilders(
               selectedBuilder: (context, date, events) => Container(
                 margin: EdgeInsets.all(width * 0.015),
@@ -230,7 +254,7 @@ class EventPageState extends ConsumerState<EventPage> {
                 ),
                 child: Text(
                   date.day.toString(),
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.white, fontSize: calenderFontSize),
                 ),
               ),
               todayBuilder: (context, date, events) => Container(
@@ -242,7 +266,7 @@ class EventPageState extends ConsumerState<EventPage> {
                 ),
                 child: Text(
                   date.day.toString(),
-                  style: const TextStyle(color: Colors.white),
+                  style: TextStyle(color: Colors.white, fontSize: calenderFontSize),
                 ),
               ),
               markerBuilder: (context, date, events) {
@@ -258,8 +282,8 @@ class EventPageState extends ConsumerState<EventPage> {
 
                   return Positioned(
                     child: Container(
-                      width: 7.0,
-                      height: 7.0,
+                      width: calenderFontSize / 2,
+                      height: calenderFontSize / 2,
                       decoration: BoxDecoration(
                         color: statusColor,
                         shape: BoxShape.circle,
@@ -271,6 +295,7 @@ class EventPageState extends ConsumerState<EventPage> {
               },
             ),
             headerStyle: HeaderStyle(
+              titleTextStyle: TextStyle(fontSize: calenderTitleFontSize),
               formatButtonVisible: false,
               titleCentered: true,
               leftChevronIcon: Icon(
@@ -292,7 +317,7 @@ class EventPageState extends ConsumerState<EventPage> {
               children: [
                 Text(
                   '오늘의 일정',
-                  style: TextStyle(fontSize: width * 0.045, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: EventMainTtileFontSize, fontWeight: FontWeight.bold),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -300,15 +325,15 @@ class EventPageState extends ConsumerState<EventPage> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
-                    padding: EdgeInsets.symmetric(horizontal: width * 0.02, vertical: height * 0.008,),
+                    padding: EdgeInsets.symmetric(horizontal: ElevationButtonPadding, vertical: height * 0.008,),
                     minimumSize: Size(width * 0.18, height * 0.012),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(width * 0.02),
+                      borderRadius: BorderRadius.circular(ElevationButtonPadding),
                     ),
                   ),
                   child: Text(
                     '일정 추가',
-                    style: TextStyle(color: Colors.white, fontSize: width * 0.035),
+                    style: TextStyle(color: Colors.white, fontSize: calenderFontSize),
                   ),
                 ),
               ],
@@ -332,7 +357,7 @@ class EventPageState extends ConsumerState<EventPage> {
                             Text(
                               '일정 추가 버튼을 눌러\n이벤트를 만들어보세요.',
                               textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: width * 0.04, color: Colors.grey),
+                              style: TextStyle(fontSize: EventMainTtileFontSize, color: Colors.grey),
                             )
                           ]
                       )
@@ -370,12 +395,13 @@ class EventPageState extends ConsumerState<EventPage> {
                           SizedBox(height: height * 0.005),
                           Text(
                             event.eventTitle,
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: width * 0.045),
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: EventMainTtileFontSize),
                           ),
                           SizedBox(height: height * 0.005),
-                          Text('시작 시간: ${event.startDateTime.hour}:${event.startDateTime.minute.toString().padLeft(2, '0')}'),
-                          Text('인원수: 참석 ${event.participants.length}명'),
-                          Text('장소: ${event.site}'),
+                          Text('시작 시간: ${event.startDateTime.hour}:${event.startDateTime.minute.toString().padLeft(2, '0')}',
+                          style: TextStyle(fontSize: calenderFontSize)),
+                          Text('인원수: 참석 ${event.participants.length}명', style: TextStyle(fontSize: calenderFontSize)),
+                          Text('장소: ${event.site}', style: TextStyle(fontSize: calenderFontSize)),
                           Row(
                             children: [
                               _buildStatusButton(
@@ -422,7 +448,7 @@ class EventPageState extends ConsumerState<EventPage> {
                                   ),
                                   child: Text(
                                     '세부 정보 보기',
-                                    style: TextStyle(color: Colors.black, fontSize: width * 0.035),
+                                    style: TextStyle(color: Colors.black, fontSize: calenderTitleFontSize),
                                   ),
                                 ),
                                 TextButton(
@@ -439,7 +465,7 @@ class EventPageState extends ConsumerState<EventPage> {
                                     _getButtonText(event),
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: width * 0.035,
+                                      fontSize: calenderTitleFontSize,
                                       color: currentTime.isBefore(event.startDateTime)
                                           ? Colors.grey // 비활성화된 텍스트 색상
                                           : Colors.black, // 활성화된 텍스트 색상
@@ -531,12 +557,12 @@ class EventPageState extends ConsumerState<EventPage> {
           Icon(
             status == selectedStatus ? Icons.check_circle : Icons.radio_button_unchecked,
             color: Colors.white,
-            size: 16,
+            size: appBarIconSize - 4,
           ),
           const SizedBox(width: 8),
           Text(
             _getStatusText(status), // 상태에 맞는 텍스트를 가져오기
-            style: const TextStyle(color: Colors.white),
+            style: TextStyle(color: Colors.white, fontSize: fontSizeSmall),
           ),
         ],
       ),

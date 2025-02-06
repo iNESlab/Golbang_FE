@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/models/profile/club_profile.dart';
+import 'package:golbang/utils/reponsive_utils.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
@@ -31,6 +32,14 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
   bool _handicapOn = false; // 핸디캡 버튼 상태
   late final int _myParticipantId;
   late final ClubProfile _clubProfile;
+  late double screenWidth = MediaQuery.of(context).size.width; // 화면 너비
+  late double screenHeight = MediaQuery.of(context).size.height; // 화면 높이
+  late Orientation orientation = MediaQuery.of(context).orientation;
+  late double fontSizeLarge = ResponsiveUtils.getLargeFontSize(screenWidth, orientation); // 너비의 4%를 폰트 크기로 사용
+  late double fontSizeMedium = ResponsiveUtils.getMediumFontSize(screenWidth, orientation);
+  late double fontSizeSmall = ResponsiveUtils.getSmallFontSize(screenWidth, orientation); // 너비의 3%를 폰트 크기로 사용
+  late double appBarIconSize = ResponsiveUtils.getAppBarIconSize(screenWidth, orientation);
+  late double avatarSize = fontSizeMedium * 2;
 
   @override
   void initState() {
@@ -137,11 +146,11 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
         title: Text(
           '${widget.event.eventTitle} - 전체 현황',
           style: TextStyle(
-              color: Colors.white, fontSize: width * 0.05), // 반응형 폰트 크기
+              color: Colors.white, fontSize: fontSizeLarge), // 반응형 폰트 크기
         ),
         backgroundColor: Colors.black,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, size: appBarIconSize),
           color: Colors.white,
           onPressed: () {
             Navigator.pop(context);
@@ -149,7 +158,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh),
+            icon: Icon(Icons.refresh, size: appBarIconSize),
             color: Colors.white,
             onPressed: () async {
               await _changeSort(_handicapOn ? 'handicap_score' : 'sum_score');
@@ -163,7 +172,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
         child: Text(
           '스코어를 기록한 참가자가 없습니다.',
           style: TextStyle(
-              color: Colors.white, fontSize: width * 0.04), // 반응형 폰트 크기
+              color: Colors.white, fontSize: fontSizeLarge), // 반응형 폰트 크기
         ),
       )
           : Column(
@@ -203,7 +212,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 CircleAvatar(
-                  radius: width * 0.06, // 반응형 아바타 크기
+                  radius: avatarSize,
                   backgroundImage: _clubProfile.image.startsWith('https')
                       ? NetworkImage(_clubProfile.image)
                       : AssetImage(_clubProfile.image) as ImageProvider,
@@ -214,7 +223,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
                   widget.event.club!.name,
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: width * 0.035,
+                    fontSize: fontSizeLarge,
                     overflow: TextOverflow.ellipsis,
                   ),
                   textAlign: TextAlign.center,
@@ -232,7 +241,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
                   _formattedDate(widget.event.startDateTime),
                   style: TextStyle(
                     color: Colors.white,
-                    fontSize: width * 0.035,
+                    fontSize: fontSizeMedium,
                   ),
                 ),
                 SizedBox(height: height * 0.01),
@@ -251,7 +260,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
                     '스코어카드 가기',
                     style: TextStyle(
                       color: Colors.black,
-                      fontSize: width * 0.03,
+                      fontSize: fontSizeSmall,
                     ),
                   ),
                 ),
@@ -293,12 +302,12 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
           Text(
             title,
             style: TextStyle(
-                color: Colors.white, fontSize: width * 0.03), // 반응형 폰트 크기
+                color: Colors.white, fontSize: fontSizeMedium), // 반응형 폰트 크기
           ),
           Text(
             value,
             style: TextStyle(
-                color: Colors.white, fontSize: width * 0.035), // 반응형 폰트 크기
+                color: Colors.white, fontSize: fontSizeLarge), // 반응형 폰트 크기
           ),
         ],
       ),
@@ -311,7 +320,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
         Text(
           'Handicap',
           style: TextStyle(
-              color: Colors.white, fontSize: width * 0.03), // 반응형 폰트 크기
+              color: Colors.white, fontSize: fontSizeMedium), // 반응형 폰트 크기
         ),
         Switch(
           value: _handicapOn,
@@ -346,21 +355,21 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
         child: Row(
           children: [
             CircleAvatar(
-              radius: width * 0.05, // 반응형 아바타 크기
+              radius: avatarSize, // 반응형 아바타 크기
               backgroundColor: Colors.grey[300], // 배경색 (선택사항)
               child: player.profileImage != null
                   ? ClipOval(
                 child: Image.network(
                   player.profileImage!,
-                  width: width * 0.1,
-                  height: width * 0.1,
+                  width: avatarSize * 2,
+                  height: avatarSize * 2,
                   fit: BoxFit.cover,
                   errorBuilder: (context, error, stackTrace) {
-                    return CircularIcon(containerSize: width * 0.1); // 네트워크 이미지 로딩 실패 시 아이콘 표시
+                    return CircularIcon(containerSize: avatarSize * 2); // 네트워크 이미지 로딩 실패 시 아이콘 표시
                   },
                 ),
               )
-                  : CircularIcon(containerSize: width * 0.1), // 이미지가 http가 아니면 동그란 아이콘 표시
+                  : CircularIcon(containerSize: avatarSize * 2), // 이미지가 http가 아니면 동그란 아이콘 표시
             ),
             SizedBox(width: width * 0.03), // 반응형 간격
             Expanded(
@@ -371,12 +380,12 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
                     '${_handicapOn ? player.handicapRank : player.rank} ${player
                         .userName}',
                     style: TextStyle(color: Colors.white,
-                        fontSize: width * 0.04), // 반응형 폰트 크기
+                        fontSize: fontSizeLarge), // 반응형 폰트 크기
                   ),
                   Text(
                     '${player.lastHoleNumber}홀',
                     style: TextStyle(color: Colors.white54,
-                        fontSize: width * 0.035), // 반응형 폰트 크기
+                        fontSize: fontSizeMedium), // 반응형 폰트 크기
                   ),
                 ],
               ),
@@ -394,7 +403,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
                 child: Text(
                   'Me',
                   style: TextStyle(
-                      color: Colors.white, fontSize: width * 0.03), // 반응형 폰트 크기
+                      color: Colors.white, fontSize: fontSizeMedium), // 반응형 폰트 크기
                 ),
               ),
             const Spacer(),
@@ -403,7 +412,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
                   .lastScore} (${_handicapOn ? player.handicapScore : player
                   .sumScore})',
               style: TextStyle(
-                  color: Colors.white, fontSize: width * 0.035), // 반응형 폰트 크기
+                  color: Colors.white, fontSize: fontSizeLarge), // 반응형 폰트 크기
             ),
           ],
         ),
