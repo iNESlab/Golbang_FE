@@ -151,7 +151,9 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
         address: _addressController.text,
         studentId: _studentIdController.text,
       );
-
+      print(_phoneNumberController.text);
+      print(_addressController.text);
+      print(response.statusCode);
       if (response.statusCode == 200) {
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -212,7 +214,7 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       decoration: InputDecoration(
-        labelText: '$label *',
+        labelText: '$label',
         hintText: hintText,
         hintStyle: TextStyle(color: Colors.grey[400]),
         border: const OutlineInputBorder(),
