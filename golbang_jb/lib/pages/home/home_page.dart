@@ -6,6 +6,7 @@ import 'package:golbang/models/user_account.dart';
 import 'package:golbang/models/get_statistics_overall.dart';
 import 'package:golbang/pages/setting/setting_page.dart';
 import 'package:golbang/services/event_service.dart';
+import 'package:golbang/utils/reponsive_utils.dart';
 import 'package:golbang/widgets/sections/bookmark_section.dart';
 import 'package:golbang/widgets/sections/groups_section.dart';
 import 'package:golbang/widgets/common/section_with_scroll.dart';
@@ -49,23 +50,27 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
-    double fontSize = screenWidth > 600 ? 25 : 20; // 화면 크기에 따라 폰트 크기 조정
+    Orientation orientation = MediaQuery.of(context).orientation;
+    double appBarSize = ResponsiveUtils.getAppBarHeight(screenWidth, orientation);
+    double appBarIconSize = ResponsiveUtils.getAppBarIconSize(screenWidth, orientation);
 
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: Image.asset(
           'assets/images/text-logo-green.png', // 텍스트 로고 이미지 경로
-          height: 50, // 이미지 높이 조정
+          height: appBarSize, // 이미지 높이 조정
           fit: BoxFit.contain, // 이미지 비율 유지
         ),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Colors.black),
+            icon: Icon(Icons.notifications_outlined, color: Colors.black, size:appBarIconSize),
             onPressed: () {
               Navigator.push(
                 context,
@@ -76,7 +81,7 @@ class _HomePageState extends State<HomePage> {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: Colors.black),
+            icon: Icon(Icons.settings_outlined, color: Colors.black, size:appBarIconSize),
             onPressed: () {
               Navigator.push(
                 context,
@@ -144,10 +149,9 @@ class HomeContent extends ConsumerWidget {
     String date = '${focusedDay.year}-${focusedDay.month.toString().padLeft(2, '0')}-01';
 
     // 화면 크기 설정
-    double screenWidth = MediaQuery.of(context).size.width; // 화면 너비
     double screenHeight = MediaQuery.of(context).size.height; // 화면 높이
-    // double fontSizeTitle = screenWidth > 600 ? screenWidth * 0.05 : screenWidth * 0.04; // 반응형 폰트 크기
-    // double sectionPadding = screenWidth > 600 ? screenWidth * 0.05 : screenWidth * 0.03; // 섹션 패딩
+    Orientation orientation = MediaQuery.of(context).orientation;
+    double bookmarkSectionHeight = orientation == Orientation.landscape ? screenHeight * 0.15 : screenHeight * 0.15;
 
     return Scaffold(
       body: FutureBuilder(
@@ -187,7 +191,7 @@ class HomeContent extends ConsumerWidget {
             return Column(
               children: <Widget>[
                 SizedBox(
-                  height: screenHeight * 0.15,
+                  height: bookmarkSectionHeight,
                   child: SectionWithScroll(
                     title: '대시보드',
                     child: BookmarkSection(

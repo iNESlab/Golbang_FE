@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:golbang/models/user_account.dart';
 import 'package:golbang/models/get_statistics_overall.dart';
+import 'package:golbang/utils/reponsive_utils.dart';
 
 class BookmarkSection extends StatelessWidget {
   final UserAccount userAccount;
@@ -11,36 +12,41 @@ class BookmarkSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // 화면 크기 가져오기
-    double screenWidth = MediaQuery.of(context).size.width; // 화면 너비
-    double screenHeight = MediaQuery.of(context).size.height; // 화면 높이
+    double screenWidth = MediaQuery.of(context).size.width;
+    Orientation orientation = MediaQuery.of(context).orientation;
 
     // 폰트 크기, 카드 크기, 패딩 크기 계산
-    double fontSizeTitle = screenWidth * 0.035; // 화면 너비에 맞춰 폰트 크기 조정
-    double fontSizeDescription = screenWidth * 0.045; // 설명 폰트 크기 증가
-    double cardWidth = screenWidth > 600 ? screenWidth * 0.25 : screenWidth * 0.3; // 화면 너비에 비례하여 카드 크기 조정
-    double padding = screenWidth > 600 ? screenWidth * 0.01 : screenWidth * 0.015; // 화면 너비에 맞춰 패딩 조정
+    double fontSizeTitle = ResponsiveUtils.getBookmarkFontSizeTitle(screenWidth, orientation);
+    double fontSizeDescription = ResponsiveUtils.getBookmarkFontSizeDescription(screenWidth, orientation);
+    double cardWidth = ResponsiveUtils.getBookmarkCardWidth(screenWidth, orientation);
+    double padding = ResponsiveUtils.getBookmarkPadding(screenWidth, orientation);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: _buildInfoCards(cardWidth, fontSizeTitle, fontSizeDescription, padding),
+        children: _buildInfoCards(cardWidth, fontSizeTitle, fontSizeDescription, padding, orientation),
       ),
     );
   }
 
-  List<Widget> _buildInfoCards(double cardWidth, double fontSizeTitle, double fontSizeDescription, double padding) {
+  List<Widget> _buildInfoCards(
+      double cardWidth, double fontSizeTitle, double fontSizeDescription, double padding, Orientation orientation) {
     return [
-      _buildSingleCard("평균 스코어", overallStatistics.averageScore.toString() ?? 'N/A', cardWidth, fontSizeTitle, fontSizeDescription, padding),
-      _buildSingleCard("베스트 스코어", overallStatistics.bestScore.toString() ?? 'N/A', cardWidth, fontSizeTitle, fontSizeDescription, padding),
-      _buildSingleCard("기록", overallStatistics.gamesPlayed.toString() ?? 'N/A', cardWidth, fontSizeTitle, fontSizeDescription, padding),
+      _buildSingleCard("평균 스코어", overallStatistics.averageScore.toString(), cardWidth, fontSizeTitle,
+          fontSizeDescription, padding, orientation),
+      _buildSingleCard("베스트 스코어", overallStatistics.bestScore.toString(), cardWidth, fontSizeTitle,
+          fontSizeDescription, padding, orientation),
+      _buildSingleCard("기록", overallStatistics.gamesPlayed.toString(), cardWidth, fontSizeTitle,
+          fontSizeDescription, padding, orientation),
     ];
   }
 
-  Widget _buildSingleCard(String title, String description, double cardWidth, double fontSizeTitle, double fontSizeDescription, double padding) {
+  Widget _buildSingleCard(String title, String description, double cardWidth, double fontSizeTitle,
+      double fontSizeDescription, double padding, Orientation orientation) {
     return Container(
       width: cardWidth,
-      padding: EdgeInsets.symmetric(horizontal: padding, vertical: padding), // 반응형 패딩 크기
+      padding: EdgeInsets.symmetric(horizontal: padding, vertical: padding), // 반응형 패딩
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8.0),
@@ -53,15 +59,29 @@ class BookmarkSection extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
+      child: orientation == Orientation.portrait
+          ? Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           Text(
-            title,
+            title, // 세로모드에서는 제목
             style: TextStyle(fontSize: fontSizeTitle, fontWeight: FontWeight.bold),
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 4),
+          Text(
+            description, // 세로모드에서는 설명
+            style: TextStyle(fontSize: fontSizeDescription, fontWeight: FontWeight.bold),
+          ),
+        ],
+      )
+          : Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: <Widget>[
+          Text(
+            "$title : ", // 가로모드에서는 제목과 설명을 한 줄로
+            style: TextStyle(fontSize: fontSizeTitle, fontWeight: FontWeight.bold),
+          ),
           Text(
             description,
             style: TextStyle(fontSize: fontSizeDescription, fontWeight: FontWeight.bold),

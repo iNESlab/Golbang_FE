@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:excel/excel.dart' as xx;
 import 'package:flutter/material.dart';
 import 'package:golbang/services/event_service.dart';
+import 'package:golbang/utils/reponsive_utils.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:golbang/pages/event/event_result.dart';
 import '../../models/event.dart';
@@ -44,6 +45,14 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   late final _myParticipantId;
   late final _myStatus;
 
+  late double screenWidth = MediaQuery.of(context).size.width; // 화면 너비
+  late double screenHeight = MediaQuery.of(context).size.height; // 화면 높이
+  late Orientation orientation = MediaQuery.of(context).orientation;
+  late double fontSizeXLarge = ResponsiveUtils.getXLargeFontSize(screenWidth, orientation);
+  late double fontSizeLarge = ResponsiveUtils.getLargeFontSize(screenWidth, orientation); // 너비의 4%를 폰트 크기로 사용
+  late double fontSizeMedium = ResponsiveUtils.getMediumFontSize(screenWidth, orientation);
+  late double fontSizeSmall = ResponsiveUtils.getSmallFontSize(screenWidth, orientation); // 너비의 3%를 폰트 크기로 사용
+  late double appBarIconSize = ResponsiveUtils.getAppBarIconSize(screenWidth, orientation);
 
   @override
   void initState() {
@@ -258,16 +267,16 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.event.eventTitle),
+        title: Text(widget.event.eventTitle, style: TextStyle(fontSize: fontSizeLarge),),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
+          icon: Icon(Icons.arrow_back, size: appBarIconSize),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.email), // 엑셀 저장 아이콘 추가
+            icon: Icon(Icons.email, size: appBarIconSize), // 엑셀 저장 아이콘 추가
             onPressed: exportAndSendEmail,
           ),
           PopupMenuButton<String>(
@@ -290,13 +299,13 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                   value: 'edit',
                   child: Text('수정'),
                 ),
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'delete',
-                child: Text('삭제'),
+                child: Text('삭제', style: TextStyle(fontSize: fontSizeMedium),),
               ),
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'share', // 공유 버튼 추가
-                child: Text('공유'),
+                child: Text('공유', style: TextStyle(fontSize: fontSizeMedium),),
               ),
             ],
           ),
@@ -318,14 +327,14 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                         : AssetImage(widget.event.club!.image) as ImageProvider,
                     backgroundColor: Colors.transparent, // 배경을 투명색으로 설정
                   ),
-                  SizedBox(width: screenSize.width*0.03),
+                  SizedBox(width: screenSize.width * 0.03),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                       Text(
                         widget.event.eventTitle,
-                        style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold,
+                        style: TextStyle(fontSize: fontSizeXLarge, fontWeight: FontWeight.bold,
                           overflow: TextOverflow.ellipsis,),
                       ),
                       Text(
@@ -333,16 +342,16 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                                 _endDateTime.toIso8601String().split('T').first
                                 ? ' (${_endDateTime.toIso8601String().split('T').first})'
                                 : ''}',
-                        style: const TextStyle(fontSize: 14, overflow: TextOverflow.ellipsis),
+                        style: TextStyle(fontSize: fontSizeMedium, overflow: TextOverflow.ellipsis),
                       ),
 
                       Text(
                         '장소: ${widget.event.site}',
-                        style: const TextStyle(fontSize: 16),
+                        style: TextStyle(fontSize: fontSizeMedium),
                       ),
                       Text(
                         '게임모드: ${widget.event.displayGameMode}',
-                        style: const TextStyle(fontSize: 16),
+                        style: TextStyle(fontSize: fontSizeMedium),
                       ),
                     ],
                   ),
@@ -353,15 +362,15 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
               // 참석자 수를 표시
               Text(
                 '참여 인원: ${widget.event.participants.length}명',
-                style: const TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: fontSizeLarge),
               ),
               const SizedBox(height: 10),
               // 나의 조 표시
               Row(
                 children: [
-                  const Text(
+                  Text(
                     '나의 조: ',
-                    style: TextStyle(fontSize: 16),
+                    style: TextStyle(fontSize: fontSizeLarge),
                   ),
                   Container(
                     decoration: BoxDecoration(
@@ -371,7 +380,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: Text(
                       '$_myGroup',
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: fontSizeMedium, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ],
@@ -397,9 +406,9 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
               // 골프장 위치 표시
               if (_selectedLocation != null) ...[
                 const SizedBox(height: 16),
-                const Text(
+                Text(
                   "골프장 위치",
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: fontSizeLarge, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 16),
                 Container(
@@ -425,9 +434,9 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       "코스 정보",
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: TextStyle(fontSize: fontSizeLarge, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 10),
                     widget.event.golfClub != null
@@ -450,8 +459,8 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                                     const SizedBox(width: 8),
                                     Text(
                                       course.courseName,
-                                      style: const TextStyle(
-                                        fontSize: 16,
+                                      style: TextStyle(
+                                        fontSize: fontSizeLarge,
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),
@@ -463,11 +472,11 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                                   children: [
                                     Text(
                                       "홀 수: ${course.holes}",
-                                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                                      style: TextStyle(fontSize: fontSizeMedium, color: Colors.grey[700]),
                                     ),
                                     Text(
                                       "코스 Par: ${course.par}",
-                                      style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+                                      style: TextStyle(fontSize: fontSizeMedium, color: Colors.grey[700]),
                                     ),
                                   ],
                                 ),
@@ -516,9 +525,9 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                         );
                       }).toList(),
                     )
-                        : const Text(
+                        : Text(
                       "코스 정보가 없습니다.",
-                      style: TextStyle(color: Colors.redAccent),
+                      style: TextStyle(color: Colors.redAccent, fontSize: fontSizeMedium),
                     ),
                   ],
                 )
@@ -556,7 +565,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
             borderRadius: BorderRadius.circular(10.0),
           ),
         ),
-        child: const Text('결과 조회'),
+        child: Text('결과 조회', style: TextStyle(fontSize: fontSizeLarge)),
       );
     }
     else if (currentTime.isAfter(_startDateTime)) {
@@ -582,7 +591,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
               borderRadius: BorderRadius.circular(10.0),
             ),
           ),
-          child: const Text('게임 시작'),
+          child: Text('게임 시작', style: TextStyle(fontSize: fontSizeLarge)),
         );
       }
       return null;
@@ -630,7 +639,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
           padding: const EdgeInsets.all(10),
           child: Text(
             '$title ($count):',
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: fontSizeLarge, fontWeight: FontWeight.bold),
           ),
         );
       },
@@ -677,7 +686,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: Text(
                       member != null ? member.name : 'Unknown',
-                      style: const TextStyle(fontSize: 14),
+                      style: TextStyle(fontSize: fontSizeMedium),
                     ),
                   ),
                 ],
