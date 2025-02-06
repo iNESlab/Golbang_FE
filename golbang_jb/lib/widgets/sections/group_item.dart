@@ -23,7 +23,7 @@ class GroupItem extends StatelessWidget {
         // 이미지 표시
         SizedBox(
           width: screenWidth / 5, // 화면 너비의 1/6 크기
-          height: screenWidth / 5, // 화면 너비의 1/6 크기
+          height: (screenWidth / 5)-4, // 화면 너비의 1/6 크기
           child: ClipRRect(
             borderRadius: BorderRadius.circular(8),
             child: image.contains('https') // 문자열 검사
@@ -69,7 +69,7 @@ class GroupItem extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.star, color: Colors.green[700], size: 16),
-                const SizedBox(width: 4),
+                SizedBox(width: 4),
                 Text(
                   '관리자',
                   style: TextStyle(
