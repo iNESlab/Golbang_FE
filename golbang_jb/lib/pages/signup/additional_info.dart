@@ -73,7 +73,7 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
                 style: TextStyle(color: Colors.red, fontSize: 14),
               ),
               const SizedBox(height: 16),
-              _buildRequiredTextFormField(
+              _buildNicknameTextFormField(
                 '닉네임',
                 _nicknameController,
                 TextInputType.text,
@@ -151,7 +151,9 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
         address: _addressController.text,
         studentId: _studentIdController.text,
       );
-
+      print(_phoneNumberController.text);
+      print(_addressController.text);
+      print(response.statusCode);
       if (response.statusCode == 200) {
         Navigator.of(context).push(
           MaterialPageRoute(
@@ -165,8 +167,7 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
       }
     }
   }
-
-  Widget _buildRequiredTextFormField(
+  Widget _buildNicknameTextFormField(
       String label,
       TextEditingController controller,
       TextInputType keyboardType, {
@@ -187,6 +188,7 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
         if (value == null || value.isEmpty) {
           return '$label을(를) 입력해주세요';
         }
+
         if (label == '전화번호' &&
             !RegExp(r'^\d{10,11}$').hasMatch(value)) {
           return '올바른 전화번호 형식이 아닙니다. (예: 01012345678)';
@@ -195,6 +197,46 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
             !RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value)) {
           return '올바른 생일 형식이 아닙니다. (예: 1990-01-01)';
         }
+
+        return null;
+      },
+    );
+  }
+  Widget _buildRequiredTextFormField(
+      String label,
+      TextEditingController controller,
+      TextInputType keyboardType, {
+        String? hintText,
+        List<TextInputFormatter>? inputFormatters,
+      }) {
+    return TextFormField(
+      controller: controller,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
+      decoration: InputDecoration(
+        labelText: '$label',
+        hintText: hintText,
+        hintStyle: TextStyle(color: Colors.grey[400]),
+        border: const OutlineInputBorder(),
+      ),
+      validator: (value) {
+        if (value == null || value.isEmpty) {
+          return null;
+        }
+        /*
+        if (value == null || value.isEmpty) {
+          return '$label을(를) 입력해주세요';
+        }
+        */
+        if (label == '전화번호' &&
+            !RegExp(r'^\d{10,11}$').hasMatch(value)) {
+          return '올바른 전화번호 형식이 아닙니다. (예: 01012345678)';
+        }
+        if (label == '생일' &&
+            !RegExp(r'^\d{4}-\d{2}-\d{2}$').hasMatch(value)) {
+          return '올바른 생일 형식이 아닙니다. (예: 1990-01-01)';
+        }
+
         return null;
       },
     );

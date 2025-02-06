@@ -236,7 +236,6 @@ class UserService {
       'address': '$address',
       'student_id': '$studentId',
     };
-
     var body = json.encode(data);
     var response = await http.post(uri, headers: headers, body: body);
 

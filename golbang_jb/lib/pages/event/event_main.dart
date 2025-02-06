@@ -246,7 +246,7 @@ class EventPageState extends ConsumerState<EventPage> {
             ),
             calendarBuilders: CalendarBuilders(
               selectedBuilder: (context, date, events) => Container(
-                margin: EdgeInsets.all(width * 0.015),
+                margin: EdgeInsets.all(fontSizeXLarge * 0.25),
                 alignment: Alignment.center,
                 decoration: const BoxDecoration(
                   color: Colors.green,
@@ -258,7 +258,7 @@ class EventPageState extends ConsumerState<EventPage> {
                 ),
               ),
               todayBuilder: (context, date, events) => Container(
-                margin: EdgeInsets.all(width * 0.015),
+                margin: EdgeInsets.all(fontSizeXLarge * 0.25),
                 alignment: Alignment.center,
                 decoration: const BoxDecoration(
                   color: Colors.grey,

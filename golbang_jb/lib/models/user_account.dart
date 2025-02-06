@@ -34,7 +34,7 @@ class UserAccount {
       userId: json['user_id'],
       name: json['name'],
       email: json['email'],
-      phoneNumber: json['phone_number'],
+      phoneNumber: json['phone_number'] ?? 'Unknown',
       address: json['address'] ?? 'Unknown', // Nullable 처리
       dateOfBirth: json['date_of_birth'] != null ? DateTime.parse(json['date_of_birth']) : null,
       handicap: json['handicap'] ?? 0, // 기본값 처리
