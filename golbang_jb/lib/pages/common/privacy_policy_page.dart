@@ -37,11 +37,10 @@ class PrivacyPolicyPage extends StatelessWidget {
 - 이메일(email)
 - 비밀번호(password) (소셜 로그인 시 비밀번호 제외)
 - 이름(name)
-- 전화번호(phone_number)
-- 생년월일(date_of_birth)
-
 
 선택 항목:
+- 전화번호(phone_number)
+- 생년월일(date_of_birth)
 - 주소(address)
 - 학번(student_id)
 - 프로필 사진(profile_image)
