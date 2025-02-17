@@ -34,4 +34,5 @@ Runner/GoogleService-Info.plist
 !default.pbxuser
 !default.perspectivev3
 
-ios/Runner/Info.plist
+Runner/Info.plist
+build/*
