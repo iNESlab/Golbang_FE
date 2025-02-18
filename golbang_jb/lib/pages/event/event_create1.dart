@@ -34,6 +34,8 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
   List<ClubMemberProfile> _selectedParticipants = [];
   late ClubService _clubService;
   bool _isButtonEnabled = false;
+
+  GoogleMapController? _mapController;
   final Map<String, LatLng> _locationCoordinates = {
     "Jagorawi Golf & Country Club": const LatLng(-6.454673, 106.876867),
     "East Point Golf Club": const LatLng(17.763526, 83.301727),
@@ -123,6 +125,13 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
           setState(() {
             _site = site;
             _selectedLocation = _locationCoordinates[site];
+            // 지도 컨트롤러가 존재하면 새로운 위치로 카메라 이동
+            if (_mapController != null && _selectedLocation != null) {
+              _mapController!.animateCamera(
+                CameraUpdate.newLatLng(_selectedLocation!),
+              );
+            }
+
             _validateForm();
           });
         },
@@ -310,6 +319,9 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                         markerId: const MarkerId('selected-location'),
                         position: _selectedLocation!,
                       ),
+                    },
+                    onMapCreated: (GoogleMapController controller) {
+                      _mapController = controller; // 컨트롤러 저장
                     },
                   ),
                 ),

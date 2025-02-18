@@ -180,6 +180,7 @@ class HomeContent extends ConsumerWidget {
             // 데이터 추출
             UserAccount userAccount = snapshot.data![0];
             List<Event> events = snapshot.data![1];
+            events.sort((a, b) => b.startDateTime.compareTo(a.startDateTime));
             List<Group> groups = snapshot.data![2];
             OverallStatistics overallStatistics = snapshot.data![3] ?? OverallStatistics(
               averageScore: 0.0,
