@@ -195,9 +195,12 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        _buildYearButton('전체'),
-        _buildYearButton('2024년'),
-        _buildYearButton('2023년'),
+        Expanded(child: _buildYearButton('전체')),
+        SizedBox(width: 8),
+        Expanded(child: _buildYearButton('2024년')),
+        SizedBox(width: 8),
+        Expanded(child: _buildYearButton('2023년')),
+        SizedBox(width: 8), // 기간 선택 버튼과의 간격
         ElevatedButton(
           onPressed: () => _selectDateRange(context), // 기간 선택 버튼
           style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
@@ -206,6 +209,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
       ],
     );
   }
+
 
   Future<void> _selectDateRange(BuildContext context) async {
     final DateTimeRange? picked = await showDateRangePicker(
