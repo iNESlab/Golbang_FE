@@ -197,8 +197,18 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
   void _initializeLocalNotifications() {
     const AndroidInitializationSettings initializationSettingsAndroid =
     AndroidInitializationSettings('@mipmap/ic_launcher');
-    const InitializationSettings initializationSettings =
-    InitializationSettings(android: initializationSettingsAndroid);
+
+    // iOS 설정 추가
+    DarwinInitializationSettings initializationSettingsIOS = DarwinInitializationSettings(
+      onDidReceiveLocalNotification: (int id, String? title, String? body, String? payload) async {
+        log("iOS Local Notification: id=$id, title=$title, body=$body, payload=$payload");
+      },
+    );
+
+    InitializationSettings initializationSettings = InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsIOS, // iOS 설정 포함
+    );
 
     flutterLocalNotificationsPlugin.initialize(
       initializationSettings,
@@ -220,7 +230,6 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
       },
     );
   }
-
   Future<void> _initAppLinks() async {
     try {
       final Uri? initialLink = await _appLinks.getInitialLink();
