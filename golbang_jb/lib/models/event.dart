@@ -100,6 +100,7 @@ class Event {
         name: participant.member?.name ?? 'Unknown',
         profileImage: participant.member?.profileImage ?? '',
         role: participant.member?.role ?? 'member',
+        id: participant.member?.id ?? 0,
         participantId: participant.participantId,
         statusType: participant.statusType,
         teamType: participant.teamType,

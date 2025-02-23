@@ -22,6 +22,7 @@ class GroupService {
     required List<GetAllUserProfile> members,
     required List<GetAllUserProfile> admins,
     required File? imageFile,
+    required int currentUserId
   }) async {
     try {
       final url = "${dotenv.env['API_HOST']}/api/v1/clubs/";
@@ -149,6 +150,38 @@ class GroupService {
     } else {
       log('Failed to load groups with status code: ${response.statusCode}');
       return []; // 실패 시 빈 리스트 반환
+    }
+  }
+  Future<bool> inviteMembers(int clubId, List<GetAllUserProfile> members) async {
+    try {
+      var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/$clubId/invite/";
+      bool allSuccess = true;
+
+      for (var member in members) {
+        var response = await dioClient.dio.post(
+          uri,
+          data: {
+            "user_id": member.userId, // ✅ 하나씩 개별 전송
+          },
+          options: Options(
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          ),
+        );
+
+        if (response.statusCode == 200) {
+          log('Success! Member ${member.userId} invited.');
+        } else {
+          log('Failed to invite member ${member.userId}. Status: ${response.statusCode}');
+          allSuccess = false;
+        }
+      }
+
+      return allSuccess;
+    } catch (e) {
+      log('Error inviting members: $e');
+      return false;
     }
   }
 }

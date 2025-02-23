@@ -23,7 +23,6 @@ class Club {
   factory Club.fromJson(Map<String, dynamic> json) {
     // var membersFromJson = json['members'] as List;
     // List<ClubMember> memberList = membersFromJson.map((i) => ClubMember.fromJson(i)).toList();
-
     return Club(
       id: json['id'],
       name: json['name'],

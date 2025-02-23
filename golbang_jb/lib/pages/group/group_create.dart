@@ -25,6 +25,7 @@ class GroupCreatePage extends ConsumerStatefulWidget {
 class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
   List<GetAllUserProfile> selectedAdmins = [];
   List<GetAllUserProfile> selectedMembers = [];
+  int userId = 0;
   final TextEditingController _groupNameController = TextEditingController();
   final TextEditingController _groupDescriptionController = TextEditingController();
   XFile? _imageFile;
@@ -47,12 +48,12 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
     });
   }
 
-
   // `GetAllUserProfile`을 사용하는 멤버 다이얼로그
   void _showMemberDialog(bool isAdminMode) {
     showDialog<List<GetAllUserProfile>>(
       context: context,
       builder: (BuildContext context) {
+
         return MemberDialog(
           selectedMembers: selectedMembers, // 여기에 항상 selectedMembers를 전달
           onMembersSelected: (List<GetAllUserProfile> members) {
@@ -93,6 +94,7 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
         members: selectedMembers,
         admins: selectedAdmins,
         imageFile: _imageFile != null ? File(_imageFile!.path) : null,
+        currentUserId: userId
       );
 
       if (success) {
@@ -117,14 +119,13 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
   Widget build(BuildContext context) {
     final storage = ref.watch(secureStorageProvider);
     final UserService userService = UserService(storage);
-
     final userAccount = ref.watch(userAccountProvider);  // userAccount 상태를 감시
 
     if (userAccount == null) {
       return const Center(child: CircularProgressIndicator());  // 로딩 중일 때
     }
-    print("=====userAccount1: $userAccount");
 
+    userId = userAccount.id;
     // 사용자 정보를 멤버와 관리자에 추가
     if (!selectedMembers.any((member) => member.userId == userAccount.userId)) {
       selectedMembers.add(GetAllUserProfile(
@@ -141,9 +142,6 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
         name: userAccount.name,
       ));
     }
-
-    print("=====userAccount2: $userAccount");
-
     // 화면 렌더링
     return Scaffold(
       appBar: AppBar(
