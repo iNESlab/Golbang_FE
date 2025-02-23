@@ -113,7 +113,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
       // TextEditingController 초기화
       _controllers[participant.participantId] = List.generate(
         18,
-            (index) => TextEditingController(text: "0"),
+            (index) => TextEditingController(text: ""),
       );
       // 각 참가자별로 18개의 FocusNode를 생성하여 저장
       _focusNodes[participant.participantId] = List.generate(18, (_) => FocusNode());
@@ -309,6 +309,11 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
     // WebSocket을 통해 전송
     _channel.sink.add(message);
     log('Score 전송: $message');
+
+    _scorecard[participantId]![holeNumber - 1] = HoleScore(
+      holeNumber: holeNumber,
+      score: score,
+    );
   }
 
   // 서버에 새로고침 요청을 보내는 함수
@@ -527,52 +532,83 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
 
     return TableRow(
       children: [
-        // 첫 번째 열: 홀 번호
         Container(
-          alignment: Alignment.center, // 수직 및 수평 중앙 정렬
-          height: cellHeight, // 반응형 높이 설정
+          alignment: Alignment.center,
+          height: cellHeight,
           child: Text(
             (holeIndex + 1).toString(),
             style: TextStyle(color: Colors.white, fontSize: fontSizeMedium),
             textAlign: TextAlign.center,
           ),
         ),
-
-        // 나머지 열: 참가자 점수
         ..._teamMembers.map((ScoreCard member) {
           if (_scorecard[member.participantId] != null &&
               holeIndex < _scorecard[member.participantId]!.length) {
+            _focusNodes[member.participantId]?[holeIndex] ??= FocusNode();
+
+            _focusNodes[member.participantId]?[holeIndex]?.addListener(() {
+              if (!_focusNodes[member.participantId]![holeIndex].hasFocus) {
+                if ((_controllers[member.participantId]?[holeIndex]?.text ?? "").isEmpty ||
+                    _controllers[member.participantId]?[holeIndex]?.text == "-") {
+                  int originalScore = _scorecard[member.participantId]![holeIndex].score ?? 0;
+                  setState(() {
+                    _controllers[member.participantId]?[holeIndex]?.text = originalScore.toString();
+                  });
+                }
+              }
+            });
+
             return Container(
-              alignment: Alignment.center, // 수직 및 수평 중앙 정렬
-              height: cellHeight, // 반응형 높이 설정
+              alignment: Alignment.center,
+              height: cellHeight,
               child: TextFormField(
                 controller: _controllers[member.participantId]?[holeIndex],
                 style: TextStyle(color: Colors.white, fontSize: fontSizeMedium),
                 textAlign: TextAlign.center,
-                keyboardType: TextInputType.phone,
+                keyboardType: const TextInputType.numberWithOptions(signed: true),
                 inputFormatters: [AllowNegativeNumbersFormatter()],
-                focusNode: _focusNodes[member.participantId]?[holeIndex] ?? FocusNode(),
+                focusNode: _focusNodes[member.participantId]?[holeIndex],
+
+                onTap: () {
+                  _controllers[member.participantId]?[holeIndex]?.clear();
+                  setState(() {}); // 포커스 변경 시 UI 업데이트
+                },
+
+                onEditingComplete: () {
+                  FocusScope.of(context).unfocus();
+                },
+
+                onFieldSubmitted: (value) {
+                  FocusScope.of(context).unfocus();
+                },
+
                 onChanged: (value) {
-                  // 이전 Timer 취소
+                  print("change");
+                  print(value);
                   debounceTimer?.cancel();
 
-                  // 새 Timer 시작
-                  debounceTimer = Timer(const Duration(milliseconds: 300), () {
-                    // 텍스트 변경 로직 실행
-                    final score = int.tryParse(value) ?? 0;
-                    _scorecard[member.participantId]![holeIndex] = HoleScore(
-                      holeNumber: holeIndex,
-                      score: score,
-                    );
+                  if (value.isEmpty || value == "-") {
+                    Future.delayed(Duration(milliseconds: 100), () {
+                      setState(() {}); // hintText 업데이트 강제 적용
+                    });
+                    return;
+                  }
 
-                    // 웹소켓 요청
+                  debounceTimer = Timer(const Duration(milliseconds: 500), () {
+                    final score = int.tryParse(value) ?? 0;
                     _updateScore(member.participantId, holeIndex + 1, score);
                   });
                 },
-                decoration: const InputDecoration(
+
+                decoration: InputDecoration(
                   isDense: true,
-                  contentPadding: EdgeInsets.zero, // 패딩 제거
+                  contentPadding: EdgeInsets.zero,
                   border: InputBorder.none,
+                  hintText: (_controllers[member.participantId]?[holeIndex]?.text.isEmpty ?? true)
+                      ? _scorecard[member.participantId] != null
+                      ? _scorecard[member.participantId]![holeIndex].score.toString()
+                      : ""
+                      : "",
                   hintStyle: TextStyle(color: Colors.grey),
                 ),
               ),
@@ -580,7 +616,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
           } else {
             return Container(
               alignment: Alignment.center,
-              height: cellHeight, // 반응형 높이 설정
+              height: cellHeight,
               child: const Text(
                 '-',
                 style: TextStyle(color: Colors.white),
@@ -695,5 +731,14 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
         color: _currentPageIndex == index ? Colors.white : Colors.grey,
       ),
     );
+  }
+  void _restoreIfEmpty({required int participantId, required int holeIndex}) {
+    String currentText = _controllers[participantId]?[holeIndex]?.text ?? "";
+
+    // 값이 비어 있으면 원래 점수로 복원
+    if (currentText.isEmpty) {
+      int originalScore = _scorecard[participantId]?[holeIndex].score ?? 0;
+      _controllers[participantId]?[holeIndex]?.text = originalScore.toString();
+    }
   }
 }
