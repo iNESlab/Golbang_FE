@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/community/member_list_page.dart';
@@ -34,7 +36,7 @@ class MemberSettingsPage extends ConsumerWidget {
             SettingsButton(
               text: '멤버 조회',
               onPressed: () {
-                print('멤버 조회 클릭');
+                log('멤버 조회 클릭');
                 // 멤버 조회 페이지 연결
                 Navigator.push(
                   context,
