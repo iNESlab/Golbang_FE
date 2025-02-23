@@ -11,6 +11,7 @@ class UpdateEventParticipant {
   final String name;
   final String profileImage;
   final String role;
+  final int id;
   final int participantId;
   final String statusType;
   final String teamType;
@@ -26,6 +27,7 @@ class UpdateEventParticipant {
     required this.name,
     required this.profileImage,
     required this.role,
+    required this.id,
     required this.participantId,
     required this.statusType,
     required this.teamType,
@@ -43,6 +45,7 @@ class UpdateEventParticipant {
       name: json['member']['name'],
       profileImage: json['member']['profile_image'] ?? '',
       role: json['member']['role'],
+      id: json['member']['id'],
       participantId: json['participant_id'],
       statusType: json['status_type'],
       teamType: json['team_type'],
@@ -61,6 +64,7 @@ class UpdateEventParticipant {
       name: profile.name,
       profileImage: profile.profileImage,
       role: profile.role,
+      id: profile.id,
       participantId: 0, // 실제 데이터에 맞게 설정 필요
       statusType: 'PENDING', // 적절한 값으로 설정 필요
       teamType: '', // 적절한 값으로 설정 필요
@@ -88,6 +92,7 @@ class UpdateEventParticipant {
         name: name,
         role: role,
         profileImage: profileImage,
+        id: id,
       ),
     );
   }
