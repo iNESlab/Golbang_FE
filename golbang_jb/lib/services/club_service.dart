@@ -1,6 +1,10 @@
+import 'dart:developer';
+
+import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../global/LoginInterceptor.dart';
 import '../models/club.dart';
+import '../models/profile/get_all_user_profile.dart';
 import '../repoisitory/secure_storage.dart';
 
 class ClubService {
@@ -53,6 +57,34 @@ class ClubService {
     // 응답 확인
     if (response.statusCode != 204) {
       throw Exception('Failed to leave club');
+    }
+  }
+
+  Future<void> inviteMembers(int clubId, List<GetAllUserProfile> userProfileList) async {
+    try {
+      for (var user in userProfileList) {
+        log('username: ${user.name}'); // ✅ user_id 출력
+      }
+      var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/$clubId/invite/";
+
+      // 1️⃣ userProfileList에서 user_id만 추출하여 리스트로 변환
+      List<String> userIds = userProfileList.map((userProfile) => userProfile.userId).toList();
+
+      // 2️⃣ 서버로 리스트를 한 번에 전송
+      await dioClient.dio.post(
+        uri,
+        data: {
+          "user_ids": userIds, // ✅ 리스트로 변환된 user_ids 전송
+        },
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+    } catch (e) {
+      log('Error inviting members: $e');
     }
   }
 }
