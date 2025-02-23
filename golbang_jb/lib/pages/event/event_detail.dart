@@ -264,7 +264,6 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   @override
   Widget build(BuildContext context) {
     final screenSize = ref.read(screenSizeProvider);
-
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.event.eventTitle, style: TextStyle(fontSize: fontSizeLarge),),
@@ -661,19 +660,31 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                   CircleAvatar(
                     radius: 15,
                     backgroundColor: Colors.transparent,
-                    child: member?.profileImage != null
+                    child: (member?.profileImage != null && member!.profileImage!.isNotEmpty)
+                        ? (member!.profileImage!.startsWith('https')
                         ? ClipOval(
                       child: Image.network(
-                          member!.profileImage!,
-                          width: 50,
-                          height: 50,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const CircularIcon(containerSize: 40.0);
-                            // 에러 시 동그란 아이콘 표시
-                          },
-                      )
+                        member!.profileImage!,
+                        width: 50,
+                        height: 50,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const CircularIcon(containerSize: 40.0);
+                        },
+                      ),
                     )
-                        : const CircularIcon(containerSize: 40.0), // null일 때 동그란 아이콘
+                        : (member!.profileImage!.startsWith('file://')
+                        ? ClipOval(
+                      child: Image.file(
+                        File(member!.profileImage!.replaceFirst('file://', '')),
+                        width: 50,
+                        height: 50,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const CircularIcon(containerSize: 40.0);
+                        },
+                      ),
+                    )
+                        : const CircularIcon(containerSize: 40.0)))
+                        : const CircularIcon(containerSize: 40.0),
                   ),
                   const SizedBox(width: 10),
                   Container(
