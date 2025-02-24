@@ -8,12 +8,13 @@ import '../../services/user_service.dart';
 class MemberDialog extends ConsumerStatefulWidget {
   final List<GetAllUserProfile> selectedMembers;
   final List<GetAllUserProfile> selectedAdmins;
-  final ValueChanged<List<GetAllUserProfile>> onMembersSelected;
+  // final ValueChanged<List<GetAllUserProfile>> onMembersSelected;
   final bool isAdminMode;
 
   const MemberDialog({super.key, 
     required this.selectedMembers,
-    required this.onMembersSelected,
+    // this.onMembersSelected = _defaultOnMembersSelected,
+    // TODO: 지금까지 안쓰이고 있었습니다. 오해할 수 있으므로 주석처리했습니다.
     required this.isAdminMode,
     this.selectedAdmins = const [],
   });

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/profile/member_profile.dart';
@@ -34,7 +36,7 @@ class _MemberManagePageState extends ConsumerState<MemberManagePage> {
         isLoading = false;
       });
     } catch (e) {
-      print("Error fetching members: $e");
+      log("Error fetching members: $e");
       setState(() {
         isLoading = false;
       });
@@ -57,10 +59,10 @@ class _MemberManagePageState extends ConsumerState<MemberManagePage> {
           return ListTile(
             leading: CircleAvatar(
               backgroundColor: Colors.transparent,
-              child: member.profileImage != null
+              child: member.profileImage.startsWith('https')
                   ? ClipOval(
                 child: Image.network(
-                    member.profileImage!,
+                    member.profileImage,
                     fit: BoxFit.cover,
                     width: 60,
                     height: 60,
