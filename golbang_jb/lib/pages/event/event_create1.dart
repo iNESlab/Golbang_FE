@@ -1,9 +1,11 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import '../../models/club.dart';
 import '../../models/enum/event.dart';
+import '../../models/responseDTO/LocationResponseDTO.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/club_service.dart';
 import 'event_create2.dart';
@@ -36,18 +38,6 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
   bool _isButtonEnabled = false;
 
   GoogleMapController? _mapController;
-  final Map<String, LatLng> _locationCoordinates = {
-    "Jagorawi Golf & Country Club": const LatLng(-6.454673, 106.876867),
-    "East Point Golf Club": const LatLng(17.763526, 83.301727),
-    "Rusutsu Resort Golf 72": const LatLng(42.748674, 140.904709),
-    "Siem Reap Lake Resort Golf Club": const LatLng(13.368188, 103.964219),
-    "National Army, Taelung Sport Center": const LatLng(37.630121, 127.109333),
-    "Luang Prabang Golf Club": const LatLng(19.867596, 102.085709),
-    "Nuwara Eliya Golf Club": const LatLng(6.971707, 80.765661),
-    "Bukit Banang Golf & Country Club": const LatLng(1.802658, 102.968811),
-    "Panya Indra Golf Club": const LatLng(13.828058, 100.687627),
-    "Song Be Golf Resort": const LatLng(10.924936, 106.707254)
-  };
 
   final TimeOfDay _fixedTime = const TimeOfDay(hour: 23, minute: 59);
 
@@ -111,7 +101,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
         _clubs = clubs;
       });
     } catch (e) {
-      print("Failed to load clubs: $e");
+      log("Failed to load clubs: $e");
     }
   }
 
@@ -120,11 +110,10 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
       context: context,
       builder: (context) => LocationSearchDialog(
         locationController: _locationController,
-        locationCoordinates: _locationCoordinates,
-        onLocationSelected: (String site) {
+        onLocationSelected: (LocationResponseDTO site) {
           setState(() {
-            _site = site;
-            _selectedLocation = _locationCoordinates[site];
+            _site = site.golfClubName;
+            _selectedLocation = LatLng(site.latitude, site.longitude);
             // 지도 컨트롤러가 존재하면 새로운 위치로 카메라 이동
             if (_mapController != null && _selectedLocation != null) {
               _mapController!.animateCamera(
@@ -167,7 +156,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
     if (pickedTime != null) {
       setState(() {
         _startTimeController.text = pickedTime.format(context);
-        print('startTime: ${_startTimeController.text}');
+        log('startTime: ${_startTimeController.text}');
       });
     }
   }
