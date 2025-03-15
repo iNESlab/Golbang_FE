@@ -87,4 +87,22 @@ class ClubService {
       log('Error inviting members: $e');
     }
   }
+  Future<void> removeMember(int clubId, int memberId) async {
+    try {
+      var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/$clubId/members/$memberId/";
+
+      await dioClient.dio.delete(
+        uri,
+        options: Options(
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        ),
+      );
+
+      log('Successfully removed member: $memberId from club: $clubId');
+    } catch (e) {
+      log('Error removing member: $e');
+    }
+  }
 }

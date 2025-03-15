@@ -3,7 +3,6 @@ import 'member.dart';
 class Group {
   final int id;
   final String name;
-  final String description;
   final String? image;
   final List<Member> members;
   final DateTime createdAt;
@@ -12,7 +11,6 @@ class Group {
   Group({
     required this.id,
     required this.name,
-    required this.description,
     this.image,
     required this.members,
     required this.createdAt,
@@ -25,7 +23,6 @@ class Group {
     return Group(
       id: json['id'] ?? 0,
       name: json['name'] ?? '',
-      description: json['description'] ?? '',
       image: json['image'] ?? defaultImage,
       members: (json['members'] as List<dynamic>)
           .map((member) => Member.fromJson(member))

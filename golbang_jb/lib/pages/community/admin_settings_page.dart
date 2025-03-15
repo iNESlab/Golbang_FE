@@ -39,7 +39,7 @@ class AdminSettingsPage extends ConsumerWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => MemberListPage(clubId: clubId),
+                    builder: (context) => MemberListPage(clubId: clubId, isAdmin: true,),
                   ),
                 );
               },
