@@ -23,10 +23,10 @@ class _LocationSearchDialogState extends ConsumerState<LocationSearchDialog> {
   late EventService _eventService;
 
   @override
-  void initState() {
+  Future<void> initState() async {
     super.initState();
     _eventService = EventService(ref.read(secureStorageProvider));
-    _sites = _eventService.getLocationList() as List<LocationResponseDTO>;
+    _sites = await _eventService.getLocationList();
   }
 
   @override
