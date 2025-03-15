@@ -160,6 +160,10 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
                 child: Text("기존 멤버",
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
               ),
+              if (widget.isAdmin) const Padding(
+                  padding: EdgeInsets.all(10.0),
+                  child: Text("관리자는 멤버를 꾹 눌러 추방할 수 있습니다.")
+              ),
               ...oldMembers.map((member) => _buildMemberTile(member)).toList(),
             ],
             if (newMembers.isNotEmpty) ...[
@@ -243,7 +247,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
   Widget _buildMemberTile(dynamic member) {
     final bool isAdminMember = member.role == "admin"; // 어드민 여부 체크
 
-    return GestureDetector(
+    return InkWell(
       onLongPress: () {
         if (widget.isAdmin && !isAdminMember) {
           _showKickDialog(member); // 일반 멤버만 추방 가능
@@ -254,7 +258,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
           decoration: BoxDecoration(
             shape: BoxShape.circle,
             border: Border.all(
-              color: isAdminMember ? Colors.green : Colors.transparent, // 어드민이면 빨간 테두리
+              color: isAdminMember ? Colors.green : Colors.transparent, // 어드민이면 초록 테두리
               width: 3,
             ),
           ),

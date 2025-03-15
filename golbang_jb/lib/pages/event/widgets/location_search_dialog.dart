@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:golbang/services/event_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../repoisitory/secure_storage.dart';
 
-class LocationSearchDialog extends StatefulWidget {
+import '../../../models/responseDTO/LocationResponseDTO.dart';
+
+class LocationSearchDialog extends ConsumerStatefulWidget {
   final TextEditingController locationController;
-  final Map<String, LatLng> locationCoordinates;
-  final Function(String) onLocationSelected;
+  final Function(LocationResponseDTO) onLocationSelected;
 
   const LocationSearchDialog({super.key, 
     required this.locationController,
-    required this.locationCoordinates,
     required this.onLocationSelected,
   });
 
@@ -16,13 +18,15 @@ class LocationSearchDialog extends StatefulWidget {
   _LocationSearchDialogState createState() => _LocationSearchDialogState();
 }
 
-class _LocationSearchDialogState extends State<LocationSearchDialog> {
-  List<String> _sites = [];
+class _LocationSearchDialogState extends ConsumerState<LocationSearchDialog> {
+  List<LocationResponseDTO> _sites = [];
+  late EventService _eventService;
 
   @override
-  void initState() {
+  Future<void> initState() async {
     super.initState();
-    _sites = widget.locationCoordinates.keys.toList();
+    _eventService = EventService(ref.read(secureStorageProvider));
+    _sites = await _eventService.getLocationList();
   }
 
   @override
@@ -75,8 +79,8 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
                 ),
                 onChanged: (value) {
                   setState(() {
-                    _sites = widget.locationCoordinates.keys
-                        .where((location) => location.toLowerCase().contains(value.toLowerCase()))
+                    _sites = _sites
+                        .where((location) => location.golfClubName.toLowerCase().contains(value.toLowerCase()))
                         .toList();
                   });
                 },
@@ -89,10 +93,10 @@ class _LocationSearchDialogState extends State<LocationSearchDialog> {
                   itemCount: _sites.length,
                   itemBuilder: (BuildContext context, int index) {
                     return ListTile(
-                      title: Text(_sites[index]),
+                      title: Text(_sites[index].golfClubName),
                       onTap: () {
                         final site = _sites[index];
-                        widget.locationController.text = site;
+                        widget.locationController.text = site.golfClubName;
                         widget.onLocationSelected(site);
                         Navigator.pop(context);
                       },

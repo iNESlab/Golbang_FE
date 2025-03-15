@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
@@ -45,10 +46,10 @@ class SecureStorage {
   // 에세스 토큰 저장
   Future<void> saveAccessToken(String accessToken) async {
     try {
-      print('[SECURE_STORAGE] saveAccessToken: $accessToken');
+      log('[SECURE_STORAGE] saveAccessToken: $accessToken');
       await storage.write(key: 'ACCESS_TOKEN', value: accessToken);
     } catch (e) {
-      print("[ERR] AccessToken 저장 실패: $e");
+      log("[ERR] AccessToken 저장 실패: $e");
     }
   }
 
@@ -56,7 +57,7 @@ class SecureStorage {
   Future<String> readAccessToken() async {
     try {
       final accessToken = await storage.read(key: 'ACCESS_TOKEN');
-      print('[SECURE_STORAGE] readAccessToken: $accessToken');
+      log('[SECURE_STORAGE] readAccessToken: $accessToken');
       //final refreshToken = await storage.read(key: REFRESH_TOKEN);
       //print('[SECURE_STORAGE] readRefreshToken: $refreshToken');
 
@@ -66,24 +67,24 @@ class SecureStorage {
 
       return accessToken;
     } catch (e) {
-      print("[ERR] AccessToken 불러오기 실패: $e");
+      log("[ERR] AccessToken 불러오기 실패: $e");
       throw StateError('Failed to retrieve access token: $e');
     }
   }
 
   Future<void> saveLoginId(String loginId) async {
     try {
-      print('[LOGIN] saveLoginId: $loginId');
+      log('[LOGIN] saveLoginId: $loginId');
       await storage.write(key: 'LOGIN_ID', value: loginId);
     } catch (e) {
-      print("[ERR] LoginId 저장 실패: $e");
+      log("[ERR] LoginId 저장 실패: $e");
     }
   }
 
   Future<String> readLoginId() async {
     try {
       final loginId = await storage.read(key: 'LOGIN_ID');
-      print('[LOGIN] readLoginId: $loginId');
+      log('[LOGIN] readLoginId: $loginId');
       //final refreshToken = await storage.read(key: REFRESH_TOKEN);
       //print('[SECURE_STORAGE] readRefreshToken: $refreshToken');
 
@@ -93,7 +94,7 @@ class SecureStorage {
 
       return loginId;
     } catch (e) {
-      print("[ERR] loginId 불러오기 실패: $e");
+      log("[ERR] loginId 불러오기 실패: $e");
       throw StateError('Failed to retrieve loginId: $e');
     }
   }

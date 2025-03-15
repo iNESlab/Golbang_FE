@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -82,13 +83,13 @@ class _SignUpPageState extends State<SignUpPage> {
 
   Future<void> _signupStep1(BuildContext ctx) async {
     if (_formKey.currentState!.validate()) {
-      print('_idController.text: ${_idController.text}');
-      print('_emailController.text: ${_emailController.text}');
-      print('_passwordController.text: ${_passwordController.text}');
+      log('_idController.text: ${_idController.text}');
+      log('_emailController.text: ${_emailController.text}');
+      log('_passwordController.text: ${_passwordController.text}');
 
       try {
         var response = await UserService.saveUser(
-          userId: _idController.text,
+          userId: _idController.text, //TODO: AccountId로 수정
           email: _emailController.text,
           password1: _passwordController.text,
           password2: _confirmPasswordController.text,
@@ -100,8 +101,6 @@ class _SignUpPageState extends State<SignUpPage> {
           Navigator.of(ctx).push(
             MaterialPageRoute(
               builder: (ctx) => AdditionalInfoPage(
-                name: "test", // 실제 이름을 여기에 전달해야 함
-                phoneNumber: "01000000000", // 실제 전화번호를 여기에 전달해야 함
                 userId: data['data']['user_id'],
               ),
             ),
@@ -121,7 +120,7 @@ class _SignUpPageState extends State<SignUpPage> {
           );
         }
       } catch (e) {
-        print('Error: $e');
+        log('Error: $e');
         ScaffoldMessenger.of(ctx).showSnackBar(
           const SnackBar(content: Text('오류가 발생했습니다. 다시 시도해 주세요.')),
         );

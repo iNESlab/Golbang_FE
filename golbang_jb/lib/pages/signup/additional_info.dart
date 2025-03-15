@@ -1,17 +1,15 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:golbang/pages/signup/widgets/calendar.dart';
 import 'package:golbang/services/user_service.dart';
 import 'signup_complete.dart'; // 회원가입 완료 페이지 import
 
 class AdditionalInfoPage extends StatefulWidget {
-  final String name;
-  final String phoneNumber;
-  final int userId;
+  final int userId; //TODO: AccountId 수정
 
   const AdditionalInfoPage({
     super.key,
-    required this.name,
-    required this.phoneNumber,
     required this.userId,
   });
 
@@ -97,12 +95,7 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
                 hintText: '숫자로 입력 (예: 28)',
               ),
               const SizedBox(height: 16),
-              _buildRequiredTextFormField(
-                '생일',
-                _birthdayController,
-                TextInputType.phone,
-                hintText: '1990-01-01',
-              ),
+              DayPickerField(controller: _birthdayController), // ✅ 생일 선택 필드 사용
               const SizedBox(height: 16),
               _buildOptionalTextFormField(
                 '주소',
@@ -151,9 +144,9 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
         address: _addressController.text,
         studentId: _studentIdController.text,
       );
-      print(_phoneNumberController.text);
-      print(_addressController.text);
-      print(response.statusCode);
+      log(_phoneNumberController.text);
+      log(_addressController.text);
+      log(response.statusCode.toString());
       if (response.statusCode == 200) {
         Navigator.of(context).push(
           MaterialPageRoute(
