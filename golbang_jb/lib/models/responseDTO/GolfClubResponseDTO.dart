@@ -14,8 +14,8 @@ class GolfClubResponseDTO {
   factory GolfClubResponseDTO.fromJson(Map<String, dynamic> json) {
     return GolfClubResponseDTO(
       json['golf_club_id'],
-      json['golf_club_name'],
-      json['address'],
+      json['golf_club_name'] ?? 'Unknown',
+      json['address'] ?? 'Unknown',
       (json['longitude'] as num).toDouble(), // ✅ `num` 타입을 `double`로 변환
       (json['latitude'] as num).toDouble(),
       (json['courses'] as List) // ✅ JSON 배열을 리스트로 변환
