@@ -75,9 +75,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
         currentTime = DateTime.now();
       });
     });
-    log("🟡 addPostFrameCallback 호출 전");
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      log("🟢 addPostFrameCallback 실행됨");
       fetchGolfClubDetails();
       fetchScores();
     });
@@ -88,11 +86,10 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     final storage = ref.watch(secureStorageProvider);
     final eventService = EventService(storage);
     final response = await eventService.getGolfCourseDetails(golfClubId: widget.event.golfClub!.golfClubId);
-    if (response != null) {
+    if (mounted) {
       setState(() {
         _golfClubDetails = response;
       });
-      log('골프 클럽명${response.golfClubName}');
     }
   }
 
@@ -507,9 +504,11 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                                 SingleChildScrollView(
                                   scrollDirection: Axis.horizontal,
                                   child: Row(
-                                    children: List.generate(course.holes, (index) {
+                                    children: course.tees.isEmpty
+                                        ? []
+                                        : List.generate(course.holes, (index) {
                                       final holeNumber = index + 1;
-                                      final par = course.holePars[index];
+                                      final par = course.tees[0].holePars[index];
                                       return Container(
                                         width: 50,
                                         height: 50,
@@ -691,10 +690,10 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                         },
                       ),
                     )
-                        : (member!.profileImage!.startsWith('file://')
+                        : (member.profileImage!.startsWith('file://')
                         ? ClipOval(
                       child: Image.file(
-                        File(member!.profileImage!.replaceFirst('file://', '')),
+                        File(member.profileImage!.replaceFirst('file://', '')),
                         width: 50,
                         height: 50,
                         errorBuilder: (context, error, stackTrace) {
@@ -790,7 +789,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
 // 대각선 구분선 및 텍스트 표시를 위한 CustomPainter
 class DiagonalTextPainter extends CustomPainter {
   final int holeNumber;
-  final int par;
+  final String par;
 
   DiagonalTextPainter({required this.holeNumber, required this.par});
 
@@ -804,7 +803,7 @@ class DiagonalTextPainter extends CustomPainter {
 
     const textStyle = TextStyle(color: Colors.black, fontSize: 12);
     final holeTextSpan = TextSpan(text: "$holeNumber홀", style: textStyle);
-    final parTextSpan = TextSpan(text: "$par", style: textStyle);
+    final parTextSpan = TextSpan(text: par, style: textStyle);
 
     final holePainter = TextPainter(
       text: holeTextSpan,
