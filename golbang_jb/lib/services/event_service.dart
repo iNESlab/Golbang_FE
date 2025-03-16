@@ -15,6 +15,7 @@ class EventService {
 
   EventService(this.storage);
   Future<List<GolfClubResponseDTO>> getLocationList() async {
+    //TODO: golfClubList로 함수명변경
     try {
       // URL 생성
       String url = '${dotenv.env['API_HOST']}/api/v1/golfcourses/';
@@ -33,6 +34,33 @@ class EventService {
     } catch (e) {
       log('Error occurred while fetching events: $e');
       return [];
+    }
+  }
+  Future<GolfClubResponseDTO> getGolfCourseDetails({
+    //TODO: golfClub으로 함수명변경
+    //TODO: 서버에서 응답오는게 없음
+    required int golfClubId,
+  }) async {
+    try {
+      // URL 생성
+      String url = '${dotenv.env['API_HOST']}/api/v1/golfcourses/$golfClubId/';
+
+      // API 요청
+      final response = await dioClient.dio.get(
+        url,
+      );
+      log('response $response');
+      if (response.statusCode == 200) {
+        return GolfClubResponseDTO.fromJson(response.data);
+      } else {
+        throw Exception('상세 조회 실패');
+      }
+    }
+    catch (error, stackTrace) {
+      log("❌ 골프장 데이터 요청 실패: $error");
+      log("📝 StackTrace: $stackTrace");
+      throw Exception('상세 조회 실패');
+
     }
   }
 

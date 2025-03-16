@@ -9,6 +9,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:golbang/pages/event/event_result.dart';
 import '../../models/event.dart';
 import '../../models/participant.dart';
+import '../../models/responseDTO/GolfClubResponseDTO.dart';
 import '../../provider/event/event_state_notifier_provider.dart';
 import '../../provider/screen_riverpod.dart';
 import '../../repoisitory/secure_storage.dart';
@@ -38,6 +39,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   late DateTime _startDateTime;
   late DateTime _endDateTime;
 
+  GolfClubResponseDTO? _golfClubDetails;
   List<dynamic> participants = [];
   Map<String, dynamic>? teamAScores;
   Map<String, dynamic>? teamBScores;
@@ -73,10 +75,27 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
         currentTime = DateTime.now();
       });
     });
+    log("🟡 addPostFrameCallback 호출 전");
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      log("🟢 addPostFrameCallback 실행됨");
+      fetchGolfClubDetails();
       fetchScores();
     });
+
   }
+
+  Future<void> fetchGolfClubDetails() async {
+    final storage = ref.watch(secureStorageProvider);
+    final eventService = EventService(storage);
+    final response = await eventService.getGolfCourseDetails(golfClubId: widget.event.golfClub!.golfClubId);
+    if (response != null) {
+      setState(() {
+        _golfClubDetails = response;
+      });
+      log('골프 클럽명${response.golfClubName}');
+    }
+  }
+
   Future<void> fetchScores() async {
     final storage = ref.watch(secureStorageProvider);
     final eventService = EventService(storage);
@@ -438,9 +457,9 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                       style: TextStyle(fontSize: fontSizeLarge, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 10),
-                    widget.event.golfClub != null
+                    _golfClubDetails != null
                         ? Column(
-                      children: widget.event.golfClub!.courses.map((course) {
+                      children: _golfClubDetails!.courses.map((course) {
                         return Card(
                           margin: const EdgeInsets.symmetric(vertical: 8),
                           elevation: 3,
@@ -661,10 +680,10 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                     radius: 15,
                     backgroundColor: Colors.transparent,
                     child: (member?.profileImage != null && member!.profileImage!.isNotEmpty)
-                        ? (member!.profileImage!.startsWith('https')
+                        ? (member.profileImage!.startsWith('https')
                         ? ClipOval(
                       child: Image.network(
-                        member!.profileImage!,
+                        member.profileImage!,
                         width: 50,
                         height: 50,
                         errorBuilder: (context, error, stackTrace) {
