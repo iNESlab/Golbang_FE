@@ -25,7 +25,7 @@ class EventService {
       );
 
       if (response.statusCode == 200) {
-        return response.data;
+        return LocationResponseDTO.fromJsonList(response.data);
       } else {
         log('골프장 목록 조회 실패: ${response.statusCode} - ${response.data}');
         return [];

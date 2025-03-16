@@ -1,12 +1,14 @@
 class CourseResponseDTO {
+  final int golfCourseId;
   final String golfCourseName;
-  final String holes;
-  final String par;
+  final int holes;
+  final int par;
 
-  CourseResponseDTO(this.golfCourseName, this.holes, this.par);
+  CourseResponseDTO(this.golfCourseId, this.golfCourseName, this.holes, this.par);
 
   factory CourseResponseDTO.fromJson(Map<String, dynamic> json) {
     return CourseResponseDTO(
+      json['golf_course_id'],
       json['golf_course_name'],
       json['holes'],
       json['par'],
