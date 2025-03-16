@@ -7,7 +7,7 @@ import '../../models/enum/event.dart';
 import '../../models/event.dart';
 import '../../models/member.dart';
 import '../../models/profile/member_profile.dart';
-import '../../models/responseDTO/LocationResponseDTO.dart';
+import '../../models/responseDTO/GolfClubResponseDTO.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/club_service.dart';
 import 'widgets/location_search_dialog.dart';
@@ -159,7 +159,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
       context: context,
       builder: (context) => LocationSearchDialog(
         locationController: _locationController,
-        onLocationSelected: (LocationResponseDTO site) {
+        onLocationSelected: (GolfClubResponseDTO site) {
           setState(() {
             _selectedLocation = LatLng(site.latitude, site.longitude);
             _site = site.golfClubName;

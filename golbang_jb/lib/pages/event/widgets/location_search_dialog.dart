@@ -3,11 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/services/event_service.dart';
 import '../../../repoisitory/secure_storage.dart';
-import '../../../models/responseDTO/LocationResponseDTO.dart';
+import '../../../models/responseDTO/GolfClubResponseDTO.dart';
 
 class LocationSearchDialog extends ConsumerStatefulWidget {
   final TextEditingController locationController;
-  final Function(LocationResponseDTO) onLocationSelected;
+  final Function(GolfClubResponseDTO) onLocationSelected;
 
   const LocationSearchDialog({
     super.key,
@@ -21,8 +21,8 @@ class LocationSearchDialog extends ConsumerStatefulWidget {
 
 class _LocationSearchDialogState extends ConsumerState<LocationSearchDialog> {
   late EventService _eventService;
-  List<LocationResponseDTO> _sites = [];
-  List<LocationResponseDTO> _filteredSites = [];
+  List<GolfClubResponseDTO> _sites = [];
+  List<GolfClubResponseDTO> _filteredSites = [];
   bool _isLoading = true;
 
   @override
@@ -34,7 +34,7 @@ class _LocationSearchDialogState extends ConsumerState<LocationSearchDialog> {
 
   Future<void> _fetchLocations() async {
     try {
-      List<LocationResponseDTO> sites = await _eventService.getLocationList();
+      List<GolfClubResponseDTO> sites = await _eventService.getLocationList();
       if (mounted) {
         setState(() {
           _sites = sites;

@@ -2,9 +2,8 @@
 
 import 'package:golbang/models/participant.dart';
 import 'package:golbang/models/profile/club_profile.dart';
+import 'package:golbang/models/responseDTO/GolfClubResponseDTO.dart';
 import 'package:golbang/models/update_event_participant.dart';
-import 'package:golbang/models/golf_club_data.dart';
-
 
 class Event {
   final ClubProfile? club;
@@ -15,9 +14,9 @@ class Event {
   final String site;
   final DateTime startDateTime;
   final DateTime endDateTime;
-  final String? repeatType;
-  final String? gameMode;
-  final String? alertDateTime;
+  final String repeatType;
+  final String gameMode;
+  final String alertDateTime;
   final int participantsCount;
   final int partyCount;
   final int acceptCount;
@@ -25,7 +24,7 @@ class Event {
   final int pendingCount;
   final int myParticipantId;
   final List<Participant> participants;
-  final GolfClub? golfClub;
+  final GolfClubResponseDTO? golfClub;
 
   Event({
     this.club,
@@ -36,9 +35,9 @@ class Event {
     required this.site,
     required this.startDateTime,
     required this.endDateTime,
-    this.repeatType,
-    this.gameMode,
-    this.alertDateTime,
+    required this.repeatType,
+    required this.gameMode,
+    required this.alertDateTime,
     required this.participantsCount,
     required this.partyCount,
     required this.acceptCount,
@@ -55,13 +54,13 @@ class Event {
       club: json['club'] != null ? ClubProfile.fromJson(json['club']) : null,
       eventId: json['event_id'],
       memberGroup: json['member_group'],
-      eventTitle: json['event_title'],
-      location: json['location'],
-      site: json['site']??'unknown site',
+      eventTitle: json['event_title'] ??  'No Title',
+      location: json['location'] ?? 'Unknown Location',
+      site: json['site'] ??'unknown site',
       startDateTime: DateTime.parse(json['start_date_time']).toLocal(),
       endDateTime: DateTime.parse(json['end_date_time']).toLocal(),
       repeatType: json['repeat_type'] ?? "",
-      gameMode: json['game_mode'],
+      gameMode: json['game_mode'] ?? "",
       alertDateTime: json['alert_date_time'] ?? "",
       participantsCount: json['participants_count'],
       partyCount: json['party_count'],
@@ -72,7 +71,7 @@ class Event {
       participants: (json['participants'] as List)
           .map((p) => Participant.fromJson(p))
           .toList(),
-      golfClub: json['golf_club'] != null ? GolfClub.fromJson(json['golf_club']) : null,
+      golfClub: json['golf_club'] != null ? GolfClubResponseDTO.fromJson(json['golf_club']) : null,
     );
   }
 

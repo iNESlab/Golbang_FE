@@ -1,7 +1,7 @@
 import 'package:golbang/models/responseDTO/CourseResopnseDTO.dart';
 
 
-class LocationResponseDTO {
+class GolfClubResponseDTO {
   final int golfClubId;
   final String golfClubName;
   final String address;
@@ -9,10 +9,10 @@ class LocationResponseDTO {
   final double latitude;
   final List<CourseResponseDTO> courses ;
 
-  LocationResponseDTO(this.golfClubId, this.golfClubName, this.address, this.longitude, this.latitude, this.courses);
+  GolfClubResponseDTO(this.golfClubId, this.golfClubName, this.address, this.longitude, this.latitude, this.courses);
 
-  factory LocationResponseDTO.fromJson(Map<String, dynamic> json) {
-    return LocationResponseDTO(
+  factory GolfClubResponseDTO.fromJson(Map<String, dynamic> json) {
+    return GolfClubResponseDTO(
       json['golf_club_id'],
       json['golf_club_name'],
       json['address'],
@@ -24,9 +24,9 @@ class LocationResponseDTO {
     );
   }
   // ✅ 여러 개의 LocationResponseDTO를 변환하는 헬퍼 메서드 추가
-  static List<LocationResponseDTO> fromJsonList(Map<String, dynamic> json) {
+  static List<GolfClubResponseDTO> fromJsonList(Map<String, dynamic> json) {
     return (json['data'] as List<dynamic>) // ✅ 'data' 키를 가져와 변환
-        .map((item) => LocationResponseDTO.fromJson(item))
+        .map((item) => GolfClubResponseDTO.fromJson(item))
         .toList();
   }
 

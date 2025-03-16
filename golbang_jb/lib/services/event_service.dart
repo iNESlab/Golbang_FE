@@ -5,7 +5,7 @@ import 'package:golbang/models/create_participant.dart';
 import 'package:http/http.dart' as http;
 import '../global/LoginInterceptor.dart';
 import '../models/create_event.dart';
-import '../models/responseDTO/LocationResponseDTO.dart';
+import '../models/responseDTO/GolfClubResponseDTO.dart';
 import '../repoisitory/secure_storage.dart';
 import '../models/event.dart';
 
@@ -14,7 +14,7 @@ class EventService {
   final dioClient = DioClient();
 
   EventService(this.storage);
-  Future<List<LocationResponseDTO>> getLocationList() async {
+  Future<List<GolfClubResponseDTO>> getLocationList() async {
     try {
       // URL 생성
       String url = '${dotenv.env['API_HOST']}/api/v1/golfcourses/';
@@ -25,7 +25,7 @@ class EventService {
       );
 
       if (response.statusCode == 200) {
-        return LocationResponseDTO.fromJsonList(response.data);
+        return GolfClubResponseDTO.fromJsonList(response.data);
       } else {
         log('골프장 목록 조회 실패: ${response.statusCode} - ${response.data}');
         return [];

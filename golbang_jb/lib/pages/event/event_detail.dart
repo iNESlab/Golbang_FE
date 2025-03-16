@@ -457,7 +457,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                                     const Icon(Icons.golf_course, color: Colors.green),
                                     const SizedBox(width: 8),
                                     Text(
-                                      course.courseName,
+                                      course.golfCourseName,
                                       style: TextStyle(
                                         fontSize: fontSizeLarge,
                                         fontWeight: FontWeight.bold,

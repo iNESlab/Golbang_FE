@@ -5,7 +5,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:intl/intl.dart';
 import '../../models/club.dart';
 import '../../models/enum/event.dart';
-import '../../models/responseDTO/LocationResponseDTO.dart';
+import '../../models/responseDTO/GolfClubResponseDTO.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/club_service.dart';
 import 'event_create2.dart';
@@ -110,7 +110,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
       context: context,
       builder: (context) => LocationSearchDialog(
         locationController: _locationController,
-        onLocationSelected: (LocationResponseDTO site) {
+        onLocationSelected: (GolfClubResponseDTO site) {
           setState(() {
             _site = site.golfClubName;
             _selectedLocation = LatLng(site.latitude, site.longitude);
