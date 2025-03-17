@@ -27,7 +27,7 @@ class Club {
       id: json['id'],
       name: json['name'],
       description: json['description'],
-      image: json['image']??'assets/images/naver.png',
+      image: json['image']??'assets/images/naver.webp',
       // members: memberList,
       createdAt: DateTime.parse(json['created_at']),
     );

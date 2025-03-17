@@ -45,7 +45,7 @@ class SocialLoginButtons extends StatelessWidget {
       children: [
         OutlinedButton.icon(
           onPressed: () {},
-          icon: Image.asset('assets/images/google.png', width: 24),
+          icon: Image.asset('assets/images/google.webp', width: 24),
           label: const Text('Google', style: TextStyle(color: Colors.black)),
           style: OutlinedButton.styleFrom(
             foregroundColor: Colors.grey[900],
@@ -59,7 +59,7 @@ class SocialLoginButtons extends StatelessWidget {
         const SizedBox(height: 16),
         OutlinedButton.icon(
           onPressed: () {},
-          icon: Image.asset('assets/images/kakao.png', width: 24),
+          icon: Image.asset('assets/images/kakao.webp', width: 24),
           label:
           const Text('카카오 로그인', style: TextStyle(color: Colors.black)),
           style: OutlinedButton.styleFrom(
@@ -74,7 +74,7 @@ class SocialLoginButtons extends StatelessWidget {
         const SizedBox(height: 16),
         OutlinedButton.icon(
           onPressed: () {},
-          icon: Image.asset('assets/images/naver.png', width: 24),
+          icon: Image.asset('assets/images/naver.webp', width: 24),
           label:
           const Text('네이버 로그인', style: TextStyle(color: Colors.white)),
           style: OutlinedButton.styleFrom(

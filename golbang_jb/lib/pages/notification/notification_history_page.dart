@@ -95,7 +95,7 @@ class NotificationHistoryPageState extends ConsumerState<NotificationHistoryPage
       appBar: AppBar(
         backgroundColor: Colors.white,
         title: Image.asset(
-          'assets/images/text-logo-green.png', // 텍스트 로고 이미지 경로
+          'assets/images/text-logo-green.webp', // 텍스트 로고 이미지 경로
           height: 50, // 이미지 높이 조정
           fit: BoxFit.contain, // 이미지 비율 유지
         ),

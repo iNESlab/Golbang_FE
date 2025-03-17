@@ -66,7 +66,7 @@ class _HiScreenState extends State<HiScreen> {
                   Container(
                     decoration: const BoxDecoration(
                       image: DecorationImage(
-                        image: AssetImage('assets/images/founder.JPG'),
+                        image: AssetImage('assets/images/founder.webp'),
                         fit: BoxFit.cover,
                       ),
                     ),
@@ -119,7 +119,7 @@ class _HiScreenState extends State<HiScreen> {
                       // Continue with Google button
                       // OutlinedButton.icon(
                       //   onPressed: () {},
-                      //   icon: Image.asset('assets/images/google.png', width: 24),
+                      //   icon: Image.asset('assets/images/google.webp', width: 24),
                       //   label: const Text('Google로 계속하기',
                       //       style: TextStyle(color: Colors.white)),
                       //   style: OutlinedButton.styleFrom(
@@ -131,7 +131,7 @@ class _HiScreenState extends State<HiScreen> {
                       // // Continue with KakaoTalk button
                       // OutlinedButton.icon(
                       //   onPressed: () {},
-                      //   icon: Image.asset('assets/images/kakao.png', width: 24),
+                      //   icon: Image.asset('assets/images/kakao.webp', width: 24),
                       //   label: const Text('카카오톡으로 계속하기',
                       //       style: TextStyle(color: Colors.white)),
                       //   style: OutlinedButton.styleFrom(
@@ -143,7 +143,7 @@ class _HiScreenState extends State<HiScreen> {
                       // // Continue with Naver button
                       // OutlinedButton.icon(
                       //   onPressed: () {},
-                      //   icon: Image.asset('assets/images/naver.png', width: 24),
+                      //   icon: Image.asset('assets/images/naver.webp', width: 24),
                       //   label: const Text('네이버로 계속하기',
                       //       style: TextStyle(color: Colors.white)),
                       //   style: OutlinedButton.styleFrom(

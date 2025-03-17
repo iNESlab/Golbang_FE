@@ -30,12 +30,12 @@ class _SplashScreenState extends State<SplashScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Image.asset(
-              'assets/images/logo_white.png',
+              'assets/images/logo_white.webp',
                width: 200,
             ),
             const SizedBox(height: 16),
             Image.asset(
-              'assets/images/text-logo-white.png',  // 텍스트 로고 이미지
+              'assets/images/text-logo-white.webp',  // 텍스트 로고 이미지
               width: 300, // 이미지 크기 조정
               fit: BoxFit.contain,
 

@@ -24,7 +24,7 @@ class LoginTitle extends StatelessWidget {
               radius: 30,
               backgroundColor: Colors.transparent,
               backgroundImage: AssetImage(
-                'assets/images/logo-green.png', // 골방 로고 이미지 경로
+                'assets/images/logo-green.webp', // 골방 로고 이미지 경로
               ),
             ),
           ],
