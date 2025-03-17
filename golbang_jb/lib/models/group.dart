@@ -19,7 +19,7 @@ class Group {
 
   factory Group.fromJson(Map<String, dynamic> json) {
     int groupId = json['id'] ?? 0;
-    String defaultImage = 'assets/images/golbang_group_${groupId % 15}.png';
+    String defaultImage = 'assets/images/golbang_group_${groupId % 15}.webp';
     return Group(
       id: json['id'] ?? 0,
       name: json['name'] ?? '',

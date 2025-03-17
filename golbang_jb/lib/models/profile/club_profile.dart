@@ -11,7 +11,7 @@ class ClubProfile{
 
   factory ClubProfile.fromJson(Map<String, dynamic> json) {
     int groupId = json['id'] ?? 0;
-    String defaultImage = 'assets/images/golbang_group_${groupId % 7}.png';
+    String defaultImage = 'assets/images/golbang_group_${groupId % 7}.webp';
     return ClubProfile(
         clubId: json['id'],
         name: json['name'],

@@ -59,7 +59,7 @@ class EventHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Image.asset(
-            'assets/images/golf_icon.png', // 이벤트 아이콘 (원래 스타일)
+            'assets/images/golf_icon.webp', // 이벤트 아이콘 (원래 스타일)
             width: 50,
             height: 50,
             fit: BoxFit.cover,

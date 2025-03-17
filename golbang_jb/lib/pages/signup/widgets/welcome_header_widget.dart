@@ -13,7 +13,7 @@ class WelcomeHeader extends StatelessWidget {
         SizedBox(height: MediaQuery.of(context).size.height * topPadding),
         // 로고 이미지
         Image.asset(
-          'assets/images/logo-green.png',
+          'assets/images/logo-green.webp',
           width: 100,
           height: 100,
           alignment: Alignment.centerLeft,

@@ -150,13 +150,13 @@ class _RegisterPageState extends State<RegisterPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    _buildSocialLoginButton('assets/images/google.png', () {
+                    _buildSocialLoginButton('assets/images/google.webp', () {
                       // 구글 로그인 로직을 수행합니다.
                     }),
-                    _buildSocialLoginButton('assets/images/facebook.png', () {
+                    _buildSocialLoginButton('assets/images/facebook.webp', () {
                       // 페이스북 로그인 로직을 수행합니다.
                     }),
-                    _buildSocialLoginButton('assets/images/apple.png', () {
+                    _buildSocialLoginButton('assets/images/apple.webp', () {
                       // 네이버 로그인 로직을 수행합니다.
                     }),
                   ],

@@ -9,7 +9,7 @@ class CommentItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return ListTile(
       leading: const CircleAvatar(
-        backgroundImage: AssetImage('assets/images/apple.png'),
+        backgroundImage: AssetImage('assets/images/apple.webp'),
         radius: 10,
       ),
       title: Row(
