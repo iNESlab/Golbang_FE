@@ -5,7 +5,7 @@ import 'package:golbang/models/create_participant.dart';
 import 'package:http/http.dart' as http;
 import '../global/LoginInterceptor.dart';
 import '../models/create_event.dart';
-import '../models/responseDTO/LocationResponseDTO.dart';
+import '../models/responseDTO/GolfClubResponseDTO.dart';
 import '../repoisitory/secure_storage.dart';
 import '../models/event.dart';
 
@@ -14,7 +14,7 @@ class EventService {
   final dioClient = DioClient();
 
   EventService(this.storage);
-  Future<List<LocationResponseDTO>> getLocationList() async {
+  Future<List<GolfClubResponseDTO>> getLocationList() async {
     try {
       // URL 생성
       String url = '${dotenv.env['API_HOST']}/api/v1/golfcourses/';
@@ -25,7 +25,7 @@ class EventService {
       );
 
       if (response.statusCode == 200) {
-        return response.data;
+        return GolfClubResponseDTO.fromJsonList(response.data);
       } else {
         log('골프장 목록 조회 실패: ${response.statusCode} - ${response.data}');
         return [];
@@ -33,6 +33,31 @@ class EventService {
     } catch (e) {
       log('Error occurred while fetching events: $e');
       return [];
+    }
+  }
+  Future<GolfClubResponseDTO> getGolfCourseDetails({
+    required int golfClubId,
+  }) async {
+    try {
+      // URL 생성
+      String url = '${dotenv.env['API_HOST']}/api/v1/golfcourses/?golfclub_id=$golfClubId';
+
+      // API 요청
+      final response = await dioClient.dio.get(
+        url,
+      );
+      log('response $response');
+      if (response.statusCode == 200) {
+        return GolfClubResponseDTO.fromJson(response.data['data']);
+      } else {
+        throw Exception('상세 조회 실패');
+      }
+    }
+    catch (error, stackTrace) {
+      log("❌ 골프장 데이터 요청 실패: $error");
+      log("📝 StackTrace: $stackTrace");
+      throw Exception('상세 조회 실패');
+
     }
   }
 

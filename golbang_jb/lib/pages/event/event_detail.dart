@@ -9,6 +9,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:golbang/pages/event/event_result.dart';
 import '../../models/event.dart';
 import '../../models/participant.dart';
+import '../../models/responseDTO/GolfClubResponseDTO.dart';
 import '../../provider/event/event_state_notifier_provider.dart';
 import '../../provider/screen_riverpod.dart';
 import '../../repoisitory/secure_storage.dart';
@@ -38,6 +39,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   late DateTime _startDateTime;
   late DateTime _endDateTime;
 
+  GolfClubResponseDTO? _golfClubDetails;
   List<dynamic> participants = [];
   Map<String, dynamic>? teamAScores;
   Map<String, dynamic>? teamBScores;
@@ -74,9 +76,23 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
       });
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchGolfClubDetails();
       fetchScores();
     });
+
   }
+
+  Future<void> fetchGolfClubDetails() async {
+    final storage = ref.watch(secureStorageProvider);
+    final eventService = EventService(storage);
+    final response = await eventService.getGolfCourseDetails(golfClubId: widget.event.golfClub!.golfClubId);
+    if (mounted) {
+      setState(() {
+        _golfClubDetails = response;
+      });
+    }
+  }
+
   Future<void> fetchScores() async {
     final storage = ref.watch(secureStorageProvider);
     final eventService = EventService(storage);
@@ -438,9 +454,9 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                       style: TextStyle(fontSize: fontSizeLarge, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 10),
-                    widget.event.golfClub != null
+                    _golfClubDetails != null
                         ? Column(
-                      children: widget.event.golfClub!.courses.map((course) {
+                      children: _golfClubDetails!.courses.map((course) {
                         return Card(
                           margin: const EdgeInsets.symmetric(vertical: 8),
                           elevation: 3,
@@ -457,7 +473,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                                     const Icon(Icons.golf_course, color: Colors.green),
                                     const SizedBox(width: 8),
                                     Text(
-                                      course.courseName,
+                                      course.golfCourseName,
                                       style: TextStyle(
                                         fontSize: fontSizeLarge,
                                         fontWeight: FontWeight.bold,
@@ -488,9 +504,11 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                                 SingleChildScrollView(
                                   scrollDirection: Axis.horizontal,
                                   child: Row(
-                                    children: List.generate(course.holes, (index) {
+                                    children: course.tees.isEmpty
+                                        ? []
+                                        : List.generate(course.holes, (index) {
                                       final holeNumber = index + 1;
-                                      final par = course.holePars[index];
+                                      final par = course.tees[0].holePars[index];
                                       return Container(
                                         width: 50,
                                         height: 50,
@@ -661,10 +679,10 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                     radius: 15,
                     backgroundColor: Colors.transparent,
                     child: (member?.profileImage != null && member!.profileImage!.isNotEmpty)
-                        ? (member!.profileImage!.startsWith('https')
+                        ? (member.profileImage!.startsWith('https')
                         ? ClipOval(
                       child: Image.network(
-                        member!.profileImage!,
+                        member.profileImage!,
                         width: 50,
                         height: 50,
                         errorBuilder: (context, error, stackTrace) {
@@ -672,10 +690,10 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                         },
                       ),
                     )
-                        : (member!.profileImage!.startsWith('file://')
+                        : (member.profileImage!.startsWith('file://')
                         ? ClipOval(
                       child: Image.file(
-                        File(member!.profileImage!.replaceFirst('file://', '')),
+                        File(member.profileImage!.replaceFirst('file://', '')),
                         width: 50,
                         height: 50,
                         errorBuilder: (context, error, stackTrace) {
@@ -771,7 +789,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
 // 대각선 구분선 및 텍스트 표시를 위한 CustomPainter
 class DiagonalTextPainter extends CustomPainter {
   final int holeNumber;
-  final int par;
+  final String par;
 
   DiagonalTextPainter({required this.holeNumber, required this.par});
 
@@ -785,7 +803,7 @@ class DiagonalTextPainter extends CustomPainter {
 
     const textStyle = TextStyle(color: Colors.black, fontSize: 12);
     final holeTextSpan = TextSpan(text: "$holeNumber홀", style: textStyle);
-    final parTextSpan = TextSpan(text: "$par", style: textStyle);
+    final parTextSpan = TextSpan(text: par, style: textStyle);
 
     final holePainter = TextPainter(
       text: holeTextSpan,

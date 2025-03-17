@@ -1,15 +1,16 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
-import 'package:golbang/services/event_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:golbang/services/event_service.dart';
 import '../../../repoisitory/secure_storage.dart';
-
-import '../../../models/responseDTO/LocationResponseDTO.dart';
+import '../../../models/responseDTO/GolfClubResponseDTO.dart';
 
 class LocationSearchDialog extends ConsumerStatefulWidget {
   final TextEditingController locationController;
-  final Function(LocationResponseDTO) onLocationSelected;
+  final Function(GolfClubResponseDTO) onLocationSelected;
 
-  const LocationSearchDialog({super.key, 
+  const LocationSearchDialog({
+    super.key,
     required this.locationController,
     required this.onLocationSelected,
   });
@@ -19,14 +20,45 @@ class LocationSearchDialog extends ConsumerStatefulWidget {
 }
 
 class _LocationSearchDialogState extends ConsumerState<LocationSearchDialog> {
-  List<LocationResponseDTO> _sites = [];
   late EventService _eventService;
+  List<GolfClubResponseDTO> _sites = [];
+  List<GolfClubResponseDTO> _filteredSites = [];
+  bool _isLoading = true;
 
   @override
-  Future<void> initState() async {
+  void initState() {
     super.initState();
     _eventService = EventService(ref.read(secureStorageProvider));
-    _sites = await _eventService.getLocationList();
+    _fetchLocations();
+  }
+
+  Future<void> _fetchLocations() async {
+    try {
+      List<GolfClubResponseDTO> sites = await _eventService.getLocationList();
+      if (mounted) {
+        setState(() {
+          _sites = sites;
+          _filteredSites = sites; // 초기 데이터 설정
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      log("Error fetching locations: $e");
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  void _filterLocations(String query) {
+    setState(() {
+      _filteredSites = _sites
+          .where((location) =>
+          location.golfClubName.toLowerCase().contains(query.toLowerCase()))
+          .toList();
+    });
   }
 
   @override
@@ -60,68 +92,54 @@ class _LocationSearchDialogState extends ConsumerState<LocationSearchDialog> {
           ],
         ),
       ),
-      content: SizedBox(
+      content: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SizedBox(
         width: MediaQuery.of(context).size.width * 0.9,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: '장소를 입력하세요',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide: BorderSide.none,
-                  ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.white,
+                hintText: '장소를 입력하세요',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8.0),
+                  borderSide: BorderSide.none,
                 ),
-                onChanged: (value) {
-                  setState(() {
-                    _sites = _sites
-                        .where((location) => location.golfClubName.toLowerCase().contains(value.toLowerCase()))
-                        .toList();
-                  });
+              ),
+              onChanged: _filterLocations, // ✅ 검색어 입력 시 필터링 함수 호출
+            ),
+            const SizedBox(height: 10),
+            Flexible( // ✅ ListView가 Column 안에서 동적으로 크기를 조절할 수 있도록 함
+              child: _filteredSites.isEmpty
+                  ? const Center(
+                child: Text(
+                  "검색 결과가 없습니다.",
+                  style: TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+              )
+                  : ListView.builder(
+                shrinkWrap: true,
+                itemCount: _filteredSites.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return ListTile(
+                    title: Text(_filteredSites[index].golfClubName),
+                    onTap: () {
+                      final site = _filteredSites[index];
+                      widget.locationController.text = site.golfClubName;
+                      widget.onLocationSelected(site);
+                      Navigator.pop(context);
+                    },
+                  );
                 },
               ),
-              const SizedBox(height: 10),
-              SizedBox(
-                height: 300,
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  itemCount: _sites.length,
-                  itemBuilder: (BuildContext context, int index) {
-                    return ListTile(
-                      title: Text(_sites[index].golfClubName),
-                      onTap: () {
-                        final site = _sites[index];
-                        widget.locationController.text = site.golfClubName;
-                        widget.onLocationSelected(site);
-                        Navigator.pop(context);
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-      actions: <Widget>[
-        Center(
-          child: ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              minimumSize: const Size(double.infinity, 50),
             ),
-            child: const Text('완료'),
-          ),
+          ],
         ),
-      ],
+      )
     );
   }
 }

@@ -7,7 +7,7 @@ import '../../models/enum/event.dart';
 import '../../models/event.dart';
 import '../../models/member.dart';
 import '../../models/profile/member_profile.dart';
-import '../../models/responseDTO/LocationResponseDTO.dart';
+import '../../models/responseDTO/GolfClubResponseDTO.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/club_service.dart';
 import 'widgets/location_search_dialog.dart';
@@ -35,18 +35,8 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
   List<ClubMemberProfile> _selectedParticipants = [];
   late ClubService _clubService;
   bool _isButtonEnabled = true;
-  final Map<String, LatLng> _locationCoordinates = {
-    "Jagorawi Golf & Country Club": const LatLng(-6.454673, 106.876867),
-    "East Point Golf Club": const LatLng(17.763526, 83.301727),
-    "Rusutsu Resort Golf 72": const LatLng(42.748674, 140.904709),
-    "Siem Reap Lake Resort Golf Club": const LatLng(13.368188, 103.964219),
-    "National Army, Taelung Sport Center": const LatLng(37.630121, 127.109333),
-    "Luang Prabang Golf Club": const LatLng(19.867596, 102.085709),
-    "Nuwara Eliya Golf Club": const LatLng(6.971707, 80.765661),
-    "Bukit Banang Golf & Country Club": const LatLng(1.802658, 102.968811),
-    "Panya Indra Golf Club": const LatLng(13.828058, 100.687627),
-    "Song Be Golf Resort": const LatLng(10.924936, 106.707254)
-  };
+
+  GoogleMapController? _mapController;
 
   LatLng? _selectedLocation;
   late String _site;  // 선택된 장소의 이름을 저장하는 변수
@@ -159,11 +149,17 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
       context: context,
       builder: (context) => LocationSearchDialog(
         locationController: _locationController,
-        onLocationSelected: (LocationResponseDTO site) {
+        onLocationSelected: (GolfClubResponseDTO site) {
           setState(() {
-            _selectedLocation = LatLng(site.latitude, site.longitude);
             _site = site.golfClubName;
-            // _locationController.text = site ?? ''; TODO: test
+            _selectedLocation = LatLng(site.latitude, site.longitude);
+            // 지도 컨트롤러가 존재하면 새로운 위치로 카메라 이동
+            if (_mapController != null && _selectedLocation != null) {
+              _mapController!.animateCamera(
+                CameraUpdate.newLatLng(_selectedLocation!),
+              );
+            }
+
             _validateForm();
           });
         },
@@ -356,6 +352,9 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                         markerId: const MarkerId('selected-location'),
                         position: _selectedLocation!,
                       ),
+                    },
+                    onMapCreated: (GoogleMapController controller) {
+                      _mapController = controller; // 컨트롤러 저장
                     },
                   ),
                 ),
