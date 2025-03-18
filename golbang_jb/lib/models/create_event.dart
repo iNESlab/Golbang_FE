@@ -46,8 +46,8 @@ class CreateEvent {
       'event_title': eventTitle,
       'location': location,
       'site': site,
-      'start_date_time': startDateTime.toIso8601String(),
-      'end_date_time': endDateTime.toIso8601String(),
+      'start_date_time': startDateTime.toUtc().toIso8601String(),
+      'end_date_time': endDateTime.toUtc().toIso8601String(),
       'repeat_type': repeatType,
       'game_mode': gameMode,
       'alert_date_time':'2024-07-31T09:00:00Z',//TODO: 임시 조치

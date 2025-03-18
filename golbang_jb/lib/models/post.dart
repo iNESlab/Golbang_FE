@@ -42,7 +42,7 @@ class Post {
       'clubMemberId': clubMemberId,
       'content': content,
       'type': type,
-      'time': time.toIso8601String(),
+      'time': time.toUtc().toIso8601String(),
       'likes': likes,
       'comments': comments.map((comment) => comment.toJson()).toList(),
     };
@@ -70,7 +70,7 @@ class Comment {
       postId: json['postId'],
       author: json['author'],
       content: json['content'],
-      createdAt: DateTime.parse(json['createdAt']),
+      createdAt: DateTime.parse(json['createdAt']).toLocal(),
     );
   }
 
@@ -80,7 +80,7 @@ class Comment {
       'postId': postId,
       'author': author,
       'content': content,
-      'createdAt': createdAt.toIso8601String(),
+      'createdAt': createdAt.toUtc().toIso8601String(),
     };
   }
 }
