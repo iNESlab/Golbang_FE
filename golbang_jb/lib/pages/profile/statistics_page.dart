@@ -20,6 +20,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
   late StatisticsService statisticsService;
   late GroupService groupService; // 그룹 서비스 추가
   String selectedYear = '전체'; // 초기 연도 설정
+  List<String> years = [];
 
   List<Group> groups = []; // 그룹 리스트
   Map<int, ClubStatistics> groupRankings = {}; // 그룹별 랭킹 데이터
@@ -33,6 +34,16 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
   DateTime? endDate;
   PeriodStatistics? periodStatistics; // 기간별 통계 데이터
   final Map<int, List<EventStatistics>> _cachedEvents = {}; // 그룹별 이벤트 캐시
+
+  @override
+  void initState() {
+    super.initState();
+    // years 리스트 생성 (현재 연도 ~ 2000)
+    for (int i = DateTime.now().year; i>= 2000; i--) {
+      years.add('$i');
+    }
+    years.insert(0, '전체'); // 첫 번째 옵션으로 "전체" 추가
+  }
 
   @override
   void didChangeDependencies() {
@@ -90,7 +101,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
         // 전체 통계 가져오기
         overallStatistics = await statisticsService.fetchOverallStatistics();
         yearStatistics = null;
-      } else if (selectedYear == '2023' || selectedYear == '2024') {
+      } else if (selectedYear != "전체") {
         // 연도별 통계 가져오기 (startDate, endDate는 사용하지 않음)
         yearStatistics = await statisticsService.fetchYearStatistics(selectedYear);
         overallStatistics = null;
@@ -190,26 +201,85 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
     return widgetTree;
   }
 
-
   Widget _buildYearSelector() {
+    const double elementWidth = 120.0;
+
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.start,
       children: [
-        Expanded(child: _buildYearButton('전체')),
-        SizedBox(width: 8),
-        Expanded(child: _buildYearButton('2024년')),
-        SizedBox(width: 8),
-        Expanded(child: _buildYearButton('2023년')),
-        SizedBox(width: 8), // 기간 선택 버튼과의 간격
-        ElevatedButton(
-          onPressed: () => _selectDateRange(context), // 기간 선택 버튼
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-          child: const Text('기간 선택', style: TextStyle(color:Colors.white)),
+        Container(
+          width: elementWidth,
+          padding: const EdgeInsets.all(8.0),
+          child: DropdownButton<String>(
+            value: selectedYear,
+            hint: const Text('연도 선택'),
+            isExpanded: true,
+            items: years.map<DropdownMenuItem<String>>((String value) {
+              return DropdownMenuItem<String>(
+                value: value,
+                child: Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.black,
+                  ),
+                ),
+              );
+            }).toList(),
+            onChanged: (String? newValue) async {
+              if (newValue != null) {
+                setState(() {
+                  isLoading = true;
+                  selectedYear = newValue;
+                  startDate = null; // 데이터 범위 리셋
+                  endDate = null;
+                  periodStatistics = null; // period statistics 리셋
+                });
+                await _loadStatisticsData();
+                setState(() {
+                  isLoading = false;
+                });
+              }
+            },
+            style: const TextStyle(
+              color: Colors.black,
+              fontSize: 14,
+            ),
+            dropdownColor: Colors.white,
+            underline: Container(
+              height: 1,
+              color: Colors.green,
+            ),
+            icon: const Icon(
+              Icons.arrow_drop_down,
+              color: Colors.green,
+            ),
+          ),
+        ),
+        const SizedBox(width: 8),
+        Container(
+          width: elementWidth,
+          child: ElevatedButton(
+            onPressed: () => _selectDateRange(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.green,
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            child: const Text(
+              '기간 선택',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white,
+              ),
+            ),
+          ),
         ),
       ],
     );
   }
-
 
   Future<void> _selectDateRange(BuildContext context) async {
     final DateTimeRange? picked = await showDateRangePicker(
