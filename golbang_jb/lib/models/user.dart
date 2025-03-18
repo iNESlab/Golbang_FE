@@ -54,14 +54,14 @@ class User {
       password: json['password'],
       mobile: json['mobile'],
       address: json['address'],
-      dateOfBirth: DateTime.parse(json['dateOfBirth']),
+      dateOfBirth: DateTime.parse(json['dateOfBirth']).toLocal(),
       handicap: json['handicap'],
       studentId: json['studentId'],
       profileImage: json['profileImage'],
-      createdAt: DateTime.parse(json['createdAt']),
-      updatedAt: DateTime.parse(json['updatedAt']),
-      recentConnectionTime: DateTime.parse(json['recentConnectionTime']),
-      releaseAt: DateTime.parse(json['releaseAt']),
+      createdAt: DateTime.parse(json['createdAt']).toLocal(),
+      updatedAt: DateTime.parse(json['updatedAt']).toLocal(),
+      recentConnectionTime: DateTime.parse(json['recentConnectionTime']).toLocal(),
+      releaseAt: DateTime.parse(json['releaseAt']).toLocal(),
     );
   }
 
@@ -78,14 +78,14 @@ class User {
       'password': password,
       'mobile': mobile,
       'address': address,
-      'dateOfBirth': dateOfBirth.toIso8601String(),
+      'dateOfBirth': dateOfBirth.toUtc().toIso8601String(),
       'handicap': handicap,
       'studentId': studentId,
       'profileImage': profileImage,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
-      'recentConnectionTime': recentConnectionTime.toIso8601String(),
-      'releaseAt': releaseAt.toIso8601String(),
+      'createdAt': createdAt.toUtc().toIso8601String(),
+      'updatedAt': updatedAt.toUtc().toIso8601String(),
+      'recentConnectionTime': recentConnectionTime.toUtc().toIso8601String(),
+      'releaseAt': releaseAt.toUtc().toIso8601String(),
     };
   }
   User? getUserByToken(List<User> users, String token) {
