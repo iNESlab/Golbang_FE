@@ -163,6 +163,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
     final startTime = DateTime.now(); // 시작 시간 기록
 
     final widgetTree = Scaffold(
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
         title: const Text('통계'),
         leading: IconButton(
@@ -183,11 +184,11 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _buildYearSelector(),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               _buildStatisticsCard(), // 전체 통계 또는 연도별 통계 카드
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               _buildClubRankingSection(), // 그룹 랭킹 섹션
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
               _buildEventListSection(), // 클릭한 모임의 이벤트 섹션
             ],
           ),
@@ -251,7 +252,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
               color: Colors.green,
             ),
             icon: const Icon(
-              Icons.arrow_drop_down,
+              Icons.arrow_drop_down_rounded,
               color: Colors.green,
             ),
           ),
@@ -397,13 +398,13 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
   Widget _buildStatCard(String title, String value, Color color) {
     return Expanded(
       child: Card(
-        color: Colors.green[50],
+        color: Colors.white,
         elevation: 4,
         child: Padding(
           padding: const EdgeInsets.all(12.0),
           child: Column(
             children: [
-              Text(title, style: const TextStyle(fontSize: 14)),
+              Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
               const SizedBox(height: 8),
               Text(
                 value,
@@ -426,7 +427,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
     }
 
     return Card(
-      color: Colors.green[50],
+      color: Colors.white,
       elevation: 4,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -527,7 +528,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
                   Container(
                     height: 20,
                     decoration: BoxDecoration(
-                      color: Colors.green[50],
+                      color: Colors.white,
                       borderRadius: BorderRadius.circular(5),
                     ),
                   ),
