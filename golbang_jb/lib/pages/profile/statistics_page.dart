@@ -331,39 +331,6 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
     }
   }
 
-
-  Widget _buildYearButton(String title) {
-    return ElevatedButton(
-      onPressed: () async {
-        setState(() {
-          isLoading = true;
-          selectedYear = title.replaceAll('년', '');
-          // 연도별 통계를 선택할 때 기간 선택 데이터를 초기화
-          startDate = null;
-          endDate = null;
-          periodStatistics = null; // 기간 통계 데이터를 초기화
-        });
-
-        // 비동기 작업 완료 후 데이터 로드
-        await _loadStatisticsData();
-
-        // 로딩이 끝난 후 화면 갱신
-        setState(() {
-          isLoading = false;
-        });
-      },
-      style: ElevatedButton.styleFrom(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        backgroundColor: Colors.green
-      ),
-      child: Text(title, style: const TextStyle(color: Colors.white)),
-    );
-  }
-
-
   // 전체, 연도별, 기간별 통계 표시 카드
   Widget _buildStatisticsCard() {
     if (selectedYear == '전체' && overallStatistics != null) {
