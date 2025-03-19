@@ -11,6 +11,7 @@ import '../../models/event.dart';
 import '../../models/participant.dart';
 import '../../models/responseDTO/GolfClubResponseDTO.dart';
 import '../../provider/event/event_state_notifier_provider.dart';
+import '../../provider/event/game_in_progress_provider.dart';
 import '../../provider/screen_riverpod.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../widgets/common/circular_default_person_icon.dart';
@@ -588,16 +589,24 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     else if (currentTime.isAfter(_startDateTime)) {
       bool isButtonActivate = _myStatus == 'ACCEPT' || _myStatus == 'PARTY';
       if (isButtonActivate){
+        // 1) gameInProgressProvider에서 현재 이벤트ID에 대한 진행 여부 가져오기
+        final bool isGameInProgress = ref.watch(
+          gameInProgressProvider.select((map) => map[widget.event.eventId] ?? false),
+        );
         return ElevatedButton(
           onPressed: () {
-            if (isButtonActivate){
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => ScoreCardPage(event: widget.event),
-                ),
-              );
+            // 아직 게임 중이 아니라면 게임시작
+            if (!isGameInProgress) {
+              ref.read(gameInProgressProvider.notifier).startGame(
+                  widget.event.eventId);
             }
+            // 스코어카드 페이지로 이동
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ScoreCardPage(event: widget.event),
+              ),
+            );
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.green,
@@ -608,7 +617,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
               borderRadius: BorderRadius.circular(10.0),
             ),
           ),
-          child: Text('게임 시작', style: TextStyle(fontSize: fontSizeLarge)),
+          child: Text(isGameInProgress ? "게임 진행 중" : "게임 시작", style: TextStyle(fontSize: fontSizeLarge)),
         );
       }
       return null;

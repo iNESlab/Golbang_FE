@@ -8,6 +8,7 @@ import 'package:golbang/utils/reponsive_utils.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'dart:collection';
 import '../../models/event.dart';
+import '../../provider/event/game_in_progress_provider.dart';
 import '../../provider/participant/participant_state_provider.dart';
 import '../../utils/date_utils.dart';
 import 'package:golbang/services/participant_service.dart';
@@ -604,19 +605,38 @@ class EventPageState extends ConsumerState<EventPage> {
   }
 
   void _handleButtonPress(Event event, String statusType) {
+    // 이미 종료된 이벤트면 '결과 조회'
     if (currentTime.isAfter(event.endDateTime)) {
       _navigateToResultPage(event);
-    } else if (currentTime.isAfter(event.startDateTime) &&
+      return;
+    }
+
+    // 이벤트가 시작되었고, 내 상태가 ACCEPT/PARTY라면
+    if (currentTime.isAfter(event.startDateTime) &&
         (statusType == 'ACCEPT' || statusType == 'PARTY')) {
+      // Riverpod에서 게임 진행 여부 가져오기
+      final bool gameInProgress =
+          ref.read(gameInProgressProvider)[event.eventId] ?? false;
+
+      // 아직 게임 중이 아니라면, 여기서 게임 중으로 세팅
+      if (!gameInProgress) {
+        ref.read(gameInProgressProvider.notifier).startGame(event.eventId);
+      }
+
+      // 이후 스코어카드 페이지로 이동
       _navigateToGameStartPage(event);
     }
   }
+
 
   String _getButtonText(Event event) {
     if (currentTime.isAfter(event.endDateTime)) {
       return '결과 조회';
     } else if (currentTime.isAfter(event.startDateTime)) {
-      return '게임 시작';
+      // Riverpod에서 현재 '게임 중'인지 확인
+      final bool gameInProgress =
+      ref.watch(gameInProgressProvider.select((map) => map[event.eventId] ?? false));
+      return gameInProgress ? '게임 진행 중' : '게임 시작';
     } else {
       return _formatTimeDifference(event.startDateTime);
     }
