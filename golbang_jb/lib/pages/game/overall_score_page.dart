@@ -40,6 +40,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
   late double fontSizeSmall = ResponsiveUtils.getSmallFontSize(screenWidth, orientation); // 너비의 3%를 폰트 크기로 사용
   late double appBarIconSize = ResponsiveUtils.getAppBarIconSize(screenWidth, orientation);
   late double avatarSize = fontSizeMedium * 2;
+  final GlobalKey _infoKey = GlobalKey();
 
   @override
   void initState() {
@@ -178,6 +179,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
           : Column(
         children: [
           _buildHeader(width, height),
+          _buildScoreInfoPopup(width, height),
           Expanded(
             child: ListView.builder(
               itemCount: _players.length,
@@ -193,6 +195,65 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
 
   String _formattedDate(DateTime dateTime) {
     return dateTime.toIso8601String().split('T').first; // T 문자로 나누고 첫 번째 부분만 가져옴
+  }
+  Widget _buildScoreInfoPopup(double width, double height){
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: width * 0.03, vertical: height * 0.005),
+      child: GestureDetector(
+        key: _infoKey, // 위치 계산을 위해 GlobalKey 사용
+        onTap: () {
+          // info 버튼의 RenderBox와 offset, size 계산
+          final RenderBox renderBox = _infoKey.currentContext!.findRenderObject() as RenderBox;
+          final Offset offset = renderBox.localToGlobal(Offset.zero);
+          final Size size = renderBox.size;
+
+          // 팝업을 버튼 오른쪽 아래에 표시
+          final RelativeRect position = RelativeRect.fromLTRB(
+            offset.dx + size.width,       // 버튼 오른쪽으로 약간 이동
+            offset.dy + size.height + 10,      // 버튼 아래쪽으로 이동
+            0,                            // 오른쪽 여백은 0으로
+            0,                            // 아래 여백은 0으로
+          );
+
+          showMenu(
+            context: context,
+            position: position,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            color: Colors.white, // 흰색 배경
+            items: [
+              PopupMenuItem(
+                enabled: false,  // 클릭 불가
+                child: SizedBox(
+                  width: width * 0.45,    // 필요 시 팝업 너비 지정 (원하는 대로 조절)
+                  child: Text(
+                    '골프 스코어는 두 가지 숫자로 표기됩니다.\n\n'
+                    '예) "+1 (14)"\n'
+                    '• "+1": 방금 친 홀에서 기록한 점수\n'
+                    '• "(14)": 지금까지의 누적 스코어\n\n'
+                    '즉, 괄호 안의 숫자가 전체 합계 점수이며, 앞쪽의 숫자는 마지막 홀에서 친 점수를 의미합니다.',
+                    style: TextStyle(
+                      fontSize: fontSizeSmall,
+                      color: Colors.black,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Text(
+              '점수 표기 안내',
+              style: TextStyle(fontSize: fontSizeSmall, color: Colors.white),
+            ),
+            const SizedBox(width: 4),
+            Icon(Icons.info_outline, size: fontSizeSmall + 2, color: Colors.white),
+          ],
+        ),
+      ),
+    );
   }
   Widget _buildHeader(double width, double height) {
     return Container(

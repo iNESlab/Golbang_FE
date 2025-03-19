@@ -274,6 +274,17 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                   );
                 }).toList(),
               ),
+              const SizedBox(height: 4),
+              const Row(
+                children: [
+                  Icon(Icons.info_outline, size: 16, color: Colors.grey),
+                  SizedBox(width: 4),
+                  Text(
+                    '자신이 관리자인 모임만 이벤트를 생성할 수 있습니다',
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                  ),
+                ],
+              ),
               const SizedBox(height: 16),
               GestureDetector(
                 onTap: _showLocationSearchDialog,
