@@ -1,5 +1,7 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart';
 import 'package:golbang/models/profile/member_profile.dart';
 import 'package:golbang/pages/event/widgets/group_card.dart';
 import 'package:golbang/pages/event/widgets/no_api_participant_dialog.dart';
@@ -43,17 +45,15 @@ class EventsUpdate2 extends ConsumerStatefulWidget {
 
 class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
   GameMode gameMode = GameMode.STROKE;
-  TeamConfig teamConfig = TeamConfig.NONE;
   String groupSetting = '직접 설정';
   String numberOfGroups = '8개';
   String numberOfPlayers = '4명';
   bool isAutoMatching = false;
   bool isTeam = false;
   List<Map<String, List<CreateParticipant>>> groups = [];
-  List<CreateParticipant> _selectedParticipants = [];
+  List<CreateParticipant> _finalParticipants = [];
   bool hasDuplicateParticipants = false;
   bool areGroupsEmpty = true;
-  bool allParticipantsAssigned = false;
   late EventService _eventService;
 
   @override
@@ -61,40 +61,45 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
     super.initState();
     _eventService = EventService(ref.read(secureStorageProvider));
     _initializeParticipants();
-    isTeam = widget.existingParticipants.isEmpty ? false
-        : widget.existingParticipants.first.teamType != TeamConfig.NONE.value;// 기존에 설정된 게임 모드 초기화
+
+    isTeam = widget.existingParticipants.isNotEmpty &&
+        widget.existingParticipants.any((participant) =>
+        participant.teamType != TeamConfig.NONE.value); // 기존에 설정된 게임 모드 초기화
+
     _initializeGroups();
     gameMode = widget.selectedGameMode; // 기존에 설정된 게임 모드 초기화
   }
 
   void _initializeParticipants() {
-    _selectedParticipants = widget.selectedParticipants.map((participant) {
-      bool isExisting = widget.existingParticipants.contains(participant);
-      late Participant existingParticipant;
+    _finalParticipants = widget.selectedParticipants.map((participant) {
+      Participant? existingParticipant = widget.existingParticipants.firstWhereOrNull(
+            (existing) => existing.member!.memberId == participant.memberId,
+      );
 
-      if (isExisting) {
-        existingParticipant = widget.existingParticipants
-            .firstWhere(
-              (existing) => existing.member!.memberId == participant.memberId,
-            );
-      }
-
-      return CreateParticipant(
+      var p = CreateParticipant(
         memberId: participant.memberId,
         name: participant.name,
         profileImage: participant.profileImage ?? '',
-        teamType: teamConfig,
-        groupType: isExisting ? existingParticipant.groupType : 0,
+        teamType: existingParticipant==null ? TeamConfig.NONE
+            : existingParticipant.teamType == "NONE" ? TeamConfig.NONE
+            : existingParticipant.teamType == "A" ? TeamConfig.TEAM_A
+            : TeamConfig.TEAM_B,
+        groupType: existingParticipant!=null ? existingParticipant.groupType : 0,
       );
+
+      log(">>>>>>>>>>>>>>>>>>>>>>>>>");
+      log("name : ${p.name}");
+      log("isTeam: ${p.teamType}");
+      log("groupName: ${p.groupType}");
+
+      return p;
     }).toList();
   }
 
   void _initializeGroups() {
     setState(() {
       groups.clear();
-
       List<CreateParticipant> existParticipants = widget.existingParticipants.map((participant) {
-        print("${participant.member!.name} teamType: ${participant.teamType} groupType: ${participant.groupType}");
         return CreateParticipant(
           memberId: participant.member!.memberId,
           name: participant.member!.name,
@@ -109,14 +114,14 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
       for (CreateParticipant createParticipant in existParticipants) {
         String groupName = '조${createParticipant.groupType}';
         if (isTeam) groupName += ' ${createParticipant.teamType.value}'; // A, B 팀을 추가함
-        print("=================");
-        print("name : ${createParticipant.name}");
-        print("isTeam: $isTeam");
-        print("groupName: $groupName");
+        log("=================");
+        log("name : ${createParticipant.name}");
+        log("isTeam: $isTeam");
+        log("groupName: $groupName");
 
         // 그룹의 인덱스를 찾음
         int groupIndex = groups.indexWhere((group) => group.keys.contains(groupName));
-        print("groupIndex: $groupIndex");
+        log("groupIndex: $groupIndex");
 
         if (groupIndex != -1) {
           // 해당 그룹이 존재할 경우, 참가자를 추가
@@ -144,7 +149,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
     int numGroups = int.parse(numberOfGroups.replaceAll('개', ''));
     setState(() {
       // 각 참가자의 groupType과 teamType을 0과 NONE으로 리셋
-      for (var participant in _selectedParticipants) {
+      for (var participant in _finalParticipants) {
         participant.groupType = 0;
         participant.teamType = TeamConfig.NONE;
       }
@@ -172,42 +177,27 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
     for (var group in groups) {
       for (var participant in group.values.first) {
         if (!allParticipants.add(participant.memberId)) {
-          print('참가자 중복입니다.true');
+          log('참가자 중복입니다.true');
           return true;
         }
       }
-      if(isTeam)
+      if(isTeam) {
         for (var participant in group.values.last) {
           if (!allParticipants.add(participant.memberId)) {
-            print('참가자 중복입니다.true');
+            log('참가자 중복입니다.true');
             return true;
           }
         }
-    }
-    print('참가자 중복이 아닙니다.false');
-    return false;
-  }
-
-  bool _checkIfAllParticipantsAssigned() {
-    final assignedParticipants = <int>{};
-    for (var group in groups) {
-      for (var participant in group.values.first) {
-        assignedParticipants.add(participant.memberId);
       }
-      if(isTeam)
-        for (var participant in group.values.last) {
-          assignedParticipants.add(participant.memberId);
-        }
     }
-    print('참가자 할당여부 ${assignedParticipants.length == _selectedParticipants.length}');
-    return assignedParticipants.length == _selectedParticipants.length;
+    log('참가자 중복이 아닙니다.false');
+    return false;
   }
 
   void _validateForm() {
     setState(() {
       hasDuplicateParticipants = _checkForDuplicateParticipants();
-      allParticipantsAssigned = _checkIfAllParticipantsAssigned();
-      print("---------------------------------------------------");
+      log("---------------------------------------------------");
     });
   }
 
@@ -218,7 +208,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
     isSameGroup(CreateParticipant participant) =>
     participant.groupType == int.parse(groupName.substring(1, 2));
 
-    List<CreateParticipant> notOtherGroupParticipants = _selectedParticipants
+    List<CreateParticipant> notOtherGroupParticipants = _finalParticipants
         .where((p) => !isTeam ? isSameGroup(p) || p.groupType==0
         : p.groupType==0 || (isSameGroup(p) && p.teamType.value == groupName.substring(3)))
         .toList();
@@ -229,7 +219,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
         return ParticipantSelectionDialog(
           isTeam: isTeam,
           groupName: groupName,
-          participants: _selectedParticipants, // 모든 참가자 리스트
+          participants: _finalParticipants, // 모든 참가자 리스트
           selectedParticipants: groupParticipants, // 현재 그룹에 선택된 참가자
           notOtherGroupParticipants: notOtherGroupParticipants,
           max: int.parse(numberOfPlayers.substring(0,1)),
@@ -256,10 +246,18 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
       gameMode: gameMode.value,
       alertDateTime: "",
     );
+    for (var participant in _finalParticipants) {
+      if (participant.groupType==0) {
+        participant.groupType = 1;
+        participant.teamType = isTeam
+            ? TeamConfig.TEAM_A
+            : TeamConfig.NONE;
+      }
+    }
 
     bool success = await _eventService.updateEvent(
       event: eventData,
-      participants: _selectedParticipants,
+      participants: _finalParticipants,
     );
 
     if (success) {
@@ -288,13 +286,13 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
         title: const Text('이벤트 수정'),
         actions: [
           TextButton(
-            onPressed: (hasDuplicateParticipants || !allParticipantsAssigned)
+            onPressed: (hasDuplicateParticipants)
                 ? null
                 : _onCompletePressed,
             child: Text(
               '완료',
               style: TextStyle(
-                color: (hasDuplicateParticipants || !allParticipantsAssigned)
+                color: (hasDuplicateParticipants)
                     ? Colors.grey
                     : Colors.teal,
               ),
@@ -345,6 +343,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                       onChanged: (newValue) {
                         setState(() {
                           isTeam = newValue!;
+                          log('isTeam: $isTeam');
                           _createGroups();
                           _validateForm();
                         });
@@ -446,7 +445,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('참가자 조를 지정해 주세요.\n모두 지정해야 완료됩니다.'),
+                    const Text('참가자 조를 지정해 주세요.\n미선택시 \'1조\' 혹은 \'A팀 1조\'으로 지정됩니다.'),
                     const SizedBox(height: 10),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,

@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/event/widgets/group_card.dart';
@@ -72,20 +73,20 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
     for (var group in groups) {
       for (var participant in group.values.first) {
         if (!allParticipants.add(participant.memberId)) {
-          print('참가자 중복입니다.true');
+          log('참가자 중복입니다.true');
           return true;
         }
       }
       if (isTeam) {
         for (var participant in group.values.last) {
           if (!allParticipants.add(participant.memberId)) {
-            print('참가자 중복입니다.true');
+            log('참가자 중복입니다.true');
             return true;
           }
         }
       }
     }
-    print('참가자 중복이 아닙니다.false');
+    log('참가자 중복이 아닙니다.false');
     return false;
   }
 
@@ -170,8 +171,11 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
     for (var participant in _selectedParticipants) {
       if (participant.groupType==0) {
         participant.groupType = 1;
+        participant.teamType = isTeam
+            ? TeamConfig.TEAM_A
+            : TeamConfig.NONE;
       }
-      }
+    }
 
     // 이벤트 생성 호출 후 성공 여부에 따른 UI 처리
     final success = await ref
@@ -369,7 +373,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('멤버를 추가해주세요.\n미선택시, 1조로 등록됩니다.'),
+                    const Text('참가자 조를 지정해 주세요.\n미선택시 \'1조\' 혹은 \'A팀 1조\'으로 지정됩니다.'),
                     const SizedBox(height: 10),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,
