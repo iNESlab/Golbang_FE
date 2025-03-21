@@ -1,6 +1,6 @@
-import 'dart:developer';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:golbang/pages/signup/widgets/welcome_header_widget.dart';
 import '../../services/user_service.dart';
@@ -21,7 +21,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
 
-  bool _obscurePassword = true; // 비밀번호(확인) 필드의 숨김 상태
+  bool _obscurePassword = true; // 비밀번호(확인) 필드 숨김 상태
 
   void _togglePasswordVisibility() {
     setState(() {
@@ -31,51 +31,70 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
-    final double padding = MediaQuery.of(context).size.width * 0.08;
-
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text(''),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: padding),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const WelcomeHeader(topPadding: 0.1), // 화면 높이의 10%만 여백으로 설정
+      body: SafeArea(
+        // 기기 화면 크기에 맞춰 동적으로 배치
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final double padding = constraints.maxWidth * 0.08;
 
-                // 회원가입 폼
-                IdField(controller: _idController),
-                const SizedBox(height: 16.0),
-                EmailField(controller: _emailController),
-                const SizedBox(height: 16.0),
-                PasswordField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  toggleObscureText: _togglePasswordVisibility,
-                ),
-                const SizedBox(height: 16.0),
-                ConfirmPasswordField(
-                  controller: _confirmPasswordController,
-                  passwordController: _passwordController,
-                  obscureText: _obscurePassword,
-                  toggleObscureText: _togglePasswordVisibility,
-                ),
-                const SizedBox(height: 26.0),
-                SubmitButton(onPressed: () => _signupStep1(context)),
-              ],
-            ),
-          ),
+            return Padding(
+              padding: EdgeInsets.symmetric(horizontal: padding),
+              child: Column(
+                children: [
+                  // 1) 중앙 영역(폼)
+                  Expanded(
+                    child: Center(
+                      child: SingleChildScrollView(
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // 웰컴 헤더
+                              const WelcomeHeader(topPadding: 0.1),
+                              // 회원가입 필드
+                              IdField(controller: _idController),
+                              const SizedBox(height: 16.0),
+                              EmailField(controller: _emailController),
+                              const SizedBox(height: 16.0),
+                              PasswordField(
+                                controller: _passwordController,
+                                obscureText: _obscurePassword,
+                                toggleObscureText: _togglePasswordVisibility,
+                              ),
+                              const SizedBox(height: 16.0),
+                              ConfirmPasswordField(
+                                controller: _confirmPasswordController,
+                                passwordController: _passwordController,
+                                obscureText: _obscurePassword,
+                                toggleObscureText: _togglePasswordVisibility,
+                              ),
+                              const SizedBox(height: 26.0),
+                              // 여기서 SubmitButton을 빼고,
+                              // 버튼을 아래(2) 영역에서 고정 배치
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  // 2) 하단 버튼 (고정)
+                  SubmitButton(onPressed: () => _signupStep1(context)),
+                  const SizedBox(height: 16),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
@@ -89,7 +108,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
       try {
         var response = await UserService.saveUser(
-          userId: _idController.text, //TODO: AccountId로 수정
+          userId: _idController.text,
           email: _emailController.text,
           password1: _passwordController.text,
           password2: _confirmPasswordController.text,
@@ -97,7 +116,6 @@ class _SignUpPageState extends State<SignUpPage> {
         var data = json.decode(utf8.decode(response.bodyBytes));
 
         if (response.statusCode == 201) {
-
           Navigator.of(ctx).push(
             MaterialPageRoute(
               builder: (ctx) => AdditionalInfoPage(
@@ -106,17 +124,16 @@ class _SignUpPageState extends State<SignUpPage> {
             ),
           );
         } else {
-          // errors 딕셔너리 추출
           var errors = data['errors'];
-
-          // 모든 에러 메시지 하나의 문자열로 결합
           String errorMessage = errors.entries.map((entry) {
-            String messages = entry.value.join(', '); // 해당 필드의 에러 메시지 리스트를 문자열로 변환
-            return messages; // 각 필드와 메시지를 조합
-          }).join('\n'); // 여러 에러 메시지를 줄바꿈으로 연결
+            // 각 필드의 에러 메시지 리스트를 문자열로 변환
+            return entry.value.join(', ');
+          }).join('\n');
 
           ScaffoldMessenger.of(ctx).showSnackBar(
-            SnackBar(content: Text('$errorMessage \n회원가입에 실패했습니다. 다시 시도해 주세요.')),
+            SnackBar(
+              content: Text('$errorMessage\n회원가입에 실패했습니다. 다시 시도해 주세요.'),
+            ),
           );
         }
       } catch (e) {
