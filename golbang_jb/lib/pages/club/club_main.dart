@@ -5,7 +5,7 @@ import 'package:golbang/services/group_service.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:golbang/models/group.dart';
 import 'package:golbang/widgets/sections/group_item.dart';
-import 'package:golbang/pages/group/group_create.dart';
+import 'package:golbang/pages/club/club_create_page.dart';
 import 'package:golbang/pages/community/community_main.dart';
 import '../../repoisitory/secure_storage.dart';
 import 'package:get/get.dart';
@@ -178,7 +178,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => const GroupCreatePage()),
+                                builder: (context) => const ClubCreatePage()),
                           ).then((_) {
                             _fetchGroups(); // 모임 생성 후 새로고침
                           });

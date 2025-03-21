@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:golbang/pages/group/widgets/admin_button_widget.dart';
-import 'package:golbang/pages/group/widgets/member_button_widget.dart';
+import 'package:golbang/pages/club/widgets/admin_button_widget.dart';
+import 'package:golbang/pages/club/widgets/member_button_widget.dart';
 import 'package:golbang/services/user_service.dart';
 import 'package:golbang/widgets/sections/member_dialog.dart';
 import 'package:golbang/widgets/sections/member_invite.dart';
@@ -15,14 +15,14 @@ import '../../repoisitory/secure_storage.dart';
 import '../../services/group_service.dart';
 import '../profile/profile_screen.dart';
 
-class GroupCreatePage extends ConsumerStatefulWidget {
-  const GroupCreatePage({super.key});
+class ClubCreatePage extends ConsumerStatefulWidget {
+  const ClubCreatePage({super.key});
 
   @override
-  _GroupCreatePageState createState() => _GroupCreatePageState();
+  _ClubCreatePageState createState() => _ClubCreatePageState();
 }
 
-class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
+class _ClubCreatePageState extends ConsumerState<ClubCreatePage> {
   List<GetAllUserProfile> selectedAdmins = [];
   List<GetAllUserProfile> selectedMembers = [];
   int userId = 0;

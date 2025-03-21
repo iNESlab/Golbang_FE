@@ -12,7 +12,7 @@ import 'package:golbang/widgets/sections/groups_section.dart';
 import 'package:golbang/widgets/common/section_with_scroll.dart';
 import 'package:golbang/widgets/sections/upcoming_events.dart';
 import 'package:golbang/pages/event/event_main.dart';
-import 'package:golbang/pages/group/group_main.dart';
+import 'package:golbang/pages/club/club_main.dart';
 import 'package:golbang/pages/profile/profile_screen.dart';
 import 'package:golbang/services/group_service.dart';
 import 'package:golbang/services/user_service.dart';
