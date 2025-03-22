@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
 import 'package:golbang/pages/common/privacy_policy_page.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/auth_service.dart';
@@ -18,6 +19,24 @@ class SettingsPage extends ConsumerStatefulWidget {
 }
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
+  String _version='';
+  String _buildNumber='';
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    getAppVersion();
+  }
+
+  Future<void> getAppVersion() async {
+    PackageInfo packageInfo = await PackageInfo.fromPlatform();
+    setState(() {
+      _version = packageInfo.version;        // 예: "1.0.0"
+      _buildNumber = packageInfo.buildNumber; // 예: "39"
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // SecureStorage 및 AuthService 인스턴스 가져오기
@@ -65,9 +84,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               );
             },
           ),
-          const SettingsTile(
+          SettingsTile(
             title: '앱정보',
-            trailing: Text('1.0.0', style: TextStyle(color: Colors.grey)),
+            trailing: Text('$_version+$_buildNumber', style: const TextStyle(color: Colors.grey)),
           ),
           const Divider(),
           SettingsTile(
