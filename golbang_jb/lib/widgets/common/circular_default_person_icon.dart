@@ -7,12 +7,12 @@ class CircularIcon extends StatelessWidget {
   final Color iconColor;
 
   const CircularIcon({
-    Key? key,
+    super.key,
     this.containerSize = 60.0, // 기본값
     this.iconSize,            // 비율 계산 시 기본값은 null
     this.backgroundColor = const Color(0xFFE0E0E0), // 기본값 (light grey)
     this.iconColor = Colors.grey, // 기본값
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

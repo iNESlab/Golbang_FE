@@ -207,7 +207,7 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       decoration: InputDecoration(
-        labelText: '$label',
+        labelText: label,
         hintText: hintText,
         hintStyle: TextStyle(color: Colors.grey[400]),
         border: const OutlineInputBorder(),

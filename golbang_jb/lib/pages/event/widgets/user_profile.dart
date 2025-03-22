@@ -35,7 +35,7 @@ class UserProfileWidget extends StatelessWidget {
             child: userProfile.profileImage != null
                 ? ClipOval(
               child: Image.network(
-                userProfile.profileImage!,
+                userProfile.profileImage,
                 fit: BoxFit.cover,
                 width: 60,
                 height: 60,

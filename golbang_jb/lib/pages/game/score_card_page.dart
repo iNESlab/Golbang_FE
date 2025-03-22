@@ -546,13 +546,13 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
               holeIndex < _scorecard[member.participantId]!.length) {
             _focusNodes[member.participantId]?[holeIndex] ??= FocusNode();
 
-            _focusNodes[member.participantId]?[holeIndex]?.addListener(() {
+            _focusNodes[member.participantId]?[holeIndex].addListener(() {
               if (!_focusNodes[member.participantId]![holeIndex].hasFocus) {
-                if ((_controllers[member.participantId]?[holeIndex]?.text ?? "").isEmpty ||
-                    _controllers[member.participantId]?[holeIndex]?.text == "-") {
+                if ((_controllers[member.participantId]?[holeIndex].text ?? "").isEmpty ||
+                    _controllers[member.participantId]?[holeIndex].text == "-") {
                   int originalScore = _scorecard[member.participantId]![holeIndex].score ?? 0;
                   setState(() {
-                    _controllers[member.participantId]?[holeIndex]?.text = originalScore.toString();
+                    _controllers[member.participantId]?[holeIndex].text = originalScore.toString();
                   });
                 }
               }
@@ -570,7 +570,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
                 focusNode: _focusNodes[member.participantId]?[holeIndex],
 
                 onTap: () {
-                  _controllers[member.participantId]?[holeIndex]?.clear();
+                  _controllers[member.participantId]?[holeIndex].clear();
                   setState(() {}); // 포커스 변경 시 UI 업데이트
                 },
 
@@ -588,7 +588,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
                   debounceTimer?.cancel();
 
                   if (value.isEmpty || value == "-") {
-                    Future.delayed(Duration(milliseconds: 100), () {
+                    Future.delayed(const Duration(milliseconds: 100), () {
                       setState(() {}); // hintText 업데이트 강제 적용
                     });
                     return;
@@ -604,12 +604,12 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
                   isDense: true,
                   contentPadding: EdgeInsets.zero,
                   border: InputBorder.none,
-                  hintText: (_controllers[member.participantId]?[holeIndex]?.text.isEmpty ?? true)
+                  hintText: (_controllers[member.participantId]?[holeIndex].text.isEmpty ?? true)
                       ? _scorecard[member.participantId] != null
                       ? _scorecard[member.participantId]![holeIndex].score.toString()
                       : ""
                       : "",
-                  hintStyle: TextStyle(color: Colors.grey),
+                  hintStyle: const TextStyle(color: Colors.grey),
                 ),
               ),
             );
@@ -733,12 +733,12 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> {
     );
   }
   void _restoreIfEmpty({required int participantId, required int holeIndex}) {
-    String currentText = _controllers[participantId]?[holeIndex]?.text ?? "";
+    String currentText = _controllers[participantId]?[holeIndex].text ?? "";
 
     // 값이 비어 있으면 원래 점수로 복원
     if (currentText.isEmpty) {
       int originalScore = _scorecard[participantId]?[holeIndex].score ?? 0;
-      _controllers[participantId]?[holeIndex]?.text = originalScore.toString();
+      _controllers[participantId]?[holeIndex].text = originalScore.toString();
     }
   }
 }

@@ -687,11 +687,11 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                   CircleAvatar(
                     radius: 15,
                     backgroundColor: Colors.transparent,
-                    child: (member?.profileImage != null && member!.profileImage!.isNotEmpty)
-                        ? (member.profileImage!.startsWith('https')
+                    child: (member?.profileImage != null && member!.profileImage.isNotEmpty)
+                        ? (member.profileImage.startsWith('https')
                         ? ClipOval(
                       child: Image.network(
-                        member.profileImage!,
+                        member.profileImage,
                         width: 50,
                         height: 50,
                         errorBuilder: (context, error, stackTrace) {
@@ -699,10 +699,10 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                         },
                       ),
                     )
-                        : (member.profileImage!.startsWith('file://')
+                        : (member.profileImage.startsWith('file://')
                         ? ClipOval(
                       child: Image.file(
-                        File(member.profileImage!.replaceFirst('file://', '')),
+                        File(member.profileImage.replaceFirst('file://', '')),
                         width: 50,
                         height: 50,
                         errorBuilder: (context, error, stackTrace) {

@@ -30,9 +30,9 @@ class AllowNegativeNumbersFormatter extends TextInputFormatter {
     final isValid = RegExp(r'^-?\d+$').hasMatch(text) || text == '-';
 
     if (text == "-") {
-      return TextEditingValue(
+      return const TextEditingValue(
         text: "-",
-        selection: const TextSelection.collapsed(offset: 1),
+        selection: TextSelection.collapsed(offset: 1),
       );
     }
 

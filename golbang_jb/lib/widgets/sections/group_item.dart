@@ -69,7 +69,7 @@ class GroupItem extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.star, color: Colors.green[700], size: 16),
-                SizedBox(width: 4),
+                const SizedBox(width: 4),
                 Text(
                   '관리자',
                   style: TextStyle(

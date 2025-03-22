@@ -421,7 +421,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
               child: player.profileImage != null
                   ? ClipOval(
                 child: Image.network(
-                  player.profileImage!,
+                  player.profileImage,
                   width: avatarSize * 2,
                   height: avatarSize * 2,
                   fit: BoxFit.cover,
