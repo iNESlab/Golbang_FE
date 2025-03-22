@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/models/event.dart';
@@ -40,7 +41,7 @@ class _HomePageState extends State<HomePage> {
   static final List<Widget> _widgetOptions = <Widget>[
     const HomeContent(),
     const EventPage(),
-    const GroupMainPage(),
+    const ClubMainPage(),
     const ProfileScreen(),
   ];
 
@@ -160,7 +161,7 @@ class HomeContent extends ConsumerWidget {
             eventService.getEventsForMonth(date: date),
             groupService.getUserGroups(),
             statisticsService.fetchOverallStatistics().catchError((e) {
-              print('Error fetching overall statistics: $e');
+              log('Error fetching overall statistics: $e');
               return OverallStatistics(
                 averageScore: 0.0,
                 bestScore: 0,
@@ -181,7 +182,7 @@ class HomeContent extends ConsumerWidget {
             UserAccount userAccount = snapshot.data![0];
             List<Event> events = snapshot.data![1];
             events.sort((a, b) => b.startDateTime.compareTo(a.startDateTime));
-            List<Group> groups = snapshot.data![2];
+            List<Group> clubs = snapshot.data![2];
             OverallStatistics overallStatistics = snapshot.data![3] ?? OverallStatistics(
               averageScore: 0.0,
               bestScore: 0,
@@ -211,8 +212,8 @@ class HomeContent extends ConsumerWidget {
                 SizedBox(
                   height: screenHeight * 0.18,
                   child: SectionWithScroll(
-                    title: '내 모임 ${groups.length}',
-                    child: GroupsSection(groups: groups),
+                    title: '내 모임 ${clubs.length}',
+                    child: GroupsSection(clubs: clubs),
                   ),
                 ),
               ],

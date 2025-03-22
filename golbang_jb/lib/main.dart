@@ -109,7 +109,7 @@ class MyApp extends StatelessWidget {
           GetPage(name: '/signupComplete', page: () => const SignupComplete()),
           GetPage(name: '/home', page: () => const HomePage()),
           GetPage(name: '/event', page: () => const EventPage()),
-          GetPage(name: '/group', page: () => const GroupMainPage()),
+          GetPage(name: '/club', page: () => const ClubMainPage()),
         ],
       ),
     );
