@@ -8,16 +8,15 @@ import 'package:golbang/widgets/sections/group_item.dart';
 import 'package:golbang/pages/club/club_create_page.dart';
 import 'package:golbang/pages/community/community_main.dart';
 import '../../repoisitory/secure_storage.dart';
-import 'package:get/get.dart';
 
-class GroupMainPage extends ConsumerStatefulWidget {
-  const GroupMainPage({super.key});
+class ClubMainPage extends ConsumerStatefulWidget {
+  const ClubMainPage({super.key});
 
   @override
   _GroupMainPageState createState() => _GroupMainPageState();
 }
 
-class _GroupMainPageState extends ConsumerState<GroupMainPage> {
+class _GroupMainPageState extends ConsumerState<ClubMainPage> {
   final PageController _pageController = PageController();
   List<Group> allGroups = []; // 전체 그룹 리스트
   List<Group> filteredGroups = []; // 필터링된 그룹 리스트
@@ -32,42 +31,8 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
     super.initState();
     final storage = ref.read(secureStorageProvider);
     groupService = GroupService(storage);
-    _checkAndNavigateToCommunity();
     _fetchGroups(); // 그룹 데이터를 초기화 시 가져옴
   }
-
-  Future<void> _checkAndNavigateToCommunity() async {
-    int? communityId = Get.arguments?['communityId'];
-    if (communityId != null && communityId != -1) {
-      List<Group> groups = await groupService.getGroupInfo(communityId);
-
-      if (groups.isNotEmpty) {
-        final communityName = groups[0].name;
-        final communityImage = groups[0].image ?? ''; // 이미지가 없을 때 대비
-        final adminNames = groups[0].getAdminNames(); // 관리자의 이름 가져오기
-
-        final isAdmin = groups[0].isAdmin;
-
-        Get.arguments?['communityId'] = -1;
-        // UI가 빌드된 후 CommunityMain 페이지로 이동
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => CommunityMain(
-                communityID: groups[0].id,
-                communityName: communityName,
-                communityImage: communityImage,
-                adminNames: adminNames,
-                isAdmin: isAdmin,
-              ),
-            ),
-          );
-        });
-      }
-    }
-  }
-
 
   // Fetch groups once
   Future<void> _fetchGroups() async {
@@ -108,7 +73,7 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
             children: filteredGroups
                 .skip(index * itemsPerPage)
                 .take(itemsPerPage)
-                .map((group) {
+                .map((club) {
               return Center(
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -125,19 +90,15 @@ class _GroupMainPageState extends ConsumerState<GroupMainPage> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => CommunityMain(
-                          communityID: group.id,
-                          communityName: group.name,
-                          communityImage: group.image!,
-                          adminNames: group.getAdminNames(),
-                          isAdmin: group.isAdmin,
+                            club: club
                         ),
                       ),
                     );
                   },
                   child: GroupItem(
-                    image: group.image!,
-                    label: group.name,
-                    isAdmin: group.isAdmin,
+                    image: club.image,
+                    label: club.name,
+                    isAdmin: club.isAdmin,
                   ),
                 ),
               );
