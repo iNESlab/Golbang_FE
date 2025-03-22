@@ -46,7 +46,6 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
         oldMembers = fetchedMembers;
         selectedMembers = oldMembers
             .map((m) => GetAllUserProfile(
-          userId: m.name,
           id: m.id,
           name: m.name,
           profileImage: m.profileImage,
@@ -77,7 +76,6 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
         setState(() {
           selectedMembers = oldMembers
               .map((m) => GetAllUserProfile(
-            userId: m.name,
             id: m.id,
             name: m.name,
             profileImage: m.profileImage,
