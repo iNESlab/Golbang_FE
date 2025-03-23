@@ -3,6 +3,8 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:golbang/pages/club/widgets/admin_button_widget.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -14,8 +16,8 @@ import '../../repoisitory/secure_storage.dart';
 import '../../services/club_service.dart';
 import '../../widgets/sections/admin_invite.dart';
 import '../../widgets/sections/member_dialog.dart';
+import '../home/home_page.dart';
 import '../profile/profile_screen.dart';
-import 'club_main.dart';
 
 class ClubEditPage extends ConsumerStatefulWidget {
   final Group club; // 모임 ID를 받도록 수정
@@ -104,12 +106,9 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
           const SnackBar(content: Text('성공적으로 수정하였습니다.')),
         );
         ref.read(clubStateProvider.notifier).fetchClubs(); // 클럽 리스트 다시 불러오기
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => const ClubMainPage(),
-          ),
-        );
+        Get.offAll(() => const HomePage(), arguments: {
+          'initialIndex': 2,
+        });
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('모임을 수정하는 데 실패했습니다. 나중에 다시 시도해주세요.')),
