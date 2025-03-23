@@ -39,7 +39,7 @@ class ClubService {
   Future<void> deleteClub(int clubId) async {
 
     // API URI 설정
-    var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/$clubId/";
+    var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/admin/$clubId/";
     // DELETE 요청
     var response = await dioClient.dio.delete(uri);
 
@@ -66,7 +66,8 @@ class ClubService {
       for (var user in userProfileList) {
         log('username: ${user.name}'); // ✅ user_id 출력
       }
-      var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/$clubId/invite/";
+      // TODO: 다른 api와는 다르게 모임 초대할 때에는 PK가 아니라 유저 아이디로 초대하고 있음. 통일이 필요
+      var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/admin/$clubId/invite/";
 
       // 1️⃣ userProfileList에서 user_id만 추출하여 리스트로 변환
       List<String> userIds = userProfileList.map((userProfile) => userProfile.userId!).toList();
@@ -90,7 +91,7 @@ class ClubService {
   }
   Future<void> removeMember(int clubId, int memberId) async {
     try {
-      var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/$clubId/members/$memberId/";
+      var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/admin/$clubId/members/$memberId/";
 
       await dioClient.dio.delete(
         uri,
