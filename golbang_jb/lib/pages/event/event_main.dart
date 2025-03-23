@@ -8,6 +8,7 @@ import 'package:golbang/utils/reponsive_utils.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'dart:collection';
 import '../../models/event.dart';
+import '../../provider/club/club_state_provider.dart';
 import '../../provider/event/game_in_progress_provider.dart';
 import '../../provider/participant/participant_state_provider.dart';
 import '../../utils/date_utils.dart';
@@ -91,6 +92,10 @@ class EventPageState extends ConsumerState<EventPage> {
         currentTime = DateTime.now();
       });
     });
+    // 앱 시작 시 클럽 데이터를 강제로 로드
+    final clubNotifier = ref.read(clubStateProvider.notifier);
+    clubNotifier.fetchClubs();
+
     // eventId 확인 및 상세 페이지로 이동
     _checkAndNavigateToEventDetail();
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -203,6 +208,7 @@ class EventPageState extends ConsumerState<EventPage> {
 
   @override
   Widget build(BuildContext context) {
+    final clubState = ref.watch(clubStateProvider);
     final size = MediaQuery.of(context).size;
     final width = size.width;
     final height = size.height;
@@ -345,25 +351,30 @@ class EventPageState extends ConsumerState<EventPage> {
               valueListenable: _selectedEvents,
               builder: (context, value, _) {
                 if (value.isEmpty) {
+                  // clubState를 이용해 메시지를 조건부로 변경
+                  final emptyText = clubState.clubList.isEmpty
+                      ? "참여 중인 모임이 없어요.\n먼저 모임에 참여하시거나\n새로운 모임을 만들어 주세요."
+                      : "일정 추가 버튼을 눌러\n이벤트를 만들어보세요.";
                   return Center(
-                      child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.event_note,
-                              size: width * 0.3,
-                              color: Colors.grey,
-                            ),
-                            SizedBox(height: height * 0.02),
-                            Text(
-                              '일정 추가 버튼을 눌러\n이벤트를 만들어보세요.',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: EventMainTtileFontSize, color: Colors.grey),
-                            )
-                          ]
-                      )
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.event_note,
+                          size: width * 0.3,
+                          color: Colors.grey,
+                        ),
+                        SizedBox(height: height * 0.02),
+                        Text(
+                          emptyText,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(fontSize: EventMainTtileFontSize, color: Colors.grey),
+                        ),
+                      ],
+                    ),
                   );
                 }
+                // 이벤트가 있을 경우 기존 ListView.builder로 이벤트 목록을 보여줍니다.
                 return ListView.builder(
                   itemCount: value.length,
                   itemBuilder: (context, index) {
@@ -491,15 +502,42 @@ class EventPageState extends ConsumerState<EventPage> {
   }
 
   void _navigateToEventCreation() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-          builder: (context) => EventsCreate1(startDay: _focusedDay)),
-    );
+    // 클럽 상태 업데이트를 명시적으로 기다립니다.
+    await ref.read(clubStateProvider.notifier).fetchClubs();
+    final clubState = ref.read(clubStateProvider);
+    debugPrint("Club list length: ${clubState.clubList.length}"); // 디버깅 로그
 
-    if (result == true) {
-      // 이벤트 생성 후 목록 새로고침
-      await _loadEventsForMonth();
+    final hasClubs = clubState.clubList.isNotEmpty;
+    if (!hasClubs) {
+      // 모임이 없을 경우 안내 메시지 다이알로그
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("모임 정보 없음"),
+            content: const Text(
+              "현재 참여 중인 모임이 없어요.\n먼저 모임에 참여하시거나 새로운 모임을 만들어 주세요.\n(모임이 있어야 이벤트 생성이 가능합니다.)",
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text("확인"),
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      // 모임이 있다면 이벤트 생성 페이지로 이동
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => EventsCreate1(startDay: _focusedDay)),
+      );
+      if (result == true) {
+        await _loadEventsForMonth();
+      }
     }
   }
 
