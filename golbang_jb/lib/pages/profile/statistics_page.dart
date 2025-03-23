@@ -258,7 +258,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
           ),
         ),
         const SizedBox(width: 8),
-        Container(
+        SizedBox(
           width: elementWidth,
           child: ElevatedButton(
             onPressed: () => _selectDateRange(context),

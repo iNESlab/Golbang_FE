@@ -7,7 +7,7 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
-import 'package:golbang/pages/group/group_main.dart';
+import 'package:golbang/pages/club/club_main.dart';
 import 'package:golbang/pages/home/home_page.dart';
 import 'package:golbang/pages/logins/login.dart';
 import 'package:golbang/pages/logins/signup_complete.dart';
@@ -109,7 +109,7 @@ class MyApp extends StatelessWidget {
           GetPage(name: '/signupComplete', page: () => const SignupComplete()),
           GetPage(name: '/home', page: () => const HomePage()),
           GetPage(name: '/event', page: () => const EventPage()),
-          GetPage(name: '/group', page: () => const GroupMainPage()),
+          GetPage(name: '/club', page: () => const ClubMainPage()),
         ],
       ),
     );

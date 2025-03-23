@@ -1,13 +1,13 @@
 // 전체 사용자 목록을 처리하는 모델 클래스
 class GetAllUserProfile {
-  final int id;
-  final String userId;
+  final int id; //TODO: accountId 수정
+  String? userId;
   final String profileImage;
   final String name;
 
   GetAllUserProfile({
     required this.id,
-    required this.userId,
+    this.userId,
     required this.profileImage,
     required this.name,
   });

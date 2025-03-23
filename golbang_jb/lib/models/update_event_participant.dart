@@ -92,7 +92,7 @@ class UpdateEventParticipant {
         name: name,
         role: role,
         profileImage: profileImage,
-        id: id,
+        accountId: id,
       ),
     );
   }

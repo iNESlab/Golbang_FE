@@ -46,7 +46,6 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
         oldMembers = fetchedMembers;
         selectedMembers = oldMembers
             .map((m) => GetAllUserProfile(
-          userId: m.name,
           id: m.id,
           name: m.name,
           profileImage: m.profileImage,
@@ -77,7 +76,6 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
         setState(() {
           selectedMembers = oldMembers
               .map((m) => GetAllUserProfile(
-            userId: m.name,
             id: m.id,
             name: m.name,
             profileImage: m.profileImage,
@@ -164,7 +162,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
                   padding: EdgeInsets.all(10.0),
                   child: Text("관리자는 멤버를 꾹 눌러 추방할 수 있습니다.")
               ),
-              ...oldMembers.map((member) => _buildMemberTile(member)).toList(),
+              ...oldMembers.map((member) => _buildMemberTile(member)),
             ],
             if (newMembers.isNotEmpty) ...[
               const Padding(
@@ -175,7 +173,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
                         fontWeight: FontWeight.bold,
                         color: Colors.green)),
               ),
-              ...newMembers.map((member) => _buildNewMemberTile(member)).toList(),
+              ...newMembers.map((member) => _buildNewMemberTile(member)),
             ],
             if (newMembers.isEmpty && oldMembers.isEmpty)
               const Center(

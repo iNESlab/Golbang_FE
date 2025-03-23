@@ -2,17 +2,17 @@ class Member {
   final int memberId;
   final String name;
   final String role;
-  final String? profileImage; // profileImage
+  final String profileImage; // profileImage
   final String? description;
-  final int id;
+  final int accountId;
 
   Member({
     required this.memberId,
     required this.name,
     required this.role,
-    this.profileImage,
+    required this.profileImage,
     this.description,
-    required this.id,
+    required this.accountId,
   });
 
   factory Member.fromJson(Map<String, dynamic> json) {
@@ -22,14 +22,14 @@ class Member {
       role: json['role'] ?? '',
       profileImage: json['user']['profile_image'] ?? '', // profile_image 추가
       description: json['description'],
-      id: json['user']['id']
+      accountId: json['user']['id']
     );
   }
 
   Map<String, dynamic> toJson() {
     return {
-        'memberId': memberId,
-        'id': id,
+        'member_id': memberId,
+        'id': accountId, //TODO: account_id 수정
         'name': name,
         'role': role,
         // 'profile_image': profileImage,

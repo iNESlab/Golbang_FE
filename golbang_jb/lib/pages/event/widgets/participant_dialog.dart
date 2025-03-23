@@ -122,7 +122,7 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
                         child: participant.profileImage != null
                           ? ClipOval(
                             child: Image.network(
-                                participant.profileImage!,
+                                participant.profileImage,
                                 fit: BoxFit.cover,
                                 width: 60,
                                 height: 60,

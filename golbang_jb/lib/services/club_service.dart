@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -68,7 +69,7 @@ class ClubService {
       var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/$clubId/invite/";
 
       // 1️⃣ userProfileList에서 user_id만 추출하여 리스트로 변환
-      List<String> userIds = userProfileList.map((userProfile) => userProfile.userId).toList();
+      List<String> userIds = userProfileList.map((userProfile) => userProfile.userId!).toList();
 
       // 2️⃣ 서버로 리스트를 한 번에 전송
       await dioClient.dio.post(
@@ -105,4 +106,67 @@ class ClubService {
       log('Error removing member: $e');
     }
   }
+
+  Future<bool> updateClubWithAdmins({
+    required int clubId,
+    required String name,
+    required String description,
+    required List<int> adminIds,
+    File? imageFile}) async {
+    try {
+      var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/admin/$clubId/";
+      late FormData formData;
+      List<String> filteredAdmins = adminIds
+          .map((e) => e.toString())
+          .toList();
+      late Response<dynamic> response;
+
+      if (imageFile == null){
+        response = await dioClient.dio.patch(
+          uri,
+          data: {
+            "name": name,
+            "description": description,
+            "admins": adminIds, // ✅ 리스트로 변환된 user_ids 전송
+          },
+          options: Options(
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          ),
+        );
+      } else{
+        // 멀티파트 데이터 생성
+        formData = FormData.fromMap({
+          'name': name,
+          'description': description,
+          'admins': filteredAdmins.join(','),
+          'image': await MultipartFile.fromFile(imageFile.path, filename: imageFile.path.split('/').last),
+        });
+
+        response = await dioClient.dio.patch(
+          uri,
+          data: formData,
+          options: Options(
+            headers: {
+              'Content-Type': 'multipart/form-data',
+            },
+          ),
+        );
+      }
+
+      if (response.statusCode == 200) {
+        log('Success! Club updated.');
+        return true;
+      } else {
+        log('Failed to update club. ${response.statusCode}, ${response.data}');
+        return false;
+      }
+
+    } catch (e) {
+      log('Error removing member: $e');
+      return false;
+    }
+  }
+
 }

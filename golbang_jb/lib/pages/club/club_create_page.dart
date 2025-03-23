@@ -2,10 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:golbang/pages/group/widgets/admin_button_widget.dart';
-import 'package:golbang/pages/group/widgets/member_button_widget.dart';
-import 'package:golbang/services/user_service.dart';
-import 'package:golbang/widgets/sections/member_dialog.dart';
+import 'package:golbang/pages/club/widgets/admin_button_widget.dart';
+import 'package:golbang/pages/club/widgets/member_button_widget.dart';
+import 'package:golbang/widgets/sections/user_dialog.dart';
 import 'package:golbang/widgets/sections/member_invite.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -15,16 +14,16 @@ import '../../repoisitory/secure_storage.dart';
 import '../../services/group_service.dart';
 import '../profile/profile_screen.dart';
 
-class GroupCreatePage extends ConsumerStatefulWidget {
-  const GroupCreatePage({super.key});
+class ClubCreatePage extends ConsumerStatefulWidget {
+  const ClubCreatePage({super.key});
 
   @override
-  _GroupCreatePageState createState() => _GroupCreatePageState();
+  _ClubCreatePageState createState() => _ClubCreatePageState();
 }
 
-class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
-  List<GetAllUserProfile> selectedAdmins = [];
-  List<GetAllUserProfile> selectedMembers = [];
+class _ClubCreatePageState extends ConsumerState<ClubCreatePage> {
+  List<GetAllUserProfile> selectedAdminUsers = [];
+  List<GetAllUserProfile> selectedUsers = [];
   int userId = 0;
   final TextEditingController _groupNameController = TextEditingController();
   final TextEditingController _groupDescriptionController = TextEditingController();
@@ -53,19 +52,19 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
     showDialog<List<GetAllUserProfile>>(
       context: context,
       builder: (BuildContext context) {
-        return MemberDialog(
-          selectedMembers: selectedMembers, // 여기에 항상 selectedMembers를 전달
+        return UserDialog(
+          selectedMembers: selectedUsers, // 여기에 항상 selectedMembers를 전달
           isAdminMode: isAdminMode,
-          selectedAdmins: selectedAdmins,
+          selectedAdmins: selectedAdminUsers,
         );
       },
     ).then((result) {
       if (result != null) {
         setState(() {
           if (isAdminMode) {
-            selectedAdmins = result;
+            selectedAdminUsers = result;
           } else {
-            selectedMembers = result;
+            selectedUsers = result;
           }
         });
       }
@@ -81,8 +80,8 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
       bool success = await groupService.saveGroup(
         name: groupName,
         description: groupDescription,
-        members: selectedMembers,
-        admins: selectedAdmins,
+        members: selectedUsers,
+        admins: selectedAdminUsers,
         imageFile: _imageFile != null ? File(_imageFile!.path) : null,
         currentUserId: userId
       );
@@ -107,25 +106,21 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
 
   @override
   Widget build(BuildContext context) {
-    final storage = ref.watch(secureStorageProvider);
-    final UserService userService = UserService(storage);
-    final userAccount = ref.watch(userAccountProvider);  // userAccount 상태를 감시
+    final userAccount = ref.read(userAccountProvider);  // userAccount 상태를 감시
 
     if (userAccount == null) {
       return const Center(child: CircularProgressIndicator());  // 로딩 중일 때
     }
-
-    userId = userAccount.id;
     // 사용자 정보를 멤버와 관리자에 추가
-    if (!selectedMembers.any((member) => member.userId == userAccount.userId)) {
-      selectedMembers.add(GetAllUserProfile(
+    if (!selectedUsers.any((user) => user.userId == userAccount.userId)) {
+      selectedUsers.add(GetAllUserProfile(
         id: userAccount.id,
         userId: userAccount.userId,
         profileImage: userAccount.profileImage ?? '',
         name: userAccount.name,
       ));
 
-      selectedAdmins.add(GetAllUserProfile(
+      selectedAdminUsers.add(GetAllUserProfile(
         id: userAccount.id,
         userId: userAccount.userId,
         profileImage: userAccount.profileImage ?? '',
@@ -186,10 +181,10 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
               MemberAddButton(onPressed: () => _showMemberDialog(false)),
 
               // 추가된 멤버 목록 표시
-              if (selectedMembers.isNotEmpty) ...[
+              if (selectedUsers.isNotEmpty) ...[
                 const SizedBox(height: 10),
                 const Text("추가된 멤버"),
-                MemberInvite(selectedMembers: selectedMembers),
+                MemberInvite(selectedMembers: selectedUsers),
               ],
 
               const SizedBox(height: 20),
@@ -198,10 +193,10 @@ class _GroupCreatePageState extends ConsumerState<GroupCreatePage> {
               AdminAddButton(onPressed: () => _showMemberDialog(true)),
 
               // 추가된 관리자 목록 표시
-              if (selectedAdmins.isNotEmpty) ...[
+              if (selectedAdminUsers.isNotEmpty) ...[
                 const SizedBox(height: 10),
                 const Text("추가된 관리자"),
-                MemberInvite(selectedMembers: selectedAdmins),
+                MemberInvite(selectedMembers: selectedAdminUsers),
               ],
 
               const SizedBox(height: 20),

@@ -4,8 +4,8 @@ import 'package:golbang/models/group.dart';
 import 'package:golbang/utils/reponsive_utils.dart';
 
 class GroupsSection extends StatefulWidget {
-  final List<Group> groups;
-  const GroupsSection({super.key, required this.groups});
+  final List<Group> clubs;
+  const GroupsSection({super.key, required this.clubs});
 
   @override
   State<GroupsSection> createState() => _GroupsSectionState();
@@ -49,9 +49,9 @@ class _GroupsSectionState extends State<GroupsSection> {
         child: ListView.builder(
           controller: _scrollController, // 동일한 ScrollController 연결
           scrollDirection: Axis.horizontal,
-          itemCount: widget.groups.length,
+          itemCount: widget.clubs.length,
           itemBuilder: (context, index) {
-            final group = widget.groups[index];
+            final club = widget.clubs[index];
             return Padding(
               padding: EdgeInsets.only(right: padding),
               child: GestureDetector(
@@ -60,11 +60,7 @@ class _GroupsSectionState extends State<GroupsSection> {
                     context,
                     MaterialPageRoute(
                       builder: (context) => CommunityMain(
-                        communityID: group.id,
-                        communityName: group.name,
-                        communityImage: group.image!,
-                        adminNames: group.getAdminNames(),
-                        isAdmin: group.isAdmin,
+                        club: club,
                       ),
                     ),
                   );
@@ -90,22 +86,20 @@ class _GroupsSectionState extends State<GroupsSection> {
                         height: avatarRadius * 2,
                         decoration: BoxDecoration(
                           shape: BoxShape.circle,
-                          image: group.image != null && group.image!.contains('http')
+                          image: club.image.contains('http')
                               ? DecorationImage(
-                            image: NetworkImage(group.image!),
+                            image: NetworkImage(club.image),
                             fit: BoxFit.fill,
                           )
-                              : group.image != null
-                              ? DecorationImage(
-                            image: AssetImage(group.image!),
+                              : DecorationImage(
+                            image: AssetImage(club.image),
                             fit: BoxFit.fill,
                           )
-                              : null,
                         ),
-                        child: group.image == null
+                        child: club.image.startsWith('http')
                             ? Center(
                           child: Text(
-                            group.name.substring(0, 1),
+                            club.name.substring(0, 1),
                             style: const TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,
@@ -116,7 +110,7 @@ class _GroupsSectionState extends State<GroupsSection> {
                       ),
                     ),
                     Text(
-                      group.name,
+                      club.name,
                       style: TextStyle(
                         fontSize: textHeight,
                         fontWeight: FontWeight.bold,
