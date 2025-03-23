@@ -56,7 +56,7 @@ class AdminSettingsPage extends ConsumerWidget {
             //   },
             // ),
             SettingsButton(
-              text: '모임 관리',
+              text: '모임 및 관리자 변경',
               onPressed: () {
                 log('모임 관리 클릭');
                 // 멤버 조회 페이지 연결 (생략)
