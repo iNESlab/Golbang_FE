@@ -45,16 +45,21 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
   @override
   void initState() {
     super.initState();
-    final userAccount = ref.read(userAccountProvider);  // userAccount 상태를 감시
     // 로그인된 사용자 정보를 로드
     _groupNameController = TextEditingController(text: widget.club.name ?? '');
     _groupDescriptionController = TextEditingController(text: widget.club.description ?? '');
-    membersWithoutMe = widget.club.members.where((m) => m.accountId != userAccount!.id).toList();
     log('membersWithoutMe: ${membersWithoutMe.length}');
     selectedAdmins = widget.club.members.where((m) => m.role == "admin").toList();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(userAccountProvider.notifier).loadUserAccount();  // 상태 업데이트만 진행
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref.read(userAccountProvider.notifier).loadUserAccount();  // 상태 업데이트만 진행
+      final user = ref.read(userAccountProvider);
+      setState(() {
+        userAccount = user;
+        membersWithoutMe = widget.club.members
+            .where((m) => m.accountId != userAccount?.id)
+            .toList();
+      });
     });
   }
 
