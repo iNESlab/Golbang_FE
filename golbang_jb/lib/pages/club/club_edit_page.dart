@@ -87,17 +87,18 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
 
   void _onComplete() async {
     String groupName = _groupNameController.text.isNotEmpty
-        ? _groupNameController.text : widget.club.name;
-    String groupDescription = _groupDescriptionController.text.isNotEmpty
-        ? _groupDescriptionController.text : widget.club.description ?? '';
+        ? _groupNameController.text
+        : widget.club.name;
+    // 설명은 사용자가 입력한 그대로 사용
+    String groupDescription = _groupDescriptionController.text;
 
-    if (groupName.isNotEmpty && groupDescription.isNotEmpty) {
+    if (groupName.isNotEmpty) {
       final clubService = ClubService(ref.read(secureStorageProvider));
       bool success = await clubService.updateClubWithAdmins(
         clubId: widget.club.id,
         name: groupName,
         description: groupDescription,
-        adminIds: selectedAdmins.map((e)=> e.memberId).toList(),
+        adminIds: selectedAdmins.map((e) => e.memberId).toList(),
         imageFile: _imageFile != null ? File(_imageFile!.path) : null,
       );
 
@@ -116,7 +117,7 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('모임 이름과 설명을 입력해주세요.')),
+        const SnackBar(content: Text('모임 이름을 입력해주세요.')),
       );
     }
   }
@@ -171,10 +172,11 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
               ),
               TextField(
                 controller: _groupDescriptionController,
-                decoration: InputDecoration(
-                  hintText: widget.club.description ?? '모임의 소개 문구를 작성해주세요.',
+                decoration: const InputDecoration(
+                  hintText: '모임의 소개 문구를 작성해주세요 (선택)',
                   border: InputBorder.none,
                 ),
+
               ),
               const SizedBox(height: 20),
 
