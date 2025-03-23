@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/models/group.dart';
 import 'package:golbang/pages/club/club_edit_page.dart';
 import 'package:golbang/pages/community/member_list_page.dart';
+import '../../provider/club/club_state_provider.dart';
 import '../../services/club_service.dart';
 import '../../repoisitory/secure_storage.dart';
 import 'package:get/get.dart';
@@ -72,7 +73,7 @@ class AdminSettingsPage extends ConsumerWidget {
               text: '모임 삭제하기',
               textColor: Colors.red,
               onPressed: () async {
-                _showDeleteConfirmationDialog(context, clubService);
+                _showDeleteConfirmationDialog(context, clubService, ref);
               },
             ),
           ],
@@ -82,7 +83,7 @@ class AdminSettingsPage extends ConsumerWidget {
   }
 
   // 모임 삭제 확인 다이얼로그
-  void _showDeleteConfirmationDialog(BuildContext context, ClubService clubService) {
+  void _showDeleteConfirmationDialog(BuildContext context, ClubService clubService, WidgetRef ref) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -101,6 +102,13 @@ class AdminSettingsPage extends ConsumerWidget {
                 Navigator.of(context).pop(); // 다이얼로그 닫기
                 try {
                   await clubService.deleteClub(club.id); // 모임 삭제 API 호출
+                  ref.read(clubStateProvider.notifier).fetchClubs();
+                  final notifier = ref.read(clubStateProvider.notifier);
+                  notifier.state = notifier.state.copyWith(
+                    clubList: notifier.state.clubList.where((c) => c.id != club.id).toList(),
+                  );
+
+
                   Get.offAllNamed('/home', arguments: {'initialIndex': 2});
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('모임이 삭제되었습니다.')),
