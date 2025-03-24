@@ -20,7 +20,12 @@ import '../home/home_page.dart';
 import '../profile/profile_screen.dart';
 
 class ClubEditPage extends ConsumerStatefulWidget {
-  const ClubEditPage({super.key});
+  final Club club;
+
+  const ClubEditPage({
+    Key? key,
+    required this.club,
+  }) : super(key: key);
 
   @override
   _ClubEditPageState createState() => _ClubEditPageState();
@@ -32,29 +37,44 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
 
   List<Member> selectedAdmins = [];
   List<Member> membersWithoutMe= [];
-  late TextEditingController _groupNameController;
-  late TextEditingController _groupDescriptionController;
+  late final TextEditingController _groupNameController;
+  late final TextEditingController _groupDescriptionController;
   XFile? _imageFile;
 
   final ImagePicker _picker = ImagePicker();
 
   @override
+  void initState() {
+    super.initState();
+    _club = widget.club;
+    _groupNameController = TextEditingController();
+    _groupDescriptionController = TextEditingController();
+  }
+
+  @override
   void didChangeDependencies() {
     super.didChangeDependencies();
 
+    // Provider에서 선택된 클럽과 사용자 정보를 가져옴
     final club = ref.watch(clubStateProvider.select((s) => s.selectedClub));
     final user = ref.watch(userAccountProvider);
 
-    if (club != null && user != null && selectedAdmins.isEmpty) {
-      // 초기 세팅
-      membersWithoutMe = club.members.where((m) => m.accountId != user.id).toList();
-      selectedAdmins = club.members.where((m) => m.role == 'admin').toList();
-      // controller도 초기화
-      _groupNameController.text = club.name ?? '';
-      _groupDescriptionController.text = club.description ?? '';
+    // club이 null이 아니고, 아직 _club에 세팅 안 했다면 한번만 세팅
+    if (club != null && user != null) {
+      setState(() {
+        _club = club;
+        userAccount = user;
+
+        // 초기값 세팅
+        membersWithoutMe = club.members.where((m) => m.accountId != user.id).toList();
+        selectedAdmins = club.members.where((m) => m.role == 'admin').toList();
+
+        // TextEditingController에 값 할당
+        _groupNameController.text = club.name;
+        _groupDescriptionController.text = club.description ?? '';
+      });
     }
   }
-
 
   Future<void> _pickImage() async {
     final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
