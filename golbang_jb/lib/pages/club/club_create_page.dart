@@ -73,17 +73,17 @@ class _ClubCreatePageState extends ConsumerState<ClubCreatePage> {
 
   void _onComplete() async {
     String groupName = _groupNameController.text;
-    String groupDescription = _groupDescriptionController.text;
+    String groupDescription = _groupDescriptionController.text; // 빈 문자열 허용
 
-    if (groupName.isNotEmpty && groupDescription.isNotEmpty) {
+    if (groupName.isNotEmpty) {
       final groupService = GroupService(ref.read(secureStorageProvider));
       bool success = await groupService.saveGroup(
         name: groupName,
-        description: groupDescription,
+        description: groupDescription, // 입력하지 않으면 빈 문자열
         members: selectedUsers,
         admins: selectedAdminUsers,
         imageFile: _imageFile != null ? File(_imageFile!.path) : null,
-        currentUserId: userId
+        currentUserId: userId,
       );
 
       if (success) {
@@ -99,10 +99,11 @@ class _ClubCreatePageState extends ConsumerState<ClubCreatePage> {
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('그룹 이름과 설명을 입력해주세요.')),
+        const SnackBar(content: Text('그룹 이름을 입력해주세요.')),
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -171,7 +172,7 @@ class _ClubCreatePageState extends ConsumerState<ClubCreatePage> {
               TextField(
                 controller: _groupDescriptionController,
                 decoration: const InputDecoration(
-                  hintText: '모임의 소개 문구를 작성해주세요.',
+                  hintText: '모임의 소개 문구를 작성해주세요.(선택)',
                   border: InputBorder.none,
                 ),
               ),
@@ -205,7 +206,7 @@ class _ClubCreatePageState extends ConsumerState<ClubCreatePage> {
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
               const Text(
-                '※ 모임명, 소개 문구, 멤버, 관리자를 모두 설정한 후 완료 버튼을 눌러주세요',
+                '※ 모임명, 멤버, 관리자를 모두 설정한 후 완료 버튼을 눌러주세요',
                 style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 20),

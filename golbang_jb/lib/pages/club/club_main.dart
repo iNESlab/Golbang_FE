@@ -157,7 +157,7 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
                     height: 50,
                     child: TextField(
                       decoration: InputDecoration(
-                        hintText: '모임명 검색',
+                        hintText: '내 모임 검색',
                         prefixIcon: const Icon(Icons.search),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
