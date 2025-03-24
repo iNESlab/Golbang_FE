@@ -1,7 +1,6 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:golbang/models/group.dart';
 import 'package:golbang/pages/club/club_edit_page.dart';
 import 'package:golbang/pages/community/member_list_page.dart';
 import '../../services/club_service.dart';
@@ -9,9 +8,8 @@ import '../../repoisitory/secure_storage.dart';
 import 'package:get/get.dart';
 
 class AdminSettingsPage extends ConsumerWidget {
-  final Group club; // 모임 ID를 받도록 수정
-
-  const AdminSettingsPage({super.key, required this.club});
+  final int clubId;
+  const AdminSettingsPage({super.key, required this.clubId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -42,7 +40,7 @@ class AdminSettingsPage extends ConsumerWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => MemberListPage(clubId: club.id, isAdmin: true,),
+                    builder: (context) => MemberListPage(clubId: clubId, isAdmin: true,),
                   ),
                 );
               },
@@ -63,7 +61,7 @@ class AdminSettingsPage extends ConsumerWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ClubEditPage(club: club),
+                    builder: (context) => const ClubEditPage(),
                   ),
                 );
               },
@@ -100,7 +98,7 @@ class AdminSettingsPage extends ConsumerWidget {
               onPressed: () async {
                 Navigator.of(context).pop(); // 다이얼로그 닫기
                 try {
-                  await clubService.deleteClub(club.id); // 모임 삭제 API 호출
+                  await clubService.deleteClub(clubId); // 모임 삭제 API 호출
                   Get.offAllNamed('/home', arguments: {'initialIndex': 2});
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('모임이 삭제되었습니다.')),

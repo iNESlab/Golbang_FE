@@ -8,7 +8,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:golbang/pages/club/widgets/admin_button_widget.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../models/group.dart';
+import '../../models/club.dart';
 import '../../models/member.dart';
 import '../../models/user_account.dart';
 import '../../provider/club/club_state_provider.dart';
@@ -20,48 +20,48 @@ import '../home/home_page.dart';
 import '../profile/profile_screen.dart';
 
 class ClubEditPage extends ConsumerStatefulWidget {
-  final Group club; // 모임 ID를 받도록 수정
-  const ClubEditPage({super.key, required this. club});
+  const ClubEditPage({super.key});
 
   @override
   _ClubEditPageState createState() => _ClubEditPageState();
 }
 
 class _ClubEditPageState extends ConsumerState<ClubEditPage> {
+  late Club _club;
+  late UserAccount userAccount;
+
   List<Member> selectedAdmins = [];
   List<Member> membersWithoutMe= [];
   late TextEditingController _groupNameController;
   late TextEditingController _groupDescriptionController;
-  late UserAccount? userAccount;
   XFile? _imageFile;
 
   final ImagePicker _picker = ImagePicker();
+
+  @override
+  void initState() {
+    super.initState();
+
+    final club = ref.read(clubStateProvider).selectedClub;
+    final user = ref.read(userAccountProvider);
+
+    if (club != null && user != null) {
+      _club = club;
+      userAccount = user;
+
+      membersWithoutMe = _club.members.where((m) => m.accountId != user.id).toList();
+      selectedAdmins = _club.members.where((m) => m.role == 'admin').toList();
+
+      _groupNameController = TextEditingController(text: _club.name ?? '');
+      _groupDescriptionController = TextEditingController(text: _club.description ?? '');
+    }
+  }
+
 
   Future<void> _pickImage() async {
     final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
     setState(() {
       _imageFile = pickedFile;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    // 로그인된 사용자 정보를 로드
-    _groupNameController = TextEditingController(text: widget.club.name ?? '');
-    _groupDescriptionController = TextEditingController(text: widget.club.description ?? '');
-    log('membersWithoutMe: ${membersWithoutMe.length}');
-    selectedAdmins = widget.club.members.where((m) => m.role == "admin").toList();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await ref.read(userAccountProvider.notifier).loadUserAccount();  // 상태 업데이트만 진행
-      final user = ref.read(userAccountProvider);
-      setState(() {
-        userAccount = user;
-        membersWithoutMe = widget.club.members
-            .where((m) => m.accountId != userAccount?.id)
-            .toList();
-      });
     });
   }
 
@@ -77,24 +77,27 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
         );
       },
     ).then((result) {
+      log('result: $result');
       if (result != null) {
         setState(() {
+          log('result2: $result');
             selectedAdmins = result;
         });
       }
+
     });
   }
 
   void _onComplete() async {
     String groupName = _groupNameController.text.isNotEmpty
-        ? _groupNameController.text : widget.club.name;
+        ? _groupNameController.text : _club.name;
     String groupDescription = _groupDescriptionController.text.isNotEmpty
-        ? _groupDescriptionController.text : widget.club.description ?? '';
+        ? _groupDescriptionController.text : _club.description ?? '';
 
     if (groupName.isNotEmpty && groupDescription.isNotEmpty) {
       final clubService = ClubService(ref.read(secureStorageProvider));
       bool success = await clubService.updateClubWithAdmins(
-        clubId: widget.club.id,
+        clubId: _club.id,
         name: groupName,
         description: groupDescription,
         adminIds: selectedAdmins.map((e)=> e.memberId).toList(),
@@ -102,9 +105,13 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
       );
 
       if (success) {
+        //TODO: 상태 저장해야함
+        // ref.read(clubStateProvider.notifier).selectClub(club);
+
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('성공적으로 수정하였습니다.')),
         );
+        //TODO: 초기 페이지로 이동하지 않아도 되게 향후 수정해야함.
         ref.read(clubStateProvider.notifier).fetchClubs(); // 클럽 리스트 다시 불러오기
         Get.offAll(() => const HomePage(), arguments: {
           'initialIndex': 2,
@@ -147,10 +154,10 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
                       radius: 50,
                       backgroundImage: _imageFile != null
                           ? FileImage(File(_imageFile!.path))
-                          : (widget.club.image.startsWith('http')
-                          ? NetworkImage(widget.club.image)
+                          : (_club.image.startsWith('http')
+                          ? NetworkImage(_club.image)
                           : null) as ImageProvider<Object>?,
-                      child: (_imageFile == null && !widget.club.image.startsWith('http'))
+                      child: (_imageFile == null && !_club.image.startsWith('http'))
                           ? const Icon(Icons.camera_alt, size: 50, color: Colors.grey)
                           : null,
                     ),
@@ -165,14 +172,14 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
               TextField(
                 controller: _groupNameController,
                 decoration: InputDecoration(
-                  hintText: widget.club.name,
+                  hintText: _club.name,
                   hintStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
               ),
               TextField(
                 controller: _groupDescriptionController,
                 decoration: InputDecoration(
-                  hintText: widget.club.description ?? '모임의 소개 문구를 작성해주세요.',
+                  hintText: _club.description ?? '모임의 소개 문구를 작성해주세요.',
                   border: InputBorder.none,
                 ),
               ),

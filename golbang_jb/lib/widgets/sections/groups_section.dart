@@ -1,17 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/community/community_main.dart';
-import 'package:golbang/models/group.dart';
+import 'package:golbang/models/club.dart';
 import 'package:golbang/utils/reponsive_utils.dart';
 
-class GroupsSection extends StatefulWidget {
-  final List<Group> clubs;
+import '../../provider/club/club_state_provider.dart';
+
+class GroupsSection extends ConsumerStatefulWidget {
+  final List<Club> clubs;
   const GroupsSection({super.key, required this.clubs});
 
   @override
-  State<GroupsSection> createState() => _GroupsSectionState();
+  ConsumerState<GroupsSection> createState() => _GroupsSectionState();
 }
 
-class _GroupsSectionState extends State<GroupsSection> {
+class _GroupsSectionState extends ConsumerState<GroupsSection> {
   final ScrollController _scrollController = ScrollController(); // ScrollController 선언
 
   @override
@@ -56,12 +59,11 @@ class _GroupsSectionState extends State<GroupsSection> {
               padding: EdgeInsets.only(right: padding),
               child: GestureDetector(
                 onTap: () {
+                  ref.read(clubStateProvider.notifier).selectClub(club); // 상태 저장
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => CommunityMain(
-                        club: club,
-                      ),
+                      builder: (context) => const CommunityMain()
                     ),
                   );
                 },

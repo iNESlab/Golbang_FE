@@ -1,42 +1,37 @@
 import 'package:flutter/material.dart';
-import '../../models/group.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../models/club.dart';
 import '../../models/member.dart';
+import '../../provider/club/club_state_provider.dart';
 import 'admin_settings_page.dart';
 import 'member_settings_page.dart';
 
-class CommunityMain extends StatefulWidget {
-  final Group club;
+class CommunityMain extends ConsumerStatefulWidget {
 
   const CommunityMain({super.key, 
-    required this.club
   });
 
   @override
   _CommunityMainState createState() => _CommunityMainState();
 }
 
-class _CommunityMainState extends State<CommunityMain> {
+class _CommunityMainState extends ConsumerState<CommunityMain> {
   late List<Member> members;
-
-  @override
-  void initState() {
-    super.initState();
-    members = widget.club.members.where((m)=>m.role != 'admin').toList();
-  }
+  Club? _club;
 
   void _onSettingsPressed() {
-    if (widget.club.isAdmin) {
+    if (_club!.isAdmin) {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => AdminSettingsPage(club: widget.club),
+          builder: (context) => AdminSettingsPage(clubId: _club!.id),
         ),
       );
     } else {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) => MemberSettingsPage(clubId: widget.club.id),
+          builder: (context) => MemberSettingsPage(clubId: _club!.id),
         ),
       );
     }
@@ -44,6 +39,13 @@ class _CommunityMainState extends State<CommunityMain> {
 
   @override
   Widget build(BuildContext context) {
+    _club = ref.watch(clubStateProvider.select((s) => s.selectedClub));
+    if (_club == null) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    members = _club!.members.where((m) => m.role != 'admin').toList() ?? [];
+
     return Scaffold(
       body: Column(
         children: [
@@ -53,9 +55,9 @@ class _CommunityMainState extends State<CommunityMain> {
                 height: 200,
                 decoration: BoxDecoration(
                   image: DecorationImage(
-                    image: widget.club.image.contains('https') // 문자열 검사
-                        ? NetworkImage(widget.club.image) // 네트워크 이미지
-                        : AssetImage(widget.club.image) as ImageProvider, // 로컬 이미지
+                    image: _club!.image.contains('https') // 문자열 검사
+                        ? NetworkImage(_club!.image) // 네트워크 이미지
+                        : AssetImage(_club!.image) as ImageProvider, // 로컬 이미지
                     fit: BoxFit.cover, // 이미지 맞춤 설정
                   ),
                 ),
@@ -84,7 +86,7 @@ class _CommunityMainState extends State<CommunityMain> {
                 bottom: 20,
                 left: 10,
                 child: Text(
-                  widget.club.name,
+                  _club!.name,
                   style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
                 ),
               ),
@@ -98,7 +100,7 @@ class _CommunityMainState extends State<CommunityMain> {
                 crossAxisAlignment: CrossAxisAlignment.start, // 자식 위젯들을 왼쪽 정렬
                 children: [
                   Text(
-                    '관리자: ${widget.club.getAdminNames().join(', ')}', // 여러 관리자 이름 표시
+                    '관리자: ${_club!.getAdminNames().join(', ')}', // 여러 관리자 이름 표시
                     style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 8), // 텍스트 간 간격 추가
