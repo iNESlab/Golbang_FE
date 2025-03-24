@@ -107,7 +107,7 @@ class _ClubCreatePageState extends ConsumerState<ClubCreatePage> {
 
   @override
   Widget build(BuildContext context) {
-    final userAccount = ref.read(userAccountProvider);  // userAccount 상태를 감시
+    final userAccount = ref.watch(userAccountProvider);  // userAccount 상태를 감시
 
     if (userAccount == null) {
       return const Center(child: CircularProgressIndicator());  // 로딩 중일 때

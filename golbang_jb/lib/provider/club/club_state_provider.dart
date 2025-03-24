@@ -61,6 +61,16 @@ class ClubStateNotifier extends StateNotifier<ClubState> {
     }
   }
 
+  void removeClub(int clubId) {
+    final updatedList = state.clubList.where((c) => c.id != clubId).toList();
+    state = state.copyWith(clubList: updatedList);
+
+    // 선택된 클럽도 삭제된 클럽이면 null로
+    if (state.selectedClub?.id == clubId) {
+      state = state.copyWith(selectedClub: null);
+    }
+  }
+
 }
 
 class ClubState {

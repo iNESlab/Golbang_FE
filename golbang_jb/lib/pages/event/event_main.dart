@@ -355,24 +355,31 @@ class EventPageState extends ConsumerState<EventPage> {
                   final emptyText = clubState.clubList.isEmpty
                       ? "참여 중인 모임이 없어요.\n먼저 모임에 참여하시거나\n새로운 모임을 만들어 주세요."
                       : "일정 추가 버튼을 눌러\n이벤트를 만들어보세요.";
-                  return Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.event_note,
-                          size: width * 0.3,
-                          color: Colors.grey,
-                        ),
-                        SizedBox(height: height * 0.02),
-                        Text(
-                          emptyText,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: EventMainTtileFontSize, color: Colors.grey),
-                        ),
-                      ],
-                    ),
-                  );
+                  if (value.isEmpty) {
+                    return Center(
+                        child: SingleChildScrollView(
+                          child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.event_note,
+                                  size: width * 0.25,
+                                  color: Colors.grey,
+                                ),
+                                SizedBox(height: height * 0.02),
+                                Text(
+                                  emptyText,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: EventMainTtileFontSize - 4,
+                                    color: Colors.grey,
+                                  ),
+                                )
+                              ]
+                          ),
+                        )
+                    );
+                  }
                 }
                 // 이벤트가 있을 경우 기존 ListView.builder로 이벤트 목록을 보여줍니다.
                 return ListView.builder(

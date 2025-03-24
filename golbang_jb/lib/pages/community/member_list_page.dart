@@ -156,26 +156,70 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
             : ListView(
           children: [
             if (oldMembers.isNotEmpty) ...[
-              const Padding(
-                padding: EdgeInsets.all(10.0),
-                child: Text("기존 멤버",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+              Padding(
+                padding: const EdgeInsets.all(10.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start, // 여러 줄 고려
+                  children: [
+                    const Text(
+                      "기존 멤버",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    if (widget.isAdmin)
+                      const Expanded(
+                        child: Text(
+                          "멤버를 눌러 추방할 수 있습니다",
+                          textAlign: TextAlign.end,
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2, // 길 경우 두 줄까지 허용
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
-              if (widget.isAdmin) const Padding(
-                  padding: EdgeInsets.all(10.0),
-                  child: Text("관리자는 멤버를 꾹 눌러 추방할 수 있습니다.")
-              ),
+              // 실제 멤버 리스트 타일들
               ...oldMembers.map((member) => _buildMemberTile(member)),
             ],
+
             if (newMemberUsers.isNotEmpty) ...[
               const Padding(
                 padding: EdgeInsets.all(10.0),
-                child: Text("새로운 멤버",
-                    style: TextStyle(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "새로운 멤버",
+                      style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: Colors.green)),
+                        color: Colors.green,
+                      ),
+                    ),
+                    Expanded(
+                      child: Text(
+                        "뒤로 가기를 누르면 완료됩니다",
+                        textAlign: TextAlign.end,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
+
+
+
               ...newMemberUsers.map((member) => _buildNewMemberTile(member)),
             ],
             if (newMemberUsers.isEmpty && oldMembers.isEmpty)
