@@ -59,7 +59,7 @@ class _GroupsSectionState extends ConsumerState<GroupsSection> {
               padding: EdgeInsets.only(right: padding),
               child: GestureDetector(
                 onTap: () {
-                  ref.read(clubStateProvider.notifier).selectClub(club); // 상태 저장
+                  ref.read(clubStateProvider.notifier).selectClubById(club.id); // 상태 저장
                   Navigator.push(
                     context,
                     MaterialPageRoute(
