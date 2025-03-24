@@ -20,61 +20,25 @@ import '../home/home_page.dart';
 import '../profile/profile_screen.dart';
 
 class ClubEditPage extends ConsumerStatefulWidget {
-  final Club club;
-
-  const ClubEditPage({
-    Key? key,
-    required this.club,
-  }) : super(key: key);
+  const ClubEditPage({super.key});
 
   @override
   _ClubEditPageState createState() => _ClubEditPageState();
 }
 
 class _ClubEditPageState extends ConsumerState<ClubEditPage> {
-  late Club _club;
-  late UserAccount userAccount;
+  Club? _club;
+  UserAccount? userAccount;
 
   List<Member> selectedAdmins = [];
   List<Member> membersWithoutMe= [];
-  late final TextEditingController _groupNameController;
-  late final TextEditingController _groupDescriptionController;
+  final TextEditingController _groupNameController = TextEditingController();
+  final TextEditingController _groupDescriptionController = TextEditingController();
   XFile? _imageFile;
 
   final ImagePicker _picker = ImagePicker();
+  bool _isInitialized = true;
 
-  @override
-  void initState() {
-    super.initState();
-    _club = widget.club;
-    _groupNameController = TextEditingController();
-    _groupDescriptionController = TextEditingController();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-
-    // Provider에서 선택된 클럽과 사용자 정보를 가져옴
-    final club = ref.watch(clubStateProvider.select((s) => s.selectedClub));
-    final user = ref.watch(userAccountProvider);
-
-    // club이 null이 아니고, 아직 _club에 세팅 안 했다면 한번만 세팅
-    if (club != null && user != null) {
-      setState(() {
-        _club = club;
-        userAccount = user;
-
-        // 초기값 세팅
-        membersWithoutMe = club.members.where((m) => m.accountId != user.id).toList();
-        selectedAdmins = club.members.where((m) => m.role == 'admin').toList();
-
-        // TextEditingController에 값 할당
-        _groupNameController.text = club.name;
-        _groupDescriptionController.text = club.description ?? '';
-      });
-    }
-  }
 
   Future<void> _pickImage() async {
     final XFile? pickedFile = await _picker.pickImage(source: ImageSource.gallery);
@@ -99,7 +63,7 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
       if (result != null) {
         setState(() {
           log('result2: $result');
-            selectedAdmins = result;
+          selectedAdmins = result;
         });
       }
 
@@ -109,14 +73,14 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
   void _onComplete() async {
     String groupName = _groupNameController.text.isNotEmpty
         ? _groupNameController.text
-        : _club.name;
+        : _club!.name;
     // 설명은 사용자가 입력한 그대로 사용
     String groupDescription = _groupDescriptionController.text;
 
     if (groupName.isNotEmpty) {
       final clubService = ClubService(ref.read(secureStorageProvider));
       bool success = await clubService.updateClubWithAdmins(
-        clubId: _club.id,
+        clubId: _club!.id,
         name: groupName,
         description: groupDescription,
         adminIds: selectedAdmins.map((e) => e.memberId).toList(),
@@ -149,6 +113,23 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
 
   @override
   Widget build(BuildContext context) {
+    final club = ref.watch(clubStateProvider.select((s) => s.selectedClub));
+    final user = ref.watch(userAccountProvider);
+
+    if (club == null || user == null) {
+      return const Center(child: CircularProgressIndicator()); // ✅ club이 null이면 로딩
+    }
+
+    if (_isInitialized) {
+      // ✅ 초기화 진행
+      _club = club;
+      userAccount = user;
+      membersWithoutMe = club.members.where((m) => m.accountId != user.id).toList();
+      selectedAdmins = club.members.where((m) => m.role == 'admin').toList();
+      _groupNameController.text = club.name ?? '';
+      _groupDescriptionController.text = club.description ?? '';
+      _isInitialized = false;
+    }
     // 화면 렌더링
     return Scaffold(
       appBar: AppBar(
@@ -173,10 +154,10 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
                       radius: 50,
                       backgroundImage: _imageFile != null
                           ? FileImage(File(_imageFile!.path))
-                          : (_club.image.startsWith('http')
-                          ? NetworkImage(_club.image)
+                          : (_club!.image.startsWith('http')
+                          ? NetworkImage(_club!.image)
                           : null) as ImageProvider<Object>?,
-                      child: (_imageFile == null && !_club.image.startsWith('http'))
+                      child: (_imageFile == null && !_club!.image.startsWith('http'))
                           ? const Icon(Icons.camera_alt, size: 50, color: Colors.grey)
                           : null,
                     ),
@@ -191,7 +172,7 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
               TextField(
                 controller: _groupNameController,
                 decoration: InputDecoration(
-                  hintText: _club.name,
+                  hintText: _club!.name,
                   hintStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
               ),
