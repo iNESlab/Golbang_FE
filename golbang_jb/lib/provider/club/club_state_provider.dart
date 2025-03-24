@@ -20,16 +20,27 @@ class ClubStateNotifier extends StateNotifier<ClubState> {
   Future<void> fetchClubs() async {
     try {
       final clubs = await _clubService.getClubList();
-      state = state.copyWith(clubList: clubs);
+      log('club[0] length: ${clubs[0].members.length}');
+      // selectedClub 초기화
+      state = state.copyWith(
+        clubList: clubs,
+        selectedClub: null,
+      );
     } catch (e) {
       log('클럽 목록 불러오기 실패: $e');
     }
   }
 
   // 클럽을 선택하는 함수
-  void selectClub(Club club) {
+  void selectClubById(int clubId) {
+    final club = state.clubList.firstWhere(
+          (c) => c.id == clubId,
+      orElse: () => throw Exception("클럽 ID를 clubList에서 찾을 수 없습니다."),
+    );
+
     state = state.copyWith(selectedClub: club);
   }
+
 
   void updateSelectedClubMembers(List<Member> newMembers) {
     final currentClub = state.selectedClub;

@@ -87,7 +87,7 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
                     padding: const EdgeInsets.all(0),
                   ),
                   onPressed: () {
-                    ref.read(clubStateProvider.notifier).selectClub(club); // 상태 저장
+                    ref.read(clubStateProvider.notifier).selectClubById(club.id); // 상태 저장
                     Navigator.push(
                       context,
                       MaterialPageRoute(
