@@ -78,7 +78,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
         name: member?.name ?? 'Unknown',
         profileImage: member?.profileImage ?? '',
         role: member?.role ?? 'member',
-        id: member?.memberId ?? 0,
+        accountId: member?.memberId ?? 0,
       );
     }).toList();
   }

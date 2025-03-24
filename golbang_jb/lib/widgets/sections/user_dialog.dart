@@ -32,7 +32,7 @@ class _MemberDialogState extends ConsumerState<UserDialog> {
         widget.isAdminMode ? widget.selectedAdmins : widget.selectedMembers);
     // 각 멤버의 체크 상태를 초기화
     for (var member in tempSelectedMembers) {
-      checkBoxStates[member.id] = true;
+      checkBoxStates[member.accountId] = true;
     }
   }
 
@@ -151,21 +151,21 @@ class _MemberDialogState extends ConsumerState<UserDialog> {
                           ),
                           title: Text(user.name),
                           trailing: Checkbox(
-                            value: checkBoxStates[user.id] ?? false, // id로 상태 관리
+                            value: checkBoxStates[user.accountId] ?? false, // id로 상태 관리
                             onChanged: (bool? value) {
                               setState(() {
                                 // 체크박스 상태를 업데이트하고 멤버 추가/제거
-                                checkBoxStates[user.id] = value ?? false;
+                                checkBoxStates[user.accountId] = value ?? false;
                                 if (value == true) {
                                   // 중복 추가 방지: 리스트에 없을 때만 추가
                                   if (!tempSelectedMembers.any(
-                                          (member) => member.id == user.id)) {
+                                          (member) => member.accountId == user.accountId)) {
                                     tempSelectedMembers.add(user);
                                   }
                                 } else {
                                   // 체크 해제 시 리스트에서 제거
                                   tempSelectedMembers.removeWhere(
-                                          (member) => member.id == user.id);
+                                          (member) => member.accountId == user.accountId);
                                 }
                               });
                             },

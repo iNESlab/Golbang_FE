@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/models/get_statistics_overall.dart';
@@ -7,7 +8,7 @@ import 'package:golbang/models/get_statistics_ranks.dart';
 import 'package:golbang/services/group_service.dart';
 import '../../services/statistics_service.dart';
 import '../../repoisitory/secure_storage.dart';
-import '../../models/group.dart'; // 그룹 모델 추가
+import '../../models/club.dart'; // 그룹 모델 추가
 
 class StatisticsPage extends ConsumerStatefulWidget {
   const StatisticsPage({super.key});
@@ -22,7 +23,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
   String selectedYear = '전체'; // 초기 연도 설정
   List<String> years = [];
 
-  List<Group> groups = []; // 그룹 리스트
+  List<Club> clubs = []; // 그룹 리스트
   Map<int, ClubStatistics> groupRankings = {}; // 그룹별 랭킹 데이터
   List<EventStatistics> _selectedEvents = []; // 클릭한 모임의 이벤트 리스트
   OverallStatistics? overallStatistics; // 전체 통계 선언
@@ -65,29 +66,29 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
     final startTime = DateTime.now();
 
     try {
-      groups = await groupService.getUserGroups();
-      if (groups.isNotEmpty) {
+      clubs = await groupService.getUserGroups();
+      if (clubs.isNotEmpty) {
         // 첫 번째 그룹의 랭킹 및 이벤트 리스트 가져오기
-        ClubStatistics? ranking = await groupService.fetchGroupRanking(groups.first.id);
+        ClubStatistics? ranking = await groupService.fetchGroupRanking(clubs.first.id);
         if (ranking != null) {
-          groupRankings[groups.first.id] = ranking;
-          _cachedEvents[groups.first.id] = ranking.events ?? [];
-          _selectedEvents = _cachedEvents[groups.first.id]!;
+          groupRankings[clubs.first.id] = ranking;
+          _cachedEvents[clubs.first.id] = ranking.events ?? [];
+          _selectedEvents = _cachedEvents[clubs.first.id]!;
         }
       }
       await _loadStatisticsData();
-      if (groups.isNotEmpty && groupRankings.isNotEmpty) {
-        _loadEventsForGroup(groups.first.id);
+      if (clubs.isNotEmpty && groupRankings.isNotEmpty) {
+        _loadEventsForGroup(clubs.first.id);
       }
-      if (groups.isEmpty && overallStatistics == null && yearStatistics == null) {
+      if (clubs.isEmpty && overallStatistics == null && yearStatistics == null) {
         hasError = true;
       }
     } catch (e) {
-      print("Error loading data: $e");
+      log("Error loading data: $e");
       hasError = true;
     } finally {
       final endTime = DateTime.now(); // 종료 시간 기록
-      print("Data fetching took: ${endTime.difference(startTime).inMilliseconds} ms");
+      log("Data fetching took: ${endTime.difference(startTime).inMilliseconds} ms");
       setState(() {
         isLoading = false;
       });
@@ -111,7 +112,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
         await _loadPeriodStatistics();
       }
       final endTime = DateTime.now(); // 종료 시간 기록
-      print("Statistic Data fetching took: ${endTime.difference(startTime).inMilliseconds} ms");
+      log("Statistic Data fetching took: ${endTime.difference(startTime).inMilliseconds} ms");
     } catch (e) {
       setState(() {
         hasError = true;
@@ -120,13 +121,13 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
   }
 
   Future<void> _loadEventsForGroup(int groupId) async {
-    print("Loading events for group ID: $groupId");
+    log("Loading events for group ID: $groupId");
     if (_cachedEvents.containsKey(groupId)) {
       // 이미 캐싱된 데이터가 있으면 캐싱된 데이터를 사용
       setState(() {
         _selectedEvents = _cachedEvents[groupId]!;
       });
-      print("Using cached events for group ID: $groupId");
+      log("Using cached events for group ID: $groupId");
       return;
     }
 
@@ -140,17 +141,17 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
           _cachedEvents[groupId] = events; // 캐싱
           _selectedEvents = events; // UI 업데이트
         });
-        print("Loaded events for group ID: $groupId");
+        log("Loaded events for group ID: $groupId");
       } else {
-        print("No ranking data available for group ID: $groupId");
+        log("No ranking data available for group ID: $groupId");
         setState(() {
           _selectedEvents = [];
         });
       }
       final endTime = DateTime.now(); // 종료 시간 기록
-      print("Each Data fetching took: ${endTime.difference(startTime).inMilliseconds} ms");
+      log("Each Data fetching took: ${endTime.difference(startTime).inMilliseconds} ms");
     } catch (e) {
-      print("Failed to load events for group ID $groupId: $e");
+      log("Failed to load events for group ID $groupId: $e");
       setState(() {
         _selectedEvents = [];
       });
@@ -175,7 +176,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : hasError || (groups.isEmpty)
+          : hasError || (clubs.isEmpty)
           ? const Center(child: Text("정보를 불러올 수 없습니다."))
           : SingleChildScrollView(
         child: Padding(
@@ -197,7 +198,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
     );
 
     final endTime = DateTime.now(); // 종료 시간 기록
-    print("Widget build took: ${endTime.difference(startTime).inMilliseconds} ms");
+    log("Widget build took: ${endTime.difference(startTime).inMilliseconds} ms");
 
     return widgetTree;
   }
@@ -299,7 +300,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
         selectedYear = ''; // 연도 선택 초기화
       });
 
-      print("Selected date range: $startDate to $endDate");
+      log("Selected date range: $startDate to $endDate");
       await _loadPeriodStatistics(); // 기간별 통계 로드
     }
   }
@@ -323,7 +324,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
           periodStatistics = periodStatistics; // 상태를 다시 설정해 화면을 갱신합니다.
         });
       } catch (e) {
-        print("Failed to load period statistics: $e");
+        log("Failed to load period statistics: $e");
         setState(() {
           hasError = true;
         });
@@ -389,7 +390,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
   }
 
   Widget _buildClubRankingSection() {
-    if (groups.isEmpty) {
+    if (clubs.isEmpty) {
       return const Center(child: Text('모임의 이벤트 데이터가 없습니다.'));
     }
 
@@ -409,7 +410,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
-                children: groups.map((group) {
+                children: clubs.map((group) {
                   ClubStatistics? ranking = groupRankings[group.id];
                   return Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 8.0),

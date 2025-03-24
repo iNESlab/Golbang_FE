@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import '../global/LoginInterceptor.dart';
 import '../models/club.dart';
+import '../models/member.dart';
 import '../models/profile/get_all_user_profile.dart';
 import '../repoisitory/secure_storage.dart';
 
@@ -61,7 +62,7 @@ class ClubService {
     }
   }
 
-  Future<void> inviteMembers(int clubId, List<GetAllUserProfile> userProfileList) async {
+  Future<List<Member>> inviteMembers(int clubId, List<GetAllUserProfile> userProfileList) async {
     try {
       for (var user in userProfileList) {
         log('username: ${user.name}'); // ✅ user_id 출력
@@ -73,7 +74,7 @@ class ClubService {
       List<String> userIds = userProfileList.map((userProfile) => userProfile.userId!).toList();
 
       // 2️⃣ 서버로 리스트를 한 번에 전송
-      await dioClient.dio.post(
+      final response = await dioClient.dio.post(
         uri,
         data: {
           "user_ids": userIds, // ✅ 리스트로 변환된 user_ids 전송
@@ -85,8 +86,15 @@ class ClubService {
         ),
       );
 
+      if (response.statusCode != 204) {
+        return (response.data['data'] as List).map((json) => Member.fromJson(json)).toList();
+      } else {
+        throw Exception('Failed to leave club');
+      }
+
     } catch (e) {
       log('Error inviting members: $e');
+      throw Exception('Failed to invite member');
     }
   }
   Future<void> removeMember(int clubId, int memberId) async {

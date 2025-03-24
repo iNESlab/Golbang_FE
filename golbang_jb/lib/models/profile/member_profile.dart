@@ -3,14 +3,14 @@ class ClubMemberProfile {
   String profileImage;
   final String name;
   final String role;
-  final int id;
+  final int accountId;
 
   ClubMemberProfile({
     required this.memberId,
     required this.profileImage,
     required this.name,
     required this.role,
-    required this.id,
+    required this.accountId,
   });
 
   factory ClubMemberProfile.fromJson(Map<String, dynamic> json) {
@@ -19,7 +19,7 @@ class ClubMemberProfile {
         profileImage: json['user']['profile_image'] ?? '',
         name: json['user']['name'],
         role: json['role'],
-        id: json['user']['id']
+        accountId: json['user']['id']
     );
   }
 
@@ -29,7 +29,7 @@ class ClubMemberProfile {
       'memberId': memberId,
       'name': name,
       'role': role,
-      'id': id,
+      'id': accountId,
     };
   }
 

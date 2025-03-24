@@ -5,6 +5,7 @@ import 'package:golbang/models/profile/member_profile.dart';
 import '../../../models/profile/get_all_user_profile.dart';
 import '../../../repoisitory/secure_storage.dart';
 import '../../../services/club_member_service.dart';
+import '../../provider/club/club_state_provider.dart';
 import '../../services/club_service.dart';
 import '../../widgets/common/circular_default_person_icon.dart';
 import '../../widgets/sections/community_member_dialog.dart';
@@ -24,8 +25,8 @@ class MemberListPage extends ConsumerStatefulWidget {
 }
 
 class _MemberListPageState extends ConsumerState<MemberListPage> {
-  List<GetAllUserProfile> newMembers = [];
-  List<GetAllUserProfile> selectedMembers = [];
+  List<GetAllUserProfile> newMemberUsers = [];
+  List<GetAllUserProfile> selectedMemberUsers = [];
   List<ClubMemberProfile> oldMembers = [];
   late ClubMemberService _clubMemberService;
   bool isLoading = true;
@@ -44,9 +45,9 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
 
       setState(() {
         oldMembers = fetchedMembers;
-        selectedMembers = oldMembers
+        selectedMemberUsers = oldMembers
             .map((m) => GetAllUserProfile(
-          id: m.id,
+          accountId: m.accountId,
           name: m.name,
           profileImage: m.profileImage,
         ))
@@ -65,24 +66,25 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
     showDialog<List<GetAllUserProfile>>(
       context: context,
       builder: (BuildContext context) {
-        return MemberDialog(
-          selectedMembers: selectedMembers,
-          newSelectedMembers: newMembers,
+        return UserDialog(
+          selectedUsers: selectedMemberUsers,
+          newSelectedUsers: newMemberUsers,
           isAdminMode: false,
         );
       },
     ).then((result) {
       if (result != null) {
         setState(() {
-          selectedMembers = oldMembers
+          selectedMemberUsers = oldMembers
               .map((m) => GetAllUserProfile(
-            id: m.id,
+            accountId: m.accountId,
             name: m.name,
             profileImage: m.profileImage,
-          ))
-              .toList();
-          newMembers =
-              result.where((m) => !oldMembers.any((old) => old.id == m.id)).toList();
+          )).toList();
+          log('result: ${result.length}');
+          newMemberUsers =
+              result.where((e) => !oldMembers.any((old) => old.accountId == e.accountId)).toList();
+          log('newMemberUsers: $newMemberUsers');
         });
       }
     });
@@ -118,11 +120,12 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
   /// 멤버 추방 함수
   Future<void> _kickMember(ClubMemberProfile member) async {
     final clubService = ClubService(ref.read(secureStorageProvider));
-    await clubService.removeMember(widget.clubId, member.id);
+    await clubService.removeMember(widget.clubId, member.memberId);
+    ref.read(clubStateProvider.notifier).removeMemberFromSelectedClub(member.memberId);
 
     setState(() {
-      oldMembers.removeWhere((m) => m.id == member.id);
-      selectedMembers.removeWhere((m) => m.id == member.id);
+      oldMembers.removeWhere((m) => m.memberId == member.memberId);
+      selectedMemberUsers.removeWhere((e) => e.accountId == member.accountId);
     });
   }
 
@@ -130,7 +133,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
   Widget build(BuildContext context) {
     return WillPopScope(
       onWillPop: () async {
-        if (newMembers.isNotEmpty) {
+        if (newMemberUsers.isNotEmpty) {
           final shouldExit = await _confirmInviteOnExit();
           return shouldExit; // 다이얼로그 결과에 따라 페이지 이동 여부 결정
         }
@@ -164,7 +167,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
               ),
               ...oldMembers.map((member) => _buildMemberTile(member)),
             ],
-            if (newMembers.isNotEmpty) ...[
+            if (newMemberUsers.isNotEmpty) ...[
               const Padding(
                 padding: EdgeInsets.all(10.0),
                 child: Text("새로운 멤버",
@@ -173,9 +176,9 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
                         fontWeight: FontWeight.bold,
                         color: Colors.green)),
               ),
-              ...newMembers.map((member) => _buildNewMemberTile(member)),
+              ...newMemberUsers.map((member) => _buildNewMemberTile(member)),
             ],
-            if (newMembers.isEmpty && oldMembers.isEmpty)
+            if (newMemberUsers.isEmpty && oldMembers.isEmpty)
               const Center(
                 child: Padding(
                   padding: EdgeInsets.all(20.0),
@@ -202,7 +205,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text("멤버 초대"),
-          content: Text("${newMembers.length}명을 초대하시겠습니까?"),
+          content: Text("${newMemberUsers.length}명을 초대하시겠습니까?"),
           actions: [
             TextButton(
               onPressed: () {
@@ -227,18 +230,20 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
   /// 초대 실행 함수
   Future<void> _inviteMembers() async {
     final clubService = ClubService(ref.read(secureStorageProvider));
-    await clubService.inviteMembers(widget.clubId, newMembers);
+    final newMembers = await clubService.inviteMembers(widget.clubId, newMemberUsers);
+    ref.read(clubStateProvider.notifier).updateSelectedClubMembers(newMembers);
+    log('newMembers number: ${newMembers.length}');
 
     setState(() {
       oldMembers.addAll(newMembers.map((m) => ClubMemberProfile(
-        memberId: m.id,
+        memberId: m.memberId, // 임시 처리
         name: m.name,
         role: "member",
         profileImage: m.profileImage,
-        id: m.id,
+        accountId: m.accountId,
       )));
-      selectedMembers.addAll(newMembers);
-      newMembers.clear();
+      selectedMemberUsers.addAll(newMemberUsers);
+      newMemberUsers.clear();
     });
   }
 

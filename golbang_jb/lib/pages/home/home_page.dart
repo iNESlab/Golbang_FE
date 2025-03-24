@@ -2,7 +2,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/models/event.dart';
-import 'package:golbang/models/group.dart';
+import 'package:golbang/models/club.dart';
 import 'package:golbang/models/user_account.dart';
 import 'package:golbang/models/get_statistics_overall.dart';
 import 'package:golbang/pages/setting/setting_page.dart';
@@ -182,7 +182,7 @@ class HomeContent extends ConsumerWidget {
             UserAccount userAccount = snapshot.data![0];
             List<Event> events = snapshot.data![1];
             events.sort((a, b) => b.startDateTime.compareTo(a.startDateTime));
-            List<Group> clubs = snapshot.data![2];
+            List<Club> clubs = snapshot.data![2];
             OverallStatistics overallStatistics = snapshot.data![3] ?? OverallStatistics(
               averageScore: 0.0,
               bestScore: 0,

@@ -1,7 +1,6 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:golbang/models/group.dart';
 import 'package:golbang/pages/club/club_edit_page.dart';
 import 'package:golbang/pages/community/member_list_page.dart';
 import '../../provider/club/club_state_provider.dart';
@@ -10,9 +9,8 @@ import '../../repoisitory/secure_storage.dart';
 import 'package:get/get.dart';
 
 class AdminSettingsPage extends ConsumerWidget {
-  final Group club; // 모임 ID를 받도록 수정
-
-  const AdminSettingsPage({super.key, required this.club});
+  final int clubId;
+  const AdminSettingsPage({super.key, required this.clubId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,7 +41,7 @@ class AdminSettingsPage extends ConsumerWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => MemberListPage(clubId: club.id, isAdmin: true,),
+                    builder: (context) => MemberListPage(clubId: clubId, isAdmin: true,),
                   ),
                 );
               },
@@ -64,7 +62,7 @@ class AdminSettingsPage extends ConsumerWidget {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (context) => ClubEditPage(club: club),
+                    builder: (context) => const ClubEditPage(),
                   ),
                 );
               },
@@ -107,7 +105,6 @@ class AdminSettingsPage extends ConsumerWidget {
                   notifier.state = notifier.state.copyWith(
                     clubList: notifier.state.clubList.where((c) => c.id != club.id).toList(),
                   );
-
 
                   Get.offAllNamed('/home', arguments: {'initialIndex': 2});
                   ScaffoldMessenger.of(context).showSnackBar(
