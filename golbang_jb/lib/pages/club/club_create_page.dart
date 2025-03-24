@@ -114,14 +114,14 @@ class _ClubCreatePageState extends ConsumerState<ClubCreatePage> {
     // 사용자 정보를 멤버와 관리자에 추가
     if (!selectedUsers.any((user) => user.userId == userAccount.userId)) {
       selectedUsers.add(GetAllUserProfile(
-        id: userAccount.id,
+        accountId: userAccount.id,
         userId: userAccount.userId,
         profileImage: userAccount.profileImage ?? '',
         name: userAccount.name,
       ));
 
       selectedAdminUsers.add(GetAllUserProfile(
-        id: userAccount.id,
+        accountId: userAccount.id,
         userId: userAccount.userId,
         profileImage: userAccount.profileImage ?? '',
         name: userAccount.name,

@@ -3,10 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // ConsumerStatefulWidget 사용을 위한 패키지
 import 'package:golbang/services/group_service.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:golbang/models/group.dart';
+import 'package:golbang/models/club.dart';
 import 'package:golbang/widgets/sections/group_item.dart';
 import 'package:golbang/pages/club/club_create_page.dart';
 import 'package:golbang/pages/community/community_main.dart';
+import '../../provider/club/club_state_provider.dart';
 import '../../repoisitory/secure_storage.dart';
 
 class ClubMainPage extends ConsumerStatefulWidget {
@@ -18,8 +19,8 @@ class ClubMainPage extends ConsumerStatefulWidget {
 
 class _GroupMainPageState extends ConsumerState<ClubMainPage> {
   final PageController _pageController = PageController();
-  List<Group> allGroups = []; // 전체 그룹 리스트
-  List<Group> filteredGroups = []; // 필터링된 그룹 리스트
+  List<Club> allGroups = []; // 전체 그룹 리스트
+  List<Club> filteredGroups = []; // 필터링된 그룹 리스트
   bool isLoading = true;
   late GroupService groupService;
 
@@ -37,7 +38,7 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
   // Fetch groups once
   Future<void> _fetchGroups() async {
     try {
-      List<Group> groups = await groupService.getUserGroups(); // 백엔드에서 그룹 데이터 가져옴
+      List<Club> groups = await groupService.getUserGroups(); // 백엔드에서 그룹 데이터 가져옴
       setState(() {
         allGroups = groups; // 그룹 데이터를 전체 리스트에 설정
         filteredGroups = groups; // 초기에는 모든 그룹 표시
@@ -86,12 +87,11 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
                     padding: const EdgeInsets.all(0),
                   ),
                   onPressed: () {
+                    ref.read(clubStateProvider.notifier).selectClub(club); // 상태 저장
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => CommunityMain(
-                            club: club
-                        ),
+                        builder: (context) => const CommunityMain(),
                       ),
                     );
                   },

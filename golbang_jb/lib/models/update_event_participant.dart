@@ -64,7 +64,7 @@ class UpdateEventParticipant {
       name: profile.name,
       profileImage: profile.profileImage,
       role: profile.role,
-      id: profile.id,
+      id: profile.accountId,
       participantId: 0, // 실제 데이터에 맞게 설정 필요
       statusType: 'PENDING', // 적절한 값으로 설정 필요
       teamType: '', // 적절한 값으로 설정 필요

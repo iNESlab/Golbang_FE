@@ -5,24 +5,24 @@ import '../../models/profile/get_all_user_profile.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/user_service.dart';
 
-class MemberDialog extends ConsumerStatefulWidget {
-  final List<GetAllUserProfile> selectedMembers; // 기존 멤버 (체크 해제 불가능)
-  final List<GetAllUserProfile> newSelectedMembers; // 새로 선택된 멤버 (체크 가능)
+class UserDialog extends ConsumerStatefulWidget {
+  final List<GetAllUserProfile> selectedUsers; // 기존 멤버 (체크 해제 불가능)
+  final List<GetAllUserProfile> newSelectedUsers; // 새로 선택된 멤버 (체크 가능)
   final bool isAdminMode;
 
-  const MemberDialog({
+  const UserDialog({
     super.key,
-    required this.selectedMembers,
-    required this.newSelectedMembers,
+    required this.selectedUsers,
+    required this.newSelectedUsers,
     required this.isAdminMode,
   });
 
   @override
-  _MemberDialogState createState() => _MemberDialogState();
+  _UserDialogState createState() => _UserDialogState();
 }
 
-class _MemberDialogState extends ConsumerState<MemberDialog> {
-  late List<GetAllUserProfile> tempSelectedMembers;
+class _UserDialogState extends ConsumerState<UserDialog> {
+  late List<GetAllUserProfile> tempSelectedUsers;
   Map<int, bool> checkBoxStates = {};
   String searchQuery = '';
 
@@ -30,11 +30,11 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
   void initState() {
     super.initState();
     // 기존 멤버와 새 멤버를 합쳐 초기화
-    tempSelectedMembers = List.from(widget.selectedMembers)
-      ..addAll(widget.newSelectedMembers);
+    tempSelectedUsers = List.from(widget.selectedUsers)
+      ..addAll(widget.newSelectedUsers);
     // 체크 상태 초기화
-    for (var member in tempSelectedMembers) {
-      checkBoxStates[member.id] = true;
+    for (var user in tempSelectedUsers) {
+      checkBoxStates[user.accountId] = true;
     }
   }
 
@@ -66,7 +66,7 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
             IconButton(
               icon: const Icon(Icons.close),
               onPressed: () {
-                Navigator.of(context).pop(tempSelectedMembers);
+                Navigator.of(context).pop(tempSelectedUsers);
               },
             ),
           ],
@@ -131,7 +131,7 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
                         final user = filteredUsers[index];
                         final profileImage = user.profileImage;
                         final isOldMember =
-                        widget.selectedMembers.any((m) => m.id == user.id);
+                        widget.selectedUsers.any((e) => e.accountId == user.accountId);
 
                         return ListTile(
                           leading: CircleAvatar(
@@ -147,20 +147,20 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
                           ),
                           title: Text(user.name),
                           trailing: Checkbox(
-                            value: checkBoxStates[user.id] ?? false,
+                            value: checkBoxStates[user.accountId] ?? false,
                             onChanged: isOldMember
                                 ? null // 기존 멤버는 체크 해제 불가능
                                 : (bool? value) {
                               setState(() {
-                                checkBoxStates[user.id] = value ?? false;
+                                checkBoxStates[user.accountId] = value ?? false;
                                 if (value == true) {
-                                  if (!tempSelectedMembers.any(
-                                          (member) => member.id == user.id)) {
-                                    tempSelectedMembers.add(user);
+                                  if (!tempSelectedUsers.any(
+                                          (e) => e.accountId == user.accountId)) {
+                                    tempSelectedUsers.add(user);
                                   }
                                 } else {
-                                  tempSelectedMembers.removeWhere(
-                                          (member) => member.id == user.id);
+                                  tempSelectedUsers.removeWhere(
+                                          (e) => e.accountId == user.accountId);
                                 }
                               });
                             },
@@ -179,7 +179,7 @@ class _MemberDialogState extends ConsumerState<MemberDialog> {
         Center(
           child: ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop(tempSelectedMembers);
+              Navigator.of(context).pop(tempSelectedUsers);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.teal,

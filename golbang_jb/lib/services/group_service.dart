@@ -6,7 +6,7 @@ import '../global/LoginInterceptor.dart';
 import '../models/get_statistics_ranks.dart';
 import '../models/profile/get_all_user_profile.dart';
 import '../repoisitory/secure_storage.dart';
-import 'package:golbang/models/group.dart';
+import 'package:golbang/models/club.dart';
 
 class GroupService {
   //TODO: ClubService와 통합 후 삭제
@@ -72,7 +72,7 @@ class GroupService {
   }
 
 
-  Future<List<Group>> getUserGroups() async {
+  Future<List<Club>> getUserGroups() async {
     try {
       // API 엔드포인트 설정 (dotenv를 통해 환경 변수에서 호스트 URL을 가져옴)
       var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/";
@@ -86,14 +86,14 @@ class GroupService {
 
         // JSON 데이터를 Group 객체로 변환
         // log(data);
-        List<Group> groups = data.map((groupJson) {
+        List<Club> groups = data.map((groupJson) {
           try {
-            return Group.fromJson(groupJson);
+            return Club.fromJson(groupJson);
           } catch (e) {
             log('Error parsing group: $e');
             return null; // 파싱 오류가 발생한 경우 null 반환
           }
-        }).whereType<Group>().toList(); // null이 아닌 Group 객체만 리스트에 포함
+        }).whereType<Club>().toList(); // null이 아닌 Group 객체만 리스트에 포함
 
         return groups; // 그룹 리스트 반환
       } else {
@@ -123,7 +123,7 @@ class GroupService {
     return null;
   }
 
-  Future<List<Group>> getGroupInfo(int clubId) async {
+  Future<List<Club>> getGroupInfo(int clubId) async {
   //TODO: 이 API가 언제 사용되는지 모르겠음. 로그에 안뜸.
     String clubidStr = clubId.toString();
 
@@ -137,14 +137,14 @@ class GroupService {
     if (response.statusCode == 200) {
       // JSON 디코딩
       List<dynamic> groupsData = [response.data['data']];
-      List<Group> groups = groupsData.map((groupJson) {
+      List<Club> groups = groupsData.map((groupJson) {
         try {
-          return Group.fromJson(groupJson);
+          return Club.fromJson(groupJson);
         } catch (e) {
           log('Error parsing group: $e');
           return null; // 파싱 오류가 발생한 경우 null 반환
         }
-      }).whereType<Group>().toList(); // null이 아닌 Group 객체만 리스트에 포함
+      }).whereType<Club>().toList(); // null이 아닌 Group 객체만 리스트에 포함
 
       return groups; // 그룹 리스트 반환
     } else {
