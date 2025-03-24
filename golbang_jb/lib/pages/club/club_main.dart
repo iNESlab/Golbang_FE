@@ -33,6 +33,10 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
     final storage = ref.read(secureStorageProvider);
     groupService = GroupService(storage);
     _fetchGroups(); // 그룹 데이터를 초기화 시 가져옴
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref.read(clubStateProvider.notifier).fetchClubs();
+    });
   }
 
   // Fetch groups once
@@ -115,6 +119,7 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
 
   @override
   Widget build(BuildContext context) {
+    
     return Scaffold(
       body: SafeArea(
         child: Column(

@@ -18,6 +18,15 @@ class _GroupsSectionState extends ConsumerState<GroupsSection> {
   final ScrollController _scrollController = ScrollController(); // ScrollController 선언
 
   @override
+  void initState() {
+    super.initState();
+    // 화면 렌더링 후 클럽 데이터 최신화
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref.read(clubStateProvider.notifier).fetchClubs();
+    });
+  }
+
+  @override
   void dispose() {
     _scrollController.dispose(); // 메모리 누수 방지를 위해 ScrollController 해제
     super.dispose();
