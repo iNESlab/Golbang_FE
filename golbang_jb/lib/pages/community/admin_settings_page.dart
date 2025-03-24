@@ -59,12 +59,14 @@ class AdminSettingsPage extends ConsumerWidget {
               onPressed: () {
                 log('모임 관리 클릭');
                 // 멤버 조회 페이지 연결 (생략)
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ClubEditPage(),
-                  ),
-                );
+                final club = ref.read(clubStateProvider).selectedClub;
+                if (club != null) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => ClubEditPage(club: club)),
+                  );
+                }
+
               },
             ),
             SettingsButton(
