@@ -91,7 +91,7 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
   void _onComplete() async {
     String groupName = _groupNameController.text.isNotEmpty
         ? _groupNameController.text
-        : widget.club.name;
+        : _club.name;
     // 설명은 사용자가 입력한 그대로 사용
     String groupDescription = _groupDescriptionController.text;
 
