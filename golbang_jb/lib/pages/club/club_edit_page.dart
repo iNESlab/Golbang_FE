@@ -39,21 +39,19 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
   final ImagePicker _picker = ImagePicker();
 
   @override
-  void initState() {
-    super.initState();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-    final club = ref.read(clubStateProvider).selectedClub;
-    final user = ref.read(userAccountProvider);
+    final club = ref.watch(clubStateProvider.select((s) => s.selectedClub));
+    final user = ref.watch(userAccountProvider);
 
-    if (club != null && user != null) {
-      _club = club;
-      userAccount = user;
-
-      membersWithoutMe = _club.members.where((m) => m.accountId != user.id).toList();
-      selectedAdmins = _club.members.where((m) => m.role == 'admin').toList();
-
-      _groupNameController = TextEditingController(text: _club.name ?? '');
-      _groupDescriptionController = TextEditingController(text: _club.description ?? '');
+    if (club != null && user != null && selectedAdmins.isEmpty) {
+      // 초기 세팅
+      membersWithoutMe = club.members.where((m) => m.accountId != user.id).toList();
+      selectedAdmins = club.members.where((m) => m.role == 'admin').toList();
+      // controller도 초기화
+      _groupNameController.text = club.name ?? '';
+      _groupDescriptionController.text = club.description ?? '';
     }
   }
 
