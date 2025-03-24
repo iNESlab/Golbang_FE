@@ -99,12 +99,8 @@ class AdminSettingsPage extends ConsumerWidget {
               onPressed: () async {
                 Navigator.of(context).pop(); // 다이얼로그 닫기
                 try {
-                  await clubService.deleteClub(club.id); // 모임 삭제 API 호출
-                  ref.read(clubStateProvider.notifier).fetchClubs();
-                  final notifier = ref.read(clubStateProvider.notifier);
-                  notifier.state = notifier.state.copyWith(
-                    clubList: notifier.state.clubList.where((c) => c.id != club.id).toList(),
-                  );
+                  await clubService.deleteClub(clubId); // 모임 삭제 API 호출
+                  ref.read(clubStateProvider.notifier).removeClub(clubId);
 
                   Get.offAllNamed('/home', arguments: {'initialIndex': 2});
                   ScaffoldMessenger.of(context).showSnackBar(
