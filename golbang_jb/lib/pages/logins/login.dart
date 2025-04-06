@@ -9,6 +9,7 @@ import 'package:golbang/services/auth_service.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:local_auth/local_auth.dart';
 
 import '../../global/LoginInterceptor.dart';
 import '../../repoisitory/secure_storage.dart';
@@ -23,6 +24,7 @@ class TokenCheck extends ConsumerStatefulWidget {
 class _TokenCheckState extends ConsumerState<TokenCheck> {
   var dioClient = DioClient();
   bool isTokenExpired = true; // 초기값 설정
+  bool? isAuthenticated; // 생체 인증 성공 여부
 
   @override
   void initState() {
@@ -36,7 +38,6 @@ class _TokenCheckState extends ConsumerState<TokenCheck> {
       isTokenExpired = tokenStatus; // 상태 업데이트
     });
   }
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -57,28 +58,17 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
-  
+
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  // 저장된 이메일 불러오기
-  Future<void> _loadSavedEmail() async {
-    try {
-      final storage = ref.read(secureStorageProvider); // SecureStorage 인스턴스 가져오기
-      final savedEmail = await storage.readLoginId(); // 로그인 ID 불러오기
 
-      setState(() {
-        _emailController.text = savedEmail; // 이메일 필드에 자동완성
-      });
-    } catch (e) {
-      log('이메일 불러오기 실패: $e');
-    }
-  }
+
 
   @override
   void initState() {
     super.initState();
-    _loadSavedEmail(); // 앱 실행 시 저장된 이메일 불러오기
+
   }
 
   @override
@@ -113,6 +103,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               PasswordField(controller: _passwordController),
               const SizedBox(height: 64),
               LoginButton(onPressed: _login),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: _loginWithBiometrics,
+                icon: const Icon(Icons.fingerprint,
+                  color: Colors.white,
+                ),
+                label: const Text('지문 인식',
+                  style:TextStyle(color: Colors.white),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                ),
+              ),
               const SizedBox(height: 48),
               const SignUpLink() ,
             ],
@@ -121,6 +125,48 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       ),
     );
   }
+  Future<void> _loginWithBiometrics() async {
+    final auth = LocalAuthentication();
+    final canAuthenticate = await auth.canCheckBiometrics || await auth.isDeviceSupported();
+
+    if (!canAuthenticate) {
+      _showErrorDialog('이 기기에서는 생체 인증을 사용할 수 없습니다.');
+      return;
+    }
+
+    final authenticated = await auth.authenticate(
+      localizedReason: '생체 인증으로 로그인',
+      options: const AuthenticationOptions(biometricOnly: true),
+    );
+
+    if (authenticated) {
+      log('생체인증 성공');
+      final storage = ref.read(secureStorageProvider);
+      try {
+
+        final savedEmail = await storage.readLoginId();  // 저장된 이메일 불러오기
+        final savedPassword = await storage.readPassword(); // 저장된 비밀번호 불러오기
+
+        setState(() {
+          _emailController.text = savedEmail; // 이메일 필드에 자동완성
+          _passwordController.text = savedPassword;
+        });
+
+
+        if (savedEmail.isNotEmpty && savedPassword.isNotEmpty) {
+          _login();
+
+        } else {
+          _showErrorDialog('저장된 로그인 정보가 없습니다.\n이메일과 비밀번호로 먼저 로그인해주세요.');
+        }
+      } catch (e) {
+        _showErrorDialog('로그인 정보 불러오기 실패: $e');
+      }
+    } else {
+      _showErrorDialog('생체 인증에 실패했습니다.');
+    }
+  }
+
 
   Future<void> _login() async {
     final email = _emailController.text.trim();
@@ -140,7 +186,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           password: password,
           fcm_token: fcmToken ?? '',
         );
-        await _handleLoginResponse(response, email);
+        await _handleLoginResponse(response, email, password);
       } catch (e) {
         _showErrorDialog('An error occurred. Please try again.');
       }
@@ -153,7 +199,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     return email.isNotEmpty && password.isNotEmpty;
   }
 
-  Future<void> _handleLoginResponse(http.Response response, String email) async {
+  Future<void> _handleLoginResponse(http.Response response, String email, String password) async {
     if (response.statusCode == 200) {
       // 로그인 성공 시 이메일 저장
       ScaffoldMessenger.of(context).showSnackBar(
@@ -165,6 +211,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
       final storage = ref.watch(secureStorageProvider);
       await storage.saveLoginId(email);
+      await storage.savePassword(password);
       await storage.saveAccessToken(accessToken);
       if (mounted) {
         Navigator.pushReplacement(

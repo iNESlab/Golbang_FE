@@ -62,7 +62,7 @@ class AuthService {
       // 응답 상태 확인
       if (response.statusCode == 202) {
         // 로그아웃 성공 시 스토리지에 있는 액세스 토큰 삭제
-        await _flutterSecureStorage.deleteAll();
+        await _flutterSecureStorage.delete(key: "ACCESS_TOKEN");
         log('로그아웃 성공: 토큰 삭제 완료');
 
       }
