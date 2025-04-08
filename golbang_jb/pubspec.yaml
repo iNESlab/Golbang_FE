@@ -52,6 +52,7 @@ dependencies:
   web_socket_channel: ^3.0.1
   numberpicker: ^2.0.1
   share_plus: ^10.1.2
+  local_auth: ^2.3.0 # 바이오 메트릭
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.6

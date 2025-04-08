@@ -98,5 +98,33 @@ class SecureStorage {
       throw StateError('Failed to retrieve loginId: $e');
     }
   }
+
+  Future<void> savePassword(String password) async {
+    try {
+      log('[SECURE_STORAGE] savePassword: [HIDDEN]');
+      await storage.write(key: 'PASSWORD', value: password);
+    } catch (e) {
+      log("[ERR] Password 저장 실패: $e");
+    }
+  }
+
+  Future<String> readPassword() async {
+    try {
+      final password = await storage.read(key: 'PASSWORD');
+      log('[SECURE_STORAGE] readPassword: [HIDDEN]');
+
+      if (password == null) {
+        throw StateError('Password is not available');
+      }
+
+      return password;
+    } catch (e) {
+      log("[ERR] Password 불러오기 실패: $e");
+      throw StateError('Failed to retrieve password: $e');
+    }
+  }
+
+
+
 }
 
