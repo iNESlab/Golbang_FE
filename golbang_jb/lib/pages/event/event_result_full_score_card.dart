@@ -213,7 +213,7 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
         title: const Text('스코어카드'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.email), // 이메일 아이콘으로 변경
+            icon: const Icon(Icons.attach_email_rounded), // 이메일 아이콘으로 변경
             onPressed: exportAndSendEmail, // 이메일 전송 기능으로 변경
           ),
         ],
