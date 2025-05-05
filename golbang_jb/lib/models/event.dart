@@ -107,8 +107,8 @@ class Event {
         groupType: participant.groupType,
         sumScore: participant.sumScore,
         rank: participant.rank,
-        handicapRank: participant.handicapRank,
-        handicapScore: participant.handicapScore,
+        handicapRank: participant.handicapRank ?? '',
+        handicapScore: participant.handicapScore ?? 0,
       );
     }).toList();
   }

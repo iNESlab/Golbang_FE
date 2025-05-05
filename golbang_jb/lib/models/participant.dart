@@ -8,8 +8,8 @@ class Participant {
   final int groupType;
   final int? sumScore; // nullable로 변경
   final String rank;
-  final String handicapRank;
-  final int handicapScore;
+  final String? handicapRank;
+  final int? handicapScore;
   final Member? member; // member 속성
 
 
@@ -21,8 +21,8 @@ class Participant {
     required this.groupType,
     this.sumScore, // nullable이기 때문에 required 제거
     required this.rank,
-    required this.handicapRank,
-    required this.handicapScore,
+    this.handicapRank,
+    this.handicapScore,
     this.member,
   });
 
@@ -54,11 +54,11 @@ class Participant {
       holeNumber: json['hole_number'] ?? 0,
       // nullable이므로 기본값 없이 처리
       groupType: json['group_type'] ?? 0,
-      sumScore: json['sum_score'],
+      sumScore: (json['sum_score'] as int?) ?? 0,
       // nullable이므로 기본값 없이 처리
       rank: json['rank'] ?? "",
       handicapRank: json['handicap_rank'] ?? "",
-      handicapScore: json['handicap_score'] ?? 0,
+      handicapScore: (json['sum_score'] as int?) ?? 0,
       member: json['member'] != null ? Member.fromJson(json['member']) : null,
     );
   }
