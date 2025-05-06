@@ -24,7 +24,6 @@ class TokenCheck extends ConsumerStatefulWidget {
 class _TokenCheckState extends ConsumerState<TokenCheck> {
   var dioClient = DioClient();
   bool isTokenExpired = true; // 초기값 설정
-  bool? isAuthenticated; // 생체 인증 성공 여부
 
   @override
   void initState() {
@@ -61,14 +60,28 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-
+  bool _showBiometricButton = false;
+  late final _savedEmail;
+  late final _savedPassword;
 
 
   @override
   void initState() {
     super.initState();
+    _checkSavedCredentials(); // 로그인 정보 체크
 
+  }
+
+  Future<void> _checkSavedCredentials() async {
+    final storage = ref.read(secureStorageProvider);
+    _savedEmail = await storage.readLoginId();
+    _savedPassword = await storage.readPassword();
+
+    if (_savedEmail.isNotEmpty && _savedPassword.isNotEmpty) {
+      setState(() {
+        _showBiometricButton = true;
+      });
+    }
   }
 
   @override
@@ -104,19 +117,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               const SizedBox(height: 64),
               LoginButton(onPressed: _login),
               const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: _loginWithBiometrics,
-                icon: const Icon(Icons.fingerprint,
-                  color: Colors.white,
+              if (_showBiometricButton)
+                ElevatedButton.icon(
+                  onPressed: _loginWithBiometrics,
+                  icon: const Icon(Icons.fingerprint,
+                    color: Colors.white,
+                  ),
+                  label: const Text('지문 인식',
+                    style:TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
                 ),
-                label: const Text('지문 인식',
-                  style:TextStyle(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-              ),
               const SizedBox(height: 48),
               const SignUpLink() ,
             ],
@@ -141,24 +155,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     if (authenticated) {
       log('생체인증 성공');
-      final storage = ref.read(secureStorageProvider);
       try {
-
-        final savedEmail = await storage.readLoginId();  // 저장된 이메일 불러오기
-        final savedPassword = await storage.readPassword(); // 저장된 비밀번호 불러오기
-
         setState(() {
-          _emailController.text = savedEmail; // 이메일 필드에 자동완성
-          _passwordController.text = savedPassword;
+          _emailController.text = _savedEmail; // 이메일 필드에 자동완성
+          _passwordController.text = _savedPassword;
         });
+        _login();
 
-
-        if (savedEmail.isNotEmpty && savedPassword.isNotEmpty) {
-          _login();
-
-        } else {
-          _showErrorDialog('저장된 로그인 정보가 없습니다.\n이메일과 비밀번호로 먼저 로그인해주세요.');
-        }
       } catch (e) {
         _showErrorDialog('로그인 정보 불러오기 실패: $e');
       }
