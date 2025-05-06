@@ -5,18 +5,18 @@ class GetEventResultParticipantsRanks {
   final String userId;
   final String name;
   final String profileImage;
-  final int sumScore;
-  final int handicapScore;
+  final int? sumScore;
+  final int? handicapScore;
   final String rank;
   final String handicapRank;
-  final List<int> scorecard;
+  final List<int?> scorecard;
 
   GetEventResultParticipantsRanks({
     required this.userId,
     required this.name,
     required this.profileImage,
-    required this.sumScore,
-    required this.handicapScore,
+    this.sumScore,
+    this.handicapScore,
     required this.rank,
     required this.handicapRank,
     required this.scorecard,
@@ -27,11 +27,11 @@ class GetEventResultParticipantsRanks {
       userId: json['user_id'],
       name: json['name'],
       profileImage: json['profile_image'] ?? '',
-      sumScore: json['sum_score'],
-      handicapScore: json['handicap_score'],
+      sumScore: json['sum_score'] ?? 0,
+      handicapScore: json['handicap_score'] ?? 0,
       rank: json['rank'],
       handicapRank: json['handicap_rank'],
-      scorecard: List<int>.from(json['scorecard']),
+      scorecard: List<int?>.from(json['scorecard']),
     );
   }
 

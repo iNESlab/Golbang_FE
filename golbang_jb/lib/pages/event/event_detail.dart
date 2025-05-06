@@ -292,7 +292,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.email, size: appBarIconSize), // 엑셀 저장 아이콘 추가
+            icon: Icon(Icons.email, size: appBarIconSize), // 엑셀 저장 아이콘 추가 // TODO: email이 아니라 attach_email_rounded 로 바꿀 것을 제안합니다
             onPressed: exportAndSendEmail,
           ),
           PopupMenuButton<String>(

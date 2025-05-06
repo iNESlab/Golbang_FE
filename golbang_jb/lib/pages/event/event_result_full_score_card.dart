@@ -208,13 +208,13 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[200], // 배경색 설정
+      backgroundColor: Colors.grey[200],
       appBar: AppBar(
         title: const Text('스코어카드'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.email), // 이메일 아이콘으로 변경
-            onPressed: exportAndSendEmail, // 이메일 전송 기능으로 변경
+            icon: const Icon(Icons.attach_email_rounded),
+            onPressed: exportAndSendEmail,
           ),
         ],
       ),
@@ -223,17 +223,19 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
           : OrientationBuilder(
         builder: (context, orientation) {
           if (orientation == Orientation.landscape) {
-            // 가로 모드에서 ParticipantDataTable 호출
+            // 이미 가로 모드에서 스크롤 처리된 테이블 반환
             return buildParticipantDataTable();
           } else {
-            // 세로 모드에서 ScoreTable 호출
-            return buildScoreDataTable();
+            // Portrait 모드에서는 세로 스크롤 가능하도록 감싸기
+            return SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: buildScoreDataTable(),
+            );
           }
         },
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // 화면을 항상 시계 방향으로 회전
           final isLandscape = MediaQuery.of(context).orientation == Orientation.landscape;
           if (isLandscape) {
             SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
@@ -321,9 +323,6 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
       },
     );
   }
-
-
-
 
   // 팀 점수 행을 생성하는 함수
   DataRow buildTeamDataRow(String teamName, Map<String, dynamic>? teamScores) {

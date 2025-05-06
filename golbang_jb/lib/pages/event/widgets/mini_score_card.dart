@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import '../../event/event_result_full_score_card.dart';
 
 class MiniScoreCard extends StatelessWidget {
-  final List<int> scorecard;
+  final List<int?> scorecard;
   final int eventId;
 
   const MiniScoreCard({super.key, 
@@ -115,18 +115,20 @@ class MiniScoreCard extends StatelessWidget {
                       ),
                     ),
                     ...scorecard.sublist(0, 9).map((score) {
+                      final display = score != null ? score.toString() : '-';
                       return Center(
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
                           child: Text(
-                            score.toString(),
+                            display,
                             style: const TextStyle(
                               fontSize: 14,
                               // TODO: Par를 기준으로 색을 다르게 하는 코드가 추후에 추가되면 좋을 것 같음. (color: score <= 3 ? Colors.blueAccent : score >= 5 ? Colors.red : Colors.black,)
                             ),
                           ),
-                        ),
+                        )
                       );
+
                     }),
                   ],
                 ),
@@ -188,11 +190,12 @@ class MiniScoreCard extends StatelessWidget {
                       ),
                     ),
                     ...scorecard.sublist(9, 18).map((score) {
+                      final display = score != null ? score.toString() : '-';
                       return Center(
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
                           child: Text(
-                            score.toString(),
+                            display,
                             style: const TextStyle(fontSize: 14),
                           ),
                         ),

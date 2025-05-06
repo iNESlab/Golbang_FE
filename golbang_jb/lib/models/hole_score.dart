@@ -3,17 +3,17 @@
 
 class HoleScore {
   final int? holeNumber;
-  final int score;
+  final int? score;
 
   HoleScore({
     this.holeNumber,
-    required this.score,
+    this.score,
   });
 
   factory HoleScore.fromJson(Map<String, dynamic> json) {
     return HoleScore(
-      holeNumber: json['hole_number'] ?? 0,
-      score: json['score'],
+      holeNumber: json['hole_number'] as int?,
+      score: json['score'] as int?,
     );
   }
 }
