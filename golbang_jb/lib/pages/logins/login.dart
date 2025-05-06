@@ -1,6 +1,8 @@
+import 'dart:io'; // 플랫폼 구분을 위해 필요
 import 'dart:developer';
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:golbang/pages/home/splash_screen.dart';
 import 'package:golbang/pages/logins/widgets/login_widgets.dart';
@@ -10,6 +12,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:http/http.dart' as http;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:local_auth/local_auth.dart';
+import 'package:open_settings_plus/open_settings_plus.dart';
 
 import '../../global/LoginInterceptor.dart';
 import '../../repoisitory/secure_storage.dart';
@@ -24,7 +27,6 @@ class TokenCheck extends ConsumerStatefulWidget {
 class _TokenCheckState extends ConsumerState<TokenCheck> {
   var dioClient = DioClient();
   bool isTokenExpired = true; // 초기값 설정
-  bool? isAuthenticated; // 생체 인증 성공 여부
 
   @override
   void initState() {
@@ -61,14 +63,28 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-
-
+  bool _showBiometricButton = false;
+  late final _savedEmail;
+  late final _savedPassword;
 
 
   @override
   void initState() {
     super.initState();
+    _checkSavedCredentials(); // 로그인 정보 체크
 
+  }
+
+  Future<void> _checkSavedCredentials() async {
+    final storage = ref.read(secureStorageProvider);
+    _savedEmail = await storage.readLoginId();
+    _savedPassword = await storage.readPassword();
+
+    if (_savedEmail.isNotEmpty && _savedPassword.isNotEmpty) {
+      setState(() {
+        _showBiometricButton = true;
+      });
+    }
   }
 
   @override
@@ -104,19 +120,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
               const SizedBox(height: 64),
               LoginButton(onPressed: _login),
               const SizedBox(height: 16),
-              ElevatedButton.icon(
-                onPressed: _loginWithBiometrics,
-                icon: const Icon(Icons.fingerprint,
-                  color: Colors.white,
+              if (_showBiometricButton)
+                ElevatedButton.icon(
+                  onPressed: _loginWithBiometrics,
+                  icon: const Icon(Icons.fingerprint,
+                    color: Colors.white,
+                  ),
+                  label: const Text('지문 인식',
+                    style:TextStyle(color: Colors.white),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green,
+                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
                 ),
-                label: const Text('지문 인식',
-                  style:TextStyle(color: Colors.white),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.green,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-              ),
               const SizedBox(height: 48),
               const SignUpLink() ,
             ],
@@ -128,42 +145,55 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Future<void> _loginWithBiometrics() async {
     final auth = LocalAuthentication();
     final canAuthenticate = await auth.canCheckBiometrics || await auth.isDeviceSupported();
+    log('생체인증 사용 여부: ${!canAuthenticate}');
 
     if (!canAuthenticate) {
       _showErrorDialog('이 기기에서는 생체 인증을 사용할 수 없습니다.');
       return;
     }
 
-    final authenticated = await auth.authenticate(
-      localizedReason: '생체 인증으로 로그인',
-      options: const AuthenticationOptions(biometricOnly: true),
-    );
+    try {
+      final authenticated = await auth.authenticate(
+        localizedReason: '생체 인증으로 로그인',
+        options: const AuthenticationOptions(biometricOnly: true),
+      );
 
-    if (authenticated) {
-      log('생체인증 성공');
-      final storage = ref.read(secureStorageProvider);
-      try {
-
-        final savedEmail = await storage.readLoginId();  // 저장된 이메일 불러오기
-        final savedPassword = await storage.readPassword(); // 저장된 비밀번호 불러오기
-
-        setState(() {
-          _emailController.text = savedEmail; // 이메일 필드에 자동완성
-          _passwordController.text = savedPassword;
-        });
-
+      if (authenticated) {
+        // 생체 인증 성공 시 처리
+        final storage = ref.read(secureStorageProvider);
+        final savedEmail = await storage.readLoginId();
+        final savedPassword = await storage.readPassword();
 
         if (savedEmail.isNotEmpty && savedPassword.isNotEmpty) {
+          setState(() {
+            _emailController.text = savedEmail;
+            _passwordController.text = savedPassword;
+          });
           _login();
-
         } else {
           _showErrorDialog('저장된 로그인 정보가 없습니다.\n이메일과 비밀번호로 먼저 로그인해주세요.');
         }
-      } catch (e) {
-        _showErrorDialog('로그인 정보 불러오기 실패: $e');
+      } else {
+        _showErrorDialog('생체 인증에 실패했습니다.');
       }
-    } else {
-      _showErrorDialog('생체 인증에 실패했습니다.');
+    } on PlatformException catch (e) {
+      if (Platform.isAndroid) {
+        log('안드로이드');
+        _showErrorDialog(
+          '생체 인증이 등록되어 있지 않습니다.\n기기 설정에서 등록해주세요.',
+          onConfirm: () {
+            final settings = OpenSettingsPlus.shared;
+            if (settings is OpenSettingsPlusAndroid) {
+              settings.biometricEnroll(); // ✅ 지문/생체 등록 화면 열기
+            } else {
+              throw Exception('Platform not supported');
+            }
+          },
+        );
+      } else {
+        log('iOS apple');
+        _showErrorDialog('생체 인증 실패: ${e.message}');
+      }
     }
   }
 
@@ -224,23 +254,28 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     }
   }
 
-  void _showErrorDialog(String message) {
+  void _showErrorDialog(String message, {VoidCallback? onConfirm}) {
     showDialog(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('Error'),
-          content: Text(message),
-          actions: [
+      builder: (context) => AlertDialog(
+        title: const Text('안내'),
+        content: Text(message),
+        actions: [
+          if (onConfirm != null)
             TextButton(
-              child: const Text('OK'),
               onPressed: () {
                 Navigator.of(context).pop();
+                onConfirm();
               },
+              child: const Text('설정 열기'),
             ),
-          ],
-        );
-      },
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('닫기'),
+          ),
+        ],
+      ),
     );
   }
+
 }
