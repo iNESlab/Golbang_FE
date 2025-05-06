@@ -310,7 +310,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
               }
             },
             itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              if(currentTime.isBefore(_startDateTime))
+              if(currentTime.isBefore(_startDateTime.add(const Duration(minutes: 30))))
                 const PopupMenuItem<String>(
                   value: 'edit',
                   child: Text('수정'),
