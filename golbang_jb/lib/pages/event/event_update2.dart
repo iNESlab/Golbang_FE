@@ -234,6 +234,17 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
     );
   }
 
+  // 그룹의 숫자만 추출하여 순서대로 정렬하는 함수
+  List<Map<String, List<CreateParticipant>>> _getSortedGroups(List<Map<String, List<CreateParticipant>>> groups) {
+    return List<Map<String, List<CreateParticipant>>>.from(groups)
+      ..sort((a, b) {
+        // 첫 번째 키에서 조 번호 추출
+        int groupNumberA = int.parse(a.keys.first.replaceAll(RegExp(r'[^0-9]'), ''));
+        int groupNumberB = int.parse(b.keys.first.replaceAll(RegExp(r'[^0-9]'), ''));
+        return groupNumberA.compareTo(groupNumberB);
+      });
+  }
+
   Future<void> _onCompletePressed() async {
     final eventData = CreateEvent(
       eventId: widget.eventId,
@@ -275,6 +286,9 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
 
   @override
   Widget build(BuildContext context) {
+    // 그룹을 조 번호 순서대로 정렬
+    final sortedGroups = _getSortedGroups(groups);
+    
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
@@ -439,7 +453,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                 style: TextStyle(color: Colors.white),  // 글자 색을 흰색으로 설정
               ),
             ),
-            if (groups.isNotEmpty)
+            if (sortedGroups.isNotEmpty)
               Padding(
                 padding: const EdgeInsets.only(top: 20.0),
                 child: Column(
@@ -451,7 +465,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                       scrollDirection: Axis.horizontal,
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: groups.map((group) {
+                        children: sortedGroups.map((group) {
                           String groupNameA = group.keys.first;
                           String groupNameB = group.keys.last;
 
