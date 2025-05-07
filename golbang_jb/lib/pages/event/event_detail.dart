@@ -292,8 +292,43 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
         ),
         actions: [
           IconButton(
-            icon: Icon(Icons.email, size: appBarIconSize), // 엑셀 저장 아이콘 추가 // TODO: email이 아니라 attach_email_rounded 로 바꿀 것을 제안합니다
-            onPressed: exportAndSendEmail,
+            //TODO: 레디스에서 읽는걸로 서버 변경시, 제거
+            icon: Icon(Icons.attach_email_rounded, size: appBarIconSize),
+            onPressed: () {
+              // 게임 진행 중인지 확인
+              final bool isGameInProgress = ref.read(
+                gameInProgressProvider.select((map) => map[widget.event.eventId] ?? false),
+              );
+
+              if (isGameInProgress) {
+                // 게임이 진행 중일 경우 경고 다이얼로그 표시
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('경고'),
+                    content: const Text('게임 진행 중인 경우 데이터가 15분마다 동기화되어, 현재 점수와 일치하지 않을 수 있습니다. 계속 추출하시겠습니까?'),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // 다이얼로그 닫기
+                        },
+                        child: const Text('취소'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop(); // 다이얼로그 닫기
+                          exportAndSendEmail(); // 이메일 내보내기 실행
+                        },
+                        child: const Text('추출'),
+                      ),
+                    ],
+                  ),
+                );
+              } else {
+                // 게임이 진행 중이 아닐 경우 바로 실행
+                exportAndSendEmail();
+              }
+            },
           ),
           PopupMenuButton<String>(
             onSelected: (String value) {
@@ -348,29 +383,29 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                      Text(
-                        widget.event.eventTitle,
-                        style: TextStyle(fontSize: fontSizeXLarge, fontWeight: FontWeight.bold,
-                          overflow: TextOverflow.ellipsis,),
-                      ),
-                      Text(
-                        '${_startDateTime.toIso8601String().split('T').first} • ${_startDateTime.hour}:${_startDateTime.minute.toString().padLeft(2, '0')} ~ ${_endDateTime.hour}:${_endDateTime.minute.toString().padLeft(2, '0')}${_startDateTime.toIso8601String().split('T').first !=
-                                _endDateTime.toIso8601String().split('T').first
-                                ? ' (${_endDateTime.toIso8601String().split('T').first})'
-                                : ''}',
-                        style: TextStyle(fontSize: fontSizeMedium, overflow: TextOverflow.ellipsis),
-                      ),
+                        Text(
+                          widget.event.eventTitle,
+                          style: TextStyle(fontSize: fontSizeXLarge, fontWeight: FontWeight.bold,
+                            overflow: TextOverflow.ellipsis,),
+                        ),
+                        Text(
+                          '${_startDateTime.toIso8601String().split('T').first} • ${_startDateTime.hour}:${_startDateTime.minute.toString().padLeft(2, '0')} ~ ${_endDateTime.hour}:${_endDateTime.minute.toString().padLeft(2, '0')}${_startDateTime.toIso8601String().split('T').first !=
+                              _endDateTime.toIso8601String().split('T').first
+                              ? ' (${_endDateTime.toIso8601String().split('T').first})'
+                              : ''}',
+                          style: TextStyle(fontSize: fontSizeMedium, overflow: TextOverflow.ellipsis),
+                        ),
 
-                      Text(
-                        '장소: ${widget.event.site}',
-                        style: TextStyle(fontSize: fontSizeMedium),
-                      ),
-                      Text(
-                        '게임모드: ${widget.event.displayGameMode}',
-                        style: TextStyle(fontSize: fontSizeMedium),
-                      ),
-                    ],
-                  ),
+                        Text(
+                          '장소: ${widget.event.site}',
+                          style: TextStyle(fontSize: fontSizeMedium),
+                        ),
+                        Text(
+                          '게임모드: ${widget.event.displayGameMode}',
+                          style: TextStyle(fontSize: fontSizeMedium),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),

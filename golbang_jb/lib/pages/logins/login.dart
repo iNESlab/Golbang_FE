@@ -65,7 +65,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool _showBiometricButton = false;
   late final _savedEmail;
-  late final _savedPassword;
 
 
   @override
@@ -78,10 +77,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   Future<void> _checkSavedCredentials() async {
     final storage = ref.read(secureStorageProvider);
     _savedEmail = await storage.readLoginId();
-    _savedPassword = await storage.readPassword();
 
-    if (_savedEmail.isNotEmpty && _savedPassword.isNotEmpty) {
+    if (_savedEmail.isNotEmpty) {
       setState(() {
+        _emailController.text = _savedEmail;
         _showBiometricButton = true;
       });
     }
@@ -161,12 +160,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       if (authenticated) {
         // 생체 인증 성공 시 처리
         final storage = ref.read(secureStorageProvider);
-        final savedEmail = await storage.readLoginId();
         final savedPassword = await storage.readPassword();
 
-        if (savedEmail.isNotEmpty && savedPassword.isNotEmpty) {
+        if (savedPassword.isNotEmpty) {
           setState(() {
-            _emailController.text = savedEmail;
             _passwordController.text = savedPassword;
           });
           _login();
