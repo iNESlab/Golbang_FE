@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/profile/member_profile.dart';
@@ -42,11 +43,29 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
         isLoading = false;
       });
     } catch (e) {
-      print("Error fetching participants: $e");
+      log("Error fetching participants: $e");
       setState(() {
         isLoading = false;
       });
     }
+  }
+
+  bool _isAllSelected() {
+    return filteredParticipants.every((p) => tempSelectedParticipants.contains(p));
+  }
+
+  void _toggleSelectAll() {
+    setState(() {
+      if (_isAllSelected()) {
+        tempSelectedParticipants.removeWhere((p) => filteredParticipants.contains(p));
+      } else {
+        for (var p in filteredParticipants) {
+          if (!tempSelectedParticipants.contains(p)) {
+            tempSelectedParticipants.add(p);
+          }
+        }
+      }
+    });
   }
 
   @override
@@ -72,11 +91,12 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
               '참여자 추가',
               style: TextStyle(color: Colors.green, fontSize: 25),
             ),
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () {
-                Navigator.of(context).pop(tempSelectedParticipants);
-              },
+            TextButton(
+              onPressed: _toggleSelectAll,
+              child: Text(
+                _isAllSelected() ? '전체 해제' : '전체 선택',
+                style: const TextStyle(color: Colors.teal, fontWeight: FontWeight.bold),
+              ),
             ),
           ],
         ),
