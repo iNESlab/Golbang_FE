@@ -14,14 +14,16 @@ import '../../provider/event/event_state_notifier_provider.dart';
 import '../../provider/event/game_in_progress_provider.dart';
 import '../../provider/screen_riverpod.dart';
 import '../../repoisitory/secure_storage.dart';
+import '../../utils/email.dart';
+import '../../utils/excelFile.dart';
 import '../../widgets/common/circular_default_person_icon.dart';
 import '../game/score_card_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart'; // 공유 라이브러리 추가
+import 'package:collection/collection.dart'; // mapIndexed 위해 필요
+
 
 import 'event_update1.dart';
-import 'package:path_provider/path_provider.dart';  // path_provider 패키지 임포트
-import 'package:flutter_email_sender/flutter_email_sender.dart'; // 이메일 전송 패키지 추가
 
 class EventDetailPage extends ConsumerStatefulWidget {
   final Event event;
@@ -32,7 +34,7 @@ class EventDetailPage extends ConsumerStatefulWidget {
 }
 
 class _EventDetailPageState extends ConsumerState<EventDetailPage> {
-  final List<bool> _isExpandedList = [false, false, false, false];
+  final Map<int, bool> _isExpandedMap = {};
   LatLng? _selectedLocation;
   int? _myGroup;
   late Timer _timer;
@@ -115,130 +117,20 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     }
   }
   Future<void> exportAndSendEmail() async {
-    // 엑셀 파일 생성
-    var excel = xx.Excel.createExcel();
-    var sheet = excel['Sheet1'];
-
-    // 열 제목 설정 (기본은 행 형태로)
-    List<String> columnTitles = [
-      '팀',
-      '참가자',
-      '전반전',
-      '후반전',
-      '전체 스코어',
-      '핸디캡 스코어',
-      'hole 1',
-      'hole 2',
-      'hole 3',
-      'hole 4',
-      'hole 5',
-      'hole 6',
-      'hole 7',
-      'hole 8',
-      'hole 9',
-      'hole 10',
-      'hole 11',
-      'hole 12',
-      'hole 13',
-      'hole 14',
-      'hole 15',
-      'hole 16',
-      'hole 17',
-      'hole 18'
-    ];
-
-    // 팀 데이터와 참가자별 점수를 병합하여 정렬
-    List<Map<String, dynamic>> sortedParticipants = [
-      if (teamAScores != null)
-        {
-          'team': 'Team A',
-          'participant_name': '-',
-          'front_nine_score': teamAScores?['front_nine_score'],
-          'back_nine_score': teamAScores?['back_nine_score'],
-          'total_score': teamAScores?['total_score'],
-          'handicap_score': '-',
-          'scorecard': List.filled(18, '-'),
-        },
-      if (teamBScores != null)
-        {
-          'team': 'Team B',
-          'participant_name': '-',
-          'front_nine_score': teamBScores?['front_nine_score'],
-          'back_nine_score': teamBScores?['back_nine_score'],
-          'total_score': teamBScores?['total_score'],
-          'handicap_score': '-',
-          'scorecard': List.filled(18, '-'),
-        },
-      ...participants.map((participant) => {
-        'team': participant['team'], // 팀 정보 추가
-        'participant_name': participant['participant_name'],
-        'front_nine_score': participant['front_nine_score'],
-        'back_nine_score': participant['back_nine_score'],
-        'total_score': participant['total_score'],
-        'handicap_score': participant['handicap_score'],
-        'scorecard': participant['scorecard'],
-      }),
-    ];
-
-    // 팀 기준으로 정렬
-    sortedParticipants.sort((a, b) => a['team'].compareTo(b['team']));
-
-    // 데이터를 행 기준으로 변환
-    List<List<dynamic>> rows = [
-      columnTitles, // 제목
-      ...sortedParticipants.map((participant) {
-        return [
-          participant['team'],
-          participant['participant_name'],
-          participant['front_nine_score'],
-          participant['back_nine_score'],
-          participant['total_score'],
-          participant['handicap_score'],
-          ...List.generate(18, (i) => participant['scorecard'].length > i ? participant['scorecard'][i] : '-'),
-        ];
-      }),
-    ];
-
-    // Transpose 적용 (행과 열 교환)
-    List<List<dynamic>> transposedData = List.generate(
-      rows[0].length,
-          (colIndex) => rows.map((row) => row[colIndex]).toList(),
+    String? filePath = await createScoreExcelFile(
+      eventId: widget.event.eventId,
+      participants: participants,
+      teamAScores: teamAScores,
+      teamBScores: teamBScores,
     );
-
-    // 엑셀에 데이터 쓰기
-    for (var row in transposedData) {
-      sheet.appendRow(row);
-    }
-
-    // 외부 저장소 경로 가져오기
-    Directory? directory;
-
-    if (Platform.isAndroid) {
-      // Android: 외부 저장소 경로 가져오기
-      directory = await getExternalStorageDirectory();
-    } else if (Platform.isIOS) {
-      // iOS: 문서 디렉토리 가져오기
-      directory = await getApplicationDocumentsDirectory();
-    }
-
-    if (directory != null) {
-      String filePath = '${directory.path}/event_scores_${widget.event.eventId}.xlsx';
-      File file = File(filePath);
-
-      // 파일 쓰기
-      await file.writeAsBytes(excel.encode()!);
-
-      // 이메일 전송
-      final Email email = Email(
-        body: '제목: ${widget.event.eventTitle}\n 날짜: ${widget.event.startDateTime.toIso8601String().split('T').first}\n 장소: ${widget.event.site}',
-        subject: '${widget.event.club!.name}_${widget.event.startDateTime.toIso8601String().split('T').first}_${widget.event.eventTitle}',
-        recipients: [], // 받을 사람의 이메일 주소
-        attachmentPaths: [filePath], // 첨부할 파일 경로
-        isHTML: false,
-      );
-
+    if (filePath != null){
       try {
-        await FlutterEmailSender.send(email);
+        await sendEmail(
+          body: '제목: ${widget.event.eventTitle}\n 날짜: ${widget.event.startDateTime.toIso8601String().split('T').first}\n 장소: ${widget.event.site}',
+          subject: '${widget.event.club!.name}_${widget.event.startDateTime.toIso8601String().split('T').first}_${widget.event.eventTitle}',
+          recipients: [], // 받을 사람의 이메일 주소
+          attachmentPaths: [filePath], // 첨부할 파일 경로
+        );
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('이메일 전송 실패: $error')),
@@ -250,6 +142,74 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
       );
     }
   }
+
+
+  Icon _getStatusIcon(String statusType) {
+    switch (statusType) {
+      case 'PARTY':
+        return const Icon(Icons.local_bar, color: Colors.purple);
+      case 'ACCEPT':
+        return const Icon(Icons.check_circle, color: Colors.green);
+      case 'DENY':
+        return const Icon(Icons.cancel, color: Colors.red);
+      case 'PENDING':
+        return const Icon(Icons.hourglass_top, color: Colors.grey);
+      default:
+        return const Icon(Icons.help_outline, color: Colors.grey);
+    }
+  }
+
+  Widget _buildGroupPanels(List<Participant> participants) {
+    final grouped = <int, List<Participant>>{};
+    for (var p in participants) {
+      grouped.putIfAbsent(p.groupType, () => []).add(p);
+    }
+
+    final groupKeys = grouped.keys.toList()..sort();
+
+    return ExpansionPanelList(
+      expansionCallback: (int index, bool isExpanded) {
+        final groupKey = groupKeys[index];
+        setState(() {
+          _isExpandedMap[groupKey] = !(_isExpandedMap[groupKey] ?? false);
+        });
+      },
+      children: groupKeys.mapIndexed((index, group) {
+        final groupMembers = grouped[group]!;
+
+        return ExpansionPanel(
+          isExpanded: _isExpandedMap[group] ?? false,
+          canTapOnHeader: true,
+          headerBuilder: (context, isExpanded) {
+            return ListTile(
+              title: Text('$group조 (${groupMembers.length}명)', style: TextStyle(fontSize: fontSizeLarge)),
+            );
+          },
+          body: Column(
+            children: groupMembers.map((p) {
+              final icon = _getStatusIcon(p.statusType);
+              final member = p.member;
+
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Colors.transparent,
+                  backgroundImage: (member?.profileImage != null && member!.profileImage.startsWith('https'))
+                      ? NetworkImage(member.profileImage)
+                      : null,
+                  child: (member?.profileImage == null || member!.profileImage.isEmpty)
+                      ? const Icon(Icons.person)
+                      : null,
+                ),
+                title: Text(member?.name ?? 'Unknown', style: TextStyle(fontSize: fontSizeMedium)),
+                trailing: _getStatusIcon(p.statusType),
+              );
+            }).toList(),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
 
   LatLng? _parseLocation(String? location) {
     if (location == null) {
@@ -438,21 +398,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
               ),
               const SizedBox(height: 20),
               // 토글 가능한 참석 상태별 리스트
-              ExpansionPanelList(
-                elevation: 1,
-                expandedHeaderPadding: const EdgeInsets.all(0),
-                expansionCallback: (int index, bool isExpanded) {
-                  setState(() {
-                    _isExpandedList[index] = !_isExpandedList[index];
-                  });
-                },
-                children: [
-                  _buildParticipantPanel('참석 및 회식', widget.event.participants, 'PARTY', const Color(0xFF4D08BD).withOpacity(0.3), 0),
-                  _buildParticipantPanel('참석', widget.event.participants, 'ACCEPT', const Color(0xFF08BDBD).withOpacity(0.3), 1),
-                  _buildParticipantPanel('거절', widget.event.participants, 'DENY', const Color(0xFFF21B3F).withOpacity(0.3), 2),
-                  _buildParticipantPanel('대기', widget.event.participants, 'PENDING', const Color(0xFF7E7E7E).withOpacity(0.3), 3),
-                ],
-              ),
+              _buildGroupPanels(widget.event.participants),
 
               // 골프장 위치 표시
               if (_selectedLocation != null) ...[
@@ -768,7 +714,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
           }).toList(),
         ),
       ),
-      isExpanded: _isExpandedList[index],
+      isExpanded: _isExpandedMap[index] ?? false,
       canTapOnHeader: true,
     );
   }
