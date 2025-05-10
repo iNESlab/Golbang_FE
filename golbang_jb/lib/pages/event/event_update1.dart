@@ -29,7 +29,6 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
   final TextEditingController _locationController = TextEditingController();
   final TextEditingController _startDateController = TextEditingController();
   final TextEditingController _startTimeController = TextEditingController();
-  final TextEditingController _endDateController = TextEditingController();
   List<Club> _clubs = [];
   Club? _selectedClub;
   GameMode? _selectedGameMode;
@@ -69,7 +68,6 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
     _locationController.text = widget.event.site ?? '';
     _startDateController.text = widget.event.startDateTime.toLocal().toIso8601String().split('T').first;
     _startTimeController.text = widget.event.startDateTime.toLocal().toIso8601String().split('T').last;
-    _endDateController.text = widget.event.endDateTime.toLocal().toIso8601String().split('T').first;
     _selectedLocation = _parseLocation(widget.event.location);
     _selectedGameMode = GameMode.values.firstWhere((mode) => mode.value == widget.event.gameMode);
     _selectedParticipants = widget.event.participants.map((participant) {
@@ -82,13 +80,6 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
         accountId: member?.memberId ?? 0,
       );
     }).toList();
-  }
-
-  // 종료 날짜를 시작 날짜 + 2일로 자동 설정하는 함수
-  void _updateEndDate(DateTime startDate) {
-    final endDate = startDate.add(const Duration(days: 2));
-    final formattedEndDate = DateFormat('yyyy-MM-dd').format(endDate);
-    _endDateController.text = formattedEndDate;
   }
 
   LatLng? _parseLocation(String? location) {
@@ -185,9 +176,6 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
       setState(() {
         final formattedDate = "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
         _startDateController.text = formattedDate;
-        
-        // 시작 날짜가 변경되면 종료 날짜도 자동으로 업데이트
-        _updateEndDate(pickedDate);
         
         _validateForm();
       });
@@ -414,7 +402,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                   Icon(Icons.info_outline, size: 16, color: Colors.grey),
                   SizedBox(width: 4),
                   Text(
-                    '이벤트 종료 날짜는 시작 날짜로부터 2일 후로 자동 설정됩니다',
+                    '이벤트 종료 날짜는 시작 날짜로부터 1일 후로 자동 설정됩니다',
                     style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
@@ -484,9 +472,13 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                     final DateTime startDate = DateTime.parse(_startDateController.text);
                     final TimeOfDay startTime = _parseTimeOfDay(_startTimeController.text);
                     final DateTime startDateTime = _combineDateAndTime(startDate, startTime);
-                    final DateTime endDateTime = _combineDateAndTime(
-                      DateTime.parse(_endDateController.text), 
-                      const TimeOfDay(hour: 23, minute: 59));
+                    final DateTime endDateTime = startDateTime.add(const Duration(days: 1));
+
+                    // 로그 추가
+                    log('startDateTime: $startDateTime');
+                    log('endDateTime: $endDateTime');
+                    log('Duration in days: ${endDateTime.difference(startDateTime).inDays}');
+                    log('Duration in hours: ${endDateTime.difference(startDateTime).inHours}');
 
                     // 업데이트할 이벤트 데이터를 EventsUpdate2로 전달
                     Navigator.push(
