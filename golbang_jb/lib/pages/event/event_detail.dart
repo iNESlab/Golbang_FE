@@ -147,11 +147,11 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   Icon _getStatusIcon(String statusType) {
     switch (statusType) {
       case 'PARTY':
-        return const Icon(Icons.local_bar, color: Colors.purple);
+        return const Icon(Icons.check_circle, color: Color(0xFF4D08BD));
       case 'ACCEPT':
-        return const Icon(Icons.check_circle, color: Colors.green);
+        return const Icon(Icons.check_circle, color: Color(0xFF08BDBD));
       case 'DENY':
-        return const Icon(Icons.cancel, color: Colors.red);
+        return const Icon(Icons.cancel, color: Color(0xFFF21B3F));
       case 'PENDING':
         return const Icon(Icons.hourglass_top, color: Colors.grey);
       default:
