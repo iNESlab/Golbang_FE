@@ -1,25 +1,26 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/signup/widgets/welcome_header_widget.dart';
-import '../../services/user_service.dart';
+import '../../provider/user/user_service_provider.dart';
 import 'additional_info.dart';
 import 'widgets/signup_widgets.dart';
 
-class SignUpPage extends StatefulWidget {
+class SignUpPage extends ConsumerStatefulWidget {
   const SignUpPage({super.key});
 
   @override
   _SignUpPageState createState() => _SignUpPageState();
 }
 
-class _SignUpPageState extends State<SignUpPage> {
+class _SignUpPageState extends ConsumerState<SignUpPage> {
   final _formKey = GlobalKey<FormState>();
   final _idController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+
 
   bool _obscurePassword = true; // 비밀번호(확인) 필드 숨김 상태
 
@@ -101,38 +102,35 @@ class _SignUpPageState extends State<SignUpPage> {
   }
 
   Future<void> _signupStep1(BuildContext ctx) async {
+    final userService = ref.watch(userServiceProvider);
+
     if (_formKey.currentState!.validate()) {
       log('_idController.text: ${_idController.text}');
       log('_emailController.text: ${_emailController.text}');
       log('_passwordController.text: ${_passwordController.text}');
 
       try {
-        var response = await UserService.saveUser(
+        var response = await userService.saveUser(
           userId: _idController.text,
           email: _emailController.text,
           password1: _passwordController.text,
           password2: _confirmPasswordController.text,
         );
-        var data = json.decode(utf8.decode(response.bodyBytes));
 
         if (response.statusCode == 201) {
           Navigator.of(ctx).push(
             MaterialPageRoute(
               builder: (ctx) => AdditionalInfoPage(
-                userId: data['data']['user_id'],
+                userId: response.data['data']['user_id'],
               ),
             ),
           );
         } else {
-          var errors = data['errors'];
-          String errorMessage = errors.entries.map((entry) {
-            // 각 필드의 에러 메시지 리스트를 문자열로 변환
-            return entry.value.join(', ');
-          }).join('\n');
+          var error = response.data['data']?['message'] ?? '알 수 없는 오류가 발생했습니다.';
 
           ScaffoldMessenger.of(ctx).showSnackBar(
             SnackBar(
-              content: Text('$errorMessage\n회원가입에 실패했습니다. 다시 시도해 주세요.'),
+              content: Text('\n회원가입에 실패했습니다. 다시 시도해 주세요. $error'),
             ),
           );
         }

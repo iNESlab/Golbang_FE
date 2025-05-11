@@ -92,7 +92,8 @@ class SocialLoginButtons extends StatelessWidget {
 }
 
 class SignUpLink extends StatelessWidget {
-  const SignUpLink({super.key});
+  final BuildContext parentContext;
+  const SignUpLink({super.key, required this.parentContext});
 
   @override
   Widget build(BuildContext context) {
@@ -131,13 +132,11 @@ class SignUpLink extends StatelessWidget {
               style: TextStyle(color: Colors.grey[600]),
             ),
             GestureDetector(
-              onTap: () {
+              onTap: () async {
                 // showDialog로 다이얼로그 띄우기
-                showDialog(
+                await showDialog(
                   context: context,
-                  builder: (BuildContext context) {
-                    return const ForgotPasswordDialog();
-                  },
+                  builder: (_) => ForgotPasswordDialog(parentContext: parentContext)
                 );
               },
               child: const Text(

@@ -36,7 +36,7 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
 
   Future<void> _fetchParticipants() async {
     try {
-      List<ClubMemberProfile> participants = await _clubMemberService.getClubMemberProfileList(club_id: widget.clubId);
+      List<ClubMemberProfile> participants = await _clubMemberService.getClubMemberProfileList(clubId: widget.clubId);
       setState(() {
         allParticipants = participants;
         filteredParticipants = participants; // 처음에는 전체 참가자 리스트로 초기화

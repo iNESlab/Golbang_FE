@@ -3,17 +3,20 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:http/http.dart' as http;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
-import '../global/LoginInterceptor.dart';
+import '../global/PrivateClient.dart';
+import '../global/PublicClient.dart';
 import '../models/profile/get_all_user_profile.dart';
 import '../models/user_account.dart';
 import '../repoisitory/secure_storage.dart';
 
 class UserService {
   final SecureStorage storage;
-  final dioClient = DioClient();
+  final privateClient = PrivateClient();
+  final publicClient = PublicClient();
+  final FlutterSecureStorage _flutterSecureStorage = const FlutterSecureStorage();
+
   UserService(this.storage);
 
   // 로그인 여부 확인하는 임시 코드
@@ -22,12 +25,13 @@ class UserService {
     return accessToken.isNotEmpty;
   }
 
+  // API 테스트 완료
   Future<List<GetAllUserProfile>> getUserProfileList() async {
     // API URI 설정
-    var uri = "${dotenv.env['API_HOST']}/api/v1/users/info/";
+    var uri = "/api/v1/users/info/";
 
     // API 요청
-    var response = await dioClient.dio.get(uri);
+    var response = await privateClient.dio.get(uri);
 
     // 응답 코드가 200(성공)인지 확인
     if (response.statusCode == 200) {
@@ -43,6 +47,7 @@ class UserService {
     }
   }
 
+  // API 테스트 완료
   Future<GetAllUserProfile> getUserProfile() async {
     try {
       // 액세스 토큰 불러오기
@@ -50,9 +55,9 @@ class UserService {
       final accessToken = await storage.readAccessToken();
       Map<String, dynamic> decodedToken = JwtDecoder.decode(accessToken);
       String userId = decodedToken['user_id'].toString(); // payload에서 user_id 추출
-      var uri = "${dotenv.env['API_HOST']}/api/v1/users/info/$userId/";
+      var uri = "/api/v1/users/info/$userId/";
 
-      var response = await dioClient.dio.get(uri);
+      var response = await privateClient.dio.get(uri);
       // 응답 코드가 200(성공)인지 확인
       if (response.statusCode == 200) {
         // JSON 데이터 파싱
@@ -68,6 +73,7 @@ class UserService {
     }
   }
 
+  // API 테스트 완료
   Future<UserAccount> getUserInfo() async {
     // TODO: 위와 같은 API를 사용하므로 하나로 합칠 수 있는지 검토
     try {
@@ -75,10 +81,10 @@ class UserService {
       final accessToken = await storage.readAccessToken();
       Map<String, dynamic> decodedToken = JwtDecoder.decode(accessToken);
       String userId = decodedToken['user_id'].toString(); // payload에서 user_id 추출
-      var uri = "${dotenv.env['API_HOST']}/api/v1/users/info/$userId/";
+      var uri = "/api/v1/users/info/$userId/";
 
       // API 요청
-      var response = await dioClient.dio.get(uri);
+      var response = await privateClient.dio.get(uri);
       // 응답 코드가 200(성공)인지 확인
       if (response.statusCode == 200) {
         // JSON 데이터 파싱
@@ -95,6 +101,7 @@ class UserService {
     }
   }
 
+  // API 테스트 완료
   Future<UserAccount> updateUserInfo({
     required String userId,
     String? name,
@@ -112,7 +119,7 @@ class UserService {
       final decodedToken = JwtDecoder.decode(accessToken);
       userId = decodedToken['user_id'].toString();
 
-      final url = "${dotenv.env['API_HOST']}/api/v1/users/info/$userId/";
+      final url = "/api/v1/users/info/$userId/";
 
       // JSON 필드 추가 (변경된 값만 추가)
       Map<String, dynamic> fields = {};
@@ -136,7 +143,7 @@ class UserService {
       });
 
       // Dio 요청 보내기
-      final response = await dioClient.dio.patch(
+      final response = await privateClient.dio.patch(
         url,
         data: formData,
         options: Options(
@@ -189,16 +196,15 @@ class UserService {
   //   }
   // }
 
-
-  static Future<http.Response> saveUser({
+  // API 테스트 완료
+  Future<Response<dynamic>> saveUser({
     required String userId,
     required String email,
     required String password1,
     required String password2
   }) async {
 
-    var uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/users/signup/step-1/");
-    Map<String, String> headers = {"Content-type": "application/json"};
+    var uri = Uri.parse("/api/v1/users/signup/step-1/");
     // body
     Map data = {
       'user_id': userId,
@@ -207,14 +213,15 @@ class UserService {
       'password2': password2,
     };
     var body = json.encode(data);
-    var response = await http.post(uri, headers: headers, body: body);
+    var response = await publicClient.dio.postUri(uri, data: body);
 
-    log("${json.decode(utf8.decode(response.bodyBytes))}");
+    log("${response.data['data']}");
 
     return response;
   }
 
-  static Future<http.Response> saveAdditionalInfo({
+  // API 테스트 완료
+  Future<Response<dynamic>> saveAdditionalInfo({
     required int userId,
     required String name,
     String? phoneNumber,
@@ -224,8 +231,7 @@ class UserService {
     String? studentId
   })async{
 
-    var uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/users/signup/step-2/");
-    Map<String, String> headers = {"Content-type": "application/json"};
+    var uri = Uri.parse("/api/v1/users/signup/step-2/");
     // body
     Map data = {
       'user_id': '$userId',
@@ -237,36 +243,42 @@ class UserService {
       'student_id': '$studentId',
     };
     var body = json.encode(data);
-    var response = await http.post(uri, headers: headers, body: body);
-
-    log("${json.decode(utf8.decode(response.bodyBytes))}");
+    var response = await publicClient.dio.postUri(uri, data: body);
 
     return response;
   }
 
-  static Future<http.Response> resetPassword({required String email})async{
-    var uri = Uri.parse("${dotenv.env['API_HOST']}/api/v1/users/info/password/forget/");
-    Map<String, String> headers = {"Content-type": "application/json"};
+  // API 테스트 완료
+  Future<Response<dynamic>> resetPassword({required String email})async{
+    var uri = Uri.parse("/api/v1/users/info/password/forget/");
     // body
     Map data = {
       'email': email,
     };
 
     var body = json.encode(data);
-    var response = await http.post(uri, headers: headers, body: body);
+    var response = await publicClient.dio.postUri(uri, data: body);
 
-    log("${json.decode(utf8.decode(response.bodyBytes))}");
+    log("${response.data['data']}");
 
     return response;
   }
 
+  // API 테스트 완료
   Future<Response> deleteAccount() async {
 
-    var uri = "${dotenv.env['API_HOST']}/api/v1/users/info/delete/";
+    var uri = "/api/v1/users/info/delete/";
 
-    var response = await dioClient.dio.delete(uri);
+    var response = await privateClient.dio.delete(uri);
     // 에러처리는 scafford에서 진행되므로 페이지에서 진행
+    await _flutterSecureStorage.delete(key: "ACCESS_TOKEN");
 
-    return response.data;
+    return response;
   }
+
+  // Future<bool> updatePassword(string newPassword) async {
+  //   var uri = "${dotenv.env['API_HOST']}/api/v1/users/info/delete/";
+  //
+  //   var response = await dioClient.dio.patch(uri, data: {'password': newPassword});
+  // }
 }

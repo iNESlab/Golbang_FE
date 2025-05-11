@@ -1,8 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../global/LoginInterceptor.dart';
+import '../global/PrivateClient.dart';
 import '../models/get_statistics_ranks.dart';
 import '../models/profile/get_all_user_profile.dart';
 import '../repoisitory/secure_storage.dart';
@@ -12,10 +11,11 @@ class GroupService {
   //TODO: ClubService와 통합 후 삭제
 
   final SecureStorage storage;
-  final dioClient = DioClient();
+  final privateClient = PrivateClient();
 
   GroupService(this.storage);
 
+  //API 테스트 완료
   Future<bool> saveGroup({
     required String name,
     required String description,
@@ -25,7 +25,7 @@ class GroupService {
     required int currentUserId
   }) async {
     try {
-      final url = "${dotenv.env['API_HOST']}/api/v1/clubs/";
+      const url = "/api/v1/clubs/";
 
       // 멤버와 어드민 필터링
       List<String> filteredMembers = members
@@ -48,7 +48,7 @@ class GroupService {
           'image': await MultipartFile.fromFile(imageFile.path, filename: imageFile.path.split('/').last),
       });
 
-      final response = await dioClient.dio.post(
+      final response = await privateClient.dio.post(
         url,
         data: formData,
         options: Options(
@@ -71,14 +71,14 @@ class GroupService {
     }
   }
 
-
+  // API테스트 완료
   Future<List<Club>> getUserGroups() async {
     try {
       // API 엔드포인트 설정 (dotenv를 통해 환경 변수에서 호스트 URL을 가져옴)
-      var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/";
+      const uri = "/api/v1/clubs/";
 
       // API 요청
-      var response = await dioClient.dio.get(uri);
+      var response = await privateClient.dio.get(uri);
       // 응답 상태 코드가 200인 경우, 데이터를 성공적으로 가져온 경우
       if (response.statusCode == 200) {
         // JSON 디코딩
@@ -106,11 +106,13 @@ class GroupService {
       return []; // 예외 발생 시 빈 리스트 반환
     }
   }
+
+  // API 테스트 완료
   Future<ClubStatistics?> fetchGroupRanking(int groupId) async {
     try {
-      var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/statistics/ranks/?club_id=$groupId";
+      var uri = "/api/v1/clubs/statistics/ranks/?club_id=$groupId";
 
-      var response = await dioClient.dio.get(uri);
+      var response = await privateClient.dio.get(uri);
       if (response.statusCode == 200) {
         final jsonData = response.data['data'];
         if (jsonData != null) {
@@ -121,35 +123,5 @@ class GroupService {
       log('Failed to load club ranking: $e');
     }
     return null;
-  }
-
-  Future<List<Club>> getGroupInfo(int clubId) async {
-  //TODO: 이 API가 언제 사용되는지 모르겠음. 로그에 안뜸.
-    String clubidStr = clubId.toString();
-
-    // API URI 설정
-    var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/$clubidStr/";
-
-    // API 요청
-    var response = await dioClient.dio.get(uri);
-
-    // 응답 상태 코드가 200인 경우, 데이터를 성공적으로 가져온 경우
-    if (response.statusCode == 200) {
-      // JSON 디코딩
-      List<dynamic> groupsData = [response.data['data']];
-      List<Club> groups = groupsData.map((groupJson) {
-        try {
-          return Club.fromJson(groupJson);
-        } catch (e) {
-          log('Error parsing group: $e');
-          return null; // 파싱 오류가 발생한 경우 null 반환
-        }
-      }).whereType<Club>().toList(); // null이 아닌 Group 객체만 리스트에 포함
-
-      return groups; // 그룹 리스트 반환
-    } else {
-      log('Failed to load groups with status code: ${response.statusCode}');
-      return []; // 실패 시 빈 리스트 반환
-    }
   }
 }

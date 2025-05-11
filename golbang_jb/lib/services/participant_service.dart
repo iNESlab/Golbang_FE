@@ -1,19 +1,19 @@
 import 'dart:developer';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../global/LoginInterceptor.dart';
+import '../global/PrivateClient.dart';
 import '../repoisitory/secure_storage.dart';
 
 class ParticipantService {
   final SecureStorage storage;
-  final dioClient = DioClient();
+  final privateClient = PrivateClient();
   
   ParticipantService(this.storage);
 
+  // API 테스트 성공
   Future<bool> updateParticipantStatus(int participantId, String statusType) async {
     try {
       final url =
-          '${dotenv.env['API_HOST']}/api/v1/participants/$participantId/?status_type=$statusType';
-      final response = await dioClient.dio.patch(url,);
+          '/api/v1/participants/$participantId/?status_type=$statusType';
+      final response = await privateClient.dio.patch(url,);
 
       if (response.statusCode == 200) {
         return true;

@@ -1,20 +1,20 @@
 import 'dart:developer';
 
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../global/LoginInterceptor.dart';
+import '../global/PrivateClient.dart';
 import '../repoisitory/secure_storage.dart';
 
 class NotificationService {
   final SecureStorage storage;
-  final dioClient = DioClient();
+  final privateClient = PrivateClient();
   NotificationService(this.storage);
 
+  // API 테스트 성공
   Future<List<Map<String, dynamic>>> fetchNotifications() async {
     try {
-      final url = '${dotenv.env['API_HOST']}/api/v1/notifications/';
+      const url = '/api/v1/notifications/';
 
       // API 요청
-      final response = await dioClient.dio.get(url);
+      final response = await privateClient.dio.get(url);
 
       if (response.statusCode == 200) {
         final jsonData = response.data;
@@ -29,12 +29,13 @@ class NotificationService {
     }
   }
 
+  // API 테스트 성공
   Future<bool> deleteNotification(String notificationId) async {
     try {
-      final url = '${dotenv.env['API_HOST']}/api/v1/notifications/$notificationId/';
+      final url = '/api/v1/notifications/$notificationId/';
 
       // API 요청
-      final response = await dioClient.dio.delete(url);
+      final response = await privateClient.dio.delete(url);
 
       if (response.statusCode == 204) {
         return true;

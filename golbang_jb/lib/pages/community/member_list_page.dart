@@ -41,7 +41,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
   Future<void> _fetchMembers() async {
     try {
       List<ClubMemberProfile> fetchedMembers = await _clubMemberService
-          .getClubMemberProfileList(club_id: widget.clubId);
+          .getClubMemberProfileList(clubId: widget.clubId);
 
       setState(() {
         oldMembers = fetchedMembers;

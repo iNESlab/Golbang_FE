@@ -1,11 +1,15 @@
+import 'dart:developer';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:golbang/services/user_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:golbang/provider/user/user_service_provider.dart';
 
-class ForgotPasswordDialog extends StatelessWidget {
-  const ForgotPasswordDialog({super.key});
+class ForgotPasswordDialog extends ConsumerWidget {
+  final BuildContext parentContext;
+  const ForgotPasswordDialog({super.key, required this.parentContext});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final TextEditingController emailController = TextEditingController();
 
     return AlertDialog(
@@ -39,7 +43,7 @@ class ForgotPasswordDialog extends StatelessWidget {
         ElevatedButton(
           onPressed: () {
             final email = emailController.text.trim();
-            _resetPassword(context, email);
+            _resetPassword(context, ref, email);
           },
           child: const Text('완료'),
         ),
@@ -47,33 +51,40 @@ class ForgotPasswordDialog extends StatelessWidget {
     );
   }
 
-  Future<void> _resetPassword(BuildContext context, String email)async {
+  Future<void> _resetPassword(BuildContext context, WidgetRef ref, String email)async {
+    final messenger = ScaffoldMessenger.of(parentContext); // 먼저 저장
+    final navigator = Navigator.of(context);
+
     try {
+      final userService = ref.watch(userServiceProvider);
+
       if (email.isNotEmpty) {
         // 이메일 유효성 검사 및 처리 로직 추가
-        print('Reset link sent to $email');
-        var response = await UserService.resetPassword(email: email);
+        log('Reset link sent to $email');
+        var response = await userService.resetPassword(email: email);
+
 
         if (response.statusCode == 200) {
-          Navigator.of(context).pop(); // 팝업 닫기
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('적어주신 $email 로 전송되었습니다')),
+          messenger.showSnackBar(
+            SnackBar(content: Text('$email로 전송되었습니다')),
           );
+          navigator.pop();
         } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(
-                '전송 실패했습니다: ${response.reasonPhrase}')),
+          messenger.showSnackBar(
+            SnackBar(content: Text('전송 실패했습니다: ${response.data['message']}')),
           );
         }
+
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           const SnackBar(content: Text('유효한 이메일이 아닙니다.')),
         );
       }
-    } catch (e) {
-      print('[ERR] 비밀번호 갱신 실패: $e');
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('비밀번호 갱신 중 오류가 발생했습니다. 다시 시도해주세요.')),
+    } on DioException catch (e) {
+      log('[ERR] 비밀번호 갱신 실패: $e');
+      final message = e.response?.data['message'] ?? '알 수 없는 에러입니다.';
+      messenger.showSnackBar(
+        SnackBar(content: Text('$message')),
       );
     }
   }

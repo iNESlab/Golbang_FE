@@ -1,20 +1,19 @@
 import 'dart:io'; // 플랫폼 구분을 위해 필요
 import 'dart:developer';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
+import 'package:dio/dio.dart' as dio;
 import 'package:golbang/pages/home/splash_screen.dart';
 import 'package:golbang/pages/logins/widgets/login_widgets.dart';
 import 'package:golbang/pages/logins/widgets/social_login_widgets.dart';
 import 'package:golbang/services/auth_service.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
-import 'package:http/http.dart' as http;
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:open_settings_plus/open_settings_plus.dart';
 
-import '../../global/LoginInterceptor.dart';
+import '../../global/PrivateClient.dart';
 import '../../repoisitory/secure_storage.dart';
 
 class TokenCheck extends ConsumerStatefulWidget {
@@ -25,7 +24,7 @@ class TokenCheck extends ConsumerStatefulWidget {
 }
 
 class _TokenCheckState extends ConsumerState<TokenCheck> {
-  var dioClient = DioClient();
+  var dioClient = PrivateClient();
   bool isTokenExpired = true; // 초기값 설정
 
   @override
@@ -134,7 +133,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   ),
                 ),
               const SizedBox(height: 48),
-              const SignUpLink() ,
+              SignUpLink(parentContext: context) ,
             ],
           ),
         ),
@@ -196,6 +195,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
 
   Future<void> _login() async {
+    final authService = ref.watch(authServiceProvider);
     final email = _emailController.text.trim();
     final password = _passwordController.text.trim();
     String? fcmToken;
@@ -208,11 +208,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     if (_validateInputs(email, password)) {
       try {
-        final response = await AuthService.login(
+        final response = await authService.login(
           username: email,
           password: password,
-          fcm_token: fcmToken ?? '',
+          fcmToken: fcmToken ?? '',
         );
+        log('//--------------test1------------//');
         await _handleLoginResponse(response, email, password);
       } catch (e) {
         _showErrorDialog('An error occurred. Please try again.');
@@ -226,15 +227,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     return email.isNotEmpty && password.isNotEmpty;
   }
 
-  Future<void> _handleLoginResponse(http.Response response, String email, String password) async {
+  Future<void> _handleLoginResponse(dio.Response<dynamic> response, String email, String password) async {
     if (response.statusCode == 200) {
       // 로그인 성공 시 이메일 저장
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('로그인 성공!')),
       );
 
-      final body = json.decode(response.body);
-      var accessToken = body['data']['access_token'];
+      var accessToken = response.data['data']['access_token'];
 
       final storage = ref.watch(secureStorageProvider);
       await storage.saveLoginId(email);
