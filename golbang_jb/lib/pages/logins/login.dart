@@ -26,6 +26,8 @@ class TokenCheck extends ConsumerStatefulWidget {
 class _TokenCheckState extends ConsumerState<TokenCheck> {
   var dioClient = PrivateClient();
   bool isTokenExpired = true; // 초기값 설정
+  bool isLoading = true;
+
 
   @override
   void initState() {
@@ -34,10 +36,49 @@ class _TokenCheckState extends ConsumerState<TokenCheck> {
   }
 
   Future<void> _checkTokenStatus() async {
-    bool tokenStatus = await dioClient.isAccessTokenExpired();
-    setState(() {
-      isTokenExpired = tokenStatus; // 상태 업데이트
-    });
+    final storage = ref.read(secureStorageProvider);
+    final authService = ref.read(authServiceProvider);
+    final isExpired = await dioClient.isAccessTokenExpired();
+    if (isExpired) {
+      setState(() => isTokenExpired = true);
+      isLoading = false;
+      return;
+    }
+
+    final savedEmail = await storage.readLoginId();
+    final savedPassword = await storage.readPassword();
+
+    if (savedEmail.isEmpty || savedPassword.isEmpty) {
+      setState(() {
+        isLoading = false;
+        isTokenExpired = true;
+      });
+      return;
+    }
+
+    try {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      final response = await authService.login(
+        username: savedEmail,
+        password: savedPassword,
+        fcmToken: fcmToken ?? '',
+      );
+
+      if (response.statusCode == 200) {
+        await storage.saveAccessToken(response.data['data']['access_token']);
+        setState(() => isTokenExpired = false); // 성공 → Splash로 이동
+
+      } else {
+        setState(() => isTokenExpired = true); // 실패 → LoginPage로 이동
+      }
+    } catch (e) {
+      log('[TokenCheck] 자동 로그인 실패: $e');
+      setState(() => isTokenExpired = true);
+    } finally {
+      setState(() => isLoading = false);
+
+    }
+
   }
   @override
   Widget build(BuildContext context) {
@@ -46,7 +87,13 @@ class _TokenCheckState extends ConsumerState<TokenCheck> {
         primarySwatch: Colors.blue,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: isTokenExpired ? const LoginPage() : const SplashScreen(),
+      home: isLoading
+          ? const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      )
+          : isTokenExpired
+          ? const LoginPage()
+          : const SplashScreen(),
     );
   }
 }
