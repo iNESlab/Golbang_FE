@@ -213,7 +213,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
           width: elementWidth,
           padding: const EdgeInsets.all(8.0),
           child: DropdownButton<String>(
-            value: selectedYear,
+            value: years.contains(selectedYear) ? selectedYear : null,
             hint: const Text('연도 선택'),
             isExpanded: true,
             items: years.map<DropdownMenuItem<String>>((String value) {
@@ -316,7 +316,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
           yearStatistics = null; // 연도별 통계 초기화
         });
 
-        print("Loading period statistics from $formattedStartDate to $formattedEndDate");
+        log("Loading period statistics from $formattedStartDate to $formattedEndDate");
         periodStatistics = await statisticsService.fetchPeriodStatistics(formattedStartDate, formattedEndDate);
 
         // 데이터 수신 후 상태 갱신

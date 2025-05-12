@@ -1,9 +1,7 @@
 import 'dart:developer';
-import 'dart:convert';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:golbang/models/create_participant.dart';
-import 'package:http/http.dart' as http;
-import '../global/LoginInterceptor.dart';
+import '../global/PrivateClient.dart';
 import '../models/create_event.dart';
 import '../models/responseDTO/GolfClubResponseDTO.dart';
 import '../repoisitory/secure_storage.dart';
@@ -11,16 +9,18 @@ import '../models/event.dart';
 
 class EventService {
   final SecureStorage storage;
-  final dioClient = DioClient();
+  final privateClient = PrivateClient();
 
   EventService(this.storage);
+
+  // API 테스트 완료
   Future<List<GolfClubResponseDTO>> getLocationList() async {
     try {
       // URL 생성
-      String url = '${dotenv.env['API_HOST']}/api/v1/golfcourses/';
+      String url = '/api/v1/golfcourses/';
 
       // API 요청
-      final response = await dioClient.dio.get(
+      final response = await privateClient.dio.get(
         url,
       );
 
@@ -35,15 +35,17 @@ class EventService {
       return [];
     }
   }
+
+  // API 테스트 완료
   Future<GolfClubResponseDTO> getGolfCourseDetails({
     required int golfClubId,
   }) async {
     try {
       // URL 생성
-      String url = '${dotenv.env['API_HOST']}/api/v1/golfcourses/?golfclub_id=$golfClubId';
+      String url = '/api/v1/golfcourses/?golfclub_id=$golfClubId';
 
       // API 요청
-      final response = await dioClient.dio.get(
+      final response = await privateClient.dio.get(
         url,
       );
       log('response $response');
@@ -61,13 +63,14 @@ class EventService {
     }
   }
 
+  // API 테스트 완료
   Future<bool> postEvent({
     required int clubId,
     required CreateEvent event,
     required List<CreateParticipant> participants,
   }) async {
     try {
-      final url = '${dotenv.env['API_HOST']}/api/v1/events/?club_id=$clubId';
+      final url = '/api/v1/events/?club_id=$clubId';
 
       // Event의 JSON과 참가자 리스트의 JSON을 각각 생성
       Map<String, dynamic> eventJson = event.toJson();
@@ -80,7 +83,7 @@ class EventService {
         'participants': participantsJson, // 참가자 데이터를 추가
       };
       // 병합된 데이터를 JSON으로 변환
-      final response = await dioClient.dio.post(
+      final response = await privateClient.dio.post(
         url,
         data: requestBody, // dio에서 json으로 바꿔주므로 jsonEncode 안써도 됨
       );
@@ -96,13 +99,14 @@ class EventService {
     }
   }
 
+  // API 테스트 완료
   Future<List<Event>> getEventsForMonth({String? date, String? statusType}) async {
     try {
       // URL 생성
-      String url = '${dotenv.env['API_HOST']}/api/v1/events/';
+      String url = '/api/v1/events/';
 
       // API 요청
-      final response = await dioClient.dio.get(
+      final response = await privateClient.dio.get(
         url,
         queryParameters: {
           if (date != null) 'date': date,
@@ -123,13 +127,14 @@ class EventService {
     }
   }
 
+  // API 테스트 완료
   // 이벤트 수정 메서드
   Future<bool> updateEvent({
     required CreateEvent event,
     required List<CreateParticipant> participants,
   }) async {
     try {
-      final url = '${dotenv.env['API_HOST']}/api/v1/events/${event.eventId}/';
+      final url = '/api/v1/events/${event.eventId}/';
 
       // Event의 JSON과 참가자 리스트의 JSON을 각각 생성
       Map<String, dynamic> eventJson = event.toJson();
@@ -142,7 +147,7 @@ class EventService {
         'participants': participantsJson, // 참가자 데이터를 추가
       };
 
-      final response = await dioClient.dio.put(
+      final response = await privateClient.dio.put(
         url,
         data: requestBody,
       );
@@ -162,12 +167,13 @@ class EventService {
     }
   }
 
+  // API 테스트 완료
   // 이벤트 삭제 메서드
   Future<bool> deleteEvent(int eventId) async {
     try {
-      final url = '${dotenv.env['API_HOST']}/api/v1/events/$eventId/';
+      final url = '/api/v1/events/$eventId/';
 
-      final response = await dioClient.dio.delete(url);
+      final response = await privateClient.dio.delete(url);
 
       if (response.statusCode == 204) {
         return true;
@@ -186,28 +192,20 @@ class EventService {
 
   // 이벤트 개인전 결과 조회
   // 개인전 결과 조회 메서드
+  // API 테스트 완료
   Future<Map<String, dynamic>?> getIndividualResults(int eventId, {String? sortType}) async {
     try {
       // Uri 생성 시 sortType이 있을 때만 추가
-      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/individual-results/')
+      final url = Uri.parse('/api/v1/events/$eventId/individual-results/')
           .replace(queryParameters: sortType != null ? {'sort_type': sortType} : null);
 
-      final accessToken = await storage.readAccessToken();
-
-      final response = await http.get(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
-      );
+      final response = await privateClient.dio.getUri(url);
 
       if (response.statusCode == 200) {
-        final jsonData = jsonDecode(utf8.decode(response.bodyBytes))['data'];
-        log("개인전 결과 조회 성공: $jsonData");
-        return jsonData;
+        log("개인전 결과 조회 성공: ${response.data['data']}");
+        return response.data['data'];
       } else {
-        log('개인전 결과 조회 실패: ${response.statusCode} - ${response.body}');
+        log('개인전 결과 조회 실패: ${response.statusCode} - ${response.data}');
         return null;
       }
     } catch (e) {
@@ -215,32 +213,22 @@ class EventService {
       return null;
     }
   }
-
-
+  //TODO: 테스트
   // 이벤트 팀전 결과 조회
   Future<Map<String, dynamic>?> getTeamResults(int eventId, {String? sortType}) async {
     try {
       // Uri 생성 시 sortType이 있을 때만 추가
-      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/team-results/')
+      final url = Uri.parse('/api/v1/events/$eventId/team-results/')
           .replace(queryParameters: sortType != null ? {'sort_type': sortType} : null);
 
-      final accessToken = await storage.readAccessToken();
-
-      final response = await http.get(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken',
-        },
-      );
+      final response = await privateClient.dio.getUri(url);
 
       if (response.statusCode == 200) {
-        final jsonData = jsonDecode(utf8.decode(response.bodyBytes))['data'];
-        log("팀전 결과 조회 성공: $jsonData");
+        log("팀전 결과 조회 성공: ${response.data['data']}");
         log("url $url");
-        return jsonData;
+        return response.data['data'];
       } else {
-        log('팀전 결과 조회 실패: ${response.statusCode} - ${response.body}');
+        log('팀전 결과 조회 실패: ${response.statusCode} - ${response.data}');
         return null;
       }
     } catch (e) {
@@ -249,30 +237,24 @@ class EventService {
     }
   }
 
+  //TODO: 테스트
+  // 이벤트 팀전 결과 조회
   // 이벤트 스코어카드 결과 조회 메서드
   Future<Map<String, dynamic>?> getScoreData(int eventId) async {
     try {
       // API URL 설정
-      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/scores/');
-      final accessToken = await storage.readAccessToken(); // 저장소에서 액세스 토큰 가져오기
+      final url = Uri.parse('/api/v1/events/$eventId/scores/');
 
       // API 요청
-      final response = await http.get(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken', // 액세스 토큰을 헤더에 포함
-        },
-      );
+      final response = await privateClient.dio.getUri(url);
 
       if (response.statusCode == 200) {
         // 응답이 200이면 데이터를 파싱하여 반환
-        final jsonData = jsonDecode(utf8.decode(response.bodyBytes))['data'];
-        log("========스코어카드 데이터 조회 성공: $jsonData");
-        return jsonData;
+        log("========스코어카드 데이터 조회 성공: ${response.data['data']}");
+        return response.data['data'];
       } else {
         // 오류 발생 시 로그 출력
-        log('스코어카드 조회 실패: ${response.statusCode} - ${response.body}');
+        log('스코어카드 조회 실패: ${response.statusCode} - ${response.data}');
         return null;
       }
     } catch (e) {
@@ -281,30 +263,23 @@ class EventService {
       return null;
     }
   }
+  // API 테스트 완료
   Future<Event?> getEventDetails(int eventId) async {
     try {
       // API URL 설정
       final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/');
-      final accessToken = await storage.readAccessToken(); // 저장소에서 액세스 토큰 가져오기
 
       // API 요청
-      final response = await http.get(
-        url,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $accessToken', // 액세스 토큰을 헤더에 포함
-        },
-      );
+      final response = await privateClient.dio.getUri(url);
 
       if (response.statusCode == 200) {
         // 응답 데이터 파싱
-        final jsonData = jsonDecode(utf8.decode(response.bodyBytes))['data'];
-        log("이벤트 상세 조회 성공: $jsonData");
+        log("이벤트 상세 조회 성공: ${response.data['data']}");
         // JSON 데이터를 Event 객체로 변환
-        return Event.fromJson(jsonData);
+        return Event.fromJson(response.data['data']);
       } else {
         // 오류 로그 출력
-        log('이벤트 상세 조회 실패: ${response.statusCode} - ${response.body}');
+        log('이벤트 상세 조회 실패: ${response.statusCode} - ${response.data}');
         return null;
       }
     } catch (e) {

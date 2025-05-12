@@ -1,16 +1,22 @@
 import 'dart:developer';
 import 'package:dio/dio.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get/get.dart';
 import 'dart:convert';
 
 import '../pages/logins/login.dart';
 
-class DioClient {
-  final Dio _dio = Dio();
+class PrivateClient {
+  late Dio _dio;
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
-  DioClient() {
+  PrivateClient()
+      : _dio = Dio(BaseOptions(
+    baseUrl: dotenv.env['API_HOST']!, // 예: https://api.example.com
+    connectTimeout: const Duration(seconds: 10),
+    receiveTimeout: const Duration(seconds: 10),
+  )){
     // 로깅 활성화
     _dio.interceptors.add(LogInterceptor(
       request: true, // 요청 로깅

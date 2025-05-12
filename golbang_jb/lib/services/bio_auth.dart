@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:local_auth/error_codes.dart' as auth_error;
@@ -14,7 +15,7 @@ class BioAuth {
       final isSupported = await _auth.isDeviceSupported();
       return canCheck && isSupported;
     } on PlatformException catch (e) {
-      print("Error checking biometrics: $e");
+      log("Error checking biometrics: $e");
       return false;
     }
   }
@@ -24,7 +25,7 @@ class BioAuth {
     try {
       return await _auth.getAvailableBiometrics();
     } on PlatformException catch (e) {
-      print("Error getting biometrics: $e");
+      log("Error getting biometrics: $e");
     }
     return <BiometricType>[];
   }
@@ -44,14 +45,14 @@ class BioAuth {
           ),
           authMessages: [
             // IOS 생체 인증 메세지
-            IOSAuthMessages(
+            const IOSAuthMessages(
               lockOut: 'Face ID 잠금 해제 필요',
               goToSettingsButton: '설정으로 이동',
               goToSettingsDescription: 'Face ID를 사용하려면 설정에서 활성화하세요.',
               cancelButton: '취소',
               localizedFallbackTitle: '암호 입력',
             ),
-            AndroidAuthMessages(
+            const AndroidAuthMessages(
               biometricHint: '생체 정보를 스캔하세요.',
               biometricNotRecognized: '생체정보가 일치하지 않습니다.',
               biometricRequiredTitle: '생체',
@@ -67,11 +68,11 @@ class BioAuth {
       );
     } on PlatformException catch (e) {
       if (e.code == auth_error.notAvailable) {
-        print("기기에서 생체 인증을 사용할 수 없음.");
+        log("기기에서 생체 인증을 사용할 수 없음.");
       } else if (e.code == auth_error.lockedOut) {
-        print("너무 많은 실패로 인해 생체 인증이 잠김.");
+        log("너무 많은 실패로 인해 생체 인증이 잠김.");
       } else {
-        print("Authentication error: ${e.message}");
+        log("Authentication error: ${e.message}");
       }
 
       return false;

@@ -1,7 +1,6 @@
 import 'dart:developer';
 import 'dart:async';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:golbang/global/LoginInterceptor.dart';
+import 'package:golbang/global/PrivateClient.dart';
 import '../repoisitory/secure_storage.dart';
 import '../models/get_statistics_overall.dart';
 import '../models/get_statistics_yearly.dart';
@@ -10,16 +9,17 @@ import '../models/get_statistics_period.dart';
 
 class StatisticsService {
   final SecureStorage storage;
-  final dioClient = DioClient();
+  final privateClient = PrivateClient();
 
   StatisticsService(this.storage);
 
+  // API 테스트 성공
   Future<ClubStatistics?> fetchClubStatistics(int clubId) async {
     try {
       // TODO: endpoint 뒤에 슬레시 필요한지 아닌지 통일
-      var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/statistics/ranks/?club_id=$clubId/";
+      var uri = "/api/v1/clubs/statistics/ranks/?club_id=$clubId/";
 
-      var response = await dioClient.dio.get(uri);
+      var response = await privateClient.dio.get(uri);
       if (response.statusCode == 200) {
         final jsonData = response.data['data'];
         // log(jsonData);
@@ -33,12 +33,13 @@ class StatisticsService {
     return null;
   }
 
+  // API 테스트 성공
   Future<OverallStatistics?> fetchOverallStatistics() async {
     try {
       // TODO: endpoint 뒤에 슬레시 필요한지 아닌지 통일
-      var uri = "${dotenv.env['API_HOST']}/api/v1/participants/statistics/overall/";
+      var uri = "/api/v1/participants/statistics/overall/";
 
-      var response = await dioClient.dio.get(uri);
+      var response = await privateClient.dio.get(uri);
       if (response.statusCode == 200) {
         final jsonData = response.data['data'];
         if (jsonData != null) {
@@ -86,13 +87,13 @@ class StatisticsService {
   //   );
   // }
 
-
+  // API 테스트 성공
   Future<YearStatistics?> fetchYearStatistics(String year) async {
     try {
       // TODO: endpoint 뒤에 슬레시 필요한지 아닌지 통일
-      var uri = "${dotenv.env['API_HOST']}/api/v1/participants/statistics/yearly/$year/";
+      var uri = "/api/v1/participants/statistics/yearly/$year/";
 
-      var response = await dioClient.dio.get(uri);
+      var response = await privateClient.dio.get(uri);
 
       if (response.statusCode == 200) {
         final jsonData = response.data['data'];
@@ -110,12 +111,13 @@ class StatisticsService {
     return null;
   }
 
+  // API 테스트 완료 - 통계 페이지에서 에러 발생하여 수정함
   Future<PeriodStatistics?> fetchPeriodStatistics(String startDate, String endDate) async {
     try {
       var uri =
-          "${dotenv.env['API_HOST']}/api/v1/participants/statistics/period/?start_date=$startDate&end_date=$endDate";
+          "/api/v1/participants/statistics/period/?start_date=$startDate&end_date=$endDate";
 
-      var response = await dioClient.dio.get(uri);
+      var response = await privateClient.dio.get(uri);
       if (response.statusCode == 200) {
         final jsonData = response.data['data'];
         if (jsonData != null) {

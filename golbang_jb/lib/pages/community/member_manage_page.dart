@@ -30,7 +30,7 @@ class _MemberManagePageState extends ConsumerState<MemberManagePage> {
 
   Future<void> _fetchMembers() async {
     try {
-      List<ClubMemberProfile> fetchedMembers = await _clubMemberService.getClubMemberProfileList(club_id: widget.clubId);
+      List<ClubMemberProfile> fetchedMembers = await _clubMemberService.getClubMemberProfileList(clubId: widget.clubId);
       setState(() {
         members = fetchedMembers;
         isLoading = false;

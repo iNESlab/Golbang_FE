@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/user_account.dart'; // 이 파일에서 모든 UserAccount를 참조합니다.
@@ -27,12 +28,12 @@ class UserAccountNotifier extends StateNotifier<UserAccount?> {
       // 기존 상태와 새로 불러온 사용자 정보를 비교
       if (_hasUserAccountChanged(newUserAccount)) {
         state = newUserAccount;  // 변경된 값이 있을 경우에만 상태 업데이트
-        print("UserAccount updated: $newUserAccount");
+        log("UserAccount updated: $newUserAccount");
       } else {
-        print("UserAccount has not changed");
+        log("UserAccount has not changed");
       }
     } catch (e) {
-      print('Failed to load user profile: $e');
+      log('Failed to load user profile: $e');
     }
   }
 

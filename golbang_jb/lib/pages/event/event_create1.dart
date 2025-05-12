@@ -27,7 +27,6 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
   final TextEditingController _locationController = TextEditingController();
   late final TextEditingController _startDateController;
   final TextEditingController _startTimeController = TextEditingController(text: "11:00 AM");
-  final TextEditingController _endDateController = TextEditingController();
   LatLng? _selectedLocation;
   late String _site;
   List<Club> _clubs = [];
@@ -38,8 +37,6 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
   bool _isButtonEnabled = false;
 
   GoogleMapController? _mapController;
-
-  final TimeOfDay _fixedTime = const TimeOfDay(hour: 23, minute: 59);
 
   @override
   void initState() {
@@ -53,21 +50,9 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
     // 변환된 문자열을 초기 값으로 설정
     _startDateController = TextEditingController(text: formattedDate);
     
-    // 시작 날짜가 있으면 종료 날짜를 자동으로 시작 날짜 + 2일로 설정
-    if (formattedDate != null) {
-      _updateEndDate(DateTime.parse(formattedDate));
-    }
-    
     _clubService = ClubService(ref.read(secureStorageProvider));
     _fetchClubs();
     _setupListeners();
-  }
-
-  // 종료 날짜를 시작 날짜 + 2일로 자동 설정하는 함수
-  void _updateEndDate(DateTime startDate) {
-    final endDate = startDate.add(const Duration(days: 2));
-    final formattedEndDate = DateFormat('yyyy-MM-dd').format(endDate);
-    _endDateController.text = formattedEndDate;
   }
 
   @override
@@ -147,9 +132,6 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
       setState(() {
         final formattedDate = "${pickedDate.year}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}";
         _startDateController.text = formattedDate;
-        
-        // 시작 날짜가 변경되면 종료 날짜도 자동으로 업데이트
-        _updateEndDate(pickedDate);
         
         _validateForm();
       });
@@ -383,7 +365,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                   Icon(Icons.info_outline, size: 16, color: Colors.grey),
                   SizedBox(width: 4),
                   Text(
-                    '이벤트 종료 날짜는 시작 날짜로부터 2일 후로 자동 설정됩니다',
+                    '이벤트 종료 날짜는 시작 날짜로부터 1일 후로 자동 설정됩니다',
                     style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                 ],
@@ -456,10 +438,13 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                         : TimeOfDay.now(); // 기본값: 현재 시간
 
                     final DateTime startDateTime = _convertToDateTime(startDate, startTime);
-                    final DateTime endDateTime = _endDateController.text.isNotEmpty
-                        ? _convertToDateTime(
-                        DateTime.parse(_endDateController.text), _fixedTime)
-                        : _convertToDateTime(startDate.add(const Duration(days: 2)), _fixedTime); // 기본값: 시작일 + 2일, 23:59
+                    final DateTime endDateTime = startDateTime.add(const Duration(days: 1));
+
+                    // 로그 추가
+                    log('startDateTime: $startDateTime');
+                    log('endDateTime: $endDateTime');
+                    log('Duration in days: ${endDateTime.difference(startDateTime).inDays}');
+                    log('Duration in hours: ${endDateTime.difference(startDateTime).inHours}');
 
                     Navigator.push(
                       context,

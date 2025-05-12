@@ -2,10 +2,12 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:golbang/pages/signup/widgets/calendar.dart';
-import 'package:golbang/services/user_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../provider/user/user_service_provider.dart';
+
 import 'signup_complete.dart'; // 회원가입 완료 페이지 import
 
-class AdditionalInfoPage extends StatefulWidget {
+class AdditionalInfoPage extends ConsumerStatefulWidget {
   final int userId; //TODO: AccountId 수정
 
   const AdditionalInfoPage({
@@ -17,7 +19,7 @@ class AdditionalInfoPage extends StatefulWidget {
   _AdditionalInfoPageState createState() => _AdditionalInfoPageState();
 }
 
-class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
+class _AdditionalInfoPageState extends ConsumerState<AdditionalInfoPage> {
   final _formKey = GlobalKey<FormState>();
 
   final _nicknameController = TextEditingController();
@@ -134,8 +136,9 @@ class _AdditionalInfoPageState extends State<AdditionalInfoPage> {
   }
 
   Future<void> _signUpStep2() async {
+    final userService = ref.watch(userServiceProvider);
     if (_formKey.currentState!.validate()) {
-      var response = await UserService.saveAdditionalInfo(
+      var response = await userService.saveAdditionalInfo(
         userId: widget.userId,
         name: _nicknameController.text,
         phoneNumber: _phoneNumberController.text,

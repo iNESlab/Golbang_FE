@@ -2,8 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
-import '../global/LoginInterceptor.dart';
+import '../global/PrivateClient.dart';
 import '../models/club.dart';
 import '../models/member.dart';
 import '../models/profile/get_all_user_profile.dart';
@@ -11,16 +10,17 @@ import '../repoisitory/secure_storage.dart';
 
 class ClubService {
   final SecureStorage storage;
-  final dioClient = DioClient();
+  final privateClient = PrivateClient();
 
   ClubService(this.storage);
 
+  // API 테스트 완료
   Future<List<Club>> getClubList({bool isAdmin=false}) async {
 
     // API URI 설정
-    var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/";
+    var uri = "/api/v1/clubs/";
     // API 요청
-    var response = await dioClient.dio.get(uri);
+    var response = await privateClient.dio.get(uri);
 
     // 응답 코드가 200(성공)인지 확인
     if (response.statusCode == 200) {
@@ -36,13 +36,14 @@ class ClubService {
       throw Exception('Failed to load user profiles');
     }
   }
+  // API 테스트 완료
   // 모임 삭제 함수 추가
   Future<void> deleteClub(int clubId) async {
 
     // API URI 설정
-    var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/admin/$clubId/";
+    var uri = "/api/v1/clubs/admin/$clubId/";
     // DELETE 요청
-    var response = await dioClient.dio.delete(uri);
+    var response = await privateClient.dio.delete(uri);
 
     // 응답 확인
     if (response.statusCode != 204) {
@@ -50,40 +51,37 @@ class ClubService {
     }
   }
 
+  // API 테스트 완료
   // 특정 모임 나가기
   Future<void> leaveClub(int clubId) async {
     // API URI 설정
-    var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/$clubId/leave/";
+    var uri = "/api/v1/clubs/$clubId/leave/";
     // DELETE 요청
-    var response = await dioClient.dio.delete(uri);
+    var response = await privateClient.dio.delete(uri);
     // 응답 확인
     if (response.statusCode != 204) {
       throw Exception('Failed to leave club');
     }
   }
 
+  // API 테스트 완료
   Future<List<Member>> inviteMembers(int clubId, List<GetAllUserProfile> userProfileList) async {
     try {
       for (var user in userProfileList) {
         log('username: ${user.name}'); // ✅ user_id 출력
       }
       // TODO: 다른 api와는 다르게 모임 초대할 때에는 PK가 아니라 유저 아이디로 초대하고 있음. 통일이 필요
-      var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/admin/$clubId/invite/";
+      var uri = "/api/v1/clubs/admin/$clubId/invite/";
 
       // 1️⃣ userProfileList에서 user_id만 추출하여 리스트로 변환
       List<String> userIds = userProfileList.map((userProfile) => userProfile.userId!).toList();
 
       // 2️⃣ 서버로 리스트를 한 번에 전송
-      final response = await dioClient.dio.post(
+      final response = await privateClient.dio.post(
         uri,
         data: {
           "user_ids": userIds, // ✅ 리스트로 변환된 user_ids 전송
         },
-        options: Options(
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        ),
       );
 
       if (response.statusCode != 204) {
@@ -97,18 +95,13 @@ class ClubService {
       throw Exception('Failed to invite member');
     }
   }
+
+  // API 테스트 완료
   Future<void> removeMember(int clubId, int memberId) async {
     try {
-      var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/admin/$clubId/members/$memberId/";
+      var uri = "/api/v1/clubs/admin/$clubId/members/$memberId/";
 
-      await dioClient.dio.delete(
-        uri,
-        options: Options(
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        ),
-      );
+      await privateClient.dio.delete(uri);
 
       log('Successfully removed member: $memberId from club: $clubId');
     } catch (e) {
@@ -116,6 +109,7 @@ class ClubService {
     }
   }
 
+  // API 테스트 완료
   Future<bool> updateClubWithAdmins({
     required int clubId,
     required String name,
@@ -123,7 +117,7 @@ class ClubService {
     required List<int> adminIds,
     File? imageFile}) async {
     try {
-      var uri = "${dotenv.env['API_HOST']}/api/v1/clubs/admin/$clubId/";
+      var uri = "/api/v1/clubs/admin/$clubId/";
       late FormData formData;
       List<String> filteredAdmins = adminIds
           .map((e) => e.toString())
@@ -131,18 +125,13 @@ class ClubService {
       late Response<dynamic> response;
 
       if (imageFile == null){
-        response = await dioClient.dio.patch(
+        response = await privateClient.dio.patch(
           uri,
           data: {
             "name": name,
             "description": description,
             "admins": adminIds, // ✅ 리스트로 변환된 user_ids 전송
           },
-          options: Options(
-            headers: {
-              'Content-Type': 'application/json',
-            },
-          ),
         );
       } else{
         // 멀티파트 데이터 생성
@@ -153,7 +142,7 @@ class ClubService {
           'image': await MultipartFile.fromFile(imageFile.path, filename: imageFile.path.split('/').last),
         });
 
-        response = await dioClient.dio.patch(
+        response = await privateClient.dio.patch(
           uri,
           data: formData,
           options: Options(
