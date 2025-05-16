@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
@@ -74,7 +75,7 @@ class EventPageState extends ConsumerState<EventPage> {
           });
         }
       } catch (e) {
-        print('Error fetching event details: $e');
+        log('Error fetching event details: $e');
       }
     }
   }
@@ -142,7 +143,7 @@ class EventPageState extends ConsumerState<EventPage> {
         _selectedEvents.value = _getEventsForDay(_selectedDay!); // UI 새로고침
       });
     } catch (e) {
-      print("Error loading events: $e");
+      log("Error loading events: $e");
     }
   }
 
