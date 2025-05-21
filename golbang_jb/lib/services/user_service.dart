@@ -264,6 +264,19 @@ class UserService {
     return response;
   }
 
+  Future<Response<dynamic>> changePassword({required String newPassword})async{
+    var uri = Uri.parse("/api/v1/users/info/password/change/");
+    // body
+    Map data = {
+      'new_password': newPassword,
+    };
+
+    var body = json.encode(data);
+    var response = await privateClient.dio.postUri(uri, data: body);
+
+    return response;
+  }
+
   // API 테스트 완료
   Future<Response> deleteAccount() async {
 

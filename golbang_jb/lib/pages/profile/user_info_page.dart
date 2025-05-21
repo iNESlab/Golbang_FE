@@ -165,7 +165,13 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
     return ListTile(
       title: Text(title),
       subtitle: Text(value),
-      trailing: editable ? const Icon(Icons.chevron_right) : null,
+      trailing: title == '아이디' ? TextButton(
+        onPressed: _showChangePasswordDialog,
+        child: const Text(
+          '비밀번호 변경',
+          style: TextStyle(color: Colors.blue),
+        ),
+      ): (editable ? const Icon(Icons.chevron_right) : null),
       onTap: editable
           ? () {
         if (isNumeric) {
@@ -175,10 +181,80 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
         } else {
           _showEditDialog(context, title, value);
         }
-      }
-          : null,
+      } : null,
     );
   }
+
+  void _showChangePasswordDialog() {
+    final TextEditingController passwordController = TextEditingController();
+    final TextEditingController confirmPasswordController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('비밀번호 변경'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: const InputDecoration(labelText: '새 비밀번호'),
+              ),
+              TextField(
+                controller: confirmPasswordController,
+                obscureText: true,
+                decoration: const InputDecoration(labelText: '비밀번호 확인'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('취소'),
+            ),
+            TextButton(
+              onPressed: () async {
+                final password = passwordController.text;
+                final confirmPassword = confirmPasswordController.text;
+
+                if (password.isEmpty || confirmPassword.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('비밀번호를 입력해주세요')),
+                  );
+                  return;
+                }
+
+                if (password != confirmPassword) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('비밀번호가 일치하지 않습니다')),
+                  );
+                  return;
+                }
+
+                try {
+                  final userService = ref.read(userServiceProvider);
+                  await userService.changePassword(newPassword: password);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('비밀번호가 변경되었습니다')),
+                  );
+                  Navigator.of(context).pop();
+                } catch (e) {
+                  log('Failed to change password: $e');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('비밀번호 변경 실패')),
+                  );
+                }
+              },
+              child: const Text('변경'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
   // NumberPicker를 사용하는 다이얼로그
   void _showNumberPicker(BuildContext context, String field, int initialValue) {
