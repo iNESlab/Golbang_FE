@@ -38,7 +38,7 @@ class ScoreCard {
       handicapScore: json['handicap_score'] ?? 0,
       scores: (json['scores'] as List<dynamic>?)
           ?.map((scoreJson) => HoleScore.fromJson(scoreJson))
-          .toList(),
+          .toList() ?? [],
     );
   }
 
