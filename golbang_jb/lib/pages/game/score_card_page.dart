@@ -15,7 +15,6 @@ import '../../models/hole_score.dart';
 import '../../models/participant.dart';
 import '../../models/profile/club_profile.dart';
 import '../../models/socket/score_card.dart';
-import 'header_button_container.dart';
 
 class ScoreCardPage extends ConsumerStatefulWidget {
   final Event event;
@@ -29,7 +28,7 @@ class ScoreCardPage extends ConsumerStatefulWidget {
   _ScoreCardPageState createState() => _ScoreCardPageState();
 }
 
-class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindingObserver {
+class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindingObserver, TickerProviderStateMixin {
   int _currentPageIndex = 0;
   int? _selectedHole;
   int? _selectedParticipantId;
@@ -64,10 +63,20 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
   late double appBarIconSize;
   late double avatarSize;
 
+  // 자동 새로고침 변수
+  bool _isRefreshing = false;
+  Timer? _refreshTimer;
+  late final _refreshIconController;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this); // 생명주기 관찰자 등록
+
+    _refreshIconController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    );
 
     // 기본 방향 설정
     orientation = Orientation.portrait;
@@ -116,7 +125,30 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
     _initPlayerShortNames();
 
     _participantService = ParticipantService(ref.read(secureStorageProvider));
-    _getGroupScores();
+    _startAutoRefresh();
+  }
+
+  void _startAutoRefresh() {
+    _getGroupScores(); // 첫 실행
+
+    setState(() {
+      _isRefreshing = true;
+    });
+    _refreshIconController.repeat(); // 회전 시작
+
+    _refreshTimer = Timer.periodic(const Duration(seconds: 10), (timer) {
+      _getGroupScores();
+    });
+  }
+
+  void _stopAutoRefresh() {
+    if (!mounted) return;
+    _refreshTimer?.cancel();
+    _refreshIconController.stop();
+    _refreshIconController.reset();
+    setState(() {
+      _isRefreshing = false;
+    });
   }
 
   // 플레이어 약어 이름 초기화 메서드 추가
@@ -136,6 +168,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
   }
 
   void _showScoreSummary() {
+    _stopAutoRefresh();
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => OverallScorePage(event: widget.event)),
@@ -205,6 +238,8 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
 
   @override
   void dispose() {
+    _refreshTimer?.cancel();
+    _refreshIconController.dispose();
     WidgetsBinding.instance.removeObserver(this); // 생명주기 관찰자 제거
     _controllers.forEach((_, controllers) => controllers.forEach((controller) => controller.dispose()));
     _focusNodes.forEach((_, nodes) => nodes.forEach((node) => node.dispose()));
@@ -402,14 +437,20 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
           },
         ),
         actions: [
-          IconButton(
-            icon: Icon(
-              Icons.refresh,
-              size: appBarIconSize,
-              // 쿨다운 중일 때 살짝 회색으로 표시 (완전히 비활성화하지 않음)
-              color: Colors.white
+          AnimatedBuilder(
+            animation: _refreshIconController,
+            builder: (context, child) {
+              return Transform.rotate(
+                angle: _refreshIconController.value * 6.3,
+                child: child,
+              );
+            },
+            child: IconButton(
+              icon: Icon(Icons.refresh, size: appBarIconSize),
+              color: Colors.white,
+              onPressed: _isRefreshing ? _stopAutoRefresh : _startAutoRefresh,
+              tooltip: '새로고침',
             ),
-            onPressed: _getGroupScores, // 새로고침
           ),
         ],
       ),
@@ -540,20 +581,6 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
               ],
             ),
             SizedBox(height: height * 0.001), // 간격 줄임
-            Row(
-              children: [
-                Expanded(
-                  child: HeaderButtonContainer(
-                    selectedHole: _selectedHole,
-                    isEditing: _isEditing,
-                    onEdit: null,
-                    fontSize: fontSizeLarge,
-                    allScoresEntered: false,
-                    onComplete: () {  },
-                  ),
-                ),
-              ],
-            ),
           ],
         ],
       ),
@@ -851,41 +878,4 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
     log('셀 선택 후: _selectedHole=$_selectedHole, _selectedParticipantId=$_selectedParticipantId, _isEditing=$_isEditing, _tempScore=$_tempScore');
   }
 
-  // 선택된 셀로 스크롤하는 함수 수정
-  void _scrollToSelectedCell(int holeNumber) {
-    // 현재 표시된 페이지의 스크롤 컨트롤러 가져오기
-    ScrollController currentScrollController = _scrollControllers[_currentPageIndex];
-
-    // 테이블 셀의 대략적인 높이 계산 (셀 높이 + 경계선)
-    double cellHeight = height * 0.042; // 셀 높이 추정값
-
-    // 페이지 내에서의 홀 인덱스 계산 (0-based)
-    int pageHoleIndex = _currentPageIndex == 0 ? holeNumber - 1 : holeNumber - 10;
-
-    // 헤더와 범례를 고려한 스크롤 위치 계산
-    double legendHeight = height * 0.08; // 범례 높이 추정값
-    double headerHeight = cellHeight; // 헤더 높이 추정값
-    double targetScroll = headerHeight + (pageHoleIndex * cellHeight);
-
-    // 키보드 높이를 고려하여 스크롤 위치 조정
-    double keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
-    double safeAreaTop = height * 0.1; // 화면 상단에서 안전 여백
-
-    // 스크롤 조정 위치 계산 - 홀이 키보드 위에 보이도록 조정
-    double finalScrollPosition = targetScroll - safeAreaTop;
-
-    // 음수가 되지 않도록 최소값 0으로 설정
-    finalScrollPosition = finalScrollPosition < 0 ? 0 : finalScrollPosition;
-
-    log('스크롤 조정: holeNumber=$holeNumber, pageIndex=$_currentPageIndex, scrollPosition=$finalScrollPosition');
-
-    // 스크롤 이동
-    if (currentScrollController.hasClients) {
-      currentScrollController.animateTo(
-        finalScrollPosition,
-        duration: const Duration(milliseconds: 100),
-        curve: Curves.easeOut,
-      );
-    }
-  }
-  }
+}
