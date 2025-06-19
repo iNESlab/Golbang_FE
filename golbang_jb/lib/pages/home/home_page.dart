@@ -134,20 +134,78 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class HomeContent extends ConsumerWidget {
+class HomeContent extends ConsumerStatefulWidget {
   const HomeContent({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Fetching services
-    final storage = ref.watch(secureStorageProvider);
-    final UserService userService = UserService(storage);
-    final GroupService groupService = GroupService(storage);
-    final EventService eventService = EventService(storage);
-    final StatisticsService statisticsService = StatisticsService(storage);
+  ConsumerState<HomeContent> createState() => _HomeContentState();
+}
 
-    DateTime focusedDay = DateTime.now();
-    String date = '${focusedDay.year}-${focusedDay.month.toString().padLeft(2, '0')}-01';
+class _HomeContentState extends ConsumerState<HomeContent> {
+  // Fetching services
+  late final UserService userService;
+  late final GroupService groupService;
+  late final EventService eventService;
+  late final StatisticsService statisticsService;
+
+  late String date;
+  late Future<List<dynamic>> _dataFuture;
+  late List<Event> _events;
+
+  Future<List<dynamic>> _loadData() {
+    return Future.wait([
+      userService.getUserInfo(),
+      eventService.getEventsForMonth(date: date),
+      groupService.getUserGroups(),
+      statisticsService.fetchOverallStatistics().catchError((e) {
+        log('Error fetching overall statistics: $e');
+        return OverallStatistics(
+          averageScore: 0.0,
+          bestScore: 0,
+          handicapBestScore: 0,
+          gamesPlayed: 0,
+        );
+      }),
+    ]);
+  }
+
+  Future<void> _refreshData() async {
+    setState(() {
+      _dataFuture = _loadData();
+    });
+  }
+
+  Future<void> _loadEventsForMonth() async {
+
+    try {
+      List<Event> events = await eventService.getEventsForMonth(date: date);
+      setState(() {
+        _events = events;
+      });
+    } catch (e) {
+      log("Error loading events: $e");
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+
+    final storage = ref.read(secureStorageProvider);
+    userService = UserService(storage);
+    groupService = GroupService(storage);
+    eventService = EventService(storage);
+    statisticsService = StatisticsService(storage);
+
+    final DateTime focusedDay = DateTime.now();
+    date = '${focusedDay.year}-${focusedDay.month.toString().padLeft(2, '0')}-01';
+
+    _dataFuture = _loadData();
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
 
     // 화면 크기 설정
     double screenHeight = MediaQuery.of(context).size.height; // 화면 높이
@@ -156,20 +214,7 @@ class HomeContent extends ConsumerWidget {
 
     return Scaffold(
       body: FutureBuilder(
-          future: Future.wait([
-            userService.getUserInfo(),
-            eventService.getEventsForMonth(date: date),
-            groupService.getUserGroups(),
-            statisticsService.fetchOverallStatistics().catchError((e) {
-              log('Error fetching overall statistics: $e');
-              return OverallStatistics(
-                averageScore: 0.0,
-                bestScore: 0,
-                handicapBestScore: 0,
-                gamesPlayed: 0,
-              );
-            }),
-          ]),
+          future: _dataFuture,
           builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
               return const Center(child: CircularProgressIndicator());
@@ -206,7 +251,13 @@ class HomeContent extends ConsumerWidget {
                   flex: 5,
                   child: SectionWithScroll(
                     title: '다가오는 일정 ${events.length}',
-                    child: UpcomingEvents(events: events),
+                    child: UpcomingEvents(
+                        events: events,
+                        date: date,
+                        onEventUpdated: () async {
+                          await _refreshData(); // 데이터 다시 로드
+                      },
+                    ),
                   ),
                 ),
                 SizedBox(

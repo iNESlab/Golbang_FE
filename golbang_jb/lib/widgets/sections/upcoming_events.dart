@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:golbang/models/event.dart';
 import 'package:golbang/pages/event/event_detail.dart';
@@ -6,11 +7,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/utils/reponsive_utils.dart';
 import 'package:intl/intl.dart';
 import '../../repoisitory/secure_storage.dart';
+import '../../services/event_service.dart';
 
 class UpcomingEvents extends ConsumerStatefulWidget {
   final List<Event> events;
+  final String date;
+  final Future<void> Function()? onEventUpdated;
 
-  const UpcomingEvents({super.key, required this.events});
+  const UpcomingEvents({super.key, required this.events, required this.date, this.onEventUpdated,});
 
   @override
   UpcomingEventsState createState() => UpcomingEventsState();
@@ -92,13 +96,20 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
                   .format(event.startDateTime);
 
               return GestureDetector(
-                onTap: () {
-                  Navigator.push(
+                onTap: () async {
+                  final result = await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => EventDetailPage(event: event),
                     ),
                   );
+
+                  log('수정 여부: $result');
+
+                  if (result == true) {
+                    // 이벤트 삭제 후 목록 새로고침
+                    await widget.onEventUpdated!(); // 데이터 다시 로딩
+                  }
                 },
                 child: Container(
                   margin: EdgeInsets.symmetric(
