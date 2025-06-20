@@ -262,7 +262,24 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
       score: _tempScore
     );
 
-    if (result == null) return;
+    if (result == null) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('오류'),
+            content: const Text('스코어를 저장하는 데 실패했습니다.\n다시 시도해주세요.'),
+            actions: [
+              TextButton(
+                child: const Text('확인'),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        );
+      }
+      return;
+    }
     _processSingleScoreCardEntry(result, holeNumber, _tempScore);
 
     setState(() {
@@ -288,11 +305,29 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
         groupType: widget.event.memberGroup
     );
 
-    if (result == null) return;
-
-    for (var p in result) {
-      _processScoreCardEntry(p);
+    if (result == null) {
+      _stopAutoRefresh();
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('오류'),
+            content: const Text('스코어를 불러오는 데 실패했습니다.\n다시 시도해주세요.'),
+            actions: [
+              TextButton(
+                child: const Text('확인'),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        );
+      }
+      return;
     }
+
+      for (var p in result) {
+        _processScoreCardEntry(p);
+      }
   }
 
   void _processSingleScoreCardEntry(ScoreCard entry, int holeNumber, int? score) {
