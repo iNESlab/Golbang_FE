@@ -250,50 +250,86 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
     super.dispose();
   }
 
-   Future<void> _postScore({
+  Future<void> _postScore({
     required int eventId,
     required int participantId,
     required int holeNumber,
   }) async {
-    final result = await _participantService.postStrokeScore(
-      eventId: eventId,
-      participantId: participantId,
-      holeNumber: holeNumber,
-      score: _tempScore
-    );
+    try {
+      final result = await _participantService.postStrokeScore(
+        eventId: eventId,
+        participantId: participantId,
+        holeNumber: holeNumber,
+        score: _tempScore,
+      );
 
-    if (result == null) return;
-    _processSingleScoreCardEntry(result, holeNumber, _tempScore);
+      if (result == null) return;
 
-    setState(() {
-      _scorecard[_selectedParticipantId]![_selectedHole! - 1] =
-          HoleScore(holeNumber: _selectedHole!, score: _tempScore);
+      _processSingleScoreCardEntry(result, holeNumber, _tempScore);
 
-      // 컨트롤러에는 빈 문자열 저장 (화면에 하이픈으로 표시)
-      _controllers[_selectedParticipantId]?[_selectedHole! - 1].text = _tempScore != null ? _tempScore.toString() : "";
+      setState(() {
+        _scorecard[_selectedParticipantId]![_selectedHole! - 1] =
+            HoleScore(holeNumber: _selectedHole!, score: _tempScore);
 
-      // 편집 상태 초기화
-      _isEditing = false;
-      _selectedHole = null;
-      _selectedParticipantId = null;
-      _tempScore = null;
-    });
+        _controllers[_selectedParticipantId]?[_selectedHole! - 1].text =
+        _tempScore != null ? _tempScore.toString() : "";
+
+        _isEditing = false;
+        _selectedHole = null;
+        _selectedParticipantId = null;
+        _tempScore = null;
+      });
+    } catch (e) {
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('스코어 등록 실패'),
+            content: Text(e.toString()),
+            actions: [
+              TextButton(
+                child: const Text('확인'),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        );
+      }
+    }
   }
 
   Future<void> _getGroupScores() async {
-    log('eventId: ${widget.event.eventId}');
-    log('groupType: ${widget.event.memberGroup}');
-    final result = await _participantService.getGroupScores(
+    try {
+      final result = await _participantService.getGroupScores(
         eventId: widget.event.eventId,
-        groupType: widget.event.memberGroup
-    );
+        groupType: widget.event.memberGroup,
+      );
 
-    if (result == null) return;
+      for (var p in result!) {
+        _processScoreCardEntry(p);
+      }
 
-    for (var p in result) {
-      _processScoreCardEntry(p);
+    } catch (e) {
+      _stopAutoRefresh();
+
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (_) => AlertDialog(
+            title: const Text('스코어 조회 실패'),
+            content: Text('$e'),
+            actions: [
+              TextButton(
+                child: const Text('확인'),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
+          ),
+        );
+      }
     }
   }
+
 
   void _processSingleScoreCardEntry(ScoreCard entry, int holeNumber, int? score) {
     try {
