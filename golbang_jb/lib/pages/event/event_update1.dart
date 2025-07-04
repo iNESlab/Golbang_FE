@@ -9,9 +9,11 @@ import '../../models/event.dart';
 import '../../models/member.dart';
 import '../../models/profile/member_profile.dart';
 import '../../models/responseDTO/GolfClubResponseDTO.dart';
+import '../../models/responseDTO/CourseResopnseDTO.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/club_service.dart';
 import 'widgets/location_search_dialog.dart';
+import 'widgets/course_selection_dialog.dart';
 import 'widgets/participant_dialog.dart';
 import 'event_update2.dart';
 
@@ -40,6 +42,10 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
 
   LatLng? _selectedLocation;
   late String _site;  // 선택된 장소의 이름을 저장하는 변수
+  
+  // 골프장과 코스 선택 관련 변수들
+  GolfClubResponseDTO? _selectedGolfClub;
+  CourseResponseDTO? _selectedCourse;
 
   @override
   void initState() {
@@ -80,6 +86,14 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
         accountId: member?.memberId ?? 0,
       );
     }).toList();
+    
+    // 골프장과 코스 정보 초기화
+    if (widget.event.golfClub != null) {
+      _selectedGolfClub = widget.event.golfClub;
+    }
+    if (widget.event.golfCourse != null) {
+      _selectedCourse = widget.event.golfCourse;
+    }
   }
 
   LatLng? _parseLocation(String? location) {
@@ -105,18 +119,18 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
 
   void _setupListeners() {
     _titleController.addListener(_validateForm);
-    _locationController.addListener(_validateForm);
     _startDateController.addListener(_validateForm);
   }
 
   void _validateForm() {
     final isValid = _titleController.text.isNotEmpty &&
-        _locationController.text.isNotEmpty &&
         _startDateController.text.isNotEmpty &&
         _selectedParticipants.isNotEmpty &&
         _selectedLocation != null &&
         _selectedClub != null &&
-        _selectedGameMode != null;
+        _selectedGameMode != null &&
+        _selectedGolfClub != null &&
+        _selectedCourse != null;
 
     setState(() {
       _isButtonEnabled = isValid;
@@ -148,8 +162,11 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
         locationController: _locationController,
         onLocationSelected: (GolfClubResponseDTO site) {
           setState(() {
+            _selectedGolfClub = site;
             _site = site.golfClubName;
             _selectedLocation = LatLng(site.latitude, site.longitude);
+            _selectedCourse = null; // 골프장이 변경되면 코스 선택 초기화
+            
             // 지도 컨트롤러가 존재하면 새로운 위치로 카메라 이동
             if (_mapController != null && _selectedLocation != null) {
               _mapController!.animateCamera(
@@ -157,6 +174,29 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
               );
             }
 
+            _validateForm();
+          });
+        },
+      ),
+    );
+  }
+
+  void _showCourseSelectionDialog() {
+    if (_selectedGolfClub == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('먼저 골프장을 선택해주세요.')),
+      );
+      return;
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => CourseSelectionDialog(
+        golfClubId: _selectedGolfClub!.golfClubId,
+        golfClubName: _selectedGolfClub!.golfClubName,
+        onCourseSelected: (CourseResponseDTO course) {
+          setState(() {
+            _selectedCourse = course;
             _validateForm();
           });
         },
@@ -313,14 +353,16 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                 }).toList(),
               ),
               const SizedBox(height: 16),
+              const Text('골프장 선택', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
               GestureDetector(
                 onTap: _showLocationSearchDialog,
                 child: AbsorbPointer(
                   child: TextField(
                     controller: _locationController,
                     decoration: InputDecoration(
-                      labelText: '장소',
-                      hintText: '장소를 추가해주세요',
+                      labelText: '골프장',
+                      hintText: '골프장을 선택해주세요',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
@@ -329,6 +371,47 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                   ),
                 ),
               ),
+              const SizedBox(height: 8),
+              if (_selectedGolfClub != null) ...[
+                GestureDetector(
+                  onTap: _showCourseSelectionDialog,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Colors.grey),
+                      borderRadius: BorderRadius.circular(8.0),
+                      color: Colors.white,
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.golf_course, color: Colors.grey),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _selectedCourse != null
+                                ? '${_selectedCourse!.golfCourseName} (${_selectedCourse!.holes}홀, 파 ${_selectedCourse!.par})'
+                                : '+ 코스 선택',
+                            style: const TextStyle(color: Colors.black),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Row(
+                  children: [
+                    Icon(Icons.info_outline, size: 16, color: Colors.grey),
+                    SizedBox(width: 4),
+                    Text(
+                      '골프장을 선택한 후 코스를 선택해주세요',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ],
               if (_selectedLocation != null) const SizedBox(height: 16),
               if (_selectedLocation != null)
                 Container(
@@ -489,7 +572,8 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                           title: _titleController.text,
                           selectedClub: _selectedClub!,
                           selectedLocation: _selectedLocation!,
-                          selectedSite: _site,
+                          selectedGolfClub: _selectedGolfClub!,
+                          selectedCourse: _selectedCourse!,
                           startDate: startDateTime,
                           endDate: endDateTime,
                           selectedParticipants: _selectedParticipants,

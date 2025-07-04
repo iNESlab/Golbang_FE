@@ -55,7 +55,15 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
     double eventTitleFS = fontSize * 0.9;
     double eventOtherFS = fontSize * 0.8;
 
-    if (widget.events.isEmpty) {
+    // 오늘 날짜까지의 이벤트만 필터링
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final filteredEvents = widget.events.where((event) {
+      final eventDay = DateTime(event.startDateTime.year, event.startDateTime.month, event.startDateTime.day);
+      return !eventDay.isBefore(today); // 오늘 이전은 제외, 오늘 포함
+    }).toList();
+
+    if (filteredEvents.isEmpty) {
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -82,9 +90,9 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
           child: ListView.builder( // 이벤트가 있을 때
             controller: _scrollController, // 고유 ScrollController
             primary: false,
-            itemCount: widget.events.length,
+            itemCount: filteredEvents.length,
             itemBuilder: (context, index) {
-              final event = widget.events[index];
+              final event = filteredEvents[index];
               final participant = event.participants.firstWhere(
                     (p) => p.participantId == event.myParticipantId,
                 orElse: () => event.participants[0],

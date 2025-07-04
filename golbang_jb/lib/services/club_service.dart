@@ -6,6 +6,8 @@ import '../global/PrivateClient.dart';
 import '../models/club.dart';
 import '../models/member.dart';
 import '../models/profile/get_all_user_profile.dart';
+import '../models/responseDTO/GolfClubResponseDTO.dart';
+import '../models/responseDTO/CourseResopnseDTO.dart';
 import '../repoisitory/secure_storage.dart';
 
 class ClubService {
@@ -164,6 +166,52 @@ class ClubService {
     } catch (e) {
       log('Error removing member: $e');
       return false;
+    }
+  }
+
+  // 골프장 목록 조회
+  Future<List<GolfClubResponseDTO>> getGolfClubs() async {
+    try {
+      final response = await privateClient.dio.get('/api/v1/golfcourses/');
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = response.data['data'];
+        return data.map((json) => GolfClubResponseDTO.fromJson(json)).toList();
+      } else {
+        log('골프장 목록 조회 실패: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      log('Error occurred while fetching golf clubs: $e');
+      return [];
+    }
+  }
+
+  // 특정 골프장의 코스 목록 조회
+  Future<List<CourseResponseDTO>> getGolfCourses(int golfClubId) async {
+    try {
+      log('골프장 코스 조회 시작 - golfClubId: $golfClubId');
+      final response = await privateClient.dio.get('/api/v1/golfcourses/?golfclub_id=$golfClubId');
+      
+      log('API 응답 상태: ${response.statusCode}');
+      log('API 응답 데이터: ${response.data}');
+
+      if (response.statusCode == 200) {
+        final Map<String, dynamic> clubData = response.data['data'];
+        final List<dynamic> coursesData = clubData['courses'];
+        log('파싱할 코스 데이터: $coursesData');
+        
+        final courses = coursesData.map((json) => CourseResponseDTO.fromJson(json)).toList();
+        log('파싱된 코스 개수: ${courses.length}');
+        
+        return courses;
+      } else {
+        log('골프장 코스 목록 조회 실패: ${response.statusCode}');
+        return [];
+      }
+    } catch (e) {
+      log('Error occurred while fetching golf courses: $e');
+      return [];
     }
   }
 

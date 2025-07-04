@@ -47,20 +47,26 @@ class Participant {
   }
 
   factory Participant.fromJson(Map<String, dynamic> json) {
-    return Participant(
+    try {
+      return Participant(
       participantId: json['participant_id'] ?? 0,
       statusType: json['status_type'] ?? '',
       teamType: json['team_type'] ?? '',
-      holeNumber: json['hole_number'] ?? 0,
-      // nullable이므로 기본값 없이 처리
+      holeNumber: json['hole_number'],
       groupType: json['group_type'] ?? 0,
-      sumScore: (json['sum_score'] as int?) ?? 0,
-      // nullable이므로 기본값 없이 처리
+      sumScore: json['sum_score'],
       rank: json['rank'] ?? "",
-      handicapRank: json['handicap_rank'] ?? "",
-      handicapScore: (json['sum_score'] as int?) ?? 0,
+      handicapRank: json['handicap_rank'],
+      handicapScore: json['handicap_score'],
       member: json['member'] != null ? Member.fromJson(json['member']) : null,
     );
+    } catch (e, stackTrace) {
+      print("=== Participant.fromJson 에러 발생 ===");
+      print("JSON: $json");
+      print("에러: $e");
+      print("스택 트레이스: $stackTrace");
+      rethrow;
+    }
   }
 
   Map<String, dynamic> toJson() {

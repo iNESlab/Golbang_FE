@@ -10,13 +10,16 @@ import '../../models/create_event.dart';
 import '../../models/create_participant.dart';
 import '../../models/enum/event.dart';
 import '../../models/profile/member_profile.dart';
+import '../../models/responseDTO/GolfClubResponseDTO.dart';
+import '../../models/responseDTO/CourseResopnseDTO.dart';
 import '../../provider/event/event_state_notifier_provider.dart';
 
 class EventsCreate2 extends ConsumerStatefulWidget {
   final String title;
   final Club? selectedClub;
   final LatLng? selectedLocation;
-  final String selectedSite;
+  final GolfClubResponseDTO selectedGolfClub;
+  final CourseResponseDTO selectedCourse;
   final DateTime startDate;
   final DateTime endDate;
   final List<ClubMemberProfile> selectedParticipants;
@@ -26,7 +29,8 @@ class EventsCreate2 extends ConsumerStatefulWidget {
     required this.title,
     required this.selectedClub,
     required this.selectedLocation,
-    required this.selectedSite,
+    required this.selectedGolfClub,
+    required this.selectedCourse,
     required this.startDate,
     required this.endDate,
     required this.selectedParticipants,
@@ -160,7 +164,8 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
     final event = CreateEvent(
       eventTitle: widget.title,
       location: widget.selectedLocation?.toString() ?? "Unknown Location",
-      site: widget.selectedSite,
+      golfClubId: widget.selectedGolfClub.golfClubId,
+      golfCourseId: widget.selectedCourse.golfCourseId,
       startDateTime: widget.startDate,
       endDateTime: widget.endDate,
       repeatType: "NONE",

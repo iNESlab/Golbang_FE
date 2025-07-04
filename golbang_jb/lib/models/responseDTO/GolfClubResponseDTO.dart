@@ -18,16 +18,16 @@ class GolfClubResponseDTO {
       json['address'] ?? 'Unknown',
       (json['longitude'] as num).toDouble(), // ✅ `num` 타입을 `double`로 변환
       (json['latitude'] as num).toDouble(),
-      (json['courses'] as List) // ✅ JSON 배열을 리스트로 변환
-          .map((course) => CourseResponseDTO.fromJson(course)) // ✅ 각 요소를 DTO로 변환
-          .toList(),
+      (json['courses'] as List?)
+          ?.map((course) => CourseResponseDTO.fromJson(course))
+          .toList() ?? [],
     );
   }
   // ✅ 여러 개의 LocationResponseDTO를 변환하는 헬퍼 메서드 추가
   static List<GolfClubResponseDTO> fromJsonList(Map<String, dynamic> json) {
-    return (json['data'] as List<dynamic>) // ✅ 'data' 키를 가져와 변환
-        .map((item) => GolfClubResponseDTO.fromJson(item))
-        .toList();
+    return (json['data'] as List<dynamic>?)
+        ?.map((item) => GolfClubResponseDTO.fromJson(item))
+        .toList() ?? [];
   }
 
 }

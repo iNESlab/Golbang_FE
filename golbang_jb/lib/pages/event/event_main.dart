@@ -156,7 +156,7 @@ class EventPageState extends ConsumerState<EventPage> {
         .where((entry) => entry.key.isAfter(currentTime) || isSameDay(entry.key, currentTime))
         .expand((entry) => entry.value)
         .toList()
-      ..sort((a, b) => a.startDateTime.compareTo(b.endDateTime));
+      ..sort((a, b) => a.startDateTime.compareTo(b.startDateTime)); // 가장 빨리 시작하는 순 (오름차순)
   }
 
   void _showMostRecentEvent() {
