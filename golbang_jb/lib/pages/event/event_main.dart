@@ -421,7 +421,7 @@ class EventPageState extends ConsumerState<EventPage> {
                           Text('시작 시간: ${event.startDateTime.hour}:${event.startDateTime.minute.toString().padLeft(2, '0')}',
                           style: TextStyle(fontSize: calenderFontSize)),
                           Text('인원수: 참석 ${event.participants.length}명', style: TextStyle(fontSize: calenderFontSize)),
-                          Text('장소: ${event.site}', style: TextStyle(fontSize: calenderFontSize)),
+                          Text('장소: ${_getGolfClubName(event)}', style: TextStyle(fontSize: calenderFontSize)),
                           Row(
                             children: [
                               _buildStatusButton(
@@ -702,4 +702,14 @@ class EventPageState extends ConsumerState<EventPage> {
     }
   }
 
+  String _getGolfClubName(Event event) {
+    if (event.golfClub == null ||
+        event.golfClub?.golfClubName == null ||
+        event.golfClub!.golfClubName.isEmpty ||
+        event.golfClub!.golfClubName == "unknown_site") {
+      return event.site;
+    } else {
+      return event.golfClub!.golfClubName;
+    }
+  }
 }

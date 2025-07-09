@@ -14,14 +14,16 @@ import '../../provider/event/event_state_notifier_provider.dart';
 import '../../provider/event/game_in_progress_provider.dart';
 import '../../provider/screen_riverpod.dart';
 import '../../repoisitory/secure_storage.dart';
+import '../../utils/email.dart';
+import '../../utils/excelFile.dart';
 import '../../widgets/common/circular_default_person_icon.dart';
 import '../game/score_card_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart'; // 공유 라이브러리 추가
+import 'package:collection/collection.dart'; // mapIndexed 위해 필요
+
 
 import 'event_update1.dart';
-import 'package:path_provider/path_provider.dart';  // path_provider 패키지 임포트
-import 'package:flutter_email_sender/flutter_email_sender.dart'; // 이메일 전송 패키지 추가
 
 class EventDetailPage extends ConsumerStatefulWidget {
   final Event event;
@@ -32,13 +34,13 @@ class EventDetailPage extends ConsumerStatefulWidget {
 }
 
 class _EventDetailPageState extends ConsumerState<EventDetailPage> {
-  final List<bool> _isExpandedList = [false, false, false, false];
+  final Map<int, bool> _isExpandedMap = {};
   LatLng? _selectedLocation;
   int? _myGroup;
   late Timer _timer;
   late DateTime currentTime; // 현재 시간을 저장할 변수
   late DateTime _startDateTime;
-    late DateTime _endDateTime;
+  late DateTime _endDateTime;
 
   GolfClubResponseDTO? _golfClubDetails;
   List<dynamic> participants = [];
@@ -83,7 +85,6 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
 
   }
 
-
   Future<void> fetchGolfClubDetails() async {
     final storage = ref.watch(secureStorageProvider);
     final eventService = EventService(storage);
@@ -116,129 +117,20 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     }
   }
   Future<void> exportAndSendEmail() async {
-    // 엑셀 파일 생성
-    var excel = xx.Excel.createExcel();
-    var sheet = excel['Sheet1'];
-
-    // 열 제목 설정 (기본은 행 형태로)
-    List<String> columnTitles = [
-      '팀',
-      '참가자',
-      '후반전',
-      '전체 스코어',
-      '핸디캡 스코어',
-      'hole 1',
-      'hole 2',
-      'hole 3',
-      'hole 4',
-      'hole 5',
-      'hole 6',
-      'hole 7',
-      'hole 8',
-      'hole 9',
-      'hole 10',
-      'hole 11',
-      'hole 12',
-      'hole 13',
-      'hole 14',
-      'hole 15',
-      'hole 16',
-      'hole 17',
-      'hole 18'
-    ];
-
-    // 팀 데이터와 참가자별 점수를 병합하여 정렬
-    List<Map<String, dynamic>> sortedParticipants = [
-      if (teamAScores != null)
-        {
-          'team': 'Team A',
-          'participant_name': '-',
-          'front_nine_score': teamAScores?['front_nine_score'],
-          'back_nine_score': teamAScores?['back_nine_score'],
-          'total_score': teamAScores?['total_score'],
-          'handicap_score': '-',
-          'scorecard': List.filled(18, '-'),
-        },
-      if (teamBScores != null)
-        {
-          'team': 'Team B',
-          'participant_name': '-',
-          'front_nine_score': teamBScores?['front_nine_score'],
-          'back_nine_score': teamBScores?['back_nine_score'],
-          'total_score': teamBScores?['total_score'],
-          'handicap_score': '-',
-          'scorecard': List.filled(18, '-'),
-        },
-      ...participants.map((participant) => {
-        'team': participant['team'], // 팀 정보 추가
-        'participant_name': participant['participant_name'],
-        'front_nine_score': participant['front_nine_score'],
-        'back_nine_score': participant['back_nine_score'],
-        'total_score': participant['total_score'],
-        'handicap_score': participant['handicap_score'],
-        'scorecard': participant['scorecard'],
-      }),
-    ];
-
-    // 팀 기준으로 정렬
-    sortedParticipants.sort((a, b) => a['team'].compareTo(b['team']));
-
-    // 데이터를 행 기준으로 변환
-    List<List<dynamic>> rows = [
-      columnTitles, // 제목
-      ...sortedParticipants.map((participant) {
-        return [
-          participant['team'],
-          participant['participant_name'],
-          participant['front_nine_score'],
-          participant['back_nine_score'],
-          participant['total_score'],
-          participant['handicap_score'],
-          ...List.generate(18, (i) => participant['scorecard'].length > i ? participant['scorecard'][i] : '-'),
-        ];
-      }),
-    ];
-
-    // Transpose 적용 (행과 열 교환)
-    List<List<dynamic>> transposedData = List.generate(
-      rows[0].length,
-          (colIndex) => rows.map((row) => row[colIndex]).toList(),
+    String? filePath = await createScoreExcelFile(
+      eventId: widget.event.eventId,
+      participants: participants,
+      teamAScores: teamAScores,
+      teamBScores: teamBScores,
     );
-
-    // 엑셀에 데이터 쓰기
-    for (var row in transposedData) {
-      sheet.appendRow(row);
-    }
-
-    // 외부 저장소 경로 가져오기
-    Directory? directory;
-
-    if (Platform.isAndroid) {
-      // Android: 외부 저장소 경로 가져오기
-      directory = await getExternalStorageDirectory();
-    } else if (Platform.isIOS) {
-      // iOS: 문서 디렉토리 가져오기
-      directory = await getApplicationDocumentsDirectory();
-    }
-
-    if (directory != null) {
-      String filePath = '${directory.path}/event_scores_${widget.event.eventId}.xlsx';
-      File file = File(filePath);
-
-      // 파일 쓰기
-      await file.writeAsBytes(excel.encode()!);
-
-      // 이메일 전송
-      final Email email = Email(
-        body: '제목: ${widget.event.eventTitle}\n 날짜: ${widget.event.startDateTime.toIso8601String().split('T').first}\n 장소: ${widget.event.site}',
-        subject: '${widget.event.club!.name}_${widget.event.startDateTime.toIso8601String().split('T').first}_${widget.event.eventTitle}',
-        recipients: [], // 받을 사람의 이메일 주소
-        attachmentPaths: [filePath], // 첨부할 파일 경로
-        isHTML: false,
-      );
-
+    if (filePath != null){
       try {
-        await FlutterEmailSender.send(email);
+        await sendEmail(
+          body: '제목: ${widget.event.eventTitle}\n 날짜: ${widget.event.startDateTime.toIso8601String().split('T').first}\n 장소: ${widget.event.site}',
+          subject: '${widget.event.club!.name}_${widget.event.startDateTime.toIso8601String().split('T').first}_${widget.event.eventTitle}',
+          recipients: [], // 받을 사람의 이메일 주소
+          attachmentPaths: [filePath], // 첨부할 파일 경로
+        );
       } catch (error) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('이메일 전송 실패: $error')),
@@ -250,6 +142,74 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
       );
     }
   }
+
+
+  Icon _getStatusIcon(String statusType) {
+    switch (statusType) {
+      case 'PARTY':
+        return const Icon(Icons.check_circle, color: Color(0xFF4D08BD));
+      case 'ACCEPT':
+        return const Icon(Icons.check_circle, color: Color(0xFF08BDBD));
+      case 'DENY':
+        return const Icon(Icons.cancel, color: Color(0xFFF21B3F));
+      case 'PENDING':
+        return const Icon(Icons.hourglass_top, color: Colors.grey);
+      default:
+        return const Icon(Icons.help_outline, color: Colors.grey);
+    }
+  }
+
+  Widget _buildGroupPanels(List<Participant> participants) {
+    final grouped = <int, List<Participant>>{};
+    for (var p in participants) {
+      grouped.putIfAbsent(p.groupType, () => []).add(p);
+    }
+
+    final groupKeys = grouped.keys.toList()..sort();
+
+    return ExpansionPanelList(
+      expansionCallback: (int index, bool isExpanded) {
+        final groupKey = groupKeys[index];
+        setState(() {
+          _isExpandedMap[groupKey] = !(_isExpandedMap[groupKey] ?? false);
+        });
+      },
+      children: groupKeys.mapIndexed((index, group) {
+        final groupMembers = grouped[group]!;
+
+        return ExpansionPanel(
+          isExpanded: _isExpandedMap[group] ?? false,
+          canTapOnHeader: true,
+          headerBuilder: (context, isExpanded) {
+            return ListTile(
+              title: Text('$group조 (${groupMembers.length}명)', style: TextStyle(fontSize: fontSizeLarge)),
+            );
+          },
+          body: Column(
+            children: groupMembers.map((p) {
+              final icon = _getStatusIcon(p.statusType);
+              final member = p.member;
+
+              return ListTile(
+                leading: CircleAvatar(
+                  backgroundColor: Colors.transparent,
+                  backgroundImage: (member?.profileImage != null && member!.profileImage.startsWith('https'))
+                      ? NetworkImage(member.profileImage)
+                      : null,
+                  child: (member?.profileImage == null || member!.profileImage.isEmpty)
+                      ? const Icon(Icons.person)
+                      : null,
+                ),
+                title: Text(member?.name ?? 'Unknown', style: TextStyle(fontSize: fontSizeMedium)),
+                trailing: _getStatusIcon(p.statusType),
+              );
+            }).toList(),
+          ),
+        );
+      }).toList(),
+    );
+  }
+
 
   LatLng? _parseLocation(String? location) {
     if (location == null) {
@@ -281,6 +241,16 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   @override
   Widget build(BuildContext context) {
     final screenSize = ref.read(screenSizeProvider);
+    // 골프장 이름(또는 site) 표시를 위한 변수
+    String golfClubName = "";
+    if (widget.event.golfClub == null ||
+        widget.event.golfClub?.golfClubName == null ||
+        widget.event.golfClub!.golfClubName.isEmpty ||
+        widget.event.golfClub!.golfClubName == "unknown_site") {
+      golfClubName = widget.event.site;
+    } else {
+      golfClubName = widget.event.golfClub!.golfClubName;
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.event.eventTitle, style: TextStyle(fontSize: fontSizeLarge),),
@@ -292,13 +262,14 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
         ),
         actions: [
           IconButton(
+            //TODO: 레디스에서 읽는걸로 서버 변경시, 제거
             icon: Icon(Icons.attach_email_rounded, size: appBarIconSize),
             onPressed: () {
               // 게임 진행 중인지 확인
               final bool isGameInProgress = ref.read(
                 gameInProgressProvider.select((map) => map[widget.event.eventId] ?? false),
               );
-              
+
               if (isGameInProgress) {
                 // 게임이 진행 중일 경우 경고 다이얼로그 표시
                 showDialog(
@@ -396,7 +367,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                         ),
 
                         Text(
-                          '장소: ${widget.event.site}',
+                          '장소: $golfClubName',
                           style: TextStyle(fontSize: fontSizeMedium),
                         ),
                         Text(
@@ -437,21 +408,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
               ),
               const SizedBox(height: 20),
               // 토글 가능한 참석 상태별 리스트
-              ExpansionPanelList(
-                elevation: 1,
-                expandedHeaderPadding: const EdgeInsets.all(0),
-                expansionCallback: (int index, bool isExpanded) {
-                  setState(() {
-                    _isExpandedList[index] = !_isExpandedList[index];
-                  });
-                },
-                children: [
-                  _buildParticipantPanel('참석 및 회식', widget.event.participants, 'PARTY', const Color(0xFF4D08BD).withOpacity(0.3), 0),
-                  _buildParticipantPanel('참석', widget.event.participants, 'ACCEPT', const Color(0xFF08BDBD).withOpacity(0.3), 1),
-                  _buildParticipantPanel('거절', widget.event.participants, 'DENY', const Color(0xFFF21B3F).withOpacity(0.3), 2),
-                  _buildParticipantPanel('대기', widget.event.participants, 'PENDING', const Color(0xFF7E7E7E).withOpacity(0.3), 3),
-                ],
-              ),
+              _buildGroupPanels(widget.event.participants),
 
               // 골프장 위치 표시
               if (_selectedLocation != null) ...[
@@ -489,6 +446,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                       style: TextStyle(fontSize: fontSizeLarge, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 10),
+                    // 단일 선택 코스만 표시
                     widget.event.golfCourse != null
                         ? Card(
                             margin: const EdgeInsets.symmetric(vertical: 8),
@@ -501,12 +459,12 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  // 사이트(골프장) 이름 추가
-                                  if (widget.event.site != null && widget.event.site.isNotEmpty)
+                                  // 골프장 이름(또는 site) 표시
+                                  if (golfClubName.isNotEmpty)
                                     Padding(
                                       padding: const EdgeInsets.only(bottom: 4.0),
                                       child: Text(
-                                        widget.event.site,
+                                        golfClubName,
                                         style: TextStyle(
                                           fontSize: fontSizeMedium,
                                           fontWeight: FontWeight.bold,
@@ -530,11 +488,11 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                     children: [
                                       Text(
-                                        "홀 수: "+widget.event.golfCourse!.holes.toString(),
+                                        "홀 수: ${widget.event.golfCourse!.holes}",
                                         style: TextStyle(fontSize: fontSizeMedium, color: Colors.grey[700]),
                                       ),
                                       Text(
-                                        "코스 Par: "+widget.event.golfCourse!.par.toString(),
+                                        "코스 Par: ${widget.event.golfCourse!.par}",
                                         style: TextStyle(fontSize: fontSizeMedium, color: Colors.grey[700]),
                                       ),
                                     ],
@@ -549,33 +507,33 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                                       children: widget.event.golfCourse!.tees.isEmpty
                                           ? []
                                           : List.generate(widget.event.golfCourse!.holes, (index) {
-                                        final holeNumber = index + 1;
-                                        final par = widget.event.golfCourse!.tees[0].holePars[index];
-                                        return Container(
-                                          width: 50,
-                                          height: 50,
-                                          margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white,
-                                            borderRadius: BorderRadius.circular(8),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.grey.withOpacity(0.2),
-                                                spreadRadius: 2,
-                                                blurRadius: 5,
-                                                offset: const Offset(0, 3),
-                                              ),
-                                            ],
-                                            border: Border.all(color: Colors.grey[300]!, width: 1),
-                                          ),
-                                          child: ClipRRect(
-                                            borderRadius: BorderRadius.circular(8),
-                                            child: CustomPaint(
-                                              painter: DiagonalTextPainter(holeNumber: holeNumber, par: par),
-                                            ),
-                                          ),
-                                        );
-                                      }),
+                                              final holeNumber = index + 1;
+                                              final par = widget.event.golfCourse!.tees[0].holePars[index];
+                                              return Container(
+                                                width: 50,
+                                                height: 50,
+                                                margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.grey.withOpacity(0.2),
+                                                      spreadRadius: 2,
+                                                      blurRadius: 5,
+                                                      offset: const Offset(0, 3),
+                                                    ),
+                                                  ],
+                                                  border: Border.all(color: Colors.grey[300]!, width: 1),
+                                                ),
+                                                child: ClipRRect(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  child: CustomPaint(
+                                                    painter: DiagonalTextPainter(holeNumber: holeNumber, par: par),
+                                                  ),
+                                                ),
+                                              );
+                                            }),
                                     ),
                                   )
                                 ],
@@ -772,7 +730,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
           }).toList(),
         ),
       ),
-      isExpanded: _isExpandedList[index],
+      isExpanded: _isExpandedMap[index] ?? false,
       canTapOnHeader: true,
     );
   }

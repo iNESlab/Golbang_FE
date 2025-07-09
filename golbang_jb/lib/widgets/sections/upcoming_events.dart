@@ -103,6 +103,16 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
               final formattedDateTime = DateFormat("yyyy-MM-dd a h:mm", Localizations.localeOf(context).toString())
                   .format(event.startDateTime);
 
+              String golfClubName = "";
+              if (event.golfClub == null ||
+                  event.golfClub?.golfClubName == null ||
+                  event.golfClub!.golfClubName.isEmpty ||
+                  event.golfClub!.golfClubName == "unknown_site") {
+                golfClubName = event.site ?? "";
+              } else {
+                golfClubName = event.golfClub!.golfClubName;
+              }
+
               return GestureDetector(
                 onTap: () async {
                   final result = await Navigator.push(
@@ -168,7 +178,7 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
                           ),
                         ),
                         Text(
-                          '장소: ${event.site}',
+                          '장소: $golfClubName',
                           style: TextStyle(
                             fontSize: eventOtherFS,
                           ),
