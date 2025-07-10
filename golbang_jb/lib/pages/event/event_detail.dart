@@ -241,6 +241,16 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   @override
   Widget build(BuildContext context) {
     final screenSize = ref.read(screenSizeProvider);
+    // 골프장 이름(또는 site) 표시를 위한 변수
+    String golfClubName = "";
+    if (widget.event.golfClub == null ||
+        widget.event.golfClub?.golfClubName == null ||
+        widget.event.golfClub!.golfClubName.isEmpty ||
+        widget.event.golfClub!.golfClubName == "unknown_site") {
+      golfClubName = widget.event.site;
+    } else {
+      golfClubName = widget.event.golfClub!.golfClubName;
+    }
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.event.eventTitle, style: TextStyle(fontSize: fontSizeLarge),),
@@ -357,7 +367,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                         ),
 
                         Text(
-                          '장소: ${widget.event.site}',
+                          '장소: $golfClubName',
                           style: TextStyle(fontSize: fontSizeMedium),
                         ),
                         Text(
@@ -436,98 +446,104 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                       style: TextStyle(fontSize: fontSizeLarge, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(height: 10),
-                    _golfClubDetails != null
-                        ? Column(
-                      children: _golfClubDetails!.courses.map((course) {
-                        return Card(
-                          margin: const EdgeInsets.symmetric(vertical: 8),
-                          elevation: 3,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(16),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    const Icon(Icons.golf_course, color: Colors.green),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      course.golfCourseName,
-                                      style: TextStyle(
-                                        fontSize: fontSizeLarge,
-                                        fontWeight: FontWeight.bold,
+                    // 단일 선택 코스만 표시
+                    widget.event.golfCourse != null
+                        ? Card(
+                            margin: const EdgeInsets.symmetric(vertical: 8),
+                            elevation: 3,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  // 골프장 이름(또는 site) 표시
+                                  if (golfClubName.isNotEmpty)
+                                    Padding(
+                                      padding: const EdgeInsets.only(bottom: 4.0),
+                                      child: Text(
+                                        golfClubName,
+                                        style: TextStyle(
+                                          fontSize: fontSizeMedium,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.teal,
+                                        ),
                                       ),
                                     ),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      "홀 수: ${course.holes}",
-                                      style: TextStyle(fontSize: fontSizeMedium, color: Colors.grey[700]),
-                                    ),
-                                    Text(
-                                      "코스 Par: ${course.par}",
-                                      style: TextStyle(fontSize: fontSizeMedium, color: Colors.grey[700]),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                const Divider(),
-                                const SizedBox(height: 10),
-
-                                // 홀 번호, Par 및 Handicap 테이블 형식 표시
-                                const SizedBox(height: 8),
-                                SingleChildScrollView(
-                                  scrollDirection: Axis.horizontal,
-                                  child: Row(
-                                    children: course.tees.isEmpty
-                                        ? []
-                                        : List.generate(course.holes, (index) {
-                                      final holeNumber = index + 1;
-                                      final par = course.tees[0].holePars[index];
-                                      return Container(
-                                        width: 50,
-                                        height: 50,
-                                        margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(8),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: Colors.grey.withOpacity(0.2),
-                                              spreadRadius: 2,
-                                              blurRadius: 5,
-                                              offset: const Offset(0, 3),
-                                            ),
-                                          ],
-                                          border: Border.all(color: Colors.grey[300]!, width: 1),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        widget.event.golfCourse!.golfCourseName,
+                                        style: TextStyle(
+                                          fontSize: fontSizeLarge,
+                                          fontWeight: FontWeight.bold,
                                         ),
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(8),
-                                          child: CustomPaint(
-                                            painter: DiagonalTextPainter(holeNumber: holeNumber, par: par),
-                                          ),
-                                        ),
-                                      );
-                                    }),
+                                      ),
+                                    ],
                                   ),
-                                )
-                              ],
+                                  const SizedBox(height: 10),
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        "홀 수: ${widget.event.golfCourse!.holes}",
+                                        style: TextStyle(fontSize: fontSizeMedium, color: Colors.grey[700]),
+                                      ),
+                                      Text(
+                                        "코스 Par: ${widget.event.golfCourse!.par}",
+                                        style: TextStyle(fontSize: fontSizeMedium, color: Colors.grey[700]),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+                                  const Divider(),
+                                  const SizedBox(height: 10),
+                                  const SizedBox(height: 8),
+                                  SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: widget.event.golfCourse!.tees.isEmpty
+                                          ? []
+                                          : List.generate(widget.event.golfCourse!.holes, (index) {
+                                              final holeNumber = index + 1;
+                                              final par = widget.event.golfCourse!.tees[0].holePars[index];
+                                              return Container(
+                                                width: 50,
+                                                height: 50,
+                                                margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                                                decoration: BoxDecoration(
+                                                  color: Colors.white,
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  boxShadow: [
+                                                    BoxShadow(
+                                                      color: Colors.grey.withOpacity(0.2),
+                                                      spreadRadius: 2,
+                                                      blurRadius: 5,
+                                                      offset: const Offset(0, 3),
+                                                    ),
+                                                  ],
+                                                  border: Border.all(color: Colors.grey[300]!, width: 1),
+                                                ),
+                                                child: ClipRRect(
+                                                  borderRadius: BorderRadius.circular(8),
+                                                  child: CustomPaint(
+                                                    painter: DiagonalTextPainter(holeNumber: holeNumber, par: par),
+                                                  ),
+                                                ),
+                                              );
+                                            }),
+                                    ),
+                                  )
+                                ],
+                              ),
                             ),
-                          ),
-                        );
-                      }).toList(),
-                    )
+                          )
                         : Text(
-                      "코스 정보가 없습니다.",
-                      style: TextStyle(color: Colors.redAccent, fontSize: fontSizeMedium),
-                    ),
+                            "코스 정보가 없습니다.",
+                            style: TextStyle(color: Colors.redAccent, fontSize: fontSizeMedium),
+                          ),
                   ],
                 )
               ],

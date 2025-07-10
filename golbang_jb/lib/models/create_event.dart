@@ -4,7 +4,8 @@ class CreateEvent {
   final String? memberGroup;
   final String eventTitle;
   final String? location;
-  final String site;
+  final int? golfClubId;
+  final int? golfCourseId;
   final DateTime startDateTime;
   final DateTime endDateTime;
   final String? repeatType;
@@ -16,7 +17,8 @@ class CreateEvent {
     this.memberGroup,
     required this.eventTitle,
     this.location,
-    required this.site,
+    this.golfClubId,
+    this.golfCourseId,
     required this.startDateTime,
     required this.endDateTime,
     this.repeatType,
@@ -31,7 +33,8 @@ class CreateEvent {
       memberGroup: json['memberGroup'] ?? "",
       eventTitle: json['event_title'],
       location: json['location'],
-      site: json['site'],
+      golfClubId: json['golf_club_id'],
+      golfCourseId: json['golf_course_id'],
       startDateTime: DateTime.parse(json['start_date_time']),
       endDateTime: DateTime.parse(json['end_date_time']),
       repeatType: json['repeat_type'] ?? "",
@@ -45,7 +48,8 @@ class CreateEvent {
       'event_id': eventId,
       'event_title': eventTitle,
       'location': location,
-      'site': site,
+      'golf_club_id': golfClubId,
+      'golf_course_id': golfCourseId,
       'start_date_time': startDateTime.toUtc().toIso8601String(),
       'end_date_time': endDateTime.toUtc().toIso8601String(),
       'repeat_type': repeatType,

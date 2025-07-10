@@ -3,6 +3,7 @@
 import 'package:golbang/models/participant.dart';
 import 'package:golbang/models/profile/club_profile.dart';
 import 'package:golbang/models/responseDTO/GolfClubResponseDTO.dart';
+import 'package:golbang/models/responseDTO/CourseResopnseDTO.dart';
 import 'package:golbang/models/update_event_participant.dart';
 
 class Event {
@@ -12,6 +13,8 @@ class Event {
   final String eventTitle;
   final String? location;
   final String site;
+  final int? golfClubId;
+  final int? golfCourseId;
   final DateTime startDateTime;
   final DateTime endDateTime;
   final String repeatType;
@@ -25,6 +28,7 @@ class Event {
   final int myParticipantId;
   final List<Participant> participants;
   final GolfClubResponseDTO? golfClub;
+  final CourseResponseDTO? golfCourse;
 
   Event({
     this.club,
@@ -33,6 +37,8 @@ class Event {
     required this.eventTitle,
     this.location,
     required this.site,
+    this.golfClubId,
+    this.golfCourseId,
     required this.startDateTime,
     required this.endDateTime,
     required this.repeatType,
@@ -46,9 +52,18 @@ class Event {
     required this.myParticipantId,
     required this.participants,
     this.golfClub,
+    this.golfCourse,
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
+    print("=== Event.fromJson 전체 JSON 데이터 ===");
+    json.forEach((key, value) {
+      print("$key: $value");
+    });
+    print("=== JSON 데이터 끝 ===");
+    
+    try {
+      print("=== Event.fromJson 파싱 시작 ===");
 
     return Event(
       club: json['club'] != null ? ClubProfile.fromJson(json['club']) : null,
@@ -57,6 +72,8 @@ class Event {
       eventTitle: json['event_title'] ??  'No Title',
       location: json['location'] ?? 'Unknown Location',
       site: json['site'] ??'unknown site',
+      golfClubId: json['golf_club_id'],
+      golfCourseId: json['golf_course_id'],
       startDateTime: DateTime.parse(json['start_date_time']).toLocal(),
       endDateTime: DateTime.parse(json['end_date_time']).toLocal(),
       repeatType: json['repeat_type'] ?? "",
@@ -68,11 +85,18 @@ class Event {
       denyCount: json['deny_count'],
       pendingCount: json['pending_count'],
       myParticipantId: json['my_participant_id'],
-      participants: (json['participants'] as List)
-          .map((p) => Participant.fromJson(p))
-          .toList(),
+      participants: (json['participants'] as List?)
+          ?.map((p) => Participant.fromJson(p))
+          .toList() ?? [],
       golfClub: json['golf_club'] != null ? GolfClubResponseDTO.fromJson(json['golf_club']) : null,
+      golfCourse: json['golf_course'] != null ? CourseResponseDTO.fromJson(json['golf_course']) : null,
     );
+    } catch (e, stackTrace) {
+      print("=== Event.fromJson 에러 발생 ===");
+      print("에러: $e");
+      print("스택 트레이스: $stackTrace");
+      rethrow;
+    }
   }
 
   Map<String, dynamic> toJson() {

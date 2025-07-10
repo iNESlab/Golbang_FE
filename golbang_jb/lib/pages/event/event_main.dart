@@ -156,7 +156,7 @@ class EventPageState extends ConsumerState<EventPage> {
         .where((entry) => entry.key.isAfter(currentTime) || isSameDay(entry.key, currentTime))
         .expand((entry) => entry.value)
         .toList()
-      ..sort((a, b) => a.startDateTime.compareTo(b.endDateTime));
+      ..sort((a, b) => a.startDateTime.compareTo(b.startDateTime)); // 가장 빨리 시작하는 순 (오름차순)
   }
 
   void _showMostRecentEvent() {
@@ -421,7 +421,7 @@ class EventPageState extends ConsumerState<EventPage> {
                           Text('시작 시간: ${event.startDateTime.hour}:${event.startDateTime.minute.toString().padLeft(2, '0')}',
                           style: TextStyle(fontSize: calenderFontSize)),
                           Text('인원수: 참석 ${event.participants.length}명', style: TextStyle(fontSize: calenderFontSize)),
-                          Text('장소: ${event.site}', style: TextStyle(fontSize: calenderFontSize)),
+                          Text('장소: ${_getGolfClubName(event)}', style: TextStyle(fontSize: calenderFontSize)),
                           Row(
                             children: [
                               _buildStatusButton(
@@ -702,4 +702,14 @@ class EventPageState extends ConsumerState<EventPage> {
     }
   }
 
+  String _getGolfClubName(Event event) {
+    if (event.golfClub == null ||
+        event.golfClub?.golfClubName == null ||
+        event.golfClub!.golfClubName.isEmpty ||
+        event.golfClub!.golfClubName == "unknown_site") {
+      return event.site;
+    } else {
+      return event.golfClub!.golfClubName;
+    }
+  }
 }
