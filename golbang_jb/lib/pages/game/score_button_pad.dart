@@ -117,7 +117,12 @@ class _ScoreButtonPadState extends State<ScoreButtonPadStateful> {
                   SizedBox(width: widget.width * 0.02),
                   // 비우기 버튼
                   ElevatedButton(
-                    onPressed: () => widget.onScoreChanged(null),
+                    onPressed: () {
+                      setState(() {
+                        _tempScore = null; // 내부 상태도 초기화
+                      });
+                      widget.onScoreChanged(null);
+                    },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.grey[700],
                       padding: EdgeInsets.symmetric(
