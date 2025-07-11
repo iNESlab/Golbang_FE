@@ -40,7 +40,7 @@ class ParticipantService {
     required int holeNumber,
     required int? score,
   }) async {
-    return await safeDioCall(() async {
+    return await safeDioCall<ScoreCard?>(() async {
       const url = '/api/v1/participants/group/stroke/';
 
       final data = {
@@ -52,8 +52,11 @@ class ParticipantService {
 
       final response = await privateClient.dio.post(url, data: data);
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 202) {
         final jsonData = response.data['data'];
+        if (jsonData == null) {
+          return null;
+        }
         return ScoreCard.fromJson(jsonData);
       } else {
         final errorMsg = response.data['message'] ??
