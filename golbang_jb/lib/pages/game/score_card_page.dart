@@ -256,6 +256,35 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
     required int holeNumber,
   }) async {
     try {
+      // 비우기(지우기) 기능: _tempScore가 null이면 빈 스코어로 저장
+      if (_tempScore == null) {
+        final result = await _participantService.postStrokeScore(
+          eventId: eventId,
+          participantId: participantId,
+          holeNumber: holeNumber,
+          score: null, // 빈 값 전송
+        );
+
+        // 서버에서 ScoreCard 응답이 올 수 있으므로 처리
+        if (result != null) {
+          _processSingleScoreCardEntry(result, holeNumber, null);
+        }
+
+        setState(() {
+          _scorecard[_selectedParticipantId]![_selectedHole! - 1] =
+              HoleScore(holeNumber: _selectedHole!, score: null);
+
+          // 컨트롤러 텍스트를 빈값으로 설정하여 하이픈 표시
+          _controllers[_selectedParticipantId]?[_selectedHole! - 1].text = "";
+
+          _isEditing = false;
+          _selectedHole = null;
+          _selectedParticipantId = null;
+          _tempScore = null;
+        });
+        return; // 비우기 처리 후 종료
+      }
+
       final result = await _participantService.postStrokeScore(
         eventId: eventId,
         participantId: participantId,
@@ -538,7 +567,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
               log('tempScore변환전: $_tempScore');
 
                 setState(() {
-                  _tempScore = score!;
+                  _tempScore = score; // null 허용
                 });
               log('tempScore변환후: $_tempScore');
             },

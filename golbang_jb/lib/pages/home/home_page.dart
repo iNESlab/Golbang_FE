@@ -235,6 +235,14 @@ class _HomeContentState extends ConsumerState<HomeContent> {
               gamesPlayed: 0,
             );
 
+            // UpcomingEvents 위젯의 필터링 로직과 동일하게 개수 계산
+            final now = DateTime.now();
+            final today = DateTime(now.year, now.month, now.day);
+            final upcomingEventsCount = events.where((event) {
+              final eventDay = DateTime(event.startDateTime.year, event.startDateTime.month, event.startDateTime.day);
+              return !eventDay.isBefore(today); // 오늘 이전은 제외, 오늘 포함
+            }).length;
+
             return Column(
               children: <Widget>[
                 SizedBox(
@@ -250,9 +258,9 @@ class _HomeContentState extends ConsumerState<HomeContent> {
                 Expanded(
                   flex: 5,
                   child: SectionWithScroll(
-                    title: '다가오는 일정 ${events.length}',
+                    title: '다가오는 일정 $upcomingEventsCount',
                     child: UpcomingEvents(
-                        events: events,
+                        events: events, // 필터링하지 않은 전체 리스트 전달
                         date: date,
                         onEventUpdated: () async {
                           await _refreshData(); // 데이터 다시 로드

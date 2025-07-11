@@ -171,7 +171,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
       body: _players.isEmpty
           ? Center(
         child: Text(
-          '스코어를 기록한 참가자가 없습니다.',
+          '본인의 스코어를 입력해야 전체 랭킹이 보입니다.',
           style: TextStyle(
               color: Colors.white, fontSize: fontSizeLarge), // 반응형 폰트 크기
         ),
