@@ -89,6 +89,7 @@ class UpdateEventParticipant {
       handicapScore: handicapScore,
       member: Member(
         memberId: memberId,
+        email: '',
         name: name,
         role: role,
         profileImage: profileImage,

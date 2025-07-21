@@ -1,5 +1,6 @@
 // event.dart
 
+import 'dart:developer';
 import 'package:golbang/models/participant.dart';
 import 'package:golbang/models/profile/club_profile.dart';
 import 'package:golbang/models/responseDTO/GolfClubResponseDTO.dart';
@@ -56,14 +57,14 @@ class Event {
   });
 
   factory Event.fromJson(Map<String, dynamic> json) {
-    print("=== Event.fromJson 전체 JSON 데이터 ===");
+    log("=== Event.fromJson 전체 JSON 데이터 ===");
     json.forEach((key, value) {
-      print("$key: $value");
+      log("$key: $value");
     });
-    print("=== JSON 데이터 끝 ===");
+    log("=== JSON 데이터 끝 ===");
     
     try {
-      print("=== Event.fromJson 파싱 시작 ===");
+      log("=== Event.fromJson 파싱 시작 ===");
 
     return Event(
       club: json['club'] != null ? ClubProfile.fromJson(json['club']) : null,
@@ -92,9 +93,9 @@ class Event {
       golfCourse: json['golf_course'] != null ? CourseResponseDTO.fromJson(json['golf_course']) : null,
     );
     } catch (e, stackTrace) {
-      print("=== Event.fromJson 에러 발생 ===");
-      print("에러: $e");
-      print("스택 트레이스: $stackTrace");
+      log("=== Event.fromJson 에러 발생 ===");
+      log("에러: $e");
+      log("스택 트레이스: $stackTrace");
       rethrow;
     }
   }

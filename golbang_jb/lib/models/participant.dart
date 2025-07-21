@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'member.dart';
 
 class Participant {
@@ -61,10 +62,10 @@ class Participant {
       member: json['member'] != null ? Member.fromJson(json['member']) : null,
     );
     } catch (e, stackTrace) {
-      print("=== Participant.fromJson 에러 발생 ===");
-      print("JSON: $json");
-      print("에러: $e");
-      print("스택 트레이스: $stackTrace");
+      log("=== Participant.fromJson 에러 발생 ===");
+      log("JSON: $json");
+      log("에러: $e");
+      log("스택 트레이스: $stackTrace");
       rethrow;
     }
   }
