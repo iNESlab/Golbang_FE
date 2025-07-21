@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:golbang/models/event.dart';
@@ -6,9 +7,11 @@ import 'package:golbang/services/event_service.dart';
 import 'package:excel/excel.dart' as xx; // excel 패키지 추가
 import 'package:path_provider/path_provider.dart';  // path_provider 패키지 임포트
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_email_sender/flutter_email_sender.dart'; // 이메일 전송 패키지 추가
 import '../../repoisitory/secure_storage.dart'; // Riverpod 관련 패키지
-import 'package:flutter/services.dart'; // 화면 방향 변경을 위한 패키지
+import 'package:flutter/services.dart';
+
+import '../../utils/email.dart';
+import '../../widgets/sections/show_email_recipient_dialog.dart'; // 화면 방향 변경을 위한 패키지
 
 
 class EventResultFullScoreCard extends ConsumerStatefulWidget {
@@ -51,13 +54,13 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
           eventDetail = tempEventdetail;
         });
       } else {
-        print('Failed to load scores: response is null');
+        log('Failed to load scores: response is null');
       }
     } catch (error) {
-      print('Error fetching scores: $error');
+      log('Error fetching scores: $error');
     }
   }
-  Future<void> exportAndSendEmail() async {
+  Future<void> exportAndSendEmail(List<String> recipients) async {
     // 엑셀 파일 생성
     var excel = xx.Excel.createExcel();
     var sheet = excel['Sheet1'];
@@ -171,24 +174,13 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
       await file.writeAsBytes(excel.encode()!);
 
       // 이메일 전송
-      final Email email = Email(
+      await sendEmail(
         body: '제목: ${eventDetail?.eventTitle}\n 날짜: ${eventDetail?.startDateTime.toIso8601String().split('T').first}\n 장소: ${eventDetail?.site}',
         subject: '${eventDetail?.club!.name}_${eventDetail?.startDateTime.toIso8601String().split('T').first}_${eventDetail?.eventTitle}',
-        recipients: [], // 받을 사람의 이메일 주소
+        recipients: recipients,
         attachmentPaths: [filePath], // 첨부할 파일 경로
-        isHTML: false,
       );
 
-      try {
-        await FlutterEmailSender.send(email);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('이메일이 전송되었습니다.')),
-        );
-      } catch (error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('이메일 전송 실패: $error')),
-        );
-      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('저장 경로를 찾을 수 없습니다.')),
@@ -214,7 +206,16 @@ class _EventResultFullScoreCardState extends ConsumerState<EventResultFullScoreC
         actions: [
           IconButton(
             icon: const Icon(Icons.attach_email_rounded),
-            onPressed: exportAndSendEmail,
+            onPressed: ()async{
+              final List<String> selectedRecipients = await showEmailRecipientDialog(context, eventDetail!.participants);
+              if (selectedRecipients.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('이메일 받을 참가자를 선택해주세요.')),
+                );
+                return;
+              }
+              exportAndSendEmail(selectedRecipients);
+            },
           ),
         ],
       ),

@@ -1,7 +1,5 @@
 import 'dart:developer';
 import 'dart:async';
-import 'dart:io';
-import 'package:excel/excel.dart' as xx;
 import 'package:flutter/material.dart';
 import 'package:golbang/services/event_service.dart';
 import 'package:golbang/utils/reponsive_utils.dart';
@@ -9,14 +7,13 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:golbang/pages/event/event_result.dart';
 import '../../models/event.dart';
 import '../../models/participant.dart';
-import '../../models/responseDTO/GolfClubResponseDTO.dart';
 import '../../provider/event/event_state_notifier_provider.dart';
 import '../../provider/event/game_in_progress_provider.dart';
 import '../../provider/screen_riverpod.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../utils/email.dart';
 import '../../utils/excelFile.dart';
-import '../../widgets/common/circular_default_person_icon.dart';
+import '../../widgets/sections/show_email_recipient_dialog.dart';
 import '../game/score_card_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart'; // 공유 라이브러리 추가
@@ -42,7 +39,6 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
   late DateTime _startDateTime;
   late DateTime _endDateTime;
 
-  GolfClubResponseDTO? _golfClubDetails;
   List<dynamic> participants = [];
   Map<String, dynamic>? teamAScores;
   Map<String, dynamic>? teamBScores;
@@ -79,21 +75,9 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
       });
     });
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      fetchGolfClubDetails();
       fetchScores();
     });
 
-  }
-
-  Future<void> fetchGolfClubDetails() async {
-    final storage = ref.watch(secureStorageProvider);
-    final eventService = EventService(storage);
-    final response = await eventService.getGolfCourseDetails(golfClubId: widget.event.golfClub!.golfClubId);
-    if (mounted) {
-      setState(() {
-        _golfClubDetails = response;
-      });
-    }
   }
 
   Future<void> fetchScores() async {
@@ -116,7 +100,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
       log('Error fetching scores: $error');
     }
   }
-  Future<void> exportAndSendEmail() async {
+  Future<void> exportAndSendEmail(List<String> recipients) async {
     String? filePath = await createScoreExcelFile(
       eventId: widget.event.eventId,
       participants: participants,
@@ -128,7 +112,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
         await sendEmail(
           body: '제목: ${widget.event.eventTitle}\n 날짜: ${widget.event.startDateTime.toIso8601String().split('T').first}\n 장소: ${widget.event.site}',
           subject: '${widget.event.club!.name}_${widget.event.startDateTime.toIso8601String().split('T').first}_${widget.event.eventTitle}',
-          recipients: [], // 받을 사람의 이메일 주소
+          recipients: recipients,
           attachmentPaths: [filePath], // 첨부할 파일 경로
         );
       } catch (error) {
@@ -264,11 +248,18 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
           IconButton(
             //TODO: 레디스에서 읽는걸로 서버 변경시, 제거
             icon: Icon(Icons.attach_email_rounded, size: appBarIconSize),
-            onPressed: () {
+            onPressed: () async {
               // 게임 진행 중인지 확인
               final bool isGameInProgress = ref.read(
                 gameInProgressProvider.select((map) => map[widget.event.eventId] ?? false),
               );
+              final List<String> selectedRecipients = await showEmailRecipientDialog(context, widget.event.participants);
+              if (selectedRecipients.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('이메일 받을 참가자를 선택해주세요.')),
+                );
+                return;
+              }
 
               if (isGameInProgress) {
                 // 게임이 진행 중일 경우 경고 다이얼로그 표시
@@ -287,7 +278,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                       TextButton(
                         onPressed: () {
                           Navigator.of(context).pop(); // 다이얼로그 닫기
-                          exportAndSendEmail(); // 이메일 내보내기 실행
+                          exportAndSendEmail(selectedRecipients); // 이메일 내보내기 실행
                         },
                         child: const Text('추출'),
                       ),
@@ -296,7 +287,7 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
                 );
               } else {
                 // 게임이 진행 중이 아닐 경우 바로 실행
-                exportAndSendEmail();
+                exportAndSendEmail(selectedRecipients);
               }
             },
           ),
@@ -646,93 +637,6 @@ class _EventDetailPageState extends ConsumerState<EventDetailPage> {
     } else {
       return '곧 시작';
     }
-  }
-
-  ExpansionPanel _buildParticipantPanel(String title, List<Participant> participants, String statusType, Color backgroundColor, int index) {
-    final filteredParticipants = participants.where((p) => p.statusType == statusType).toList();
-    final count = filteredParticipants.length;
-
-    return ExpansionPanel(
-      headerBuilder: (BuildContext context, bool isExpanded) {
-        return Container(
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(10),
-          ),
-          padding: const EdgeInsets.all(10),
-          child: Text(
-            '$title ($count):',
-            style: TextStyle(fontSize: fontSizeLarge, fontWeight: FontWeight.bold),
-          ),
-        );
-      },
-      body: Container(
-        decoration: BoxDecoration(
-          color: backgroundColor,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        padding: const EdgeInsets.all(10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: filteredParticipants.map((participant) {
-            final member = participant.member;
-            final isSameGroup = participant.groupType == _myGroup;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 5.0),
-              child: Row(
-                children: [
-                  CircleAvatar(
-                    radius: 15,
-                    backgroundColor: Colors.transparent,
-                    child: (member?.profileImage != null && member!.profileImage.isNotEmpty)
-                        ? (member.profileImage.startsWith('https')
-                        ? ClipOval(
-                      child: Image.network(
-                        member.profileImage,
-                        width: 50,
-                        height: 50,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const CircularIcon(containerSize: 40.0);
-                        },
-                      ),
-                    )
-                        : (member.profileImage.startsWith('file://')
-                        ? ClipOval(
-                      child: Image.file(
-                        File(member.profileImage.replaceFirst('file://', '')),
-                        width: 50,
-                        height: 50,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const CircularIcon(containerSize: 40.0);
-                        },
-                      ),
-                    )
-                        : const CircularIcon(containerSize: 40.0)))
-                        : const CircularIcon(containerSize: 40.0),
-                  ),
-                  const SizedBox(width: 10),
-                  Container(
-                    decoration: isSameGroup
-                        ? BoxDecoration(
-                      color: Colors.yellow.withOpacity(0.5),
-                      borderRadius: BorderRadius.circular(5),
-                    )
-                        : null,
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Text(
-                      member != null ? member.name : 'Unknown',
-                      style: TextStyle(fontSize: fontSizeMedium),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
-        ),
-      ),
-      isExpanded: _isExpandedMap[index] ?? false,
-      canTapOnHeader: true,
-    );
   }
 
   void _editEvent() {
