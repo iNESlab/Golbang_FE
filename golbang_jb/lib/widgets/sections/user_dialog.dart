@@ -82,7 +82,7 @@ class _MemberDialogState extends ConsumerState<UserDialog> {
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
-                  hintText: '이름 또는 닉네임으로 검색',
+                  hintText: '닉네임 혹은 ID로 검색',
                   prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
@@ -114,11 +114,13 @@ class _MemberDialogState extends ConsumerState<UserDialog> {
                     final filteredUsers = widget.isAdminMode
                         ? widget.selectedMembers.where((user) {
                       return searchQuery.isEmpty ||
-                          user.name.toLowerCase().contains(searchQuery.toLowerCase());
+                          (user.userId?.toLowerCase().contains(searchQuery.toLowerCase()) ?? false) ||
+                          (user.name.toLowerCase().contains(searchQuery.toLowerCase()));
                     }).toList()
                         : users.where((user) {
                       return searchQuery.isNotEmpty &&
-                          user.name.toLowerCase().contains(searchQuery.toLowerCase());
+                          ((user.userId?.toLowerCase().contains(searchQuery.toLowerCase()) ?? false) ||
+                              (user.name.toLowerCase().contains(searchQuery.toLowerCase())));
                     }).toList();
 
                     // 검색 쿼리가 없고 filteredUsers도 없는 경우
@@ -150,6 +152,7 @@ class _MemberDialogState extends ConsumerState<UserDialog> {
                                 : null,
                           ),
                           title: Text(user.name),
+                          subtitle: Text(user.userId!),
                           trailing: Checkbox(
                             value: checkBoxStates[user.accountId] ?? false, // id로 상태 관리
                             onChanged: (bool? value) {

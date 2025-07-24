@@ -94,6 +94,7 @@ class UpdateEventParticipant {
         role: role,
         profileImage: profileImage,
         accountId: id,
+        userId: ''
       ),
     );
   }

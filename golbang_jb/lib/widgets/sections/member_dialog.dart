@@ -6,7 +6,8 @@ class MemberDialog extends StatefulWidget {
   final List<Member> selectedMembers;
   final bool isAdminMode;
 
-  const MemberDialog({super.key,
+  const MemberDialog({
+    super.key,
     required this.members,
     required this.isAdminMode,
     this.selectedMembers = const [],
@@ -24,8 +25,7 @@ class _MemberDialogState extends State<MemberDialog> {
   @override
   void initState() {
     super.initState();
-    tempSelectedMembers = widget.selectedMembers;
-    // 각 멤버의 체크 상태를 초기화
+    tempSelectedMembers = List.from(widget.selectedMembers);
     for (var member in tempSelectedMembers) {
       checkBoxStates[member.memberId] = true;
     }
@@ -33,6 +33,14 @@ class _MemberDialogState extends State<MemberDialog> {
 
   @override
   Widget build(BuildContext context) {
+    // 🔍 실시간 필터링된 멤버 목록
+    final filteredMembers = widget.members.where((member) {
+      final query = searchQuery.toLowerCase();
+      final nameMatch = member.name.toLowerCase().contains(query);
+      final idMatch = member.userId.toLowerCase().contains(query);
+      return query.isEmpty || nameMatch || idMatch;
+    }).toList();
+
     return AlertDialog(
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
@@ -63,8 +71,8 @@ class _MemberDialogState extends State<MemberDialog> {
         ),
       ),
       content: Container(
-        color: Colors.white,
         width: MediaQuery.of(context).size.width * 0.9,
+        color: Colors.white,
         child: Column(
           children: [
             Padding(
@@ -73,7 +81,7 @@ class _MemberDialogState extends State<MemberDialog> {
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
-                  hintText: '이름 또는 닉네임으로 검색',
+                  hintText: '이름 또는 ID로 검색',
                   prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
@@ -88,18 +96,14 @@ class _MemberDialogState extends State<MemberDialog> {
               ),
             ),
             Expanded(
-              child: widget.members.isEmpty
-                  ? Center(
-                child: Text(widget.isAdminMode
-                    ? '추가된 멤버가 없습니다. 먼저 멤버를 추가하세요.'
-                    : '검색 결과가 없습니다.'),
-              )
+              child: filteredMembers.isEmpty
+                  ? const Center(child: Text('검색 결과가 없습니다.'))
                   : ListView.builder(
-                shrinkWrap: true,
-                itemCount: widget.members.length,
-                itemBuilder: (BuildContext context, int index) {
-                  final member = widget.members[index];
+                itemCount: filteredMembers.length,
+                itemBuilder: (context, index) {
+                  final member = filteredMembers[index];
                   final profileImage = member.profileImage;
+                  final isChecked = checkBoxStates[member.memberId] ?? false;
 
                   return ListTile(
                     leading: CircleAvatar(
@@ -112,8 +116,9 @@ class _MemberDialogState extends State<MemberDialog> {
                           : null,
                     ),
                     title: Text(member.name),
+                    subtitle: Text(member.userId),
                     trailing: Checkbox(
-                      value: checkBoxStates[member.memberId] ?? false,
+                      value: isChecked,
                       onChanged: (bool? value) {
                         setState(() {
                           checkBoxStates[member.memberId] = value ?? false;
@@ -153,5 +158,4 @@ class _MemberDialogState extends State<MemberDialog> {
       ],
     );
   }
-
 }

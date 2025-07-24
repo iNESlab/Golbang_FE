@@ -6,6 +6,7 @@ class Member {
   final String profileImage; // profileImage
   final String? description;
   final int accountId;
+  final String userId;
 
   Member({
     required this.memberId,
@@ -15,6 +16,7 @@ class Member {
     required this.profileImage,
     this.description,
     required this.accountId,
+    required this.userId
   });
 
   factory Member.fromJson(Map<String, dynamic> json) {
@@ -25,7 +27,8 @@ class Member {
       role: json['role'] ?? '',
       profileImage: json['user']['profile_image'] ?? '', // profile_image 추가
       description: json['description'],
-      accountId: json['user']['id']
+      accountId: json['user']['id'],
+      userId: json['user']['userId'] ?? 'UnknownId',
     );
   }
 

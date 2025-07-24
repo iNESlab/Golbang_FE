@@ -12,7 +12,7 @@ Future<List<String>> showEmailRecipientDialog(BuildContext context, List<Partici
           // 이메일 + 이름 필터링
           final emailEntries = participants
               .map((p) => {
-            'email': p.member?.email?.trim(),
+            'email': p.member?.email.trim(),
             'name': p.member?.name ?? "이름 없음",
           })
               .where((entry) => entry['email'] != null && entry['email']!.isNotEmpty)
