@@ -83,22 +83,24 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20.0)),
         ),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+        child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Container(),
-            const Text(
-              '참여자 추가',
-              style: TextStyle(color: Colors.green, fontSize: 25),
-            ),
-            TextButton(
-              onPressed: _toggleSelectAll,
-              child: Text(
-                _isAllSelected() ? '전체 해제' : '전체 선택',
-                style: const TextStyle(color: Colors.teal, fontWeight: FontWeight.bold),
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                '참여자 추가',
+                style: TextStyle(color: Colors.green, fontSize: 25),
               ),
-            ),
-          ],
+              TextButton(
+                onPressed: _toggleSelectAll,
+                child: Text(
+                  _isAllSelected() ? '전체 해제' : '전체 선택',
+                  style: const TextStyle(color: Colors.teal, fontWeight: FontWeight.bold),
+                ),
+              ),
+            ],
+          )
         ),
       ),
       content: isLoading

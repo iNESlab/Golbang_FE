@@ -25,23 +25,46 @@ class _UserDialogState extends ConsumerState<UserDialog> {
   late List<GetAllUserProfile> tempSelectedUsers;
   Map<int, bool> checkBoxStates = {};
   String searchQuery = '';
+  List<GetAllUserProfile> users = [];
+  bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    // 기존 멤버와 새 멤버를 합쳐 초기화
-    tempSelectedUsers = List.from(widget.selectedUsers)
-      ..addAll(widget.newSelectedUsers);
-    // 체크 상태 초기화
+    tempSelectedUsers = List.from(widget.selectedUsers)..addAll(widget.newSelectedUsers);
     for (var user in tempSelectedUsers) {
       checkBoxStates[user.accountId] = true;
+    }
+    loadUsers(); // 🔁 최초 한 번만 불러오기
+  }
+
+  Future<void> loadUsers() async {
+    final storage = ref.read(secureStorageProvider);
+    final userService = UserService(storage);
+
+    try {
+      final fetchedUsers = await userService.getUserProfileList();
+      setState(() {
+        users = fetchedUsers;
+        isLoading = false;
+      });
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final storage = ref.watch(secureStorageProvider);
-    final UserService userService = UserService(storage);
+    final filteredUsers = searchQuery.isEmpty
+        ? <GetAllUserProfile>[]
+        : users.where((user) {
+      final query = searchQuery.toLowerCase();
+      final idMatch = user.userId?.toLowerCase().contains(query) ?? false;
+      final nameMatch = user.name.toLowerCase().contains(query);
+      return idMatch || nameMatch;
+    }).toList();
 
     return AlertDialog(
       backgroundColor: Colors.white,
@@ -49,133 +72,22 @@ class _UserDialogState extends ConsumerState<UserDialog> {
         borderRadius: BorderRadius.all(Radius.circular(20.0)),
       ),
       titlePadding: EdgeInsets.zero,
-      title: Container(
-        decoration: BoxDecoration(
-          color: Colors.grey[200],
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20.0)),
-        ),
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Container(),
-            Text(
-              widget.isAdminMode ? '관리자 추가' : '멤버 추가',
-              style: const TextStyle(color: Colors.green, fontSize: 25),
-            ),
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () {
-                Navigator.of(context).pop(tempSelectedUsers);
-              },
-            ),
-          ],
-        ),
-      ),
+      title: _buildTitle(context),
       content: Container(
-        color: Colors.white,
         width: MediaQuery.of(context).size.width * 0.9,
+        color: Colors.white,
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-              child: TextField(
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintText: '이름 또는 닉네임으로 검색',
-                  prefixIcon: const Icon(Icons.search),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    searchQuery = value;
-                  });
-                },
-              ),
-            ),
+            _buildSearchBar(),
             Expanded(
-              child: FutureBuilder<List<GetAllUserProfile>>(
-                future: userService.getUserProfileList(),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No users found.'));
-                  } else {
-                    final users = snapshot.data!;
-                    // 검색어가 비어 있으면 아무것도 표시하지 않음
-                    final filteredUsers = searchQuery.isEmpty
-                        ? <GetAllUserProfile>[] // 검색어가 없으면 빈 리스트
-                        : users.where((user) {
-                      return user.name
-                          .toLowerCase()
-                          .contains(searchQuery.toLowerCase());
-                    }).toList();
-
-                    if (filteredUsers.isEmpty && searchQuery.isNotEmpty) {
-                      return const Center(child: Text('검색 결과가 없습니다.'));
-                    } else if (searchQuery.isEmpty) {
-                      return const Center(child: Text('검색어를 입력하세요.'));
-                    }
-
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: filteredUsers.length,
-                      itemBuilder: (BuildContext context, int index) {
-                        final user = filteredUsers[index];
-                        final profileImage = user.profileImage;
-                        final isOldMember =
-                        widget.selectedUsers.any((e) => e.accountId == user.accountId);
-
-                        return ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.grey[200],
-                            backgroundImage: profileImage.isNotEmpty &&
-                                profileImage.startsWith('http')
-                                ? NetworkImage(profileImage)
-                                : null,
-                            child: profileImage.isEmpty ||
-                                !profileImage.startsWith('http')
-                                ? const Icon(Icons.person, color: Colors.grey)
-                                : null,
-                          ),
-                          title: Text(user.name),
-                          trailing: Checkbox(
-                            value: checkBoxStates[user.accountId] ?? false,
-                            onChanged: isOldMember
-                                ? null // 기존 멤버는 체크 해제 불가능
-                                : (bool? value) {
-                              setState(() {
-                                checkBoxStates[user.accountId] = value ?? false;
-                                if (value == true) {
-                                  if (!tempSelectedUsers.any(
-                                          (e) => e.accountId == user.accountId)) {
-                                    tempSelectedUsers.add(user);
-                                  }
-                                } else {
-                                  tempSelectedUsers.removeWhere(
-                                          (e) => e.accountId == user.accountId);
-                                }
-                              });
-                            },
-                          ),
-                        );
-                      },
-                    );
-                  }
-                },
-              ),
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : _buildUserList(filteredUsers),
             ),
           ],
         ),
       ),
-      actions: <Widget>[
+      actions: [
         Center(
           child: ElevatedButton(
             onPressed: () {
@@ -190,6 +102,107 @@ class _UserDialogState extends ConsumerState<UserDialog> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildTitle(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20.0)),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+      child: Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+      child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              widget.isAdminMode ? '관리자 추가' : '멤버 추가',
+              style: const TextStyle(color: Colors.green, fontSize: 25),
+            ),
+            IconButton(
+              icon: const Icon(Icons.close),
+              onPressed: () {
+                Navigator.of(context).pop(tempSelectedUsers);
+              },
+            ),
+          ],
+        )
+      ),
+    );
+  }
+
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+      child: TextField(
+        decoration: InputDecoration(
+          filled: true,
+          fillColor: Colors.white,
+          hintText: '이름 또는 ID로 검색',
+          prefixIcon: const Icon(Icons.search),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8.0),
+            borderSide: BorderSide.none,
+          ),
+        ),
+        onChanged: (value) {
+          setState(() {
+            searchQuery = value;
+          });
+        },
+      ),
+    );
+  }
+
+  Widget _buildUserList(List<GetAllUserProfile> filteredUsers) {
+    if (searchQuery.isEmpty) {
+      return const Center(child: Text('검색어를 입력하세요.'));
+    }
+
+    if (filteredUsers.isEmpty) {
+      return const Center(child: Text('검색 결과가 없습니다.'));
+    }
+
+    return ListView.builder(
+      itemCount: filteredUsers.length,
+      itemBuilder: (context, index) {
+        final user = filteredUsers[index];
+        final profileImage = user.profileImage;
+        final isOldMember = widget.selectedUsers.any((e) => e.accountId == user.accountId);
+
+        return ListTile(
+          leading: CircleAvatar(
+            backgroundColor: Colors.grey[200],
+            backgroundImage: profileImage.isNotEmpty && profileImage.startsWith('http')
+                ? NetworkImage(profileImage)
+                : null,
+            child: profileImage.isEmpty || !profileImage.startsWith('http')
+                ? const Icon(Icons.person, color: Colors.grey)
+                : null,
+          ),
+          title: Text(user.name),
+          subtitle: Text(user.userId ?? 'UnknownId'),
+          trailing: Checkbox(
+            value: checkBoxStates[user.accountId] ?? false,
+            onChanged: isOldMember
+                ? null
+                : (bool? value) {
+              setState(() {
+                checkBoxStates[user.accountId] = value ?? false;
+                if (value == true) {
+                  if (!tempSelectedUsers.any((e) => e.accountId == user.accountId)) {
+                    tempSelectedUsers.add(user);
+                  }
+                } else {
+                  tempSelectedUsers.removeWhere((e) => e.accountId == user.accountId);
+                }
+              });
+            },
+          ),
+        );
+      },
     );
   }
 }

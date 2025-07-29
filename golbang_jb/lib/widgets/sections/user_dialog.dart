@@ -53,21 +53,23 @@ class _MemberDialogState extends ConsumerState<UserDialog> {
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20.0)),
         ),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Container(),
-            Text(
-              widget.isAdminMode ? '관리자 추가' : '멤버 추가',
-              style: const TextStyle(color: Colors.green, fontSize: 25),
-            ),
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () {
-                Navigator.of(context).pop(tempSelectedMembers); // 선택된 멤버 반환
-              },
-            ),
-          ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                widget.isAdminMode ? '관리자 추가' : '멤버 추가',
+                style: const TextStyle(color: Colors.green, fontSize: 25),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  Navigator.of(context).pop(tempSelectedMembers); // 선택된 멤버 반환
+                },
+              ),
+            ],
+          )
         ),
       ),
       content: Container(
@@ -82,7 +84,7 @@ class _MemberDialogState extends ConsumerState<UserDialog> {
                 decoration: InputDecoration(
                   filled: true,
                   fillColor: Colors.white,
-                  hintText: '이름 또는 닉네임으로 검색',
+                  hintText: '닉네임 혹은 ID로 검색',
                   prefixIcon: const Icon(Icons.search),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
@@ -114,11 +116,13 @@ class _MemberDialogState extends ConsumerState<UserDialog> {
                     final filteredUsers = widget.isAdminMode
                         ? widget.selectedMembers.where((user) {
                       return searchQuery.isEmpty ||
-                          user.name.toLowerCase().contains(searchQuery.toLowerCase());
+                          (user.userId?.toLowerCase().contains(searchQuery.toLowerCase()) ?? false) ||
+                          (user.name.toLowerCase().contains(searchQuery.toLowerCase()));
                     }).toList()
                         : users.where((user) {
                       return searchQuery.isNotEmpty &&
-                          user.name.toLowerCase().contains(searchQuery.toLowerCase());
+                          ((user.userId?.toLowerCase().contains(searchQuery.toLowerCase()) ?? false) ||
+                              (user.name.toLowerCase().contains(searchQuery.toLowerCase())));
                     }).toList();
 
                     // 검색 쿼리가 없고 filteredUsers도 없는 경우
@@ -150,6 +154,7 @@ class _MemberDialogState extends ConsumerState<UserDialog> {
                                 : null,
                           ),
                           title: Text(user.name),
+                          subtitle: Text(user.userId!),
                           trailing: Checkbox(
                             value: checkBoxStates[user.accountId] ?? false, // id로 상태 관리
                             onChanged: (bool? value) {

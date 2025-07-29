@@ -283,6 +283,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
         memberId: m.memberId, // 임시 처리
         name: m.name,
         role: "member",
+        userId: m.userId,
         profileImage: m.profileImage,
         accountId: m.accountId,
       )));

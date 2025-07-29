@@ -2,7 +2,6 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:intl/intl.dart';
 import '../../models/club.dart';
 import '../../models/enum/event.dart';
 import '../../models/event.dart';
@@ -80,6 +79,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
       final member = participant.member;
       return ClubMemberProfile(
         memberId: member?.memberId ?? 0,
+        userId: member?.userId ?? 'Unknown',
         name: member?.name ?? 'Unknown',
         profileImage: member?.profileImage ?? '',
         role: member?.role ?? 'member',
