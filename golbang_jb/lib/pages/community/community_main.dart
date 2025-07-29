@@ -17,8 +17,10 @@ class CommunityMain extends ConsumerStatefulWidget {
 }
 
 class _CommunityMainState extends ConsumerState<CommunityMain> {
-  late List<Member> members;
-  Club? _club;
+  // ✅ 여기에 getter들 선언
+  Club? get _club => ref.watch(clubStateProvider.select((s) => s.selectedClub));
+  List<Member> get members => _club?.members.where((m) => m.role != 'admin').toList() ?? [];
+  List<Member> get admins => _club?.members.where((m) => m.role == 'admin').toList() ?? [];
 
   void _onSettingsPressed() {
     if (_club!.isAdmin) {
@@ -40,14 +42,13 @@ class _CommunityMainState extends ConsumerState<CommunityMain> {
 
   @override
   Widget build(BuildContext context) {
-    _club = ref.watch(clubStateProvider.select((s) => s.selectedClub));
     if (_club == null) {
       return const Center(child: CircularProgressIndicator());
     }
-    log('뒤로가기11');
 
-
-    members = _club!.members.where((m) => m.role != 'admin').toList() ?? [];
+    final adminText = admins.length > 1
+        ? '관리자 • ${admins[0].name} 외 ${admins.length - 1}명'
+        : '관리자 • ${admins[0].name}';
 
     return PopScope(
       canPop: false,
@@ -68,69 +69,104 @@ class _CommunityMainState extends ConsumerState<CommunityMain> {
       child: Scaffold(
         body: Column(
           children: [
-            Stack(
-              children: [
-                Container(
-                  height: 200,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: _club!.image.contains('https') // 문자열 검사
-                          ? NetworkImage(_club!.image) // 네트워크 이미지
-                          : AssetImage(_club!.image) as ImageProvider, // 로컬 이미지
-                      fit: BoxFit.cover, // 이미지 맞춤 설정
+            SafeArea(
+              child: Stack(
+                children: [
+                  // 🔹 배경 이미지
+                  Container(
+                    height: 50,
+                    decoration: BoxDecoration(
+                      image: DecorationImage(
+                        image: _club!.image.contains('https')
+                            ? NetworkImage(_club!.image)
+                            : AssetImage(_club!.image) as ImageProvider,
+                        fit: BoxFit.cover,
+                      ),
                     ),
                   ),
-                ),
-                Container(
-                  height: 200,
-                  color: Colors.black.withOpacity(0.5),
-                ),
-                Positioned(
-                  top: 40,
-                  left: 10,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => Navigator.of(context).pop(),
+                  // 🔹 어둡게 오버레이
+                  Container(
+                    height: 50,
+                    color: Colors.black.withOpacity(0.5),
                   ),
-                ),
-                Positioned(
-                  top: 40,
-                  right: 10,
-                  child: IconButton(
-                    icon: const Icon(Icons.settings, color: Colors.white),
-                    onPressed: _onSettingsPressed,
+                  // 🔹 버튼과 텍스트를 중앙 Y축에 맞추고, 좌우 정렬
+                  Container(
+                    height: 50,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    alignment: Alignment.center,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Row(
+                          children: [
+                            IconButton(
+                              icon: const Icon(Icons.arrow_back, color: Colors.white),
+                              onPressed: () => Navigator.of(context).pop(),
+                            ),
+                            Text(
+                              _club!.name,
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.settings, color: Colors.white),
+                          onPressed: _onSettingsPressed,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                Positioned(
-                  bottom: 20,
-                  left: 10,
-                  child: Text(
-                    _club!.name,
-                    style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
+                ],
+              ),
             ),
+
             Padding(
               padding: const EdgeInsets.all(16.0),
-              child: Align(
-                alignment: Alignment.centerLeft, // 전체 내용을 왼쪽 정렬
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start, // 자식 위젯들을 왼쪽 정렬
-                  children: [
-                    Text(
-                      '관리자: ${_club!.getAdminNames().join(', ')}', // 여러 관리자 이름 표시
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween, // 🔥 왼쪽/오른쪽 정렬
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        adminText,
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '멤버 • ${members.length}명',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  TextButton(
+                    onPressed: () {},
+                    style: TextButton.styleFrom(
+                      backgroundColor: Colors.green, // 배경 초록색
+                      foregroundColor: Colors.white, // 글자색 흰색
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12), // 둥근 사각형
+                      ),
                     ),
-                    const SizedBox(height: 8), // 텍스트 간 간격 추가
-                    Text(
-                      '멤버: ${members.isNotEmpty
-                          ? members.map((member) => member.name).join(', ')
-                          : '새로운 멤버를 초대해주세요'}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ],
-                ),
+                      child: const Text(
+                        '글쓰기',
+                      )
+                  ),
+                ],
+              ),
+            ),
+
+
+            Expanded(
+              child: Container(
+                color: Colors.grey.withOpacity(0.5),
               ),
             ),
 
