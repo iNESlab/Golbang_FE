@@ -53,21 +53,23 @@ class _MemberDialogState extends State<MemberDialog> {
           borderRadius: const BorderRadius.vertical(top: Radius.circular(20.0)),
         ),
         padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+        child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Container(),
-            Text(
-              widget.isAdminMode ? '관리자 추가' : '멤버 추가',
-              style: const TextStyle(color: Colors.green, fontSize: 25),
-            ),
-            IconButton(
-              icon: const Icon(Icons.close),
-              onPressed: () {
-                Navigator.of(context).pop(tempSelectedMembers);
-              },
-            ),
-          ],
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                widget.isAdminMode ? '관리자 추가' : '멤버 추가',
+                style: const TextStyle(color: Colors.green, fontSize: 25),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: () {
+                  Navigator.of(context).pop(tempSelectedMembers);
+                },
+              ),
+            ],
+          )
         ),
       ),
       content: Container(

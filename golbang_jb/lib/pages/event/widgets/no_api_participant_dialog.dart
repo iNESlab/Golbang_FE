@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:golbang/models/enum/event.dart';
 import '../../../models/create_participant.dart';
@@ -56,11 +57,11 @@ class _ParticipantSelectionDialogState
       } else if (_currentSelectedParticipants.length + 1 <= widget.max) {
         // 조별 인원수를 다 채우지 않았고, 선택되지 않은 경우 리스트에 추가
         participant.groupType = int.parse(widget.groupName.substring(1, 2)); // groupType 설정
-        print('groupType: ${participant.groupType}');
+        log('groupType: ${participant.groupType}');
 
         if (widget.isTeam) {
           String team = widget.groupName.substring(3);
-          print('team: $team');
+          log('team: $team');
 
           participant.teamType = (team == 'A') ? TeamConfig.TEAM_A
               : (team == 'B') ? TeamConfig.TEAM_B
