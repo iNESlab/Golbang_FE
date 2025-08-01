@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:golbang/global_config.dart';
 import 'create_new_password.dart';
 
 class OTPVerificationPage extends StatefulWidget {
@@ -29,7 +28,7 @@ class _OTPVerificationPageState extends State<OTPVerificationPage> {
       return; // 유효하지 않은 경우 함수 종료
     }
 
-    if (enteredOTP == testOTP) {
+    if (enteredOTP == '더미데이터') {
       // OTP 일치 - 다음 화면으로 이동 등의 처리
       //Navigator.of(context).pushReplacementNamed('/success');
       Navigator.of(context).pushReplacement(
