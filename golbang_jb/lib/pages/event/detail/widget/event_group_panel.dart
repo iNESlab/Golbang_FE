@@ -8,11 +8,11 @@ class EventGroupPanel extends StatefulWidget {
   final double fontSizeMedium;
 
   const EventGroupPanel({
-    Key? key,
+    super.key,
     required this.participants,
     required this.fontSizeLarge,
     required this.fontSizeMedium,
-  }) : super(key: key);
+  });
 
   @override
   State<EventGroupPanel> createState() => _EventGroupPanelState();

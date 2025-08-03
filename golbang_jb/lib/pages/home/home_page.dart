@@ -1,11 +1,11 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:golbang/models/event.dart';
 import 'package:golbang/models/club.dart';
 import 'package:golbang/models/user_account.dart';
 import 'package:golbang/models/get_statistics_overall.dart';
-import 'package:golbang/pages/setting/setting_page.dart';
 import 'package:golbang/services/event_service.dart';
 import 'package:golbang/utils/reponsive_utils.dart';
 import 'package:golbang/widgets/sections/bookmark_section.dart';
@@ -20,11 +20,11 @@ import 'package:golbang/services/user_service.dart';
 import 'package:golbang/services/statistics_service.dart';
 import '../../repoisitory/secure_storage.dart';
 
-import 'package:golbang/pages/notification/notification_history_page.dart';
-import 'package:get/get.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final int initialIndex;
+
+  const HomePage({super.key, this.initialIndex = 0});
   @override
   State<HomePage> createState() => _HomePageState();
 }
@@ -35,7 +35,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    _selectedIndex = Get.arguments?['initialIndex'] ?? 0;
+    _selectedIndex = widget.initialIndex;
   }
 
   static final List<Widget> _widgetOptions = <Widget>[
@@ -72,23 +72,12 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(
             icon: Icon(Icons.notifications_outlined, color: Colors.black, size:appBarIconSize),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const NotificationHistoryPage(),
-                ),
-              );
-            },
+            onPressed: () => context.push('/history')
           ),
           IconButton(
             icon: Icon(Icons.settings_outlined, color: Colors.black, size:appBarIconSize),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const SettingsPage()), // SettingsPage로 이동
-              );
-            },
+            onPressed: () => context.push('/setting')
+
           ),
         ],
       ),
@@ -173,18 +162,6 @@ class _HomeContentState extends ConsumerState<HomeContent> {
     setState(() {
       _dataFuture = _loadData();
     });
-  }
-
-  Future<void> _loadEventsForMonth() async {
-
-    try {
-      List<Event> events = await eventService.getEventsForMonth(date: date);
-      setState(() {
-        _events = events;
-      });
-    } catch (e) {
-      log("Error loading events: $e");
-    }
   }
 
   @override

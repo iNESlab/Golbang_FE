@@ -2,13 +2,13 @@ import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:convert';
 
-import '../pages/logins/login.dart';
+import '../main.dart';
 
 class PrivateClient {
-  late Dio _dio;
+  late final Dio _dio;
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
 
   PrivateClient()
@@ -87,11 +87,14 @@ class PrivateClient {
     await _storage.deleteAll();
 
     // 로그인 페이지로 이동
-    Get.offAll(
-          () => const LoginPage(),
-      arguments: {'message': '로그인 토큰이 만료되었습니다. 다시 로그인해주세요.'},
-    );
-
+    // context 없이도 안전하게 사용 가능
+    final ctx = navigatorKey.currentState?.context;
+    if (ctx != null) {
+      ctx.go(
+        '/',
+        extra: {'message': '로그인 토큰이 만료되었습니다. 다시 로그인해주세요.'},
+      );
+    }
   }
 
   Dio get dio => _dio;

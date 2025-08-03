@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:golbang/pages/logins/login.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:async';
 
 
-import '../signup/terms_agreement_page.dart';
 
 class HiScreen extends StatefulWidget {
   const HiScreen({super.key});
@@ -101,12 +100,7 @@ class _HiScreenState extends State<HiScreen> {
 
                       // Join button
                       ElevatedButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const TermsAgreementPage()), // SettingsPage로 이동
-                          );
-                        },
+                        onPressed: () => context.push('/terms'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           minimumSize: const Size(400, 50),
@@ -154,13 +148,7 @@ class _HiScreenState extends State<HiScreen> {
                       // const SizedBox(height: 20),
                       // Login button
                       TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const LoginPage()),
-                          );
-                        },
+                        onPressed: () => context.push('/login'),
                         child: const Text('로그인하기',
                             style: TextStyle(color: Colors.white)),
                       ),

@@ -1,11 +1,11 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:golbang/models/event.dart';
 import 'package:golbang/services/participant_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/utils/reponsive_utils.dart';
 import 'package:intl/intl.dart';
-import '../../pages/event/detail/event_detail_page.dart';
 import '../../repoisitory/secure_storage.dart';
 
 class UpcomingEvents extends ConsumerStatefulWidget {
@@ -114,11 +114,8 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
 
               return GestureDetector(
                 onTap: () async {
-                  final result = await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => EventDetailPage(event: event),
-                    ),
+                  final result = await context.push(
+                    'events/${event.eventId}', extra: {'event': event}
                   );
 
                   log('수정 여부: $result');

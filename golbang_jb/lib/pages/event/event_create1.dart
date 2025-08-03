@@ -9,7 +9,6 @@ import '../../models/responseDTO/GolfClubResponseDTO.dart';
 import '../../models/responseDTO/CourseResopnseDTO.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/club_service.dart';
-import 'event_create2.dart';
 import 'widgets/location_search_dialog.dart';
 import 'widgets/course_selection_dialog.dart';
 import 'widgets/participant_dialog.dart';
@@ -528,23 +527,18 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
 
         final DateTime startDateTime = _convertToDateTime(startDate, startTime);
         final DateTime endDateTime = startDateTime.add(const Duration(days: 1));
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => EventsCreate2(
-              title: _titleController.text,
-              selectedClub: _selectedClub!,
-              selectedLocation: _selectedLocation!,
-              selectedGolfClub: _selectedGolfClub!,
-              selectedCourse: _selectedCourse!,
-              startDate: startDateTime,
-              endDate: endDateTime,
-              selectedParticipants: _selectedParticipants,
-              selectedGameMode: _selectedGameMode!,
-            ),
-          ),
-        );
+        final extra = {
+          'title': _titleController.text,
+          'selectedClub': _selectedClub!,
+          'selectedLocation': _selectedLocation!,
+          'selectedGolfClub': _selectedGolfClub!,
+          'selectedCourse': _selectedCourse!,
+          'startDate': startDateTime,
+          'endDate': endDateTime,
+          'selectedParticipants': _selectedParticipants,
+          'selectedGameMode': _selectedGameMode!
+        };
+        context.push('events/new-step2', extra: extra);
       }
           : null,
       style: ElevatedButton.styleFrom(

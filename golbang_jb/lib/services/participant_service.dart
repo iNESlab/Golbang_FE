@@ -1,6 +1,4 @@
 import 'dart:developer';
-import 'package:dio/dio.dart';
-import 'package:get/get.dart';
 import 'package:golbang/models/socket/score_card.dart';
 
 import '../global/PrivateClient.dart';

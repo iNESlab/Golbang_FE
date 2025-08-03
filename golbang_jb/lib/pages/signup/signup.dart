@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:golbang/pages/signup/widgets/welcome_header_widget.dart';
 import '../../provider/user/user_service_provider.dart';
-import 'additional_info.dart';
 import 'widgets/signup_widgets.dart';
 
 class SignUpPage extends ConsumerStatefulWidget {
@@ -38,7 +38,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
         title: const Text(''),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.pop(),
         ),
       ),
       body: SafeArea(
@@ -118,13 +118,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
         );
 
         if (response.statusCode == 201) {
-          Navigator.of(ctx).push(
-            MaterialPageRoute(
-              builder: (ctx) => AdditionalInfoPage(
-                userId: response.data['data']['user_id'],
-              ),
-            ),
-          );
+          ctx.push('/signup/step-2', extra: {'userId': response.data['data']['user_id'] });
         } else {
           var error = response.data['data']?['message'] ?? '알 수 없는 오류가 발생했습니다.';
 

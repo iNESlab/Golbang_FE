@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../services/feedback_service.dart';
 import '../../repoisitory/secure_storage.dart';
 
@@ -87,8 +88,8 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context); // Close dialog
-                if (isSuccess) Navigator.pop(context); // Exit page if successful
+                if (isSuccess) context.go('/home'); // Exit page if successful
+                context.pop(); // Close dialog
               },
               child: const Text(
                 "확인",

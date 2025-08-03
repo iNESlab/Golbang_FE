@@ -1,5 +1,6 @@
 // 이용 약관 동의 페이지
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
 class TermsOfServicePage extends StatelessWidget {
   const TermsOfServicePage({super.key});
@@ -16,7 +17,7 @@ class TermsOfServicePage extends StatelessWidget {
         centerTitle: true,
         leading: IconButton(
           icon: const Icon(Icons.close, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
+          onPressed: () => context.pop(),
         ),
         iconTheme: const IconThemeData(color: Colors.black),
       ),

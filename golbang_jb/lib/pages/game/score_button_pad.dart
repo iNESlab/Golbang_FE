@@ -1,7 +1,5 @@
 // 점수 입력 취소
-import 'dart:developer';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class ScoreButtonPadStateful extends StatefulWidget {
@@ -19,7 +17,7 @@ class ScoreButtonPadStateful extends StatefulWidget {
   final double fontSizeMedium;
 
   const ScoreButtonPadStateful({
-    Key? key,
+    super.key,
     required this.selectedHole,
     required this.isEditing,
     // required this.isCompleted,
@@ -32,7 +30,7 @@ class ScoreButtonPadStateful extends StatefulWidget {
     required this.height,
     required this.fontSizeLarge,
     required this.fontSizeMedium
-  }) : super(key: key);
+  });
 
   @override
   State<ScoreButtonPadStateful> createState() => _ScoreButtonPadState();

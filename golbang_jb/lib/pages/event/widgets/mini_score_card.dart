@@ -3,8 +3,8 @@ pages/event/widgets/mini_score_card.dart
 사용자의 1~18홀까지의 점수를 표시하는 스코어카드
 */
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../event/event_result_full_score_card.dart';
 
 class MiniScoreCard extends StatelessWidget {
   final List<int?> scorecard;
@@ -219,14 +219,7 @@ class MiniScoreCard extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () {
                 //TODO:전체 스코어카드 페이지로 이동하는 코드 추가 필요
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => EventResultFullScoreCard(
-                      eventId: eventId,  // 현재 페이지에서 eventId를 전달
-                    ),
-                  ),
-                );
+                context.push('/events/$eventId/result', extra: {'isFull': true});
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green[100], // 배경색 설정

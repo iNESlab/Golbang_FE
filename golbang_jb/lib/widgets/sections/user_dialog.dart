@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../models/profile/get_all_user_profile.dart';
 import '../../repoisitory/secure_storage.dart';
@@ -65,7 +66,7 @@ class _MemberDialogState extends ConsumerState<UserDialog> {
               IconButton(
                 icon: const Icon(Icons.close),
                 onPressed: () {
-                  Navigator.of(context).pop(tempSelectedMembers); // 선택된 멤버 반환
+                 context.pop(tempSelectedMembers); // 선택된 멤버 반환
                 },
               ),
             ],
@@ -189,7 +190,7 @@ class _MemberDialogState extends ConsumerState<UserDialog> {
         Center(
           child: ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop(tempSelectedMembers); // 선택된 멤버 반환
+              context.pop(tempSelectedMembers); // 선택된 멤버 반환
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.teal,

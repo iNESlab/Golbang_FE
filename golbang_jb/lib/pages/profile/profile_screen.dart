@@ -1,11 +1,10 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../models/user_account.dart'; // 이 파일에서 모든 UserAccount를 참조합니다.
 import '../../repoisitory/secure_storage.dart';
-import 'user_info_page.dart';
 import '../../services/user_service.dart';
-import 'package:golbang/pages/profile/statistics_page.dart';
 
 // UserAccount 상태를 관리하는 Provider 정의
 final userAccountProvider = StateNotifierProvider<UserAccountNotifier, UserAccount?>((ref) {
@@ -109,24 +108,14 @@ class ProfileScreen extends ConsumerWidget {
                 crossAxisSpacing: 12,
                 childAspectRatio: 1.5, // TODO: 소속된 그룹, 관리 그룹을 활성화할 때는 1.8 비율로 변경해야 함
                 children: [
-                  _buildActionButton('내 정보', Icons.person, context, userAccount, () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => UserInfoPage(initialUserAccount: userAccount),
-                      ),
-                    ).then((_) {
+                  _buildActionButton('내 정보', Icons.person, context, userAccount, () async {
+                    await context.push('/user/profile', extra: {'userAccount': userAccount}).then((_) {
                       // 돌아왔을 때 정보 업데이트
                       ref.read(userAccountProvider.notifier).loadUserAccount();
                     });
-                                    }),
+                  }),
                   _buildActionButton('통계', Icons.bar_chart, context, userAccount, () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const StatisticsPage(),
-                      ),
-                    );
+                    context.push('/user/statistics');
                   }),
                   // _buildActionButton('소속된 그룹', Icons.group, context, userAccount, () {
                   //   // 소속된 그룹 버튼 동작 추가

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:golbang/pages/club/widgets/admin_button_widget.dart';
 import 'package:golbang/pages/club/widgets/member_button_widget.dart';
 import 'package:golbang/widgets/sections/user_dialog.dart';
@@ -91,7 +92,7 @@ class _ClubCreatePageState extends ConsumerState<ClubCreatePage> {
           const SnackBar(content: Text('성공적으로 생성 완료하였습니다.')),
         );
         ref.read(clubStateProvider.notifier).fetchClubs(); // 클럽 리스트 다시 불러오기
-        Navigator.of(context).pop(); // 성공 시 페이지 닫기
+        context.pop(); // 성공 시 페이지 닫기
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('그룹을 생성하는 데 실패했습니다. 나중에 다시 시도해주세요.')),
@@ -135,7 +136,7 @@ class _ClubCreatePageState extends ConsumerState<ClubCreatePage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.of(context).pop();
+            context.pop();
           },
         ),
       ),

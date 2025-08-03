@@ -4,7 +4,6 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:golbang/pages/event/event_create1.dart';
 import 'package:golbang/repoisitory/secure_storage.dart';
 import 'package:golbang/utils/reponsive_utils.dart';
 import 'package:table_calendar/table_calendar.dart';
@@ -16,8 +15,6 @@ import '../../provider/participant/participant_state_provider.dart';
 import '../../utils/date_utils.dart';
 import 'package:golbang/services/participant_service.dart';
 import 'package:golbang/services/event_service.dart';
-import '../game/score_card_page.dart';
-import 'event_result.dart';
 
 class EventPage extends ConsumerStatefulWidget {
   const EventPage({super.key});
@@ -147,21 +144,14 @@ class EventPageState extends ConsumerState<EventPage> {
   }
 
   void _navigateToGameStartPage(Event event) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ScoreCardPage(event: event), // GameStartPage 생성 필요
-      ),
+    context.push(
+        '/events/${event.eventId}/game',
+        extra: {'event': event}
     );
   }
 
   void _navigateToResultPage(Event event) async {
-    await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EventResultPage(eventId: event.eventId), // ResultPage 생성 필요
-      ),
-    );
+    context.push('/events/${event.eventId}/result');
   }
 
   @override
@@ -496,10 +486,7 @@ class EventPageState extends ConsumerState<EventPage> {
       );
     } else {
       // 모임이 있다면 이벤트 생성 페이지로 이동
-      await Navigator.push( //TODO: Go 라우터로 변환
-        context,
-        MaterialPageRoute(builder: (context) => EventsCreate1(startDay: _focusedDay)),
-      );
+      context.push('events/new-step1', extra: {'startDay': _focusedDay});
     }
   }
 

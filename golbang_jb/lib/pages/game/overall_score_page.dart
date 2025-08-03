@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:golbang/models/profile/club_profile.dart';
 import 'package:golbang/utils/reponsive_utils.dart';
 import 'package:web_socket_channel/io.dart';
@@ -153,9 +154,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
         leading: IconButton(
           icon: Icon(Icons.arrow_back, size: appBarIconSize),
           color: Colors.white,
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => context.pop()
         ),
         actions: [
           IconButton(
@@ -307,9 +306,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
                 ),
                 SizedBox(height: height * 0.01),
                 ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                  },
+                  onPressed: () => context.pop(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.white,
                     padding: EdgeInsets.symmetric(

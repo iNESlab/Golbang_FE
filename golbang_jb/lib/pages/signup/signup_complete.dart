@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../logins/login.dart';
+import 'package:go_router/go_router.dart';
 
 class SignupComplete extends StatelessWidget {
   const SignupComplete({super.key});
@@ -31,13 +31,7 @@ class SignupComplete extends StatelessWidget {
             ),
             const SizedBox(height: 40),
             ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) => const LoginPage()),
-                );
-              },
+              onPressed: () => context.pushReplacement('/login'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 minimumSize: const Size(200, 50),

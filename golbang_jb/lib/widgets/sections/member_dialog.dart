@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../models/member.dart';
 
 class MemberDialog extends StatefulWidget {
@@ -65,7 +66,7 @@ class _MemberDialogState extends State<MemberDialog> {
               IconButton(
                 icon: const Icon(Icons.close),
                 onPressed: () {
-                  Navigator.of(context).pop(tempSelectedMembers);
+                  context.pop(tempSelectedMembers);
                 },
               ),
             ],
@@ -147,7 +148,7 @@ class _MemberDialogState extends State<MemberDialog> {
         Center(
           child: ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop(tempSelectedMembers);
+              context.pop(tempSelectedMembers);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.teal,

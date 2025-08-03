@@ -3,8 +3,8 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:golbang/models/event.dart';
-import 'package:golbang/pages/game/overall_score_page.dart';
 import 'package:golbang/pages/game/score_button_pad.dart';
 import 'package:golbang/provider/screen_riverpod.dart';
 import 'package:golbang/utils/reponsive_utils.dart';
@@ -169,9 +169,9 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
 
   void _showScoreSummary() {
     _stopAutoRefresh();
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => OverallScorePage(event: widget.event)),
+    context.push(
+        '/events/${widget.event.eventId}/game/scores',
+        extra: {'event': widget.event}
     );
   }
 
@@ -318,7 +318,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
             actions: [
               TextButton(
                 child: const Text('확인'),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => context.pop()
               ),
             ],
           ),
@@ -350,7 +350,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
             actions: [
               TextButton(
                 child: const Text('확인'),
-                onPressed: () => Navigator.pop(context),
+                onPressed: () => context.pop()
               ),
             ],
           ),
@@ -474,9 +474,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             color: Colors.white,
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            onPressed: () => context.pop()
           ),
         ),
         backgroundColor: Colors.black,
@@ -497,9 +495,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
         leading: IconButton(
           icon: Icon(Icons.arrow_back, size: appBarIconSize),
           color: Colors.white,
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => context.pop()
         ),
         actions: [
           AnimatedBuilder(

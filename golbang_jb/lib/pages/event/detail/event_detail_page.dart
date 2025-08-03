@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../models/event.dart';
-import '../../../provider/event/event_state_notifier_provider.dart';
 import 'event_detail_appbar.dart';
 import 'event_detail_body.dart';
 import 'event_detail_bottom.dart';
@@ -64,10 +63,10 @@ class EventDetailPageState extends ConsumerState<EventDetailPage> with EventDeta
 
   Future<void> handleBack() async {
     if(!mounted) return;
-    if (Navigator.of(context).canPop()) {
+    if (context.canPop()) {
       context.pop();
     } else {
-      context.go('/home', extra: {'initialIndex': 1});
+      context.go('/events');
     }
   }
 

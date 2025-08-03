@@ -42,25 +42,16 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
     final eventId = int.tryParse(data['event_id']?.toString() ?? '');
     final clubId = int.tryParse(data['club_id']?.toString() ?? '');
 
-    if (isLoggedIn) {
+    if (isLoggedIn && mounted) {
       if (eventId != null) {
-        context.go('/event', extra: {
-          'initialIndex': 1,
-          'eventId': eventId,
-        });
+        context.go('/events/$eventId');
       } else if (clubId != null) {
-        context.go('/club', extra: {
-          'initialIndex': 2,
-          'communityId': clubId,
-        });
+        context.go('/clubs/$clubId');
       } else {
         context.go('/home');
       }
     } else {
-      context.go('/', extra: {
-        'redirectEventId': eventId,
-        'redirectClubId': clubId,
-      });
+      context.go('/');
     }
   }
 

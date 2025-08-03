@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'home_page.dart'; // 메인 화면 위젯 import
-import 'package:get/get.dart';  // GetX 사용
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});

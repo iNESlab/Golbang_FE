@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import '../../../models/profile/member_profile.dart';
 import '../../../repoisitory/secure_storage.dart';
 import '../../../services/club_member_service.dart';
@@ -180,7 +181,7 @@ class _ParticipantDialogState extends ConsumerState<ParticipantDialog> {
         Center(
           child: ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop(tempSelectedParticipants);
+              context.pop(tempSelectedParticipants);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.teal,

@@ -1,10 +1,9 @@
 import 'dart:io';
 import 'dart:developer';
 
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:golbang/pages/club/widgets/admin_button_widget.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -16,7 +15,6 @@ import '../../repoisitory/secure_storage.dart';
 import '../../services/club_service.dart';
 import '../../widgets/sections/admin_invite.dart';
 import '../../widgets/sections/member_dialog.dart';
-import '../home/home_page.dart';
 import '../profile/profile_screen.dart';
 
 class ClubEditPage extends ConsumerStatefulWidget {
@@ -86,7 +84,7 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
         adminIds: selectedAdmins.map((e) => e.memberId).toList(),
         imageFile: _imageFile != null ? File(_imageFile!.path) : null,
       );
-
+      if (!mounted) return;
       if (success) {
         //TODO: 상태 저장해야함
         // ref.read(clubStateProvider.notifier).selectClub(club);
@@ -94,11 +92,8 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('성공적으로 수정하였습니다.')),
         );
-        //TODO: 초기 페이지로 이동하지 않아도 되게 향후 수정해야함.
-        ref.read(clubStateProvider.notifier).fetchClubs(); // 클럽 리스트 다시 불러오기
-        Get.offAll(() => const HomePage(), arguments: {
-          'initialIndex': 2,
-        });
+        context.pushReplacement('/clubs/${_club!.id}');
+
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('모임을 수정하는 데 실패했습니다. 나중에 다시 시도해주세요.')),
@@ -137,7 +132,7 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.of(context).pop();
+            context.pop();
           },
         ),
       ),

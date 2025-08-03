@@ -302,9 +302,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+          onPressed: () => context.pop()
         ),
         title: const Text('이벤트 수정'),
         actions: [

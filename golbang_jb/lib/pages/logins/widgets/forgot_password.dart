@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:golbang/provider/user/user_service_provider.dart';
 
 class ForgotPasswordDialog extends ConsumerWidget {
@@ -35,9 +36,7 @@ class ForgotPasswordDialog extends ConsumerWidget {
       ),
       actions: [
         TextButton(
-          onPressed: () {
-            Navigator.of(context).pop(); // 팝업 닫기
-          },
+          onPressed: () => context.pop(),
           child: const Text('취소'),
         ),
         ElevatedButton(
@@ -53,7 +52,6 @@ class ForgotPasswordDialog extends ConsumerWidget {
 
   Future<void> _resetPassword(BuildContext context, WidgetRef ref, String email)async {
     final messenger = ScaffoldMessenger.of(parentContext); // 먼저 저장
-    final navigator = Navigator.of(context);
 
     try {
       final userService = ref.watch(userServiceProvider);
@@ -63,12 +61,11 @@ class ForgotPasswordDialog extends ConsumerWidget {
         log('Reset link sent to $email');
         var response = await userService.resetPassword(email: email);
 
-
         if (response.statusCode == 200) {
           messenger.showSnackBar(
             SnackBar(content: Text('$email로 전송되었습니다')),
           );
-          navigator.pop();
+          context.pop();
         } else {
           messenger.showSnackBar(
             SnackBar(content: Text('전송 실패했습니다: ${response.data['message']}')),

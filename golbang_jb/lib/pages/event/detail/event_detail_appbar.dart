@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:http/http.dart' as ref;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -12,7 +11,6 @@ import '../../../utils/email.dart';
 import '../../../utils/excelFile.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../event_update1.dart';
 
 PreferredSizeWidget buildEventDetailAppBar(
     BuildContext context,
@@ -29,17 +27,7 @@ PreferredSizeWidget buildEventDetailAppBar(
 
 
   void editEvent() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EventsUpdate1(event: event), // 이벤트 데이터 전달
-      ),
-    ).then((result) {
-      if (result == true) {
-        // 수정 후 페이지 나가기
-        context.go('/home', extra: {'initialIndex': 1});
-      }
-    });
+    context.push('/events/${event.eventId}/edit-step1', extra: {'event': event});
   }
 
   void deleteEvent() async {
@@ -51,7 +39,7 @@ PreferredSizeWidget buildEventDetailAppBar(
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('성공적으로 삭제되었습니다')),
       );
-      context.pushReplacement('/home', extra: {'initialIndex': 1});
+      context.pushReplacement('/events');
     } else if(success == 403) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('관리자가 아닙니다. 관리자만 삭제할 수 있습니다.')),
@@ -68,10 +56,10 @@ PreferredSizeWidget buildEventDetailAppBar(
     leading: IconButton(
       icon: Icon(Icons.arrow_back, size: iconSize),
       onPressed: () {
-        if (Navigator.of(context).canPop()) {
+        if (context.canPop()) {
           context.pop();
         } else {
-          context.go('/home',extra: {'initialIndex': 1});
+          context.go('/events');
         }
       },
     ),
@@ -102,12 +90,12 @@ PreferredSizeWidget buildEventDetailAppBar(
                     '게임 진행 중인 경우 데이터가 15분마다 동기화되어, 현재 점수와 일치하지 않을 수 있습니다. 계속 추출하시겠습니까?'),
                 actions: [
                   TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () => context.pop(),
                     child: const Text('취소'),
                   ),
                   TextButton(
                     onPressed: () {
-                      Navigator.of(context).pop();
+                      context.pop();
                       exportAndSendEmail(context, event, selectedRecipients);
                     },
                     child: const Text('추출'),

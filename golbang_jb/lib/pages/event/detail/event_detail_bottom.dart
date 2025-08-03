@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../models/event.dart';
 import '../../../provider/event/game_in_progress_provider.dart';
-import '../../game/score_card_page.dart';
-import '../event_result.dart';
+import 'package:go_router/go_router.dart';
 
 class EventDetailBottomBar extends ConsumerWidget {
   final Event event;
@@ -13,13 +12,13 @@ class EventDetailBottomBar extends ConsumerWidget {
   final DateTime endDateTime;
 
   const EventDetailBottomBar({
-    Key? key,
+    super.key,
     required this.event,
     required this.myStatus,
     required this.currentTime,
     required this.startDateTime,
     required this.endDateTime,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -36,10 +35,7 @@ class EventDetailBottomBar extends ConsumerWidget {
   Widget _buildResultButton(BuildContext context) {
     return ElevatedButton(
       onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => EventResultPage(eventId: event.eventId)),
-        );
+        context.push('/events/${event.eventId}/result', extra: {'eventId': event.eventId});
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.blue,
@@ -65,10 +61,7 @@ class EventDetailBottomBar extends ConsumerWidget {
         if (!isGameInProgress) {
           ref.read(gameInProgressProvider.notifier).startGame(event.eventId);
         }
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => ScoreCardPage(event: event)),
-        );
+        context.push('/events/${event.eventId}/game', extra: {'event': event});
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.green,

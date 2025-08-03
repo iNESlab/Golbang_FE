@@ -1,11 +1,10 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:golbang/pages/community/member_list_page.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../services/club_service.dart';
 import '../../repoisitory/secure_storage.dart';
-import 'package:get/get.dart';
 
 class MemberSettingsPage extends ConsumerWidget {
   final int clubId;
@@ -36,14 +35,7 @@ class MemberSettingsPage extends ConsumerWidget {
             SettingsButton(
               text: '멤버 조회',
               onPressed: () {
-                log('멤버 조회 클릭');
-                // 멤버 조회 페이지 연결
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MemberListPage(clubId: clubId, isAdmin: false,),
-                  ),
-                );
+                context.push('/clubs/$clubId/members', extra: {'isAdmin': false});
               },
             ),
             SettingsButton(
@@ -70,16 +62,17 @@ class MemberSettingsPage extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // 다이얼로그 닫기
+               context.pop();
               },
               child: const Text('취소'),
             ),
             TextButton(
               onPressed: () async {
-                Navigator.of(context).pop(); // 다이얼로그 닫기
+                context.pop(); // 다이얼로그 닫기
                 try {
                   await clubService.leaveClub(clubId); // 모임 나가기 API 호출
-                  Get.offAllNamed('/home', arguments: {'initialIndex': 2});
+                  context.pushReplacement('/home', extra: {'initialIndex': 2});
+
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('모임에서 나왔습니다.')),
                   );

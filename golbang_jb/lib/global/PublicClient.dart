@@ -1,14 +1,9 @@
 import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:get/get.dart';
-import 'dart:convert';
-
-import '../pages/logins/login.dart';
 
 class PublicClient {
-  late Dio _dio;
+  late final Dio _dio;
 
   PublicClient()
       : _dio = Dio(BaseOptions(

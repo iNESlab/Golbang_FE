@@ -1,9 +1,8 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:golbang/services/event_service.dart';
+import 'package:go_router/go_router.dart';
 import '../../../repoisitory/secure_storage.dart';
-import '../../../models/responseDTO/GolfClubResponseDTO.dart';
 import '../../../models/responseDTO/CourseResopnseDTO.dart';
 import 'package:golbang/services/club_service.dart';
 
@@ -13,11 +12,11 @@ class CourseSelectionDialog extends ConsumerStatefulWidget {
   final Function(CourseResponseDTO) onCourseSelected;
 
   const CourseSelectionDialog({
-    Key? key,
+    super.key,
     required this.golfClubId,
     required this.golfClubName,
     required this.onCourseSelected,
-  }) : super(key: key);
+  });
 
   @override
   ConsumerState<CourseSelectionDialog> createState() => _CourseSelectionDialogState();
@@ -87,7 +86,7 @@ class _CourseSelectionDialogState extends ConsumerState<CourseSelectionDialog> {
                   ),
                 ),
                 IconButton(
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () => context.pop(),
                   icon: const Icon(Icons.close),
                 ),
               ],
@@ -140,11 +139,11 @@ class _CourseSelectionDialogState extends ConsumerState<CourseSelectionDialog> {
                       itemCount: _courses.length,
                       itemBuilder: (context, index) {
                         final course = _courses[index];
-                        final isSelected = false;
+                        const isSelected = false;
                         return InkWell(
                           onTap: () {
                             widget.onCourseSelected(course);
-                            Navigator.of(context).pop();
+                            context.pop();
                           },
                           borderRadius: BorderRadius.circular(16),
                           child: AnimatedContainer(

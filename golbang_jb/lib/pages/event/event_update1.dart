@@ -15,7 +15,6 @@ import '../../services/club_service.dart';
 import 'widgets/location_search_dialog.dart';
 import 'widgets/course_selection_dialog.dart';
 import 'widgets/participant_dialog.dart';
-import 'event_update2.dart';
 
 class EventsUpdate1 extends ConsumerStatefulWidget {
   final Event event; // 기존 이벤트 데이터를 받아오기 위한 필드
@@ -558,38 +557,28 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                     final DateTime startDateTime = _combineDateAndTime(startDate, startTime);
                     final DateTime endDateTime = startDateTime.add(const Duration(days: 1));
 
-                    // 로그 추가
-                    log('startDateTime: $startDateTime');
-                    log('endDateTime: $endDateTime');
-                    log('Duration in days: ${endDateTime.difference(startDateTime).inDays}');
-                    log('Duration in hours: ${endDateTime.difference(startDateTime).inHours}');
-
                     // 업데이트할 이벤트 데이터를 EventsUpdate2로 전달
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => EventsUpdate2(
-                          eventId: widget.event.eventId,
-                          title: _titleController.text,
-                          selectedClub: _selectedClub!,
-                          selectedLocation: _selectedLocation!,
-                          selectedGolfClub: _selectedGolfClub!,
-                          selectedCourse: _selectedCourse!,
-                          startDate: startDateTime,
-                          endDate: endDateTime,
-                          selectedParticipants: _selectedParticipants,
-                          existingParticipants: widget.event.participants.where((p) {
-                            Member member = p.member!;
+                    final extra = {
+                      'eventId': widget.event.eventId,
+                      'title': _titleController.text,
+                      'selectedClub': _selectedClub!,
+                      'selectedLocation': _selectedLocation!,
+                      'selectedGolfClub': _selectedGolfClub!,
+                      'selectedCourse': _selectedCourse!,
+                      'startDate': startDateTime,
+                      'endDate': endDateTime,
+                      'selectedParticipants': _selectedParticipants,
+                      'existingParticipants': widget.event.participants.where((p) {
+                        Member member = p.member!;
 
-                            // selectedParticipants에 해당 memberId가 있는지 확인
-                            return _selectedParticipants.any((participant) =>
-                            participant.memberId == member.memberId
-                            );
-                          }).toList(),
-                          selectedGameMode: _selectedGameMode!,
-                        ),
-                      ),
-                    );
+                        // selectedParticipants에 해당 memberId가 있는지 확인
+                        return _selectedParticipants.any((participant) =>
+                        participant.memberId == member.memberId
+                        );
+                      }).toList(),
+                      'selectedGameMode': _selectedGameMode!,
+                    };
+                    context.push('/events/${widget.event.eventId}/edit-step2', extra: extra);
                   }
                       : null,
                   style: ElevatedButton.styleFrom(
