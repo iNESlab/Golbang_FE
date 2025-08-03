@@ -109,7 +109,7 @@ class ProfileScreen extends ConsumerWidget {
                 childAspectRatio: 1.5, // TODO: 소속된 그룹, 관리 그룹을 활성화할 때는 1.8 비율로 변경해야 함
                 children: [
                   _buildActionButton('내 정보', Icons.person, context, userAccount, () async {
-                    await context.push('/user/profile', extra: {'userAccount': userAccount}).then((_) {
+                    context.push('/user/profile', extra: {'userAccount': userAccount}).then((_) {
                       // 돌아왔을 때 정보 업데이트
                       ref.read(userAccountProvider.notifier).loadUserAccount();
                     });

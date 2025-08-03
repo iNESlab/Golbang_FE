@@ -135,7 +135,7 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
                       const Spacer(),
                       TextButton.icon(
                         onPressed: () {
-                          await context.push('/clubs/new').then((_) {
+                          context.push('/clubs/new').then((_) {
                             _fetchGroups(); // 모임 생성 후 새로고침
                           });
                         },
