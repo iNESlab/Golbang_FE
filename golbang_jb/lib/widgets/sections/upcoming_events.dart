@@ -1,13 +1,12 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:golbang/models/event.dart';
-import 'package:golbang/pages/event/event_detail.dart';
 import 'package:golbang/services/participant_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/utils/reponsive_utils.dart';
 import 'package:intl/intl.dart';
+import '../../pages/event/detail/event_detail_page.dart';
 import '../../repoisitory/secure_storage.dart';
-import '../../services/event_service.dart';
 
 class UpcomingEvents extends ConsumerStatefulWidget {
   final List<Event> events;

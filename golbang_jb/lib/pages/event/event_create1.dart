@@ -14,6 +14,8 @@ import 'widgets/location_search_dialog.dart';
 import 'widgets/course_selection_dialog.dart';
 import 'widgets/participant_dialog.dart';
 import '../../models/profile/member_profile.dart';
+import 'package:go_router/go_router.dart';
+
 
 class EventsCreate1 extends ConsumerStatefulWidget {
   final DateTime? startDay;
@@ -253,99 +255,220 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.of(context).pop();
+            context.pop();
           },
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextField(
-                controller: _titleController,
-                decoration: InputDecoration(
-                  labelText: '이벤트 제목',
-                  hintText: '제목을 입력해주세요',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<Club>(
-                decoration: InputDecoration(
-                  labelText: '모임 선택',
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
-                value: _selectedClub,
-                onChanged: (Club? value) {
-                  setState(() {
-                    _selectedClub = value;
-                    _selectedParticipants = []; // 클럽 변경 시 참여자 초기화
-                    _validateForm();
-                  });
-                },
-                items: _clubs.map<DropdownMenuItem<Club>>((Club club) {
-                  return DropdownMenuItem<Club>(
-                    value: club,
-                    child: Text(club.name),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 4),
-              const Row(
-                children: [
-                  Icon(Icons.info_outline, size: 16, color: Colors.grey),
-                  SizedBox(width: 4),
-                  Text(
-                    '자신이 관리자인 모임만 이벤트를 생성할 수 있습니다',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              const Text('골프장 선택', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              GestureDetector(
-                onTap: _showLocationSearchDialog,
-                child: AbsorbPointer(
-                  child: TextField(
-                    controller: _locationController,
-                    decoration: InputDecoration(
-                      labelText: '골프장',
-                      hintText: '골프장을 선택해주세요',
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      prefixIcon: const Icon(Icons.location_on),
+      body: SafeArea(
+          child: SingleChildScrollView( // Padding 안에 위치하면, 이상한 여백 생김 주의
+            child: Padding(
+          padding: const EdgeInsets.all(16.0),
+        child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                TextField(
+                  controller: _titleController,
+                  decoration: InputDecoration(
+                    labelText: '이벤트 제목',
+                    hintText: '제목을 입력해주세요',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 8),
-              if (_selectedGolfClub != null) ...[
+                const SizedBox(height: 16),
+                DropdownButtonFormField<Club>(
+                  decoration: InputDecoration(
+                    labelText: '모임 선택',
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                  ),
+                  value: _selectedClub,
+                  onChanged: (Club? value) {
+                    setState(() {
+                      _selectedClub = value;
+                      _selectedParticipants = []; // 클럽 변경 시 참여자 초기화
+                      _validateForm();
+                    });
+                  },
+                  items: _clubs.map<DropdownMenuItem<Club>>((Club club) {
+                    return DropdownMenuItem<Club>(
+                      value: club,
+                      child: Text(club.name),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 4),
+                const Row(
+                  children: [
+                    Icon(Icons.info_outline, size: 16, color: Colors.grey),
+                    SizedBox(width: 4),
+                    Text(
+                      '자신이 관리자인 모임만 이벤트를 생성할 수 있습니다',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text('골프장 선택', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
                 GestureDetector(
-                  onTap: _showCourseSelectionDialog,
+                  onTap: _showLocationSearchDialog,
+                  child: AbsorbPointer(
+                    child: TextField(
+                      controller: _locationController,
+                      decoration: InputDecoration(
+                        labelText: '골프장',
+                        hintText: '골프장을 선택해주세요',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8.0),
+                        ),
+                        prefixIcon: const Icon(Icons.location_on),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (_selectedGolfClub != null) ...[
+                  GestureDetector(
+                    onTap: _showCourseSelectionDialog,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.grey),
+                        borderRadius: BorderRadius.circular(8.0),
+                        color: Colors.white,
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.golf_course, color: Colors.grey),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _selectedCourse != null
+                                  ? '${_selectedCourse!.golfCourseName} (${_selectedCourse!.holes}홀, 파 ${_selectedCourse!.par})'
+                                  : '+ 코스 선택',
+                              style: const TextStyle(color: Colors.black),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Row(
+                    children: [
+                      Icon(Icons.info_outline, size: 16, color: Colors.grey),
+                      SizedBox(width: 4),
+                      Text(
+                        '골프장을 선택한 후 코스를 선택해주세요',
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+                ],
+                if (_selectedLocation != null) const SizedBox(height: 16),
+                if (_selectedLocation != null)
+                  Container(
+                    height: 200,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(8.0),
+                    ),
+                    child: GoogleMap(
+                      initialCameraPosition: CameraPosition(
+                        target: _selectedLocation!,
+                        zoom: 14.0,
+                      ),
+                      markers: {
+                        Marker(
+                          markerId: const MarkerId('selected-location'),
+                          position: _selectedLocation!,
+                        ),
+                      },
+                      onMapCreated: (GoogleMapController controller) {
+                        _mapController = controller; // 컨트롤러 저장
+                      },
+                    ),
+                  ),
+                const SizedBox(height: 16),
+                const Text('시간', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => _selectDate(context, true),
+                        child: AbsorbPointer(
+                          child: TextField(
+                            controller: _startDateController,
+                            decoration: InputDecoration(
+                              labelText: '시작 날짜',
+                              hintText: '날짜 선택',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              prefixIcon: const Icon(Icons.calendar_today),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => _selectTime(context, true),
+                        child: AbsorbPointer(
+                          child: TextField(
+                            controller: _startTimeController,
+                            decoration: InputDecoration(
+                              labelText: '시작 시간',
+                              hintText: '시간 선택',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8.0),
+                              ),
+                              prefixIcon: const Icon(Icons.access_time),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                const Row(
+                  children: [
+                    Icon(Icons.info_outline, size: 16, color: Colors.grey),
+                    SizedBox(width: 4),
+                    Text(
+                      '이벤트 종료 날짜는 시작 날짜로부터 1일 후로 자동 설정됩니다',
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                const Text('참여자', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                GestureDetector(
+                  onTap: _selectedClub != null ? _showParticipantDialog : null, // 클럽이 선택되지 않았으면 비활성화
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey),
+                      border: Border.all(color: _selectedClub != null ? Colors.grey : Colors.grey[300]!),
                       borderRadius: BorderRadius.circular(8.0),
-                      color: Colors.white,
+                      color: _selectedClub != null ? Colors.white : Colors.grey[200],
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.golf_course, color: Colors.grey),
+                        Icon(Icons.person_add, color: _selectedClub != null ? Colors.grey : Colors.grey[300]),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            _selectedCourse != null
-                                ? '${_selectedCourse!.golfCourseName} (${_selectedCourse!.holes}홀, 파 ${_selectedCourse!.par})'
-                                : '+ 코스 선택',
+                            _selectedParticipants.isEmpty
+                                ? '+ 참여자 추가'
+                                : _selectedParticipants.map((p) => p.name).join(', '),
                             style: const TextStyle(color: Colors.black),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
@@ -355,200 +478,84 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 4),
-                const Row(
-                  children: [
-                    Icon(Icons.info_outline, size: 16, color: Colors.grey),
-                    SizedBox(width: 4),
-                    Text(
-                      '골프장을 선택한 후 코스를 선택해주세요',
-                      style: TextStyle(fontSize: 12, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ],
-              if (_selectedLocation != null) const SizedBox(height: 16),
-              if (_selectedLocation != null)
-                Container(
-                  height: 200,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8.0),
+                const SizedBox(height: 16),
+                const Text('게임모드', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                const SizedBox(height: 8),
+                DropdownButtonFormField<GameMode>(
+                  decoration: const InputDecoration(
+                    labelText: '게임모드',
+                    border: OutlineInputBorder(),
                   ),
-                  child: GoogleMap(
-                    initialCameraPosition: CameraPosition(
-                      target: _selectedLocation!,
-                      zoom: 14.0,
-                    ),
-                    markers: {
-                      Marker(
-                        markerId: const MarkerId('selected-location'),
-                        position: _selectedLocation!,
-                      ),
-                    },
-                    onMapCreated: (GoogleMapController controller) {
-                      _mapController = controller; // 컨트롤러 저장
-                    },
-                  ),
-                ),
-              const SizedBox(height: 16),
-              const Text('시간', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _selectDate(context, true),
-                      child: AbsorbPointer(
-                        child: TextField(
-                          controller: _startDateController,
-                          decoration: InputDecoration(
-                            labelText: '시작 날짜',
-                            hintText: '날짜 선택',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            prefixIcon: const Icon(Icons.calendar_today),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => _selectTime(context, true),
-                      child: AbsorbPointer(
-                        child: TextField(
-                          controller: _startTimeController,
-                          decoration: InputDecoration(
-                            labelText: '시작 시간',
-                            hintText: '시간 선택',
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(8.0),
-                            ),
-                            prefixIcon: const Icon(Icons.access_time),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              const Row(
-                children: [
-                  Icon(Icons.info_outline, size: 16, color: Colors.grey),
-                  SizedBox(width: 4),
-                  Text(
-                    '이벤트 종료 날짜는 시작 날짜로부터 1일 후로 자동 설정됩니다',
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              const Text('참여자', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              GestureDetector(
-                onTap: _selectedClub != null ? _showParticipantDialog : null, // 클럽이 선택되지 않았으면 비활성화
-                child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: _selectedClub != null ? Colors.grey : Colors.grey[300]!),
-                    borderRadius: BorderRadius.circular(8.0),
-                    color: _selectedClub != null ? Colors.white : Colors.grey[200],
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(Icons.person_add, color: _selectedClub != null ? Colors.grey : Colors.grey[300]),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _selectedParticipants.isEmpty
-                              ? '+ 참여자 추가'
-                              : _selectedParticipants.map((p) => p.name).join(', '),
-                          style: const TextStyle(color: Colors.black),
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 1,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              const Text('게임모드', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              DropdownButtonFormField<GameMode>(
-                decoration: const InputDecoration(
-                  labelText: '게임모드',
-                  border: OutlineInputBorder(),
-                ),
-                value: _selectedGameMode, // value를 GameMode 타입으로 설정
-                onChanged: (newValue) {
-                  setState(() {
-                    _selectedGameMode = newValue!;
-                    _validateForm();
-                  });
-                },
-                items: GameMode.values.map((mode) {
-                  return DropdownMenuItem<GameMode>(
-                    value: mode,
-                    child: Text(
-                      mode == GameMode.STROKE ? '스트로크' : mode.toString(),
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 16),
-              Center(
-                child: ElevatedButton(
-                  onPressed: _isButtonEnabled
-                      ? () {
-                    final DateTime startDate = _startDateController.text.isNotEmpty
-                        ? DateTime.parse(_startDateController.text)
-                        : DateTime.now(); // 기본값: 오늘 날짜
-
-                    final TimeOfDay startTime = _startTimeController.text.isNotEmpty
-                        ? _parseTimeOfDay(_startTimeController.text)
-                        : TimeOfDay.now(); // 기본값: 현재 시간
-
-                    final DateTime startDateTime = _convertToDateTime(startDate, startTime);
-                    final DateTime endDateTime = startDateTime.add(const Duration(days: 1));
-
-                    // 로그 추가
-                    log('startDateTime: $startDateTime');
-                    log('endDateTime: $endDateTime');
-                    log('Duration in days: ${endDateTime.difference(startDateTime).inDays}');
-                    log('Duration in hours: ${endDateTime.difference(startDateTime).inHours}');
-
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => EventsCreate2(
-                          title: _titleController.text,
-                          selectedClub: _selectedClub!,
-                          selectedLocation: _selectedLocation!,
-                          selectedGolfClub: _selectedGolfClub!,
-                          selectedCourse: _selectedCourse!,
-                          startDate: startDateTime,
-                          endDate: endDateTime,
-                          selectedParticipants: _selectedParticipants,
-                          selectedGameMode: _selectedGameMode!,
-                        ),
+                  value: _selectedGameMode, // value를 GameMode 타입으로 설정
+                  onChanged: (newValue) {
+                    setState(() {
+                      _selectedGameMode = newValue!;
+                      _validateForm();
+                    });
+                  },
+                  items: GameMode.values.map((mode) {
+                    return DropdownMenuItem<GameMode>(
+                      value: mode,
+                      child: Text(
+                        mode == GameMode.STROKE ? '스트로크' : mode.toString(),
                       ),
                     );
-                  }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    minimumSize: const Size(double.infinity, 50),
-                  ),
-                  child: const Text('다음'),
+                  }).toList(),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
+        bottomNavigationBar: SafeArea(
+          top: true, bottom: true,
+          child: _buildNextButton(context),
+        ),
+    );
+  }
+
+  Widget _buildNextButton(BuildContext context){
+    return ElevatedButton(
+      onPressed: _isButtonEnabled
+          ? () {
+        final DateTime startDate = _startDateController.text.isNotEmpty
+            ? DateTime.parse(_startDateController.text)
+            : DateTime.now(); // 기본값: 오늘 날짜
+
+        final TimeOfDay startTime = _startTimeController.text.isNotEmpty
+            ? _parseTimeOfDay(_startTimeController.text)
+            : TimeOfDay.now(); // 기본값: 현재 시간
+
+        final DateTime startDateTime = _convertToDateTime(startDate, startTime);
+        final DateTime endDateTime = startDateTime.add(const Duration(days: 1));
+
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => EventsCreate2(
+              title: _titleController.text,
+              selectedClub: _selectedClub!,
+              selectedLocation: _selectedLocation!,
+              selectedGolfClub: _selectedGolfClub!,
+              selectedCourse: _selectedCourse!,
+              startDate: startDateTime,
+              endDate: endDateTime,
+              selectedParticipants: _selectedParticipants,
+              selectedGameMode: _selectedGameMode!,
+            ),
+          ),
+        );
+      }
+          : null,
+      style: ElevatedButton.styleFrom(
+        minimumSize: const Size(double.infinity, 50),
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.teal,
+        shape: const RoundedRectangleBorder(
+          borderRadius:BorderRadius.zero
+        ),
+      ),
+      child: const Text('다음'),
     );
   }
 }

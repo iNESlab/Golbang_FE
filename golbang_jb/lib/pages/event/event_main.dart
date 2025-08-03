@@ -3,6 +3,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:golbang/pages/event/event_create1.dart';
 import 'package:golbang/repoisitory/secure_storage.dart';
 import 'package:golbang/utils/reponsive_utils.dart';
@@ -16,9 +17,6 @@ import '../../utils/date_utils.dart';
 import 'package:golbang/services/participant_service.dart';
 import 'package:golbang/services/event_service.dart';
 import '../game/score_card_page.dart';
-import 'event_detail.dart';
-import 'package:get/get.dart';
-
 import 'event_result.dart';
 
 class EventPage extends ConsumerStatefulWidget {
@@ -51,35 +49,6 @@ class EventPageState extends ConsumerState<EventPage> {
     hashCode: getHashCode,
   );
 
-  Future<void> _checkAndNavigateToEventDetail() async {
-    // Get.arguments에서 eventId 가져오기
-    int? eventId = Get.arguments?['eventId'];
-
-    if (eventId != -1) {
-      final storage = ref.read(secureStorageProvider);
-      final EventService eventService = EventService(storage);
-
-      try {
-        // 이벤트 상세 정보 가져오기
-        final event = await eventService.getEventDetails(eventId!);
-        if (event != null) {
-          // UI 빌드 후 이벤트 상세 페이지로 이동
-          Get.arguments?['eventId'] = -1;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => EventDetailPage(event: event),
-              ),
-            );
-          });
-        }
-      } catch (e) {
-        log('Error fetching event details: $e');
-      }
-    }
-  }
-
   @override
   void initState() {
     super.initState();
@@ -97,8 +66,6 @@ class EventPageState extends ConsumerState<EventPage> {
     final clubNotifier = ref.read(clubStateProvider.notifier);
     clubNotifier.fetchClubs();
 
-    // eventId 확인 및 상세 페이지로 이동
-    _checkAndNavigateToEventDetail();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _showMostRecentEvent();
     });
@@ -180,32 +147,22 @@ class EventPageState extends ConsumerState<EventPage> {
   }
 
   void _navigateToGameStartPage(Event event) async {
-    final result = await Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ScoreCardPage(event: event), // GameStartPage 생성 필요
       ),
     );
-
-    if (result == true) {
-      await _loadEventsForMonth(); // 페이지 종료 후 이벤트 목록 새로고침
-    }
   }
 
   void _navigateToResultPage(Event event) async {
-    final result = await Navigator.push(
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => EventResultPage(eventId: event.eventId), // ResultPage 생성 필요
       ),
     );
-
-    if (result == true) {
-      await _loadEventsForMonth(); // 페이지 종료 후 이벤트 목록 새로고침
-    }
   }
-
-
 
   @override
   Widget build(BuildContext context) {
@@ -529,7 +486,7 @@ class EventPageState extends ConsumerState<EventPage> {
             actions: <Widget>[
               TextButton(
                 onPressed: () {
-                  Navigator.of(context).pop();
+                  context.pop();
                 },
                 child: const Text("확인"),
               ),
@@ -539,28 +496,15 @@ class EventPageState extends ConsumerState<EventPage> {
       );
     } else {
       // 모임이 있다면 이벤트 생성 페이지로 이동
-      final result = await Navigator.push(
+      await Navigator.push( //TODO: Go 라우터로 변환
         context,
         MaterialPageRoute(builder: (context) => EventsCreate1(startDay: _focusedDay)),
       );
-      if (result == true) {
-        await _loadEventsForMonth();
-      }
     }
   }
 
   void _navigateToEventDetail(Event event) async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => EventDetailPage(event: event),
-      ),
-    );
-
-    if (result == true) {
-      // 이벤트 삭제 후 목록 새로고침
-      await _loadEventsForMonth();
-    }
+    await context.push('/events/${event.eventId}', extra: {'event': event});
   }
 
   Color _getStatusColor(String statusType) {

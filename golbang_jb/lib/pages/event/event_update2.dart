@@ -1,7 +1,9 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get/get.dart';
+import 'package:collection/collection.dart';
+import 'package:go_router/go_router.dart';
+
 import 'package:golbang/models/profile/member_profile.dart';
 import 'package:golbang/pages/event/widgets/group_card.dart';
 import 'package:golbang/pages/event/widgets/no_api_participant_dialog.dart';
@@ -276,12 +278,14 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
       participants: _finalParticipants,
     );
 
+    if(!mounted) return;
+
     if (success) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('이벤트가 성공적으로 수정되었습니다.')),
       );
-      Navigator.of(context).pop(true);
-      Navigator.of(context).pop(true);
+      context.pushReplacement('/events/${widget.eventId}');
+
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('이벤트 수정에 실패했습니다. 관리자만 수정할 수 있습니다. ')),
