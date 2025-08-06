@@ -115,10 +115,10 @@ class _CommunityMainState extends ConsumerState<CommunityMain> {
         : '관리자 • ${admins[0].name}';
 
     return PopScope(
-      canPop: true,
-      onPopInvoked: (didPop) async {
-        await handleBack(); //TODO: 시스템 뒤로가기 안됨
-      },
+      canPop: false, // True면 PopScope동작 안함
+        onPopInvoked: (didPop) async {
+          await handleBack();
+        },
       child: Scaffold(
         body: Column(
           children: [
@@ -146,7 +146,7 @@ class _CommunityMainState extends ConsumerState<CommunityMain> {
                         children: [
                           IconButton(
                             icon: const Icon(Icons.arrow_back, color: Colors.white),
-                            onPressed: () => context.pop(),
+                            onPressed: () => handleBack()
                           ),
                           Text(
                             _club!.name,
