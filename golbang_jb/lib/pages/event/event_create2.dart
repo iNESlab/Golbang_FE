@@ -197,7 +197,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
         const SnackBar(content: Text('이벤트 생성에 성공했습니다.')),
       );
       // 페이지 닫기
-      context.pushReplacement('/home', extra: {'initialIndex': 1});
+      context.go('/events?refresh=${DateTime.now().millisecondsSinceEpoch}');
     } else {
       // 실패 시 SnackBar로 오류 메시지 표시
       ScaffoldMessenger.of(context).showSnackBar(

@@ -538,7 +538,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
           'selectedParticipants': _selectedParticipants,
           'selectedGameMode': _selectedGameMode!
         };
-        context.push('events/new-step2', extra: extra);
+        context.push('/events/new-step2', extra: extra);
       }
           : null,
       style: ElevatedButton.styleFrom(

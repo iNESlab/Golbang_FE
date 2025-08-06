@@ -486,7 +486,7 @@ class EventPageState extends ConsumerState<EventPage> {
       );
     } else {
       // 모임이 있다면 이벤트 생성 페이지로 이동
-      context.push('events/new-step1', extra: {'startDay': _focusedDay});
+      context.push('/events/new-step1', extra: {'startDay': _focusedDay});
     }
   }
 

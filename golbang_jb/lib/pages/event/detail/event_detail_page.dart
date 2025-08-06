@@ -83,9 +83,8 @@ class EventDetailPageState extends ConsumerState<EventDetailPage> with EventDeta
     initializeUI(context);
 
     return PopScope(
-        canPop: true,
+        canPop: false,
         onPopInvoked: (didPop) async {
-          if(didPop) return;
           await handleBack();
         },
         child: Scaffold(
