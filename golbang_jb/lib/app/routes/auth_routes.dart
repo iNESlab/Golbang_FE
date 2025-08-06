@@ -2,6 +2,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../pages/common/privacy_policy_page.dart';
 import '../../pages/logins/login.dart';
+import '../../pages/signup/additional_info.dart';
 import '../../pages/signup/marketing_agreement_page.dart';
 import '../../pages/signup/signup.dart';
 import '../../pages/signup/signup_complete.dart';
@@ -22,13 +23,20 @@ final List<GoRoute> authRoutes = [
     builder: (context, state) => const SignUpPage(),
     routes: [
       GoRoute(
-        path: '/terms',
+      path: 'step-2',
+      builder: (context, state) {
+        final extra = state.extra as Map<String, dynamic>?;
+        return AdditionalInfoPage(userId: extra?['userId'] as int,);
+        },
+      ),
+      GoRoute(
+        path: 'terms',
         builder: (context, state) {
           return const TermsAgreementPage();
         },
         routes: [
           GoRoute(
-            path: '/detail',
+            path: 'detail',
             builder: (context, state) {
               final extra = state.extra as Map<String, dynamic>?;
               final key = extra?['key'] as String;
@@ -45,7 +53,7 @@ final List<GoRoute> authRoutes = [
         ]
       ),
       GoRoute(
-        path: '/complete',
+        path: 'complete',
         builder: (context, state) => const SignupComplete(),
       ),
     ]

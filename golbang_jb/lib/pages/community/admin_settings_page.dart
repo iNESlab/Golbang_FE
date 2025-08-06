@@ -32,13 +32,13 @@ class AdminSettingsPage extends ConsumerWidget {
             SettingsButton(
               text: '멤버 조회',
               onPressed: () => context.push(
-                '/clubs/$clubId/members',
+                '/clubs/$clubId/setting/members',
                 extra: {'clubId': clubId, 'isAdmin': true}
               )
             ),
             SettingsButton(
               text: '모임 및 관리자 변경',
-              onPressed: () => context.push('clubs/$clubId/edit')
+              onPressed: () => context.push('/clubs/$clubId/setting/edit')
             ),
             SettingsButton(
               text: '모임 삭제하기',

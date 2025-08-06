@@ -9,12 +9,32 @@ import '../models/profile/get_all_user_profile.dart';
 import '../models/responseDTO/GolfClubResponseDTO.dart';
 import '../models/responseDTO/CourseResopnseDTO.dart';
 import '../repoisitory/secure_storage.dart';
+import '../utils/safe_dio_call.dart';
 
 class ClubService {
   final SecureStorage storage;
   final privateClient = PrivateClient();
 
   ClubService(this.storage);
+
+  // API 테스트 완료
+  Future<Club?> getClub({required int clubId}) async {
+    return await safeDioCall(() async {
+      // API URI 설정
+      var uri = "/api/v1/clubs/$clubId/";
+      // API 요청
+      var response = await privateClient.dio.get(uri);
+
+      // 응답 코드가 200(성공)인지 확인
+      if (response.statusCode == 200) {
+        var data = response.data['data'];
+        return Club.fromJson(data);
+      } else {
+        // 오류 발생 시 예외를 던짐
+        throw Exception('Failed to load user profiles');
+      }
+    });
+  }
 
   // API 테스트 완료
   Future<List<Club>> getClubList({bool isAdmin=false}) async {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../models/profile/get_all_user_profile.dart';
 import '../../repoisitory/secure_storage.dart';
@@ -91,7 +92,7 @@ class _UserDialogState extends ConsumerState<UserDialog> {
         Center(
           child: ElevatedButton(
             onPressed: () {
-              Navigator.of(context).pop(tempSelectedUsers);
+              context.pop(tempSelectedUsers);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.teal,
@@ -124,7 +125,7 @@ class _UserDialogState extends ConsumerState<UserDialog> {
             IconButton(
               icon: const Icon(Icons.close),
               onPressed: () {
-                Navigator.of(context).pop(tempSelectedUsers);
+                context.pop(tempSelectedUsers);
               },
             ),
           ],

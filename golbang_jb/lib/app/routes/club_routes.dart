@@ -31,50 +31,57 @@ final List<GoRoute> clubRoutes = [
             from: extra?['from'],
           );
         },
-      ),
-      GoRoute(
-        path: ':clubId/setting',
-        builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>?;
-          String role = extra?['role'] as String;
+        routes: [
+          GoRoute(
+            path: 'new-post',
+            builder: (context, state) {
+              final clubId = int.parse(state.pathParameters['clubId']!);
+              return PostWritePage(
+                  clubId: clubId
+              );
+            },
+          ),
+          GoRoute(
+            path: 'setting',
+            builder: (context, state) {
+              final extra = state.extra as Map<String, dynamic>?;
+              final clubId = int.parse(state.pathParameters['clubId']!);
+              String role = extra?['role'] as String;
 
-          if (role == 'admin') {
-            return AdminSettingsPage(
-              clubId: extra?['clubId'] as int,
-            );
-          } else if (role == 'member') {
-            return MemberSettingsPage(
-              clubId: extra?['clubId'] as int,
-            );
-          }
-          return const ClubMainPage();
-        },
+              if (role == 'admin') {
+                return AdminSettingsPage(
+                  clubId: clubId,
+                );
+              } else if (role == 'member') {
+                return MemberSettingsPage(
+                  clubId: clubId,
+                );
+              }
+              return const ClubMainPage();
+            },
+            routes: [
+              GoRoute(
+                path: 'edit',
+                builder: (context, state) {
+                  return const ClubEditPage();
+                },
+              ),
+              GoRoute(
+                path: 'members',
+                builder: (context, state) {
+                  final clubId = int.tryParse(state.pathParameters['clubId']!);
+                  final extra = state.extra as Map<String, dynamic>?;
+                  return MemberListPage(
+                    clubId: clubId!,
+                    isAdmin: extra?['isAdmin'] as bool,
+                  );
+                },
+              ),
+            ]
+          ),
+        ]
       ),
-      GoRoute(
-        path: ':clubId/edit',
-        builder: (context, state) {
-          return const ClubEditPage();
-        },
-      ),
-      GoRoute(
-        path: ':clubId/members',
-        builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>?;
-          return MemberListPage(
-            clubId: extra?['clubId'] as int,
-            isAdmin: extra?['isAdmin'] as bool,
-          );
-        },
-      ),
-      GoRoute(
-        path: ':clubId/new-post',
-        builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>?;
-          return PostWritePage(
-            clubId: extra?['clubId'] as int,
-          );
-        },
-      ),
+
     ],
   ),
 ];

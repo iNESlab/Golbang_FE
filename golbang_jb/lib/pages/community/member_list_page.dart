@@ -116,7 +116,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
     );
   }
 
-  /// 멤버 추방 함수
+  // 멤버 추방 함수
   Future<void> _kickMember(ClubMemberProfile member) async {
     final clubService = ClubService(ref.read(secureStorageProvider));
     await clubService.removeMember(widget.clubId, member.memberId);
@@ -257,7 +257,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
             ElevatedButton(
               onPressed: () async {
                 await _inviteMembers();
-                context.pushReplacement('/clubs/:clubId');
+                context.go('/clubs/:clubId?refresh=${DateTime.now().millisecondsSinceEpoch}');
               },
               child: const Text("초대"),
             ),
@@ -288,7 +288,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
     });
   }
 
-  Widget _buildMemberTile(dynamic member) {
+  Widget _buildMemberTile(ClubMemberProfile member) {
     final bool isAdminMember = member.role == "admin"; // 어드민 여부 체크
 
     return InkWell(
@@ -308,7 +308,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
           ),
           child: CircleAvatar(
             backgroundColor: Colors.transparent,
-            child: (member.profileImage != null && member.profileImage.startsWith('https'))
+            child: (member.profileImage.startsWith('https'))
                 ? ClipOval(
               child: Image.network(
                 member.profileImage,
@@ -324,6 +324,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
           ),
         ),
         title: Text(member.name),
+        subtitle: member.role == 'admin' ? const Text('관리자') : null,
       ),
     );
   }

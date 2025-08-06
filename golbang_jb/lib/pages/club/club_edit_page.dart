@@ -88,11 +88,12 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
       if (success) {
         //TODO: 상태 저장해야함
         // ref.read(clubStateProvider.notifier).selectClub(club);
+        context.go('/clubs/${_club!.id}?refresh=${DateTime.now().millisecondsSinceEpoch}');
+        // 실제로 라우터에서 처리 안해도 새로고침 됨
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('성공적으로 수정하였습니다.')),
         );
-        context.pushReplacement('/clubs/${_club!.id}');
 
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
