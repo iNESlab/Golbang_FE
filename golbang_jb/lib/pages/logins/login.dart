@@ -83,19 +83,17 @@ class _TokenCheckState extends ConsumerState<TokenCheck> {
   }
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: isLoading
-          ? const Scaffold(
+    if (isLoading) {
+      return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
-      )
-          : isTokenExpired
-          ? LoginPage(message: widget.message)
-          : const SplashScreen(),
-    );
+      );
+    }
+
+    if (isTokenExpired) {
+      return LoginPage(message: widget.message);
+    }
+
+    return const SplashScreen();
   }
 }
 
