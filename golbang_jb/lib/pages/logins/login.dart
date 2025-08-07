@@ -65,8 +65,8 @@ class _TokenCheckState extends ConsumerState<TokenCheck> {
         fcmToken: fcmToken ?? '',
       );
 
-      if (response.statusCode == 200) {
-        await storage.saveAccessToken(response.data['data']['access_token']);
+      if (response?.statusCode == 200) {
+        await storage.saveAccessToken(response?.data['data']['access_token']);
         setState(() => isTokenExpired = false); // 성공 → Splash로 이동
 
       } else {
@@ -151,37 +151,40 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(25.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const LoginTitle(),
-              const SizedBox(height: 32),
-              EmailField(controller: _emailController),
-              const SizedBox(height: 16),
-              PasswordField(controller: _passwordController),
-              const SizedBox(height: 64),
-              LoginButton(onPressed: _login),
-              const SizedBox(height: 16),
-              if (_showBiometricButton)
-                ElevatedButton.icon(
-                  onPressed: _loginWithBiometrics,
-                  icon: const Icon(Icons.fingerprint,
-                    color: Colors.white,
+      body: SafeArea(
+        top: true, bottom: true,
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(25.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const LoginTitle(),
+                const SizedBox(height: 32),
+                EmailField(controller: _emailController),
+                const SizedBox(height: 16),
+                PasswordField(controller: _passwordController),
+                const SizedBox(height: 48),
+                LoginButton(onPressed: _login),
+                const SizedBox(height: 16),
+                if (_showBiometricButton)
+                  ElevatedButton.icon(
+                    onPressed: _loginWithBiometrics,
+                    icon: const Icon(Icons.fingerprint,
+                      color: Colors.white,
+                    ),
+                    label: const Text('지문 인식',
+                      style:TextStyle(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
                   ),
-                  label: const Text('지문 인식',
-                    style:TextStyle(color: Colors.white),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  ),
-                ),
-              const SizedBox(height: 48),
-              SignUpLink(parentContext: context) ,
-            ],
+                const SizedBox(height: 48),
+                SignUpLink(parentContext: context) ,
+              ],
+            ),
           ),
         ),
       ),
@@ -260,10 +263,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           password: password,
           fcmToken: fcmToken ?? '',
         );
-        log('//--------------test1------------//');
-        await _handleLoginResponse(response, email, password);
+        await _handleLoginResponse(response!, email, password);
       } catch (e) {
-        _showErrorDialog('An error occurred. Please try again.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } else {
       _showErrorDialog('Please fill in all fields');

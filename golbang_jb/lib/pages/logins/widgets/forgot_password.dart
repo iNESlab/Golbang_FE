@@ -36,7 +36,13 @@ class ForgotPasswordDialog extends ConsumerWidget {
       ),
       actions: [
         TextButton(
-          onPressed: () => context.pop(),
+          onPressed: () {
+            if (context.canPop()){
+              context.pop();
+            } else {
+              context.go('/login');
+            }
+          },
           child: const Text('취소'),
         ),
         ElevatedButton(
@@ -66,22 +72,11 @@ class ForgotPasswordDialog extends ConsumerWidget {
             SnackBar(content: Text('$email로 전송되었습니다')),
           );
           context.pop();
-        } else {
-          messenger.showSnackBar(
-            SnackBar(content: Text('전송 실패했습니다: ${response.data['message']}')),
-          );
         }
-
-      } else {
-        messenger.showSnackBar(
-          const SnackBar(content: Text('유효한 이메일이 아닙니다.')),
-        );
       }
-    } on DioException catch (e) {
-      log('[ERR] 비밀번호 갱신 실패: $e');
-      final message = e.response?.data['message'] ?? '알 수 없는 에러입니다.';
+    } catch (e) {
       messenger.showSnackBar(
-        SnackBar(content: Text('$message')),
+        SnackBar(content: Text('$e'), backgroundColor: Colors.red,),
       );
     }
   }

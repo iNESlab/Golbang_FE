@@ -7,6 +7,8 @@ import 'package:golbang/global/PrivateClient.dart';
 import 'package:golbang/global/PublicClient.dart';
 import 'package:golbang/repoisitory/secure_storage.dart';
 
+import '../utils/safe_dio_call.dart';
+
 class AuthService {
   final SecureStorage storage;
   final publicClient = PublicClient();
@@ -16,40 +18,27 @@ class AuthService {
   AuthService(this.storage);
 
   // API 테스트 완료
-  Future<Response<dynamic>> login ({
+  Future<Response<dynamic>?> login ({
       required String username,
       required String password,
       required String fcmToken
   }) async {
-    var uri = "/api/v1/users/login/";
-    // body
-    Map data = {
-      'username': username,
-      'password': password,
-      'fcm_token': fcmToken
-    };
-    var body = json.encode(data);
-    try {
-      // 요청 시작 로그
-      log("Sending POST request to $uri with body: $data");
+      return await safeDioCall(() async {
+        var uri = "/api/v1/users/login/";
+        // body
+        Map data = {
+          'username': username,
+          'password': password,
+          'fcm_token': fcmToken
+        };
+        var body = json.encode(data);
 
-      var response = await publicClient.dio.post(uri, data: body);
-
-      // 응답 상태 로그
-      log("Response received: Status code ${response.statusCode}");
-
-      // 응답 바디 로그
-      log("Response body: ${response.data['data']}");
-
-      return response;
-    } catch (e, stackTrace) {
-      // 오류 로그
-      log("Error occurred during POST request: $e", error: e, stackTrace: stackTrace);
-
-      // 재던지기 (오류를 호출자에게 전달)
-      rethrow;
-    }
+        var response = await publicClient.dio.post(uri, data: body);
+        return response;
+      }
+    );
   }
+
 
   // API 테스트 완료
   Future<Response> logout() async {

@@ -107,12 +107,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         context.go('/', extra:{'message': '로그아웃처리 되었습니다.'});
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('로그아웃 실패: ${response.data}')),
+          SnackBar(
+            content: Text('로그아웃 실패: ${response.data}'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.')),
+        const SnackBar(
+          content: Text('로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
