@@ -24,6 +24,10 @@
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme"
                 />
+            <meta-data
+                android:name="flutter_deeplinking_enabled"
+                android:value="true"
+                />
             <!-- 기존 intent-filter -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -31,15 +35,19 @@
             </intent-filter>
 
             <!-- App Links를 처리하기 위한 intent-filter -->
+            <!-- dev.golf-bang.store -->
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-                <!-- 앱 링크 도메인 및 경로 설정 -->
                 <data
                     android:scheme="https"
-                    android:host="golbang-test"/>
+                    android:host="dev.golf-bang.store" />
+                <data
+                    android:scheme="https"
+                    android:host="us.golf-bang.store" />
             </intent-filter>
+
         </activity>
 
         <!-- Don't delete the meta-data below.

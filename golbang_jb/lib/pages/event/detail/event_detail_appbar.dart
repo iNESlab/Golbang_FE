@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -144,7 +145,7 @@ PreferredSizeWidget buildEventDetailAppBar(
 }
 
 void _shareEvent(Event event) {
-  final String eventLink = "https://golbang-test/?event_id=${event.eventId}";
+  final String eventLink = "${dotenv.env['API_HOST']}/events/${event.eventId}";
   Share.share(
     '이벤트를 확인해보세요!\n\n'
         '제목: ${event.eventTitle}\n'
