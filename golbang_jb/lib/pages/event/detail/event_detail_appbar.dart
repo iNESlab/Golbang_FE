@@ -17,8 +17,7 @@ PreferredSizeWidget buildEventDetailAppBar(
     WidgetRef ref,
     Event event,
     DateTime currentTime,
-    DateTime startDateTime,
-    DateTime endDateTime,
+    List<dynamic> participants,
     ) {
   final screenWidth = MediaQuery.of(context).size.width;
   final orientation = MediaQuery.of(context).orientation;
@@ -96,7 +95,7 @@ PreferredSizeWidget buildEventDetailAppBar(
                   TextButton(
                     onPressed: () {
                       context.pop();
-                      exportAndSendEmail(context, event, selectedRecipients);
+                      exportAndSendEmail(context, event, selectedRecipients, participants);
                     },
                     child: const Text('추출'),
                   ),
@@ -104,7 +103,7 @@ PreferredSizeWidget buildEventDetailAppBar(
               ),
             );
           } else {
-            exportAndSendEmail(context, event, selectedRecipients);
+            exportAndSendEmail(context, event, selectedRecipients, participants);
           }
         },
       ),
@@ -125,7 +124,7 @@ PreferredSizeWidget buildEventDetailAppBar(
           }
         },
         itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-          if (currentTime.isBefore(startDateTime.add(const Duration(minutes: 30))))
+          if (currentTime.isBefore(event.startDateTime.add(const Duration(minutes: 30))))
             const PopupMenuItem<String>(
               value: 'edit',
               child: Text('수정'),
@@ -156,10 +155,10 @@ void _shareEvent(Event event) {
 }
 
 Future<void> exportAndSendEmail(
-    BuildContext context, Event event, List<String> recipients) async {
+    BuildContext context, Event event, List<String> recipients, List<dynamic> participants) async {
   final filePath = await createScoreExcelFile(
     eventId: event.eventId,
-    participants: event.participants,
+    participants: participants,
     teamAScores: null, // 리팩토링된 상태에서는 필요 시 인자로 받게 수정
     teamBScores: null,
   );

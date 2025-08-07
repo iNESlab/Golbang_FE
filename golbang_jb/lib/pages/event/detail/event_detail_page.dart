@@ -88,7 +88,7 @@ class EventDetailPageState extends ConsumerState<EventDetailPage> with EventDeta
           await handleBack();
         },
         child: Scaffold(
-        appBar: buildEventDetailAppBar(context, ref, event!, currentTime, startDateTime, endDateTime),
+        appBar: buildEventDetailAppBar(context, ref, event!, currentTime, participants),
         body: SingleChildScrollView(
           child: SafeArea(
     child: EventDetailBody(
