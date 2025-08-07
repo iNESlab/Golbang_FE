@@ -80,16 +80,8 @@ class ParticipantService {
 
       final response = await privateClient.dio.get(url, data: data);
 
-      if (response.statusCode == 200) {
-        final List<dynamic> jsonList = response.data['data'];
-        return jsonList.map((json) => ScoreCard.fromJson(json)).toList();
-      } else {
-        final errorMsg = response.data['message'] ??
-            response.data['error'] ??
-            response.statusMessage ??
-            '알 수 없는 서버 오류';
-        throw Exception('에러: ${response.statusCode}\n메시지: $errorMsg');
-      }
+      final List<dynamic> jsonList = response.data['data'];
+      return jsonList.map((json) => ScoreCard.fromJson(json)).toList();
     });
   }
 }

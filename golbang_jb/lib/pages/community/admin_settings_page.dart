@@ -72,9 +72,7 @@ class AdminSettingsPage extends ConsumerWidget {
               onPressed: () async {
                 try {
                   await clubService.deleteClub(clubId); // 모임 삭제 API 호출
-
-                  context.pushReplacement('/home', extra: {'initialIndex': 2});
-                  //TODO: 페이지 안바뀜 비상 => Navigator로 들어와서 그럴 수 있음
+                  context.go('/clubs?refresh=${DateTime.now().millisecondsSinceEpoch}');
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('모임이 삭제되었습니다.')),

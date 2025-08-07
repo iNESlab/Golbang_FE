@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:developer';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -38,9 +39,7 @@ mixin EventDetailStateMixin<T extends ConsumerStatefulWidget> on ConsumerState<T
     final storage = ref.read(secureStorageProvider);
     final eventService = EventService(storage);
     try {
-      log('eventId: $eventId');
       final fetchedEvent = await eventService.getEventDetails(eventId);
-      log('이벤트 조회: $fetchedEvent');
       if (mounted && fetchedEvent != null) {
         setState(() {
           event = fetchedEvent;
@@ -52,7 +51,15 @@ mixin EventDetailStateMixin<T extends ConsumerStatefulWidget> on ConsumerState<T
       }
     } catch (e) {
       log('Error fetching event details: $e');
-      if (mounted) context.pop();
+      if (mounted) {
+        context.pop();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

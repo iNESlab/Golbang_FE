@@ -310,17 +310,10 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
       });
     } catch (e) {
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: const Text('스코어 등록 실패'),
-            content: Text(e.toString()),
-            actions: [
-              TextButton(
-                child: const Text('확인'),
-                onPressed: () => context.pop()
-              ),
-            ],
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$e'),
+            backgroundColor: Colors.red,
           ),
         );
       }
@@ -342,17 +335,10 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
       _stopAutoRefresh();
 
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: const Text('스코어 조회 실패'),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
             content: Text('$e'),
-            actions: [
-              TextButton(
-                child: const Text('확인'),
-                onPressed: () => context.pop()
-              ),
-            ],
+            backgroundColor: Colors.red,
           ),
         );
       }

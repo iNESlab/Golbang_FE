@@ -6,6 +6,7 @@ import '../models/create_event.dart';
 import '../models/responseDTO/GolfClubResponseDTO.dart';
 import '../repoisitory/secure_storage.dart';
 import '../models/event.dart';
+import '../utils/safe_dio_call.dart';
 
 class EventService {
   final SecureStorage storage;
@@ -265,28 +266,14 @@ class EventService {
   }
   // API 테스트 완료
   Future<Event?> getEventDetails(int eventId) async {
-    try {
-      // API URL 설정
-      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/');
+    return await safeDioCall<Event?>(() async {
+        // API URL 설정
+        final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/');
 
-      // API 요청
-      final response = await privateClient.dio.getUri(url);
-
-      if (response.statusCode == 200) {
-        // 응답 데이터 파싱
-        log("이벤트 상세 조회 성공: ${response.data['data']}");
+        // API 요청
+        final response = await privateClient.dio.getUri(url);
         // JSON 데이터를 Event 객체로 변환
         return Event.fromJson(response.data['data']);
-      } else {
-        // 오류 로그 출력
-        log('이벤트 상세 조회 실패: ${response.statusCode} - ${response.data}');
-        return null;
-      }
-    } catch (e) {
-      // 예외 처리
-      log('Error occurred while fetching event details: $e');
-      return null;
-    }
+    });
   }
-
 }

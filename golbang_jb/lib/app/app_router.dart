@@ -3,11 +3,9 @@ import 'package:golbang/app/routes/auth_routes.dart';
 import 'package:golbang/app/routes/club_routes.dart';
 import 'package:golbang/app/routes/etc_routes.dart';
 import 'package:golbang/app/routes/event_routes.dart';
-import 'package:golbang/app/routes/home_routes.dart';
 import 'package:golbang/app/routes/user_routes.dart';
 
 import '../main.dart';
-import '../models/user_account.dart';
 import '../pages/club/club_main.dart';
 import '../pages/event/event_main.dart';
 import '../pages/home/home_page.dart';

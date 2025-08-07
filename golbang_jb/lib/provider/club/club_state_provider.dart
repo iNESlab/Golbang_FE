@@ -49,25 +49,18 @@ class ClubStateNotifier extends StateNotifier<ClubState> {
     } catch (e) {
       log('클럽 목록 불러오기 실패: $e');
       if (!mounted) return; // context 사용 전에 반드시 mounted 체크
+      context.pop();
 
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        showDialog(
-          context: context,
-          builder: (_) =>
-              AlertDialog(
-                title: const Text('모임 조회 실패'),
-                content: Text('$e'),
-                actions: [
-                  TextButton(
-                    child: const Text('확인'),
-                    onPressed: () => context.pop()
-                  ),
-                ],
-              ),
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$e'),
+            backgroundColor: Colors.red,
+          ),
         );
-      });
+      }
     }
-    }
+  }
 
   // 클럽을 선택하는 함수
   void selectClubById(int clubId) {
