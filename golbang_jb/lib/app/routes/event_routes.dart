@@ -108,7 +108,7 @@ final List<GoRoute> eventRoutes = [
             selectedGolfClub: extra?['selectedGolfClub'] as GolfClubResponseDTO,
             selectedCourse: extra?['selectedCourse'] as CourseResponseDTO,
             startDate: extra?['startDate'] as DateTime,
-            endDate: extra?['endDateTime'] as DateTime,
+            endDate: extra?['endDate'] as DateTime,
             selectedParticipants: extra?['selectedParticipants'] as List<ClubMemberProfile>,
             existingParticipants: extra?['existingParticipants']as List<Participant>,
             selectedGameMode: extra?['selectedGameMode'] as GameMode,
