@@ -71,9 +71,9 @@ class MainScaffold extends StatelessWidget {
   }
 
   int _getIndex(String location) {
-    if (location.startsWith('/events')) return 1;
-    if (location.startsWith('/clubs')) return 2;
-    if (location.startsWith('/user')) return 3;
+    if (location.startsWith('/app/events')) return 1;
+    if (location.startsWith('/app/clubs')) return 2;
+    if (location.startsWith('/app/user')) return 3;
     return 0;
   }
 }
