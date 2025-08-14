@@ -1,4 +1,9 @@
+import 'dart:isolate';
+import 'dart:ui';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_downloader/flutter_downloader.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/app/app_router.dart';
@@ -8,9 +13,20 @@ import 'package:golbang/app/app_initializer.dart';
 import 'package:golbang/app/notification_handler.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>(); // 👈 추가
+
+// 메인 Isolate에서 받을 포트
+final ReceivePort _dlPort = ReceivePort();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // 👇 flutter_downloader 초기화 (반드시 가장 먼저, 1회)
+  await FlutterDownloader.initialize(
+    debug: kDebugMode, // 디버그 모드에서 로그 보려면 true
+    // ignoreSsl: false, // (옵션) 필요한 경우만
+  );
+
   await initializeApp(); // ✅ 앱 초기화
 
   initializeDateFormatting().then((_) {
@@ -29,6 +45,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return NotificationHandler( // ✅ 알림 핸들러 적용
       child: MaterialApp.router(
+        scaffoldMessengerKey: scaffoldMessengerKey,
         title: 'GOLBANG MAIN PAGE',
         debugShowCheckedModeBanner: false,
         locale: const Locale('ko', 'KR'),

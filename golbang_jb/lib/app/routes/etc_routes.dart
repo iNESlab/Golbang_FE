@@ -1,9 +1,12 @@
 import 'package:go_router/go_router.dart';
 
+import '../../pages/event/new_peoria_web_view.dart';
 import '../../pages/home/splash_screen.dart';
 import '../../pages/notification/notification_history_page.dart';
 import '../../pages/setting/feedback_page.dart';
 import '../../pages/setting/setting_page.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 
 
 final List<GoRoute> etcRoutes = [
@@ -27,25 +30,33 @@ final List<GoRoute> etcRoutes = [
   //   },
   // ),
   GoRoute(
-    path: '/history',
+    path: '/app/new-peoria',
+    builder: (context, state) {
+      return NewPeoriaWebViewPage(
+        url: '${dotenv.env['API_HOST']!}/calculator/upload/',
+      );
+    },
+  ),
+  GoRoute(
+    path: '/app/history',
     builder: (context, state) {
       return const NotificationHistoryPage();
     },
   ),
   GoRoute(
-    path: '/setting',
+    path: '/app/setting',
     builder: (context, state) {
       return const SettingsPage();
     },
   ),
   GoRoute(
-    path: '/splash',
+    path: '/app/splash',
     builder: (context, state) {
       return const SplashScreen();
     },
   ),
   GoRoute(
-    path: '/feedback',
+    path: '/app/feedback',
     builder: (context, state) {
       return const FeedbackPage();
     },

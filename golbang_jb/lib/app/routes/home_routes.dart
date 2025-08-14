@@ -3,7 +3,7 @@ import '../../pages/home/home_page.dart';
 
 final List<GoRoute> homeRoutes = [
   GoRoute(
-    path: '/home',
+    path: '/app/home',
     builder: (context, state)  {
       return const HomePage();
     },

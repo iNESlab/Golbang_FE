@@ -162,6 +162,23 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
           ],
         ),
       ),
+      bottomNavigationBar: SafeArea(
+        top: true, bottom: true,
+        child: ElevatedButton(
+          onPressed: (){
+            context.push('/new-peoria');
+          },
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size(double.infinity, 50),
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.teal,
+            shape: const RoundedRectangleBorder(
+                borderRadius:BorderRadius.zero
+            ),
+          ),
+          child: const Text('신페리온 계산하기'),
+        )
+      ),
     );
   }
 }

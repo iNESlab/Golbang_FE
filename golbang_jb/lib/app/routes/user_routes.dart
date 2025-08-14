@@ -7,18 +7,18 @@ import '../../pages/profile/user_info_page.dart';
 final List<GoRoute> userRoutes = [
 
   GoRoute(
-      path: '/user/profile',
+      path: '/app/user/profile',
       builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
         return UserInfoPage(initialUserAccount: extra?['userAccount'] as UserAccount);
       }
   ),
   GoRoute(
-      path: '/user/statistics',
+      path: '/app/user/statistics',
       builder: (context, state) => const StatisticsPage(),
   ),
   GoRoute(
-    path: '/user/privacy-policy',
+    path: '/app/user/privacy-policy',
     builder: (context, state) =>const PrivacyPolicyPage(),
   ),
 ];

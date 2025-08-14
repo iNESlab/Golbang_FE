@@ -145,7 +145,7 @@ PreferredSizeWidget buildEventDetailAppBar(
 }
 
 void _shareEvent(Event event) {
-  final String eventLink = "${dotenv.env['API_HOST']}/events/${event.eventId}";
+  final String eventLink = "${dotenv.env['API_HOST']}/app/events/${event.eventId}";
   Share.share(
     '이벤트를 확인해보세요!\n\n'
         '제목: ${event.eventTitle}\n'

@@ -22,7 +22,7 @@ import '../../pages/game/score_card_page.dart';
 final List<GoRoute> eventRoutes = [
 
   GoRoute(
-      path: '/events/new-step1',
+      path: '/app/events/new-step1',
       builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
 
@@ -30,7 +30,7 @@ final List<GoRoute> eventRoutes = [
       }
     ),
   GoRoute(
-      path: '/events/new-step2',
+      path: '/app/events/new-step2',
       builder: (context, state) {
         final extra = state.extra as Map<String, dynamic>?;
 
@@ -48,7 +48,7 @@ final List<GoRoute> eventRoutes = [
       }
   ),
   GoRoute(
-    path: '/events/:eventId',
+    path: '/app/events/:eventId',
     builder: (context, state) {
       final eventId = int.tryParse(state.pathParameters['eventId']!);
       final extra = state.extra as Map<String, dynamic>?;

@@ -11,13 +11,13 @@ import '../../pages/community/post/post_create_page.dart';
 
 final List<GoRoute> clubRoutes = [
   GoRoute(
-      path: '/clubs/new',
+      path: '/app/clubs/new',
       builder: (context, state) {
         return const ClubCreatePage();
       }
   ),
   GoRoute(
-    path: '/clubs/:clubId',
+    path: '/app/clubs/:clubId',
     builder: (context, state) {
       final clubId = int.tryParse(state.pathParameters['clubId']!);
       final extra = state.extra as Map<String, dynamic>?;
