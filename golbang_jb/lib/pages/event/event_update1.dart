@@ -313,9 +313,9 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
           },
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -544,55 +544,63 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 16),
-              Center(
-                child: ElevatedButton(
-                  onPressed: _isButtonEnabled
-                      ? () {
-                    _validateForm();
-                    if (!_isButtonEnabled) return;
-
-                    final DateTime startDate = DateTime.parse(_startDateController.text);
-                    final TimeOfDay startTime = _parseTimeOfDay(_startTimeController.text);
-                    final DateTime startDateTime = _combineDateAndTime(startDate, startTime);
-                    final DateTime endDateTime = startDateTime.add(const Duration(days: 1));
-
-                    // 업데이트할 이벤트 데이터를 EventsUpdate2로 전달
-                    final extra = {
-                      'eventId': widget.event.eventId,
-                      'title': _titleController.text,
-                      'selectedClub': _selectedClub!,
-                      'selectedLocation': _selectedLocation!,
-                      'selectedGolfClub': _selectedGolfClub!,
-                      'selectedCourse': _selectedCourse!,
-                      'startDate': startDateTime,
-                      'endDate': endDateTime,
-                      'selectedParticipants': _selectedParticipants,
-                      'existingParticipants': widget.event.participants.where((p) {
-                        Member member = p.member!;
-
-                        // selectedParticipants에 해당 memberId가 있는지 확인
-                        return _selectedParticipants.any((participant) =>
-                        participant.memberId == member.memberId
-                        );
-                      }).toList(),
-                      'selectedGameMode': _selectedGameMode!,
-                    };
-                    context.push('/app/events/${widget.event.eventId}/edit-step2', extra: extra);
-                  }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: _isButtonEnabled ? Colors.white : Colors.black54,
-                    minimumSize: const Size(double.infinity, 50),
-                    backgroundColor: _isButtonEnabled ? Colors.teal : Colors.grey,
-                  ),
-                  child: const Text('다음'),
-                ),
-              ),
             ],
           ),
         ),
       ),
+      bottomNavigationBar: SafeArea(
+        top: true, bottom: true,
+        child: _buildNextButton(context),
+      ),
+    );
+  }
+
+  Widget _buildNextButton(BuildContext context){
+    return ElevatedButton(
+      onPressed: _isButtonEnabled
+          ? () {
+        _validateForm();
+        if (!_isButtonEnabled) return;
+
+        final DateTime startDate = DateTime.parse(_startDateController.text);
+        final TimeOfDay startTime = _parseTimeOfDay(_startTimeController.text);
+        final DateTime startDateTime = _combineDateAndTime(startDate, startTime);
+        log('start: $startDateTime');
+        final DateTime endDateTime = startDateTime.add(const Duration(days: 1));
+        log('end: $endDateTime');
+
+        // 업데이트할 이벤트 데이터를 EventsUpdate2로 전달
+        final extra = {
+          'eventId': widget.event.eventId,
+          'title': _titleController.text,
+          'selectedClub': _selectedClub!,
+          'selectedLocation': _selectedLocation!,
+          'selectedGolfClub': _selectedGolfClub!,
+          'selectedCourse': _selectedCourse!,
+          'startDate': startDateTime,
+          'endDate': endDateTime,
+          'selectedParticipants': _selectedParticipants,
+          'existingParticipants': widget.event.participants.where((p) {
+            Member member = p.member!;
+            // selectedParticipants에 해당 memberId가 있는지 확인
+            return _selectedParticipants.any((participant) =>
+            participant.memberId == member.memberId
+            );
+          }).toList(),
+          'selectedGameMode': _selectedGameMode!,
+        };
+        context.push('/app/events/${widget.event.eventId}/edit-step2', extra: extra);
+      }
+          : null,
+      style: ElevatedButton.styleFrom(
+        minimumSize: const Size(double.infinity, 50),
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.teal,
+        shape: const RoundedRectangleBorder(
+            borderRadius:BorderRadius.zero
+        ),
+      ),
+      child: const Text('다음'),
     );
   }
 }
