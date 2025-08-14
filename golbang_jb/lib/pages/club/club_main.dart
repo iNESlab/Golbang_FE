@@ -91,7 +91,7 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
                   ),
                   onPressed: () {
                     ref.read(clubStateProvider.notifier).selectClubById(club.id); // 상태 저장
-                    context.push('/clubs/${club.id}');
+                    context.push('/app/clubs/${club.id}');
                   },
                   child: GroupItem(
                     image: club.image,
@@ -135,7 +135,7 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
                       const Spacer(),
                       TextButton.icon(
                         onPressed: () {
-                          context.push('/clubs/new').then((_) {
+                          context.push('/app/clubs/new').then((_) {
                             _fetchGroups(); // 모임 생성 후 새로고침
                           });
                         },

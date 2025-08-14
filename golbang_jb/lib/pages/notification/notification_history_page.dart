@@ -75,9 +75,9 @@ class NotificationHistoryPageState extends ConsumerState<NotificationHistoryPage
     log('clubId: $clubId');
 
     if (eventId != null) {
-      context.push('/events/$eventId', extra: {'from': 'history'});
+      context.push('/app/events/$eventId', extra: {'from': 'history'});
     } else if (clubId != null) {
-      context.push('/clubs/$clubId', extra: {'from': 'history'});
+      context.push('/app/clubs/$clubId', extra: {'from': 'history'});
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('상세 정보를 확인할 수 없습니다.')),

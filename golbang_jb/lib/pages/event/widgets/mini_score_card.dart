@@ -219,7 +219,7 @@ class MiniScoreCard extends StatelessWidget {
             child: ElevatedButton(
               onPressed: () {
                 //TODO:전체 스코어카드 페이지로 이동하는 코드 추가 필요
-                context.push('/events/$eventId/result', extra: {'isFull': true});
+                context.push('/app/events/$eventId/result', extra: {'isFull': true});
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green[100], // 배경색 설정

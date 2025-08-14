@@ -18,7 +18,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void _navigateToMainScreen() async {
     await Future.delayed(const Duration(seconds: 2));
     if (mounted) {
-      context.go('/home'); // ✅ go_router로 전환!
+      context.go('/app/home'); // ✅ go_router로 전환!
     }
   }
 

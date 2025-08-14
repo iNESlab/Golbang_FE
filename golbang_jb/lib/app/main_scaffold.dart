@@ -33,11 +33,11 @@ class MainScaffold extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined, color: Colors.black),
-            onPressed: () => context.push('/history'),
+            onPressed: () => context.push('/app/history'),
           ),
           IconButton(
             icon: const Icon(Icons.settings_outlined, color: Colors.black),
-            onPressed: () => context.push('/setting'),
+            onPressed: () => context.push('/app/setting'),
           ),
         ],
       ),
@@ -47,16 +47,16 @@ class MainScaffold extends StatelessWidget {
         onTap: (index) {
           switch (index) {
             case 0:
-              context.go('/home');
+              context.go('/app/home');
               break;
             case 1:
-              context.go('/events');
+              context.go('/app/events');
               break;
             case 2:
-              context.go('/clubs');
+              context.go('/app/clubs');
               break;
             case 3:
-              context.go('/user');
+              context.go('/app/user');
               break;
           }
         },

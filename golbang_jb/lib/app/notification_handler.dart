@@ -44,14 +44,14 @@ class _NotificationHandlerState extends ConsumerState<NotificationHandler> {
 
     if (isLoggedIn && mounted) {
       if (eventId != null) {
-        context.go('/events/$eventId');
+        context.go('/app/events/$eventId');
       } else if (clubId != null) {
-        context.go('/clubs/$clubId');
+        context.go('/app/clubs/$clubId');
       } else {
-        context.go('/home');
+        context.go('/app/home');
       }
     } else {
-      context.go('/');
+      context.go('/app');
     }
   }
 

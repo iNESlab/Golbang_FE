@@ -107,7 +107,7 @@ class SignUpLink extends StatelessWidget {
               style: TextStyle(color: Colors.grey[600]),
             ),
             GestureDetector(
-              onTap: () => context.push('/signup/terms'),
+              onTap: () => context.push('/app/signup/terms'),
               child: const Text(
                 '회원가입',
                 style: TextStyle(

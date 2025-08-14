@@ -66,7 +66,7 @@ class EventDetailPageState extends ConsumerState<EventDetailPage> with EventDeta
     if (context.canPop()) {
       context.pop();
     } else {
-      context.go('/events');
+      context.go('/app/events');
     }
   }
 

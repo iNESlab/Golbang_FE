@@ -295,7 +295,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       await storage.savePassword(password);
       await storage.saveAccessToken(accessToken);
       if (mounted) {
-        context.pushReplacement('/splash');
+        context.pushReplacement('/app/splash');
       }
     } else {
       _showErrorDialog('Invalid email or password');

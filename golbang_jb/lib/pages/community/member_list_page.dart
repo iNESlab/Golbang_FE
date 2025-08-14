@@ -257,7 +257,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
             ElevatedButton(
               onPressed: () async {
                 await _inviteMembers();
-                context.go('/clubs/:clubId?refresh=${DateTime.now().millisecondsSinceEpoch}');
+                context.go('/app/clubs/:clubId?refresh=${DateTime.now().millisecondsSinceEpoch}');
               },
               child: const Text("초대"),
             ),

@@ -88,7 +88,7 @@ class _FeedbackPageState extends ConsumerState<FeedbackPage> {
           actions: [
             TextButton(
               onPressed: () {
-                if (isSuccess) context.go('/home'); // Exit page if successful
+                if (isSuccess) context.go('/app/home'); // Exit page if successful
                 context.pop(); // Close dialog
               },
               child: const Text(

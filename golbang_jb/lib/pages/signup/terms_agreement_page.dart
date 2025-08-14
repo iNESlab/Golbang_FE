@@ -37,7 +37,7 @@ class _TermsAgreementPageState extends State<TermsAgreementPage> {
 
   void _onSubmit() {
     if (terms['[필수] 이용약관 동의']! && terms['[필수] 개인정보 수집 및 이용 동의']!) {
-      context.push('/signup');
+      context.push('/app/signup');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('필수 약관에 동의해주세요.')),
@@ -47,7 +47,7 @@ class _TermsAgreementPageState extends State<TermsAgreementPage> {
 
   void _navigateToTermsDetail(String key) {
 
-   context.push('/signup/terms/detail', extra: {'key': key}).then((_) {
+   context.push('/app/signup/terms/detail', extra: {'key': key}).then((_) {
       // 돌아온 뒤 동의 처리
       setState(() {
         terms[key] = true;

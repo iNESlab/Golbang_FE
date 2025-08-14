@@ -170,7 +170,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
   void _showScoreSummary() {
     _stopAutoRefresh();
     context.push(
-        '/events/${widget.event.eventId}/game/scores',
+        '/app/events/${widget.event.eventId}/game/scores',
         extra: {'event': widget.event}
     );
   }

@@ -100,7 +100,7 @@ class _HiScreenState extends State<HiScreen> {
 
                       // Join button
                       ElevatedButton(
-                        onPressed: () => context.push('/terms'),
+                        onPressed: () => context.push('/app/terms'),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green,
                           minimumSize: const Size(400, 50),
@@ -148,7 +148,7 @@ class _HiScreenState extends State<HiScreen> {
                       // const SizedBox(height: 20),
                       // Login button
                       TextButton(
-                        onPressed: () => context.push('/login'),
+                        onPressed: () => context.push('/app/login'),
                         child: const Text('로그인하기',
                             style: TextStyle(color: Colors.white)),
                       ),

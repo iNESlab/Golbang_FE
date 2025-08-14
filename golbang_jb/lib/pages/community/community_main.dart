@@ -88,9 +88,9 @@ class _CommunityMainState extends ConsumerState<CommunityMain> {
 
     if (_club!.isAdmin) {
       log('clubId: ${_club!.id}');
-      context.push('/clubs/${_club!.id}/setting', extra: {'role': 'admin'});
+      context.push('/app/clubs/${_club!.id}/setting', extra: {'role': 'admin'});
     } else {
-      context.push('/clubs/${_club!.id}/setting', extra: {'role': 'member'});
+      context.push('/app/clubs/${_club!.id}/setting', extra: {'role': 'member'});
     }
   }
 
@@ -100,7 +100,7 @@ class _CommunityMainState extends ConsumerState<CommunityMain> {
     if (context.canPop()) {
       context.pop();
     } else {
-      context.go('/clubs');
+      context.go('/app/clubs');
     }
   }
 
@@ -191,7 +191,7 @@ class _CommunityMainState extends ConsumerState<CommunityMain> {
                             ],
                           ),
                           TextButton(
-                            onPressed: () => context.push('/clubs/${_club!.id}/new-post'),
+                            onPressed: () => context.push('/app/clubs/${_club!.id}/new-post'),
                             style: TextButton.styleFrom(
                               backgroundColor: Colors.green,
                               foregroundColor: Colors.white,

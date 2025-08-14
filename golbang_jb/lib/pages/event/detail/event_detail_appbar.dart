@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
@@ -27,7 +28,7 @@ PreferredSizeWidget buildEventDetailAppBar(
 
 
   void editEvent() {
-    context.push('/events/${event.eventId}/edit-step1', extra: {'event': event});
+    context.push('/app/events/${event.eventId}/edit-step1', extra: {'event': event});
   }
 
   void deleteEvent() async {
@@ -39,7 +40,7 @@ PreferredSizeWidget buildEventDetailAppBar(
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('성공적으로 삭제되었습니다')),
       );
-      context.pushReplacement('/events');
+      context.pushReplacement('/app/events');
     } else if(success == 403) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('관리자가 아닙니다. 관리자만 삭제할 수 있습니다.')),
@@ -59,7 +60,7 @@ PreferredSizeWidget buildEventDetailAppBar(
         if (context.canPop()) {
           context.pop();
         } else {
-          context.go('/events');
+          context.go('/app/events');
         }
       },
     ),

@@ -151,7 +151,7 @@ class EventPageState extends ConsumerState<EventPage> {
   }
 
   void _navigateToResultPage(Event event) async {
-    context.push('/events/${event.eventId}/result');
+    context.push('/app/events/${event.eventId}/result');
   }
 
   @override
@@ -486,12 +486,12 @@ class EventPageState extends ConsumerState<EventPage> {
       );
     } else {
       // 모임이 있다면 이벤트 생성 페이지로 이동
-      context.push('/events/new-step1', extra: {'startDay': _focusedDay});
+      context.push('/app/events/new-step1', extra: {'startDay': _focusedDay});
     }
   }
 
   void _navigateToEventDetail(Event event) async {
-    await context.push('/events/${event.eventId}', extra: {'event': event});
+    await context.push('/app/events/${event.eventId}', extra: {'event': event});
   }
 
   Color _getStatusColor(String statusType) {

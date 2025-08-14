@@ -284,7 +284,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('이벤트가 성공적으로 수정되었습니다.')),
       );
-      context.pushReplacement('/events/${widget.eventId}');
+      context.pushReplacement('/app/events/${widget.eventId}');
 
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

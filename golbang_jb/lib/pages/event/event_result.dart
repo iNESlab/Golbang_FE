@@ -166,7 +166,7 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
         top: true, bottom: true,
         child: ElevatedButton(
           onPressed: (){
-            context.push('/new-peoria');
+            context.push('/app/new-peoria');
           },
           style: ElevatedButton.styleFrom(
             minimumSize: const Size(double.infinity, 50),

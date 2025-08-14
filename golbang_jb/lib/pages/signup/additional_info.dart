@@ -150,7 +150,7 @@ class _AdditionalInfoPageState extends ConsumerState<AdditionalInfoPage> {
       log(_addressController.text);
       log(response.statusCode.toString());
       if (response.statusCode == 200) {
-        context.push('/signup/complete');
+        context.push('/app/signup/complete');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('추가 정보 갱신에 실패했습니다. 다시 시도해 주세요.')),

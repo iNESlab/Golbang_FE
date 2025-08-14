@@ -115,7 +115,7 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
               return GestureDetector(
                 onTap: () async {
                   final result = await context.push(
-                    '/events/${event.eventId}', extra: {'event': event}
+                    '/app/events/${event.eventId}', extra: {'event': event}
                   );
 
                   log('수정 여부: $result');

@@ -32,13 +32,13 @@ class AdminSettingsPage extends ConsumerWidget {
             SettingsButton(
               text: '멤버 조회',
               onPressed: () => context.push(
-                '/clubs/$clubId/setting/members',
+                '/app/clubs/$clubId/setting/members',
                 extra: {'clubId': clubId, 'isAdmin': true}
               )
             ),
             SettingsButton(
               text: '모임 및 관리자 변경',
-              onPressed: () => context.push('/clubs/$clubId/setting/edit')
+              onPressed: () => context.push('/app/clubs/$clubId/setting/edit')
             ),
             SettingsButton(
               text: '모임 삭제하기',
@@ -72,7 +72,7 @@ class AdminSettingsPage extends ConsumerWidget {
               onPressed: () async {
                 try {
                   await clubService.deleteClub(clubId); // 모임 삭제 API 호출
-                  context.go('/clubs?refresh=${DateTime.now().millisecondsSinceEpoch}');
+                  context.go('/app/clubs?refresh=${DateTime.now().millisecondsSinceEpoch}');
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('모임이 삭제되었습니다.')),

@@ -12,7 +12,6 @@ import '../../models/responseDTO/CourseResopnseDTO.dart';
 import '../../models/responseDTO/GolfClubResponseDTO.dart';
 import '../../pages/event/detail/event_detail_page.dart';
 import '../../pages/event/event_create1.dart';
-import '../../pages/event/event_main.dart';
 import '../../pages/event/event_result.dart';
 import '../../pages/event/event_result_full_score_card.dart';
 import '../../pages/event/event_update1.dart';
@@ -94,7 +93,7 @@ final List<GoRoute> eventRoutes = [
         path: 'edit-step1',
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
-          return EventsUpdate1(event: extra?['event']);
+          return EventsUpdate1(event: extra?['event'] as Event);
         },
       ),
       GoRoute(

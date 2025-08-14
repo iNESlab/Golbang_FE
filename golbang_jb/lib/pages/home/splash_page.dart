@@ -21,7 +21,7 @@ class _SplashPageState extends State<SplashPage> {
     await Future.delayed(const Duration(seconds: 2));
     // 이전 스택을 제거하면서 /home으로 이동
     if (mounted) {
-      context.go('/home');
+      context.go('/app/home');
     }
   }
 

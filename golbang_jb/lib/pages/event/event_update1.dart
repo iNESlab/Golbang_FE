@@ -578,7 +578,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                       }).toList(),
                       'selectedGameMode': _selectedGameMode!,
                     };
-                    context.push('/events/${widget.event.eventId}/edit-step2', extra: extra);
+                    context.push('/app/events/${widget.event.eventId}/edit-step2', extra: extra);
                   }
                       : null,
                   style: ElevatedButton.styleFrom(

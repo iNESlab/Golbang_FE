@@ -40,7 +40,7 @@ class ForgotPasswordDialog extends ConsumerWidget {
             if (context.canPop()){
               context.pop();
             } else {
-              context.go('/login');
+              context.go('/app/login');
             }
           },
           child: const Text('취소'),

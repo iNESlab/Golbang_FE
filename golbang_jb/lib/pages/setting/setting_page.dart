@@ -67,11 +67,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           const SectionHeader(title: '고객지원'),
           SettingsTile(
             title: '개인정보처리방침',
-            onTap: () => context.push('/user/privacy-policy'),
+            onTap: () => context.push('/app/user/privacy-policy'),
           ),
           SettingsTile(
             title: '피드백 보내기',
-            onTap: () => context.push('/feedback'),
+            onTap: () => context.push('/app/feedback'),
           ),
           SettingsTile(
             title: '앱정보',
@@ -104,7 +104,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       if (!mounted) return;
 
       if (response.statusCode == 202) {
-        context.go('/', extra:{'message': '로그아웃처리 되었습니다.'});
+        context.go('/app', extra:{'message': '로그아웃처리 되었습니다.'});
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -159,7 +159,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     ),
                     const SizedBox(width: 8), // 버튼 간 간격
                     TextButton(
-                      onPressed: () => context.pushReplacement('/'),
+                      onPressed: () => context.pushReplacement('/app'),
                       child: const Text(
                         '확인',
                         style: TextStyle(color: Colors.red),
@@ -179,7 +179,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       try {
         final response = await userService.deleteAccount(); // 회원탈퇴 API 호출
         if (response.statusCode == 200) {
-          context.go('/', extra:{'message': '회원탈퇴 하였습니다'});
+          context.go('/app', extra:{'message': '회원탈퇴 하였습니다'});
         } else {
           final Map<String, dynamic> responseBody = response.data;
           ScaffoldMessenger.of(context).showSnackBar(

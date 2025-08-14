@@ -13,39 +13,8 @@ import '../pages/profile/profile_screen.dart';
 import 'main_scaffold.dart';
 
 final GoRouter appRouter = GoRouter(
-  initialLocation: '/app/home',
+  initialLocation: '/app',
   navigatorKey: navigatorKey,
-
-  // 레거시 경로를 /app/* 로 강제 정규화 (웹 전용 경로는 제외)
-  redirect: (context, state) {
-    final loc = state.uri.toString();
-
-    // 웹뷰/브라우저 전용 링크는 건들지 않음
-    if (loc.startsWith('/calculator/') || loc.startsWith('/calculate/')) {
-      return null;
-    }
-
-    // 이미 /app/ 로 시작하면 통과
-    if (loc.startsWith('/app/')) return null;
-
-    // 루트/레거시 경로는 /app 프리픽스로 보정
-    // 예: /home -> /app/home
-    const legacyToApp = <String, String>{
-      '/': '/app/home',
-      '/home': '/app/home',
-      '/events': '/app/events',
-      '/clubs': '/app/clubs',
-      '/user': '/app/user',
-    };
-    if (legacyToApp.containsKey(loc)) return legacyToApp[loc]!;
-
-    // 그 외엔 일괄 프리픽스 부착 (중복 슬래시 방지)
-    if (!loc.startsWith('/app')) {
-      final normalized = loc.startsWith('/') ? '/app$loc' : '/app/$loc';
-      return normalized;
-    }
-    return null;
-  },
 
   routes: [
     // 앱 공통 프레임

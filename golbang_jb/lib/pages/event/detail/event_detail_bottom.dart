@@ -35,7 +35,7 @@ class EventDetailBottomBar extends ConsumerWidget {
   Widget _buildResultButton(BuildContext context) {
     return ElevatedButton(
       onPressed: () {
-        context.push('/events/${event.eventId}/result', extra: {'eventId': event.eventId});
+        context.push('/app/events/${event.eventId}/result', extra: {'eventId': event.eventId});
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.blue,
@@ -61,7 +61,7 @@ class EventDetailBottomBar extends ConsumerWidget {
         if (!isGameInProgress) {
           ref.read(gameInProgressProvider.notifier).startGame(event.eventId);
         }
-        context.push('/events/${event.eventId}/game', extra: {'event': event});
+        context.push('/app/events/${event.eventId}/game', extra: {'event': event});
       },
       style: ElevatedButton.styleFrom(
         backgroundColor: Colors.green,

@@ -69,7 +69,7 @@ class _GroupsSectionState extends ConsumerState<GroupsSection> {
               child: GestureDetector(
                 onTap: () {
                   ref.read(clubStateProvider.notifier).selectClubById(club.id); // 상태 저장
-                  context.push('/clubs/${club.id}');
+                  context.push('/app/clubs/${club.id}');
                 },
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

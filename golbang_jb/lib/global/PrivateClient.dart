@@ -91,7 +91,7 @@ class PrivateClient {
     final ctx = navigatorKey.currentState?.context;
     if (ctx != null) {
       ctx.go(
-        '/',
+        '/app',
         extra: {'message': '로그인 토큰이 만료되었습니다. 다시 로그인해주세요.'},
       );
     }
