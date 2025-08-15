@@ -34,7 +34,7 @@ final List<GoRoute> etcRoutes = [
     builder: (context, state) {
       final query = state.uri.query; // ? 뒤의 쿼리스트링
       return NewPeoriaWebViewPage(
-        url: '${dotenv.env['API_HOST']!}/calculator/upload?$query',
+        url: '${dotenv.env['API_HOST']!}/calculator/upload/?$query',
       );
     },
   ),
