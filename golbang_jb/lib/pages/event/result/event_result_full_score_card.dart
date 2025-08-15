@@ -7,11 +7,11 @@ import 'package:golbang/services/event_service.dart';
 import 'package:excel/excel.dart' as xx; // excel 패키지 추가
 import 'package:path_provider/path_provider.dart';  // path_provider 패키지 임포트
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../repoisitory/secure_storage.dart'; // Riverpod 관련 패키지
+import '../../../repoisitory/secure_storage.dart'; // Riverpod 관련 패키지
 import 'package:flutter/services.dart';
 
-import '../../utils/email.dart';
-import '../../widgets/sections/show_email_recipient_dialog.dart'; // 화면 방향 변경을 위한 패키지
+import '../../../utils/email.dart';
+import '../../../widgets/sections/show_email_recipient_dialog.dart'; // 화면 방향 변경을 위한 패키지
 
 
 class EventResultFullScoreCard extends ConsumerStatefulWidget {

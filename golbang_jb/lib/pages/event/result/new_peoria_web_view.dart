@@ -8,7 +8,7 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 // iOS/macOS 전용
 import 'package:webview_flutter_wkwebview/webview_flutter_wkwebview.dart';
 
-import '../../utils/enqueued_download.dart';
+import '../../../utils/enqueued_download.dart';
 
 class NewPeoriaWebViewPage extends StatefulWidget {
   final String url;

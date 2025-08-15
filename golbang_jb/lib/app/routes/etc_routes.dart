@@ -1,6 +1,6 @@
 import 'package:go_router/go_router.dart';
 
-import '../../pages/event/new_peoria_web_view.dart';
+import '../../pages/event/result/new_peoria_web_view.dart';
 import '../../pages/home/splash_screen.dart';
 import '../../pages/notification/notification_history_page.dart';
 import '../../pages/setting/feedback_page.dart';
@@ -32,8 +32,9 @@ final List<GoRoute> etcRoutes = [
   GoRoute(
     path: '/app/new-peoria',
     builder: (context, state) {
+      final query = state.uri.query; // ? 뒤의 쿼리스트링
       return NewPeoriaWebViewPage(
-        url: '${dotenv.env['API_HOST']!}/calculator/upload/',
+        url: '${dotenv.env['API_HOST']!}/calculator/upload?$query',
       );
     },
   ),
