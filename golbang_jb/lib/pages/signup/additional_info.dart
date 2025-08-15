@@ -1,11 +1,12 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:golbang/pages/signup/widgets/calendar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../provider/user/user_service_provider.dart';
 
-import 'signup_complete.dart'; // 회원가입 완료 페이지 import
+// 회원가입 완료 페이지 import
 
 class AdditionalInfoPage extends ConsumerStatefulWidget {
   final int userId; //TODO: AccountId 수정
@@ -51,9 +52,7 @@ class _AdditionalInfoPageState extends ConsumerState<AdditionalInfoPage> {
         title: const Text(''),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => context.pop()
         ),
       ),
       body: SingleChildScrollView(
@@ -151,11 +150,7 @@ class _AdditionalInfoPageState extends ConsumerState<AdditionalInfoPage> {
       log(_addressController.text);
       log(response.statusCode.toString());
       if (response.statusCode == 200) {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => const SignupComplete(),
-          ),
-        );
+        context.push('/app/signup/complete');
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('추가 정보 갱신에 실패했습니다. 다시 시도해 주세요.')),

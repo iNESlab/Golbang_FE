@@ -1,12 +1,8 @@
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:golbang/pages/club/club_edit_page.dart';
-import 'package:golbang/pages/community/member_list_page.dart';
-import '../../provider/club/club_state_provider.dart';
+import 'package:go_router/go_router.dart';
 import '../../services/club_service.dart';
 import '../../repoisitory/secure_storage.dart';
-import 'package:get/get.dart';
 
 class AdminSettingsPage extends ConsumerWidget {
   final int clubId;
@@ -35,38 +31,14 @@ class AdminSettingsPage extends ConsumerWidget {
           children: [
             SettingsButton(
               text: '멤버 조회',
-              onPressed: () {
-                log('멤버 조회 클릭');
-                // 멤버 조회 페이지 연결 (생략)
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => MemberListPage(clubId: clubId, isAdmin: true,),
-                  ),
-                );
-              },
+              onPressed: () => context.push(
+                '/app/clubs/$clubId/setting/members',
+                extra: {'clubId': clubId, 'isAdmin': true}
+              )
             ),
-            // TODO: 멤버 관리 페이지 추후 만들어야 함
-            // SettingsButton(
-            //   text: '멤버 관리',
-            //   onPressed: () {
-            //     log('멤버 관리 클릭');
-            //     // 멤버 관리 페이지 연결 (생략)
-            //   },
-            // ),
             SettingsButton(
               text: '모임 및 관리자 변경',
-              onPressed: () {
-                log('모임 관리 클릭');
-                // 멤버 조회 페이지 연결 (생략)
-                // final club = ref.read(clubStateProvider).selectedClub;
-                // if (club != null) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const ClubEditPage()),
-                  );
-                // }
-              },
+              onPressed: () => context.push('/app/clubs/$clubId/setting/edit')
             ),
             SettingsButton(
               text: '모임 삭제하기',
@@ -92,18 +64,16 @@ class AdminSettingsPage extends ConsumerWidget {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop(); // 다이얼로그 닫기
+                context.pop(); // 다이얼로그 닫기
               },
               child: const Text('취소'),
             ),
             TextButton(
               onPressed: () async {
-                Navigator.of(context).pop(); // 다이얼로그 닫기
                 try {
                   await clubService.deleteClub(clubId); // 모임 삭제 API 호출
-                  ref.read(clubStateProvider.notifier).removeClub(clubId);
+                  context.go('/app/clubs?refresh=${DateTime.now().millisecondsSinceEpoch}');
 
-                  Get.offAllNamed('/home', arguments: {'initialIndex': 2});
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('모임이 삭제되었습니다.')),
                   );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../models/participant.dart';
 
 Future<List<String>> showEmailRecipientDialog(BuildContext context, List<Participant> participants) async {
@@ -135,7 +136,7 @@ Future<List<String>> showEmailRecipientDialog(BuildContext context, List<Partici
               Center(
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).pop(selected.toList());
+                    context.pop(selected.toList());
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.teal,

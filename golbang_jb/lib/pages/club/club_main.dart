@@ -1,12 +1,11 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart'; // ConsumerStatefulWidget 사용을 위한 패키지
+import 'package:go_router/go_router.dart';
 import 'package:golbang/services/group_service.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:golbang/models/club.dart';
 import 'package:golbang/widgets/sections/group_item.dart';
-import 'package:golbang/pages/club/club_create_page.dart';
-import 'package:golbang/pages/community/community_main.dart';
 import '../../provider/club/club_state_provider.dart';
 import '../../repoisitory/secure_storage.dart';
 
@@ -92,12 +91,7 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
                   ),
                   onPressed: () {
                     ref.read(clubStateProvider.notifier).selectClubById(club.id); // 상태 저장
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const CommunityMain(),
-                      ),
-                    );
+                    context.push('/app/clubs/${club.id}');
                   },
                   child: GroupItem(
                     image: club.image,
@@ -141,11 +135,7 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
                       const Spacer(),
                       TextButton.icon(
                         onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                                builder: (context) => const ClubCreatePage()),
-                          ).then((_) {
+                          context.push('/app/clubs/new').then((_) {
                             _fetchGroups(); // 모임 생성 후 새로고침
                           });
                         },

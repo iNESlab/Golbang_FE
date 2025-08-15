@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:golbang/models/get_statistics_overall.dart';
 import 'package:golbang/models/get_statistics_yearly.dart';
 import 'package:golbang/models/get_statistics_period.dart';
@@ -169,9 +170,7 @@ class _StatisticsPageState extends ConsumerState<StatisticsPage> {
         title: const Text('통계'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+          onPressed: () => context.pop()
         ),
       ),
       body: isLoading

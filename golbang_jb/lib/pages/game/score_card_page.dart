@@ -3,8 +3,8 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:golbang/models/event.dart';
-import 'package:golbang/pages/game/overall_score_page.dart';
 import 'package:golbang/pages/game/score_button_pad.dart';
 import 'package:golbang/provider/screen_riverpod.dart';
 import 'package:golbang/utils/reponsive_utils.dart';
@@ -169,9 +169,9 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
 
   void _showScoreSummary() {
     _stopAutoRefresh();
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => OverallScorePage(event: widget.event)),
+    context.push(
+        '/app/events/${widget.event.eventId}/game/scores',
+        extra: {'event': widget.event}
     );
   }
 
@@ -310,17 +310,10 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
       });
     } catch (e) {
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: const Text('스코어 등록 실패'),
-            content: Text(e.toString()),
-            actions: [
-              TextButton(
-                child: const Text('확인'),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$e'),
+            backgroundColor: Colors.red,
           ),
         );
       }
@@ -342,17 +335,10 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
       _stopAutoRefresh();
 
       if (mounted) {
-        showDialog(
-          context: context,
-          builder: (_) => AlertDialog(
-            title: const Text('스코어 조회 실패'),
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
             content: Text('$e'),
-            actions: [
-              TextButton(
-                child: const Text('확인'),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ],
+            backgroundColor: Colors.red,
           ),
         );
       }
@@ -474,9 +460,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             color: Colors.white,
-            onPressed: () {
-              Navigator.pop(context);
-            },
+            onPressed: () => context.pop()
           ),
         ),
         backgroundColor: Colors.black,
@@ -491,15 +475,13 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
+      appBar: !_isEditing ? AppBar(
         title: Text(widget.event.eventTitle, style: TextStyle(color: Colors.white, fontSize: fontSizeLarge)),
         backgroundColor: Colors.black,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, size: appBarIconSize),
           color: Colors.white,
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => context.pop()
         ),
         actions: [
           AnimatedBuilder(
@@ -518,44 +500,55 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
             ),
           ),
         ],
-      ),
-      body: Column(
-        children: [
-          // 키보드가 보이지 않을 때만 헤더를 보여줌
-          isKeyboardVisible
-          ? Container(
+      ): null,
+      body: SafeArea(
+        top: true, bottom: true,
+        child: Column(
+          children: [
+            // 키보드가 보이지 않을 때만 헤더를 보여줌
+            isKeyboardVisible
+                ? Container(
               height: 10,
               color: Colors.red,
             )
-          : _buildHeader(),
-          // 플레이어 범례를 페이지 전환과 독립적으로 배치
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: _buildPlayerLegend(),
-          ),
-          SizedBox(height: height * 0.01),
-          Expanded(
-            child: Column(
-              children: [
-                Flexible(
-                  child: PageView(
-                    controller: PageController(initialPage: _currentPageIndex),
-                    onPageChanged: (index) {
-                      setState(() {
-                        _currentPageIndex = index;
-                      });
-                    },
-                    children: [
-                      _buildScoreTable(1, 9, 0),
-                      _buildScoreTable(10, 18, 1),
-                    ],
-                  ),
-                ),
-                _buildPageIndicator(),
-              ],
+                : _buildHeader(),
+            // 플레이어 범례를 페이지 전환과 독립적으로 배치
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: _buildPlayerLegend(),
             ),
-          ),
-          if (_isEditing) ScoreButtonPadStateful(
+            SizedBox(height: height * 0.01),
+            Expanded(
+              child: Column(
+                children: [
+                  Flexible(
+                    child: PageView(
+                      controller: PageController(initialPage: _currentPageIndex),
+                      onPageChanged: (index) {
+                        setState(() {
+                          _currentPageIndex = index;
+                        });
+                      },
+                      children: [
+                        _buildScoreTable(1, 9, 0),
+                        _buildScoreTable(10, 18, 1),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+
+      bottomSheet: Column(
+          mainAxisSize: MainAxisSize.min,
+          children:[
+            _buildPageIndicator(),
+            !_isEditing
+            ? _buildSummaryTable(_teamMembers.map((m) => m.handicapScore).toList())
+            : ScoreButtonPadStateful(
             selectedHole: _selectedHole,
             isEditing: _isEditing,
             onComplete: () => _postScore(
@@ -566,9 +559,9 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
             onScoreChanged: (int? score) {
               log('tempScore변환전: $_tempScore');
 
-                setState(() {
-                  _tempScore = score; // null 허용
-                });
+              setState(() {
+                _tempScore = score; // null 허용
+              });
               log('tempScore변환후: $_tempScore');
             },
             tempScore: _tempScore,
@@ -579,12 +572,7 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
             fontSizeLarge: fontSizeLarge,
             fontSizeMedium: fontSizeMedium
           ),
-          if (!_isEditing) ...[
-            SizedBox(height: height * 0.01),
-            _buildSummaryTable(_teamMembers.map((m) => m.handicapScore).toList()),
-            SizedBox(height: height * 0.03),
-          ],
-        ],
+        ]
       ),
       backgroundColor: Colors.black,
     );
@@ -806,24 +794,27 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
         frontNine.length, (index) => frontNine[index] + backNine[index]);
     List<int> handicapScores = handiScores;
 
-    return Container(
-      color: Colors.black,
-      padding: EdgeInsets.all(width * 0.04), // 반응형 패딩
-      child: Table(
-        border: TableBorder.all(color: Colors.grey),
-        columnWidths: {
-          0: FixedColumnWidth(width * 0.2), // 첫 번째 열 (라벨 열) 너비 고정
-          for (int i = 1; i <= _teamMembers.length; i++)
-            i: const FlexColumnWidth(1), // 나머지 열 비율로 설정
-        },
-        children: [
-          _buildSummaryTableFirstRow(['', ..._teamMembers.map((m) => _playerShortNames[m.participantId] ?? 'P?')], cellHeight, cellFontSize),
-          _buildSummaryTableRow(['전반', ...frontNine.map((e) => e.toString())], cellHeight, cellFontSize),
-          _buildSummaryTableRow(['후반', ...backNine.map((e) => e.toString())], cellHeight, cellFontSize),
-          _buildSummaryTableRow(['스코어', ...totalScores.map((e) => e.toString())], cellHeight, cellFontSize),
-          _buildSummaryTableRow(['핸디 스코어', ...handicapScores.map((e) => e.toString())], cellHeight, cellFontSize),
-        ],
-      ),
+    return SafeArea(
+      top: true, bottom: true,
+      child: Container(
+        color: Colors.black,
+        padding: EdgeInsets.all(width * 0.04), // 반응형 패딩
+        child: Table(
+          border: TableBorder.all(color: Colors.grey),
+          columnWidths: {
+            0: FixedColumnWidth(width * 0.2), // 첫 번째 열 (라벨 열) 너비 고정
+            for (int i = 1; i <= _teamMembers.length; i++)
+              i: const FlexColumnWidth(1), // 나머지 열 비율로 설정
+          },
+          children: [
+            _buildSummaryTableFirstRow(['', ..._teamMembers.map((m) => _playerShortNames[m.participantId] ?? 'P?')], cellHeight, cellFontSize),
+            _buildSummaryTableRow(['전반', ...frontNine.map((e) => e.toString())], cellHeight, cellFontSize),
+            _buildSummaryTableRow(['후반', ...backNine.map((e) => e.toString())], cellHeight, cellFontSize),
+            _buildSummaryTableRow(['스코어', ...totalScores.map((e) => e.toString())], cellHeight, cellFontSize),
+            _buildSummaryTableRow(['핸디 스코어', ...handicapScores.map((e) => e.toString())], cellHeight, cellFontSize),
+          ],
+        ),
+      )
     );
   }
 
@@ -881,8 +872,12 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
   }
 
   Widget _buildPageIndicator() {
-    return Padding(
-      padding: const EdgeInsets.all(4.0), // 간격 조정
+    return Container(
+      color: Colors.black, // 💡 여기!
+      padding: const EdgeInsets.only(
+        top: 0, // ← 여기를 줄여봄
+        bottom: 25,
+      ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -896,11 +891,15 @@ class _ScoreCardPageState extends ConsumerState<ScoreCardPage> with WidgetsBindi
 
   Widget _buildIndicatorDot(int index) {
     return Container(
-      width: 8,
-      height: 8,
+      width: 10,
+      height: 10,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: _currentPageIndex == index ? Colors.white : Colors.grey,
+        color: _currentPageIndex == index ? Colors.yellow : Colors.white,
+        border: Border.all(
+          color: Colors.white, // 흰색 테두리로 항상 보이게
+          width: 1.5,
+        ),
       ),
     );
   }

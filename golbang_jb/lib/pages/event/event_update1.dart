@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../models/club.dart';
 import '../../models/enum/event.dart';
@@ -14,7 +15,6 @@ import '../../services/club_service.dart';
 import 'widgets/location_search_dialog.dart';
 import 'widgets/course_selection_dialog.dart';
 import 'widgets/participant_dialog.dart';
-import 'event_update2.dart';
 
 class EventsUpdate1 extends ConsumerStatefulWidget {
   final Event event; // 기존 이벤트 데이터를 받아오기 위한 필드
@@ -309,13 +309,13 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            Navigator.of(context).pop();
+              context.pop();
           },
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: SingleChildScrollView(
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -544,65 +544,63 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 16),
-              Center(
-                child: ElevatedButton(
-                  onPressed: _isButtonEnabled
-                      ? () {
-                    _validateForm();
-                    if (!_isButtonEnabled) return;
-
-                    final DateTime startDate = DateTime.parse(_startDateController.text);
-                    final TimeOfDay startTime = _parseTimeOfDay(_startTimeController.text);
-                    final DateTime startDateTime = _combineDateAndTime(startDate, startTime);
-                    final DateTime endDateTime = startDateTime.add(const Duration(days: 1));
-
-                    // 로그 추가
-                    log('startDateTime: $startDateTime');
-                    log('endDateTime: $endDateTime');
-                    log('Duration in days: ${endDateTime.difference(startDateTime).inDays}');
-                    log('Duration in hours: ${endDateTime.difference(startDateTime).inHours}');
-
-                    // 업데이트할 이벤트 데이터를 EventsUpdate2로 전달
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => EventsUpdate2(
-                          eventId: widget.event.eventId,
-                          title: _titleController.text,
-                          selectedClub: _selectedClub!,
-                          selectedLocation: _selectedLocation!,
-                          selectedGolfClub: _selectedGolfClub!,
-                          selectedCourse: _selectedCourse!,
-                          startDate: startDateTime,
-                          endDate: endDateTime,
-                          selectedParticipants: _selectedParticipants,
-                          existingParticipants: widget.event.participants.where((p) {
-                            Member member = p.member!;
-
-                            // selectedParticipants에 해당 memberId가 있는지 확인
-                            return _selectedParticipants.any((participant) =>
-                            participant.memberId == member.memberId
-                            );
-                          }).toList(),
-                          selectedGameMode: _selectedGameMode!,
-                        ),
-                      ),
-                    );
-                  }
-                      : null,
-                  style: ElevatedButton.styleFrom(
-                    foregroundColor: _isButtonEnabled ? Colors.white : Colors.black54,
-                    minimumSize: const Size(double.infinity, 50),
-                    backgroundColor: _isButtonEnabled ? Colors.teal : Colors.grey,
-                  ),
-                  child: const Text('다음'),
-                ),
-              ),
             ],
           ),
         ),
       ),
+      bottomNavigationBar: SafeArea(
+        top: true, bottom: true,
+        child: _buildNextButton(context),
+      ),
+    );
+  }
+
+  Widget _buildNextButton(BuildContext context){
+    return ElevatedButton(
+      onPressed: _isButtonEnabled
+          ? () {
+        _validateForm();
+        if (!_isButtonEnabled) return;
+
+        final DateTime startDate = DateTime.parse(_startDateController.text);
+        final TimeOfDay startTime = _parseTimeOfDay(_startTimeController.text);
+        final DateTime startDateTime = _combineDateAndTime(startDate, startTime);
+        log('start: $startDateTime');
+        final DateTime endDateTime = startDateTime.add(const Duration(days: 1));
+        log('end: $endDateTime');
+
+        // 업데이트할 이벤트 데이터를 EventsUpdate2로 전달
+        final extra = {
+          'eventId': widget.event.eventId,
+          'title': _titleController.text,
+          'selectedClub': _selectedClub!,
+          'selectedLocation': _selectedLocation!,
+          'selectedGolfClub': _selectedGolfClub!,
+          'selectedCourse': _selectedCourse!,
+          'startDate': startDateTime,
+          'endDate': endDateTime,
+          'selectedParticipants': _selectedParticipants,
+          'existingParticipants': widget.event.participants.where((p) {
+            Member member = p.member!;
+            // selectedParticipants에 해당 memberId가 있는지 확인
+            return _selectedParticipants.any((participant) =>
+            participant.memberId == member.memberId
+            );
+          }).toList(),
+          'selectedGameMode': _selectedGameMode!,
+        };
+        context.push('/app/events/${widget.event.eventId}/edit-step2', extra: extra);
+      }
+          : null,
+      style: ElevatedButton.styleFrom(
+        minimumSize: const Size(double.infinity, 50),
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.teal,
+        shape: const RoundedRectangleBorder(
+            borderRadius:BorderRadius.zero
+        ),
+      ),
+      child: const Text('다음'),
     );
   }
 }

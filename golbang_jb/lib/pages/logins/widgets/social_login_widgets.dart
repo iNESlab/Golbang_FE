@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:golbang/pages/signup/terms_agreement_page.dart';
+import 'package:go_router/go_router.dart';
 import 'package:golbang/pages/logins/widgets/forgot_password.dart';
 
 
@@ -107,12 +107,7 @@ class SignUpLink extends StatelessWidget {
               style: TextStyle(color: Colors.grey[600]),
             ),
             GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const TermsAgreementPage()),
-                );
-              },
+              onTap: () => context.push('/app/signup/terms'),
               child: const Text(
                 '회원가입',
                 style: TextStyle(

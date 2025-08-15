@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../models/user_account.dart';
 import '../../provider/user/user_service_provider.dart';
@@ -211,7 +212,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.of(context).pop(),
+              onPressed: () => context.pop(),
               child: const Text('취소'),
             ),
             TextButton(
@@ -239,7 +240,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('비밀번호가 변경되었습니다')),
                   );
-                  Navigator.of(context).pop();
+                  context.pop();
                 } catch (e) {
                   log('Failed to change password: $e');
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -312,7 +313,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
                       onPressed: () {
                         // 선택된 값을 저장
                         _updateUserInfo(field: field, value: selectedValue.toString());
-                        Navigator.of(context).pop();
+                        context.pop();
                       },
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white,
@@ -349,7 +350,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
                 leading: const Icon(Icons.photo_library),
                 title: const Text('앨범에서 사진/동영상 선택'),
                 onTap: () {
-                  Navigator.pop(context); // 팝업 닫기
+                  context.pop();
                   _pickImage(); // 이미지 선택 함수 호출
                 },
               ),
@@ -359,7 +360,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
                   leading: const Icon(Icons.restore),
                   title: const Text('기본 이미지 적용'),
                   onTap: () {
-                    Navigator.pop(context); // 팝업 닫기
+                    context.pop();
                     _removeImage(); // 기본 이미지 적용 (프로필 이미지 제거)
                   },
                 ),
@@ -391,9 +392,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
           ),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => context.pop(),
               child: const Text(
                 '취소',
                 style: TextStyle(color: Colors.black54), // 메인 컬러로 설정
@@ -402,7 +401,7 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
             TextButton(
               onPressed: () {
                 _updateUserInfo(field: field, value: controller.text);
-                Navigator.of(context).pop();
+                context.pop();
               },
               child: const Text(
                 '저장',

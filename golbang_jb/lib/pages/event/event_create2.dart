@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/pages/event/widgets/group_card.dart';
 import 'package:golbang/pages/event/widgets/no_api_participant_dialog.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:go_router/go_router.dart';
+
 
 import '../../models/club.dart';
 import '../../models/create_event.dart';
@@ -187,15 +189,15 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
         .read(eventStateNotifierProvider.notifier)
         .createEvent(event, _selectedParticipants, widget.selectedClub!.id.toString());
 
+    if(!mounted) return;
+
     if (success) {
       // 성공 시 "이벤트 생성에 성공했습니다" 메시지 표시
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('이벤트 생성에 성공했습니다.')),
       );
-
       // 페이지 닫기
-      Navigator.of(context).pop(true); // 첫 번째 페이지 닫기
-      Navigator.of(context).pop(true); // 두 번째 페이지 닫기
+      context.go('/app/events?refresh=${DateTime.now().millisecondsSinceEpoch}');
     } else {
       // 실패 시 SnackBar로 오류 메시지 표시
       ScaffoldMessenger.of(context).showSnackBar(
@@ -213,9 +215,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+          onPressed: () => context.pop()
         ),
         title: const Text('이벤트 생성'),
         actions: [

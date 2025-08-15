@@ -1,142 +1,258 @@
 import 'dart:developer';
+import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/club.dart';
 import '../../models/member.dart';
 import '../../provider/club/club_state_provider.dart';
-import 'admin_settings_page.dart';
-import 'member_settings_page.dart';
 
 class CommunityMain extends ConsumerStatefulWidget {
-
-  const CommunityMain({super.key, 
-  });
+  final int? clubId;
+  final String? from;
+  const CommunityMain({super.key, this.clubId, this.from});
 
   @override
   _CommunityMainState createState() => _CommunityMainState();
 }
 
 class _CommunityMainState extends ConsumerState<CommunityMain> {
-  late List<Member> members;
-  Club? _club;
+  // ✅ 여기에 getter들 선언
+  Club? get _club => ref.watch(clubStateProvider.select((s) => s.selectedClub));
+  List<Member> get members => _club?.members.where((m) => m.role != 'admin').toList() ?? [];
+  List<Member> get admins => _club?.members.where((m) => m.role == 'admin').toList() ?? [];
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    if (widget.clubId != null) { // 상세에 들어오면 한번은 새로고침하기
+      Future.microtask(() {
+        if (!mounted) return;
+        ref.read(clubStateProvider.notifier).getClub(widget.clubId!, context);
+      });
+    }
+  }
+
+
+  final List<Map<String, dynamic>> dummyPosts = [
+    {
+      'author': '윤성문',
+      // 'profileImage': 'assets/images/sample_profile.png',
+      'time': '2024년 7월 31일 오후 1시',
+      'content': '오늘은 정말 즐거운 시간이었어요!',
+      'image': null,
+      'likes': 2,
+      'comments': [],
+    },
+    {
+      'author': '윤성문',
+      // 'profileImage': 'assets/images/sample_profile.png',
+      'time': '2024년 7월 31일 오후 1시',
+      'content': '오늘은 정말 즐거운 시간이었어요!',
+      'image': null,
+      'likes': 2,
+      'comments': [],
+    },
+    {
+      'author': '고중범',
+      // 'profileImage': 'assets/images/sample_profile.png',
+      'time': '2024년 7월 31일 오후 1시',
+      'content': '오늘은 정말 즐거운 시간이었어요!',
+      'image': null,
+      'likes': 2,
+      'comments': [],
+    },
+
+    {
+      'author': '홍길동',
+      // 'profileImage': 'assets/images/sample_profile.png',
+      'time': '2024년 7월 31일 오후 1시',
+      'content': '오늘은 정말 즐거운 시간이었어요!',
+      'image': null,
+      'likes': 2,
+      'comments': [],
+    },
+    {
+      'author': '김영희',
+      // 'profileImage': 'assets/images/sample_profile.png',
+      'time': '2024년 7월 30일 오후 4시',
+      'content': '다음 모임은 언제인가요?',
+      'image': null,
+      'likes': 5,
+      'comments': [],
+    },
+  ];
+
 
   void _onSettingsPressed() {
+
     if (_club!.isAdmin) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => AdminSettingsPage(clubId: _club!.id),
-        ),
-      );
+      log('clubId: ${_club!.id}');
+      context.push('/app/clubs/${_club!.id}/setting', extra: {'role': 'admin'});
     } else {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MemberSettingsPage(clubId: _club!.id),
-        ),
-      );
+      context.push('/app/clubs/${_club!.id}/setting', extra: {'role': 'member'});
+    }
+  }
+
+  Future<void> handleBack() async {
+    if(!mounted) return;
+
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/app/clubs');
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    _club = ref.watch(clubStateProvider.select((s) => s.selectedClub));
     if (_club == null) {
       return const Center(child: CircularProgressIndicator());
     }
-    log('뒤로가기11');
 
-
-    members = _club!.members.where((m) => m.role != 'admin').toList() ?? [];
+    final adminText = admins.length > 1
+        ? '관리자 • ${admins[0].name} 외 ${admins.length - 1}명'
+        : '관리자 • ${admins[0].name}';
 
     return PopScope(
-      canPop: false,
-      onPopInvoked: (didPop) async {
-        log('뒤로가기22');
-        await ref.read(clubStateProvider.notifier).fetchClubs();
-        //TODO: 어째서인지, didPop이 계속 TRUe라 이렇게 위치하게 되었습니다.
-        //PopScope 좀더 공부해서 바꿔야함..
-        if (didPop) {
-          return;
-        }
-        log('뒤로가기33');
-
-        if (context.mounted) {
-          Navigator.of(context).pop();
-        }
-      },
+      canPop: false, // True면 PopScope동작 안함
+        onPopInvoked: (didPop) async {
+          await handleBack();
+        },
       child: Scaffold(
         body: Column(
           children: [
-            Stack(
-              children: [
-                Container(
-                  height: 200,
-                  decoration: BoxDecoration(
-                    image: DecorationImage(
-                      image: _club!.image.contains('https') // 문자열 검사
-                          ? NetworkImage(_club!.image) // 네트워크 이미지
-                          : AssetImage(_club!.image) as ImageProvider, // 로컬 이미지
-                      fit: BoxFit.cover, // 이미지 맞춤 설정
-                    ),
+            // 🔹 SafeArea + 헤더 고정
+            SafeArea(
+              bottom: false,
+              child: Container(
+                height: 50,
+                decoration: BoxDecoration(
+                  image: DecorationImage(
+                    image: _club!.image.contains('https')
+                        ? NetworkImage(_club!.image)
+                        : AssetImage(_club!.image) as ImageProvider,
+                    fit: BoxFit.cover,
                   ),
                 ),
-                Container(
-                  height: 200,
+                child: Container(
                   color: Colors.black.withOpacity(0.5),
-                ),
-                Positioned(
-                  top: 40,
-                  left: 10,
-                  child: IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => Navigator.of(context).pop(),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.arrow_back, color: Colors.white),
+                            onPressed: () => handleBack()
+                          ),
+                          Text(
+                            _club!.name,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.settings, color: Colors.white),
+                        onPressed: _onSettingsPressed,
+                      ),
+                    ],
                   ),
-                ),
-                Positioned(
-                  top: 40,
-                  right: 10,
-                  child: IconButton(
-                    icon: const Icon(Icons.settings, color: Colors.white),
-                    onPressed: _onSettingsPressed,
-                  ),
-                ),
-                Positioned(
-                  bottom: 20,
-                  left: 10,
-                  child: Text(
-                    _club!.name,
-                    style: const TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Align(
-                alignment: Alignment.centerLeft, // 전체 내용을 왼쪽 정렬
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start, // 자식 위젯들을 왼쪽 정렬
-                  children: [
-                    Text(
-                      '관리자: ${_club!.getAdminNames().join(', ')}', // 여러 관리자 이름 표시
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                    ),
-                    const SizedBox(height: 8), // 텍스트 간 간격 추가
-                    Text(
-                      '멤버: ${members.isNotEmpty
-                          ? members.map((member) => member.name).join(', ')
-                          : '새로운 멤버를 초대해주세요'}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                  ],
                 ),
               ),
             ),
 
+            // 🔹 아래는 스크롤 되는 부분
+            Expanded(
+              child: Container(
+                color: Colors.grey[200],
+                child: ListView(
+                  padding: EdgeInsets.zero,
+                  children: [
+                    // 관리자 정보
+                    Container(
+                      color: Colors.white,
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(adminText, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                              const SizedBox(height: 8),
+                              Text('멤버 • ${members.length}명', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                            ],
+                          ),
+                          TextButton(
+                            onPressed: () => context.push('/app/clubs/${_club!.id}/new-post'),
+                            style: TextButton.styleFrom(
+                              backgroundColor: Colors.green,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text('글쓰기'),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 4,),
+                    // 게시물 리스트
+                    ...dummyPosts.map((post) {
+                      return Container(
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        color: Colors.white,
+                        padding: const EdgeInsets.all(16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const CircleAvatar(backgroundImage: AssetImage('assets/images/founder.webp')),
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(post['author'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                                      Text(post['time'], style: const TextStyle(color: Colors.grey)),
+                                    ],
+                                  ),
+                                ),
+                                const Icon(Icons.more_vert),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            Text(post['content']),
+                            const SizedBox(height: 10),
+                            Row(
+                              children: [
+                                const Icon(Icons.remove_red_eye, size: 16),
+                                const SizedBox(width: 4),
+                                Text('${post['likes']}'),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
-      ),
+      )
     );
   }
 

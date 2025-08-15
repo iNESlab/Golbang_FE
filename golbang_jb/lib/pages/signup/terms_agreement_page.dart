@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:golbang/pages/signup/term_of_service_page.dart';
+import 'package:go_router/go_router.dart';
 import 'package:golbang/pages/signup/widgets/welcome_header_widget.dart';
-import '../common/privacy_policy_page.dart';
-import 'marketing_agreement_page.dart';
-import 'signup.dart';
 
 // 약관 동의 메인 페이지
 
@@ -40,10 +37,7 @@ class _TermsAgreementPageState extends State<TermsAgreementPage> {
 
   void _onSubmit() {
     if (terms['[필수] 이용약관 동의']! && terms['[필수] 개인정보 수집 및 이용 동의']!) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const SignUpPage()),
-      );
+      context.push('/app/signup');
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('필수 약관에 동의해주세요.')),
@@ -52,21 +46,8 @@ class _TermsAgreementPageState extends State<TermsAgreementPage> {
   }
 
   void _navigateToTermsDetail(String key) {
-    Widget targetPage;
 
-    // 약관 항목에 따라 이동할 페이지 설정
-    if (key == '[필수] 이용약관 동의') {
-      targetPage = const TermsOfServicePage(); // 이용약관 페이지 연결
-    } else if (key == '[필수] 개인정보 수집 및 이용 동의') {
-      targetPage = const PrivacyPolicyPage(); // 개인정보처리방침 페이지 연결
-    } else {
-      targetPage = const MarketingAgreementPage(); // 광고성 정보 수신 동의 페이지 연결
-    }
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => targetPage),
-    ).then((_) {
+   context.push('/app/signup/terms/detail', extra: {'key': key}).then((_) {
       // 돌아온 뒤 동의 처리
       setState(() {
         terms[key] = true;

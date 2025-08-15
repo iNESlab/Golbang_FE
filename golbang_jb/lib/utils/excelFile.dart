@@ -48,9 +48,9 @@ Future<String?> createScoreExcelFile({
       {
         'team': 'Team A',
         'participant_name': '-',
-        'front_nine_score': teamAScores?['front_nine_score'],
-        'back_nine_score': teamAScores?['back_nine_score'],
-        'total_score': teamAScores?['total_score'],
+        'front_nine_score': teamAScores['front_nine_score'],
+        'back_nine_score': teamAScores['back_nine_score'],
+        'total_score': teamAScores['total_score'],
         'handicap_score': '-',
         'scorecard': List.filled(18, '-'),
       },
@@ -58,13 +58,13 @@ Future<String?> createScoreExcelFile({
       {
         'team': 'Team B',
         'participant_name': '-',
-        'front_nine_score': teamBScores?['front_nine_score'],
-        'back_nine_score': teamBScores?['back_nine_score'],
-        'total_score': teamBScores?['total_score'],
+        'front_nine_score': teamBScores['front_nine_score'],
+        'back_nine_score': teamBScores['back_nine_score'],
+        'total_score': teamBScores['total_score'],
         'handicap_score': '-',
         'scorecard': List.filled(18, '-'),
       },
-    ...participants!.map((participant) =>
+    ...participants.map((participant) =>
     {
       'team': participant['team'], // 팀 정보 추가
       'participant_name': participant['participant_name'],
@@ -121,11 +121,12 @@ Future<String?> createScoreExcelFile({
   }
 
   if (directory != null) {
-    String filePath = '${directory.path}/event_scores_${eventId}.xlsx';
+    String filePath = '${directory.path}/event_scores_$eventId.xlsx';
     File file = File(filePath);
 
     // 파일 쓰기
     await file.writeAsBytes(excel.encode()!);
     return filePath;
   }
+  return null;
 }

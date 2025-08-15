@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'home_page.dart'; // 메인 화면 위젯 import
+import 'package:go_router/go_router.dart';
+// 메인 화면 위젯 import
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -18,11 +19,10 @@ class _SplashPageState extends State<SplashPage> {
   // Navigate to the main screen after a delay
   Future<void> _navigateToMainScreen() async {
     await Future.delayed(const Duration(seconds: 2));
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(
-        builder: (context) => const HomePage(), // HomePage 위젯으로 변경
-      ),
-    );
+    // 이전 스택을 제거하면서 /home으로 이동
+    if (mounted) {
+      context.go('/app/home');
+    }
   }
 
   @override

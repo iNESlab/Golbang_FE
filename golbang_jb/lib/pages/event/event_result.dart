@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:golbang/pages/event/widgets/team_result.dart';
 import 'package:golbang/pages/event/widgets/user_profile.dart';
 import 'package:golbang/services/event_service.dart';
@@ -73,9 +74,7 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
         title: const Text("이벤트 전체 결과"),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+          onPressed: () => context.pop()
         ),
       ),
       backgroundColor: Colors.grey[200],
@@ -162,6 +161,23 @@ class _EventResultPageState extends ConsumerState<EventResultPage> {
             ),
           ],
         ),
+      ),
+      bottomNavigationBar: SafeArea(
+        top: true, bottom: true,
+        child: ElevatedButton(
+          onPressed: (){
+            context.push('/app/new-peoria');
+          },
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size(double.infinity, 50),
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.teal,
+            shape: const RoundedRectangleBorder(
+                borderRadius:BorderRadius.zero
+            ),
+          ),
+          child: const Text('신페리온 계산하기'),
+        )
       ),
     );
   }

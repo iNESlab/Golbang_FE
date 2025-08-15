@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:golbang/models/profile/member_profile.dart';
 import '../../../models/profile/get_all_user_profile.dart';
 import '../../../repoisitory/secure_storage.dart';
@@ -99,15 +100,13 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
           content: Text("${member.name}님을 추방하시겠습니까?"),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context); // 다이얼로그 닫기
-              },
+              onPressed: () => context.pop(),
               child: const Text("취소"),
             ),
             ElevatedButton(
               onPressed: () async {
                 await _kickMember(member);
-                Navigator.pop(context); // 다이얼로그 닫기
+                context.pop();
               },
               child: const Text("추방"),
             ),
@@ -117,7 +116,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
     );
   }
 
-  /// 멤버 추방 함수
+  // 멤버 추방 함수
   Future<void> _kickMember(ClubMemberProfile member) async {
     final clubService = ClubService(ref.read(secureStorageProvider));
     await clubService.removeMember(widget.clubId, member.memberId);
@@ -252,16 +251,13 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
           content: Text("${newMemberUsers.length}명을 초대하시겠습니까?"),
           actions: [
             TextButton(
-              onPressed: () {
-                Navigator.pop(context, true); // 초대 안 하고 나가기
-              },
+              onPressed: () => context.pop(),
               child: const Text("취소"),
             ),
             ElevatedButton(
               onPressed: () async {
                 await _inviteMembers();
-                Navigator.pop(context, false); // 다이얼로그 닫기
-                Navigator.pop(context); // 이전 페이지로 이동
+                context.go('/app/clubs/:clubId?refresh=${DateTime.now().millisecondsSinceEpoch}');
               },
               child: const Text("초대"),
             ),
@@ -292,7 +288,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
     });
   }
 
-  Widget _buildMemberTile(dynamic member) {
+  Widget _buildMemberTile(ClubMemberProfile member) {
     final bool isAdminMember = member.role == "admin"; // 어드민 여부 체크
 
     return InkWell(
@@ -312,7 +308,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
           ),
           child: CircleAvatar(
             backgroundColor: Colors.transparent,
-            child: (member.profileImage != null && member.profileImage.startsWith('https'))
+            child: (member.profileImage.startsWith('https'))
                 ? ClipOval(
               child: Image.network(
                 member.profileImage,
@@ -328,6 +324,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
           ),
         ),
         title: Text(member.name),
+        subtitle: member.role == 'admin' ? const Text('관리자') : null,
       ),
     );
   }

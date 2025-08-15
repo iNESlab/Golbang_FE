@@ -17,9 +17,9 @@ Future<T?> safeDioCall<T>(
           response.data?['error'] ??
           response.statusMessage ??
           '알 수 없는 서버 오류입니다.';
-      throw Exception('에러: ${response.statusCode}\n메시지: $errorMsg');
+      throw '에러 코드: ${response.statusCode}\n메시지: $errorMsg';
     } else {
-      throw Exception('Dio 오류: ${e.message}');
+      throw 'Dio 오류: ${e.message}';
     }
   } catch (e) {
     final msg = errorHandler?.call(e) ?? '예기치 못한 오류: $e';

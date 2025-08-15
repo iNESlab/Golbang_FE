@@ -2,8 +2,8 @@ import 'dart:io'; // 플랫폼 구분을 위해 필요
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get/get.dart';
 import 'package:dio/dio.dart' as dio;
+import 'package:go_router/go_router.dart';
 import 'package:golbang/pages/home/splash_screen.dart';
 import 'package:golbang/pages/logins/widgets/login_widgets.dart';
 import 'package:golbang/pages/logins/widgets/social_login_widgets.dart';
@@ -17,7 +17,8 @@ import '../../global/PrivateClient.dart';
 import '../../repoisitory/secure_storage.dart';
 
 class TokenCheck extends ConsumerStatefulWidget {
-  const TokenCheck({super.key});
+  final String? message;
+  const TokenCheck({super.key, this.message});
 
   @override
   _TokenCheckState createState() => _TokenCheckState();
@@ -64,8 +65,8 @@ class _TokenCheckState extends ConsumerState<TokenCheck> {
         fcmToken: fcmToken ?? '',
       );
 
-      if (response.statusCode == 200) {
-        await storage.saveAccessToken(response.data['data']['access_token']);
+      if (response?.statusCode == 200) {
+        await storage.saveAccessToken(response?.data['data']['access_token']);
         setState(() => isTokenExpired = false); // 성공 → Splash로 이동
 
       } else {
@@ -82,24 +83,23 @@ class _TokenCheckState extends ConsumerState<TokenCheck> {
   }
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        visualDensity: VisualDensity.adaptivePlatformDensity,
-      ),
-      home: isLoading
-          ? const Scaffold(
+    if (isLoading) {
+      return const Scaffold(
         body: Center(child: CircularProgressIndicator()),
-      )
-          : isTokenExpired
-          ? const LoginPage()
-          : const SplashScreen(),
-    );
+      );
+    }
+
+    if (isTokenExpired) {
+      return LoginPage(message: widget.message);
+    }
+
+    return const SplashScreen();
   }
 }
 
 class LoginPage extends ConsumerStatefulWidget {
-  const LoginPage({super.key});
+  final String? message;
+  const LoginPage({super.key, this.message});
 
   @override
   _LoginPageState createState() => _LoginPageState();
@@ -135,7 +135,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     // 전달된 메시지를 읽음
-    final String? message = Get.arguments?['message'];
+    final String? message = widget.message;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (message != null) {
@@ -151,37 +151,40 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(25.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const LoginTitle(),
-              const SizedBox(height: 32),
-              EmailField(controller: _emailController),
-              const SizedBox(height: 16),
-              PasswordField(controller: _passwordController),
-              const SizedBox(height: 64),
-              LoginButton(onPressed: _login),
-              const SizedBox(height: 16),
-              if (_showBiometricButton)
-                ElevatedButton.icon(
-                  onPressed: _loginWithBiometrics,
-                  icon: const Icon(Icons.fingerprint,
-                    color: Colors.white,
+      body: SafeArea(
+        top: true, bottom: true,
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(25.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const LoginTitle(),
+                const SizedBox(height: 32),
+                EmailField(controller: _emailController),
+                const SizedBox(height: 16),
+                PasswordField(controller: _passwordController),
+                const SizedBox(height: 48),
+                LoginButton(onPressed: _login),
+                const SizedBox(height: 16),
+                if (_showBiometricButton)
+                  ElevatedButton.icon(
+                    onPressed: _loginWithBiometrics,
+                    icon: const Icon(Icons.fingerprint,
+                      color: Colors.white,
+                    ),
+                    label: const Text('지문 인식',
+                      style:TextStyle(color: Colors.white),
+                    ),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green,
+                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    ),
                   ),
-                  label: const Text('지문 인식',
-                    style:TextStyle(color: Colors.white),
-                  ),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  ),
-                ),
-              const SizedBox(height: 48),
-              SignUpLink(parentContext: context) ,
-            ],
+                const SizedBox(height: 48),
+                SignUpLink(parentContext: context) ,
+              ],
+            ),
           ),
         ),
       ),
@@ -260,10 +263,14 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           password: password,
           fcmToken: fcmToken ?? '',
         );
-        log('//--------------test1------------//');
-        await _handleLoginResponse(response, email, password);
+        await _handleLoginResponse(response!, email, password);
       } catch (e) {
-        _showErrorDialog('An error occurred. Please try again.');
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$e'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     } else {
       _showErrorDialog('Please fill in all fields');
@@ -288,10 +295,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       await storage.savePassword(password);
       await storage.saveAccessToken(accessToken);
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const SplashScreen()),
-        );
+        context.pushReplacement('/app/splash');
       }
     } else {
       _showErrorDialog('Invalid email or password');
@@ -308,13 +312,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
           if (onConfirm != null)
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                context.pop();
                 onConfirm();
               },
               child: const Text('설정 열기'),
             ),
           TextButton(
-            onPressed: () => Navigator.of(context).pop(),
+            onPressed: () => context.pop(),
             child: const Text('닫기'),
           ),
         ],

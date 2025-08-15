@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'home_page.dart'; // 메인 화면 위젯 import
-import 'package:get/get.dart';  // GetX 사용
+import 'package:go_router/go_router.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -16,9 +15,11 @@ class _SplashScreenState extends State<SplashScreen> {
     _navigateToMainScreen();
   }
 
-  _navigateToMainScreen() async {
+  void _navigateToMainScreen() async {
     await Future.delayed(const Duration(seconds: 2));
-    Get.offAll(() => const HomePage());
+    if (mounted) {
+      context.go('/app/home'); // ✅ go_router로 전환!
+    }
   }
 
   @override

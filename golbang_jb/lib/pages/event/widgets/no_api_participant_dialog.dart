@@ -1,5 +1,6 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:golbang/models/enum/event.dart';
 import '../../../models/create_participant.dart';
 import '../../../widgets/common/circular_default_person_icon.dart'; // CreateParticipant 모델 임포트
@@ -114,15 +115,13 @@ class _ParticipantSelectionDialogState
       ),
       actions: [
         TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
+          onPressed: () => context.pop(),
           child: const Text('취소'),
         ),
         TextButton(
           onPressed: () {
             widget.onSelectionComplete(_currentSelectedParticipants); // 선택 완료 시 콜백
-            Navigator.of(context).pop(); // 다이얼로그 닫기
+           context.pop(); // 다이얼로그 닫기
           },
           child: const Text("완료"),
         ),

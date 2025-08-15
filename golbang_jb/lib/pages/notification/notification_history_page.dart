@@ -1,9 +1,10 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 import 'dart:ui' as ui;
 
-import 'package:golbang/pages/home/home_page.dart';
 import 'package:timeago/timeago.dart' as timeago;
 import '../../services/notification_service.dart';
 import '../../repoisitory/secure_storage.dart';
@@ -70,24 +71,20 @@ class NotificationHistoryPageState extends ConsumerState<NotificationHistoryPage
 
   void _navigateToDetailPage(Map<String, dynamic> notification) {
     final eventId = notification['eventId'];
-    final groupId = notification['groupId'];
+    final clubId = notification['groupId']; //TODO: clubId로 수정해야함
+    log('clubId: $clubId');
+
     if (eventId != null) {
-      Get.offAll(() => const HomePage(), arguments: {
-        'initialIndex': 1,
-        'eventId': eventId
-      });
-    } else if (groupId != null) {
-      Get.offAll(() => const HomePage(), arguments: {
-        'initialIndex': 2,
-        'communityId': groupId
-      });
+      context.push('/app/events/$eventId', extra: {'from': 'history'});
+    } else if (clubId != null) {
+      context.push('/app/clubs/$clubId', extra: {'from': 'history'});
     } else {
-      // 예외 처리: 이동할 수 없음
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('상세 정보를 확인할 수 없습니다.')),
       );
     }
   }
+
 
   @override
   Widget build(BuildContext context) {

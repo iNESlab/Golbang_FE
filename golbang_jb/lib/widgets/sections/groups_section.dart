@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:golbang/pages/community/community_main.dart';
+import 'package:go_router/go_router.dart';
 import 'package:golbang/models/club.dart';
 import 'package:golbang/utils/reponsive_utils.dart';
 
@@ -69,12 +69,7 @@ class _GroupsSectionState extends ConsumerState<GroupsSection> {
               child: GestureDetector(
                 onTap: () {
                   ref.read(clubStateProvider.notifier).selectClubById(club.id); // 상태 저장
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const CommunityMain()
-                    ),
-                  );
+                  context.push('/app/clubs/${club.id}');
                 },
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,

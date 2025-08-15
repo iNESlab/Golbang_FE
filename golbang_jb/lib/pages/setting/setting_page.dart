@@ -2,13 +2,12 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:get/get.dart';
-import 'package:golbang/pages/common/privacy_policy_page.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../services/auth_service.dart';
-import 'feedback_page.dart';
+import 'package:go_router/go_router.dart';
+
 import '../../services/user_service.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
@@ -68,21 +67,11 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           const SectionHeader(title: '고객지원'),
           SettingsTile(
             title: '개인정보처리방침',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const PrivacyPolicyPage()),
-              );
-            },
+            onTap: () => context.push('/app/user/privacy-policy'),
           ),
           SettingsTile(
             title: '피드백 보내기',
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const FeedbackPage()),
-              );
-            },
+            onTap: () => context.push('/app/feedback'),
           ),
           SettingsTile(
             title: '앱정보',
@@ -112,20 +101,24 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Future<void> _logout(BuildContext context, AuthService authService, SecureStorage storage) async {
     try {
       final response = await authService.logout(); // 로그아웃 API 호출
-      if (response.statusCode == 202) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('성공적으로 로그아웃 하였습니다.')),
-        );
+      if (!mounted) return;
 
-        Get.offAllNamed('/'); // 모든 이전 페이지 스택 제거 후 로그인 페이지로 이동
+      if (response.statusCode == 202) {
+        context.go('/app', extra:{'message': '로그아웃처리 되었습니다.'});
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('로그아웃 실패: ${response.data}')),
+          SnackBar(
+            content: Text('로그아웃 실패: ${response.data}'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.')),
+        const SnackBar(
+          content: Text('로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
@@ -161,12 +154,12 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   mainAxisAlignment: MainAxisAlignment.end, // 버튼을 오른쪽 정렬
                   children: [
                     TextButton(
-                      onPressed: () => Navigator.of(context).pop(false), // 취소
+                      onPressed: () => context.pop(false), // 취소
                       child: const Text('취소'),
                     ),
                     const SizedBox(width: 8), // 버튼 간 간격
                     TextButton(
-                      onPressed: () => Navigator.of(context).pop(true), // 확인
+                      onPressed: () => context.pushReplacement('/app'),
                       child: const Text(
                         '확인',
                         style: TextStyle(color: Colors.red),
@@ -186,11 +179,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       try {
         final response = await userService.deleteAccount(); // 회원탈퇴 API 호출
         if (response.statusCode == 200) {
-          log('회원탈퇴 성공');
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('회원탈퇴 하였습니다.')),
-          );
-          Get.offAllNamed('/'); // 모든 이전 페이지 스택 제거 후 로그인 페이지로 이동
+          context.go('/app', extra:{'message': '회원탈퇴 하였습니다'});
         } else {
           final Map<String, dynamic> responseBody = response.data;
           ScaffoldMessenger.of(context).showSnackBar(
