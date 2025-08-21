@@ -155,13 +155,9 @@ class EventService {
 
       if (response.statusCode == 200) {
         return true;
-      } else if (response.statusCode == 403) {
-        log("관리자가 아닙니다. 관리자만 수정할 수 있습니다.");
-        return false;
-      } else {
-        log("Failed to update event: ${response.data}");
-        return false;
       }
+      return false;
+
     } catch (e) {
       log('Error occurred while updating event: $e');
       return false;

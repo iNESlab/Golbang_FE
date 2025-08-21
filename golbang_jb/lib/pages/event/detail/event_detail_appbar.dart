@@ -4,10 +4,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:golbang/models/create_event.dart';
+import 'package:golbang/models/create_participant.dart';
 
 import '../../../models/event.dart';
 import '../../../provider/event/event_state_notifier_provider.dart';
 import '../../../provider/event/game_in_progress_provider.dart';
+import '../../../repoisitory/secure_storage.dart';
+import '../../../services/event_service.dart';
 import '../../../widgets/sections/show_email_recipient_dialog.dart';
 import '../../../utils/email.dart';
 import '../../../utils/excelFile.dart';
@@ -21,6 +25,7 @@ PreferredSizeWidget buildEventDetailAppBar(
     DateTime currentTime,
     List<dynamic> participants,
     ) {
+  late EventService _eventService;
   final screenWidth = MediaQuery.of(context).size.width;
   final orientation = MediaQuery.of(context).orientation;
   final double iconSize = screenWidth * (orientation == Orientation.portrait ? 0.06 : 0.04);
@@ -48,6 +53,29 @@ PreferredSizeWidget buildEventDetailAppBar(
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('이벤트 삭제에 실패했습니다. 모임 관리자만 삭제할 수 있습니다.')),
+      );
+    }
+  }
+
+  void endEvent() async {
+    _eventService = EventService(ref.read(secureStorageProvider));
+    CreateEvent updatedEvent = CreateEvent.fromEvent(event, DateTime.now());
+    List<CreateParticipant> updatedParticipants = CreateParticipant.fromParticipants(event.participants);
+
+    bool success = await _eventService.updateEvent(
+      event: updatedEvent,
+      participants: updatedParticipants,
+    );
+
+    if (success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('시합이 종료되었습니다.')),
+      );
+      context.pushReplacement('/app/events/${event.eventId}/result');
+
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('이벤트 수정에 실패했습니다. 관리자만 수정할 수 있습니다. ')),
       );
     }
   }
@@ -115,6 +143,8 @@ PreferredSizeWidget buildEventDetailAppBar(
             case 'share':
               _shareEvent(event);
               break;
+            case 'end':
+              endEvent();
             case 'edit':
               editEvent();
               break;
@@ -139,6 +169,10 @@ PreferredSizeWidget buildEventDetailAppBar(
             value: 'share',
             child: Text('공유'),
           ),
+          const PopupMenuItem<String>(
+            value: 'end',
+            child: Text('시합 종료'),
+          ),
         ],
       ),
     ],
@@ -146,13 +180,13 @@ PreferredSizeWidget buildEventDetailAppBar(
 }
 
 void _shareEvent(Event event) {
-  final String eventLink = "${dotenv.env['API_HOST']}/app/events/${event.eventId}";
+  // final String eventLink = "${dotenv.env['API_HOST']}/app/events/${event.eventId}";
   Share.share(
     '이벤트를 확인해보세요!\n\n'
         '제목: ${event.eventTitle}\n'
         '날짜: ${event.startDateTime.toIso8601String().split('T').first}\n'
         '장소: ${event.site}\n\n'
-        '자세히 보기: $eventLink',
+        // '자세히 보기: $eventLink',
   );
 }
 

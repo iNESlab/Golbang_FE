@@ -1,4 +1,5 @@
 import 'package:golbang/models/enum/event.dart';
+import 'package:golbang/models/participant.dart';
 
 class CreateParticipant {
   final int memberId;
@@ -31,5 +32,24 @@ class CreateParticipant {
       teamType: TeamConfig.values.firstWhere((e) => e.value == json['team_type']),
       groupType: json['group_type'],
     );
+  }
+
+  factory CreateParticipant.fromParticipant(Participant participant) {
+    return CreateParticipant(
+      memberId: participant.member!.memberId,
+      name: participant.member!.name,
+      profileImage: participant.member!.profileImage,
+      teamType: TeamConfig.values.firstWhere(
+            (e) => e.value == participant.teamType,
+      ),
+      groupType: participant.groupType,
+    );
+  }
+
+// 리스트 변환 메서드
+  static List<CreateParticipant> fromParticipants(List<Participant> participants) {
+    return participants
+        .map((p) => CreateParticipant.fromParticipant(p))
+        .toList();
   }
 }
