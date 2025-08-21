@@ -1,0 +1,210 @@
+.
+├── app
+│   ├── app_initializer.dart
+│   ├── app_router.dart
+│   ├── fcm_service.dart
+│   ├── local_notification_service.dart
+│   ├── main_scaffold.dart
+│   ├── notification_handler.dart
+│   └── routes
+│       ├── auth_routes.dart
+│       ├── club_routes.dart
+│       ├── etc_routes.dart
+│       ├── event_routes.dart
+│       ├── home_routes.dart
+│       └── user_routes.dart
+├── global
+│   ├── PrivateClient.dart
+│   └── PublicClient.dart
+├── main.dart
+├── models
+│   ├── bookmark.dart
+│   ├── club.dart
+│   ├── club_member.dart
+│   ├── club_statistics.dart
+│   ├── create_event.dart
+│   ├── create_participant.dart
+│   ├── enum
+│   │   └── event.dart
+│   ├── event.dart
+│   ├── get_statistics_overall.dart
+│   ├── get_statistics_period.dart
+│   ├── get_statistics_ranks.dart
+│   ├── get_statistics_yearly.dart
+│   ├── hole_score.dart
+│   ├── member.dart
+│   ├── participant.dart
+│   ├── post.dart
+│   ├── profile
+│   │   ├── club_profile.dart
+│   │   ├── get_all_user_profile.dart
+│   │   ├── get_event_result_participants_ranks.dart
+│   │   └── member_profile.dart
+│   ├── responseDTO
+│   │   ├── CourseResopnseDTO.dart
+│   │   └── GolfClubResponseDTO.dart
+│   ├── socket
+│   │   ├── rank.dart
+│   │   └── score_card.dart
+│   ├── statistics.dart
+│   ├── update_event_participant.dart
+│   ├── user.dart
+│   └── user_account.dart
+├── pages
+│   ├── api_test.dart
+│   ├── club
+│   │   ├── club_create_page.dart
+│   │   ├── club_edit_page.dart
+│   │   ├── club_main.dart
+│   │   └── widgets
+│   │       ├── admin_button_widget.dart
+│   │       └── member_button_widget.dart
+│   ├── common
+│   │   └── privacy_policy_page.dart
+│   ├── community
+│   │   ├── admin_settings_page.dart
+│   │   ├── community_main.dart
+│   │   ├── member_list_page.dart
+│   │   ├── member_manage_page.dart
+│   │   ├── member_settings_page.dart
+│   │   └── post
+│   │       ├── community_post.dart
+│   │       └── post_create_page.dart
+│   ├── event
+│   │   ├── detail
+│   │   │   ├── diagonal_text_painter.dart
+│   │   │   ├── event_detail_appbar.dart
+│   │   │   ├── event_detail_body.dart
+│   │   │   ├── event_detail_bottom.dart
+│   │   │   ├── event_detail_page.dart
+│   │   │   ├── event_detail_state.dart
+│   │   │   └── widget
+│   │   │       ├── course_info_card.dart
+│   │   │       ├── event_group_panel.dart
+│   │   │       └── event_header_section.dart
+│   │   ├── event_create1.dart
+│   │   ├── event_create1_back.dart
+│   │   ├── event_create2.dart
+│   │   ├── event_main.dart
+│   │   ├── event_update1.dart
+│   │   ├── event_update1_back.dart
+│   │   ├── event_update2.dart
+│   │   ├── result
+│   │   │   ├── event_result.dart
+│   │   │   ├── event_result_full_score_card.dart
+│   │   │   ├── new_peoria_web_view.dart
+│   │   │   └── widget
+│   │   └── widgets
+│   │       ├── SummaryDataTable.dart
+│   │       ├── course_selection_dialog.dart
+│   │       ├── event_header.dart
+│   │       ├── group_card.dart
+│   │       ├── location_search_dialog.dart
+│   │       ├── location_search_dialog_back.dart
+│   │       ├── mini_score_card.dart
+│   │       ├── no_api_participant_dialog.dart
+│   │       ├── participant_dialog.dart
+│   │       ├── ranking_list.dart
+│   │       ├── team_result.dart
+│   │       ├── toggle_bottons.dart
+│   │       └── user_profile.dart
+│   ├── game
+│   │   ├── overall_score_page.dart
+│   │   ├── score_button_pad.dart
+│   │   └── score_card_page.dart
+│   ├── home
+│   │   ├── home_page.dart
+│   │   ├── splash_page.dart
+│   │   └── splash_screen.dart
+│   ├── logins
+│   │   ├── hi_screen.dart
+│   │   ├── login.dart
+│   │   └── widgets
+│   │       ├── forgot_password.dart
+│   │       ├── login_widgets.dart
+│   │       └── social_login_widgets.dart
+│   ├── notification
+│   │   └── notification_history_page.dart
+│   ├── profile
+│   │   ├── profile_screen.dart
+│   │   ├── statistics_page.dart
+│   │   └── user_info_page.dart
+│   ├── setting
+│   │   ├── feedback_page.dart
+│   │   └── setting_page.dart
+│   └── signup
+│       ├── additional_info.dart
+│       ├── marketing_agreement_page.dart
+│       ├── signup.dart
+│       ├── signup_complete.dart
+│       ├── term_of_service_page.dart
+│       ├── terms_agreement_page.dart
+│       └── widgets
+│           ├── calendar.dart
+│           ├── signup_widgets.dart
+│           └── welcome_header_widget.dart
+├── project_tree.txt
+├── provider
+│   ├── auth
+│   │   └── auth_provider.dart
+│   ├── club
+│   │   ├── club_service_provider.dart
+│   │   └── club_state_provider.dart
+│   ├── event
+│   │   ├── event_service_provider.dart
+│   │   ├── event_state_notifier_provider.dart
+│   │   ├── event_state_provider.dart
+│   │   └── game_in_progress_provider.dart
+│   ├── participant
+│   │   ├── participant_service_provider.dart
+│   │   └── participant_state_provider.dart
+│   ├── screen_riverpod.dart
+│   ├── statistics
+│   │   └── statistics_provider.dart
+│   └── user
+│       └── user_service_provider.dart
+├── repoisitory
+│   ├── secure_storage.dart
+│   └── secure_storage.g.dart
+├── services
+│   ├── auth_service.dart
+│   ├── bio_auth.dart
+│   ├── club_member_service.dart
+│   ├── club_service.dart
+│   ├── event_service.dart
+│   ├── feedback_service.dart
+│   ├── group_service.dart
+│   ├── notification_service.dart
+│   ├── participant_service.dart
+│   ├── statistics_service.dart
+│   └── user_service.dart
+├── utils
+│   ├── AllowNavigateNumbersFormatter.dart
+│   ├── date_utils.dart
+│   ├── email.dart
+│   ├── enqueued_download.dart
+│   ├── excelFile.dart
+│   ├── reponsive_utils.dart
+│   └── safe_dio_call.dart
+└── widgets
+    ├── common
+    │   ├── circular_default_person_icon.dart
+    │   └── section_with_scroll.dart
+    ├── navigation
+    │   └── custom_bottom_navigation_bar.dart
+    └── sections
+        ├── admin_invite.dart
+        ├── bookmark_section.dart
+        ├── comment_input.dart
+        ├── comment_item.dart
+        ├── community_member_dialog.dart
+        ├── group_item.dart
+        ├── groups_section.dart
+        ├── member_dialog.dart
+        ├── member_invite.dart
+        ├── post_item.dart
+        ├── show_email_recipient_dialog.dart
+        ├── upcoming_events.dart
+        └── user_dialog.dart
+
+44 directories, 164 files
