@@ -181,11 +181,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     ),
                   ),
-                const SizedBox(height: 48),
-                SignUpLink(parentContext: context) ,
               ],
             ),
           ),
+        ),
+      ),
+      // ✅ 하단 고정
+      bottomNavigationBar: SafeArea(
+        top: false,
+        bottom: true,
+        child: Padding(
+          // 키보드가 올라오면 여백을 자동 확장
+          padding: EdgeInsets.only(
+            left: 16, right: 16, top: 8,
+            bottom: MediaQuery.of(context).viewInsets.bottom > 0
+                ? MediaQuery.of(context).viewInsets.bottom
+                : 16,
+          ),
+          child: SignUpLink(parentContext: context),
         ),
       ),
     );
