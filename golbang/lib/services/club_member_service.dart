@@ -1,4 +1,4 @@
-import '../global/PrivateClient.dart';
+import '../core/network/PrivateClient.dart';
 import '../models/profile/member_profile.dart';
 import '../repoisitory/secure_storage.dart';
 

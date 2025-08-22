@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../models/participant.dart';
+import '../../features/event/domain/entities/participant.dart';
 
 Future<List<String>> showEmailRecipientDialog(BuildContext context, List<Participant> participants) async {
   final selected = <String>{};

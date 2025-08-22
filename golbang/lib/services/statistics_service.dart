@@ -1,6 +1,6 @@
 import 'dart:developer';
 import 'dart:async';
-import 'package:golbang/global/PrivateClient.dart';
+import 'package:golbang/core/network/PrivateClient.dart';
 import '../repoisitory/secure_storage.dart';
 import '../models/get_statistics_overall.dart';
 import '../models/get_statistics_yearly.dart';

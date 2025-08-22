@@ -1,20 +1,20 @@
 import 'package:go_router/go_router.dart';
 import 'package:golbang/models/club.dart';
-import 'package:golbang/pages/event/event_create2.dart';
-import 'package:golbang/pages/event/event_update2.dart';
+import 'package:golbang/features/event/presentation/pages/event_create2.dart';
+import 'package:golbang/features/event/presentation/pages/event_update2.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../models/enum/event.dart';
 import '../../models/event.dart';
-import '../../models/participant.dart';
+import '../../features/event/domain/entities/participant.dart';
 import '../../models/profile/member_profile.dart';
-import '../../models/responseDTO/CourseResopnseDTO.dart';
-import '../../models/responseDTO/GolfClubResponseDTO.dart';
+import '../../features/event/data/models/course_detail_response_dto.dart';
+import '../../features/event/data/models/golf_club/golf_club_summary_response_dto.dart';
 import '../../pages/event/detail/event_detail_page.dart';
-import '../../pages/event/event_create1.dart';
+import '../../features/event/presentation/pages/event_create1.dart';
 import '../../pages/event/result/event_result.dart';
 import '../../pages/event/result/event_result_full_score_card.dart';
-import '../../pages/event/event_update1.dart';
+import '../../features/event/presentation/pages/event_update1.dart';
 import '../../pages/game/overall_score_page.dart';
 import '../../pages/game/score_card_page.dart';
 

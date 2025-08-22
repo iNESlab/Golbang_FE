@@ -1,11 +1,10 @@
 // event.dart
 
 import 'dart:developer';
-import 'package:golbang/models/participant.dart';
+import 'package:golbang/features/event/domain/entities/participant.dart';
 import 'package:golbang/models/profile/club_profile.dart';
-import 'package:golbang/models/responseDTO/GolfClubResponseDTO.dart';
-import 'package:golbang/models/responseDTO/CourseResopnseDTO.dart';
-import 'package:golbang/models/update_event_participant.dart';
+import 'package:golbang/features/event/data/models/golf_club/responses/golf_club_summary_response_dto.dart';
+import 'package:golbang/features/event/data/models/golf_club/responses/course_detail_response_dto.dart';
 
 class Event {
   final ClubProfile? club;

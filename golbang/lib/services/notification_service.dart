@@ -1,6 +1,6 @@
 import 'dart:developer';
 
-import '../global/PrivateClient.dart';
+import '../core/network/PrivateClient.dart';
 import '../repoisitory/secure_storage.dart';
 
 class NotificationService {

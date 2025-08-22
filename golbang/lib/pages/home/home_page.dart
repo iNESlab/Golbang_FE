@@ -5,7 +5,7 @@ import 'package:golbang/models/event.dart';
 import 'package:golbang/models/club.dart';
 import 'package:golbang/models/user_account.dart';
 import 'package:golbang/models/get_statistics_overall.dart';
-import 'package:golbang/services/event_service.dart';
+import 'package:golbang/features/event/data/datasources/event_service.dart';
 import 'package:golbang/widgets/sections/bookmark_section.dart';
 import 'package:golbang/widgets/sections/groups_section.dart';
 import 'package:golbang/widgets/common/section_with_scroll.dart';

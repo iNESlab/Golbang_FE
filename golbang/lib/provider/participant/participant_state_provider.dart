@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/provider/participant/participant_service_provider.dart';
 
-import '../../models/participant.dart';
+import '../../features/event/domain/entities/participant.dart';
 import '../../services/participant_service.dart';
 
 

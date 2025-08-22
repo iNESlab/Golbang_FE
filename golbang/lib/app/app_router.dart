@@ -7,7 +7,7 @@ import 'package:golbang/app/routes/user_routes.dart';
 
 import '../main.dart';
 import '../pages/club/club_main.dart';
-import '../pages/event/event_main.dart';
+import '../features/event/presentation/pages/event_main.dart';
 import '../pages/home/home_page.dart';
 import '../pages/profile/profile_screen.dart';
 import 'main_scaffold.dart';

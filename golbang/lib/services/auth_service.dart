@@ -3,11 +3,11 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:golbang/global/PrivateClient.dart';
-import 'package:golbang/global/PublicClient.dart';
+import 'package:golbang/core/network/PrivateClient.dart';
+import 'package:golbang/core/network/PublicClient.dart';
 import 'package:golbang/repoisitory/secure_storage.dart';
 
-import '../utils/safe_dio_call.dart';
+import '../core/network/safe_dio_call.dart';
 
 class AuthService {
   final SecureStorage storage;

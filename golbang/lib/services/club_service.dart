@@ -2,14 +2,14 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
-import '../global/PrivateClient.dart';
+import '../core/network/PrivateClient.dart';
 import '../models/club.dart';
 import '../models/member.dart';
 import '../models/profile/get_all_user_profile.dart';
-import '../models/responseDTO/GolfClubResponseDTO.dart';
-import '../models/responseDTO/CourseResopnseDTO.dart';
+import '../features/event/data/models/golf_club/responses/golf_club_summary_response_dto.dart';
+import '../features/event/data/models/golf_club/responses/course_detail_response_dto.dart';
 import '../repoisitory/secure_storage.dart';
-import '../utils/safe_dio_call.dart';
+import '../core/network/safe_dio_call.dart';
 
 class ClubService {
   final SecureStorage storage;

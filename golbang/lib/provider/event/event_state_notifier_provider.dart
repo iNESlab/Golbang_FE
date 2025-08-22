@@ -1,9 +1,9 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../models/create_event.dart';
-import '../../models/create_participant.dart';
+import '../../features/event/data/models/request/create_event_request_dto.dart';
+import '../../features/event/data/models/create_participant_request_dto.dart';
 import '../../models/event.dart';
-import '../../services/event_service.dart';
+import '../../features/event/data/datasources/event_remote_ds.dart';
 import 'event_service_provider.dart';
 import 'event_state_provider.dart';
 

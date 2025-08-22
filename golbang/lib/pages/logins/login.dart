@@ -13,7 +13,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:open_settings_plus/open_settings_plus.dart';
 
-import '../../global/PrivateClient.dart';
+import '../../core/network/PrivateClient.dart';
 import '../../repoisitory/secure_storage.dart';
 
 class TokenCheck extends ConsumerStatefulWidget {

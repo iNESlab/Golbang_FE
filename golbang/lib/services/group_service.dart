@@ -1,7 +1,7 @@
 import 'dart:developer';
 import 'dart:io';
 import 'package:dio/dio.dart';
-import '../global/PrivateClient.dart';
+import '../core/network/PrivateClient.dart';
 import '../models/get_statistics_ranks.dart';
 import '../models/profile/get_all_user_profile.dart';
 import '../repoisitory/secure_storage.dart';

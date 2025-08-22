@@ -1,9 +1,8 @@
 import 'dart:developer';
-import 'package:golbang/models/socket/score_card.dart';
 
-import '../global/PrivateClient.dart';
+import '../core/network/PrivateClient.dart';
 import '../repoisitory/secure_storage.dart';
-import '../utils/safe_dio_call.dart';
+import '../core/network/safe_dio_call.dart';
 
 class ParticipantService {
   final SecureStorage storage;
