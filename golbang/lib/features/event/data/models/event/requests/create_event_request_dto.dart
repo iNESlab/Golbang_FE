@@ -1,3 +1,4 @@
+import 'package:golbang/features/event/domain/enum/event_enum.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../participant/requests/create_participant_request_dto.dart';
@@ -11,7 +12,7 @@ class CreateEventRequestDto {
   final DateTime startDateTime;
   final DateTime endDateTime;
   final String repeatType;
-  final String gameMode;
+  final GameMode gameMode;
   final String alertDateTime;
   final List<CreateParticipantRequestDto> createParticipantRequestDtos;
 
@@ -39,7 +40,7 @@ class CreateEventRequestDto {
       'start_date_time': startDateTime.toUtc().toIso8601String(),
       'end_date_time': endDateTime.toUtc().toIso8601String(),
       'repeat_type': repeatType,
-      'game_mode': gameMode,
+      'game_mode': gameMode.value,
       'alert_date_time':'2024-07-31T09:00:00Z',//TODO: 임시 조치
       'participants': createParticipantRequestDtos,
     };

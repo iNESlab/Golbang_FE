@@ -4,9 +4,10 @@
 // 3. dynamic으로 return 하지 말기
 
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:golbang/features/event/data/models/participant/requests/create_participant_request_dto.dart';
+import 'package:golbang/features/event/data/models/participant/responses/read_participant_scores_response_dto.dart';
 import '../../../../core/network/PrivateClient.dart';
 import '../models/event/requests/create_event_request_dto.dart';
+import '../models/event/responses/read_event_individual_response_dto.dart';
 import '../models/golf_club/responses/golf_club_summary_response_dto.dart';
 import '../../../../core/network/safe_dio_call.dart';
 import '../models/event/responses/create_event_response_dto.dart';
@@ -27,7 +28,7 @@ class EventRemoteDs {
         return list.map((j) => GolfClubSummaryResponseDto.fromJson(j)).toList();
       });
 
-  Future<GolfClubSummaryResponseDto> fetchGolfClubDetail(int golfClubId) =>
+  Future<GolfClubSummaryResponseDto> fetchGolfClubSummary(int golfClubId) =>
       safeDioCall(() async {
         final res = await _client.dio.get('/api/v1/golfcourses/', queryParameters: {
           'golfclub_id': golfClubId,
@@ -50,30 +51,31 @@ class EventRemoteDs {
   });
 
   // 이벤트 개인전 결과 조회
-  Future<Map<String, dynamic>> fetchIndividualResults(int eventId, {String? sortType}) =>
+  Future<ReadEventIndividualResponseDto> fetchIndividualResults(int eventId, {String? sortType}) =>
       safeDioCall(() async{
     final url = Uri.parse('/api/v1/events/$eventId/individual-results/')
         .replace(queryParameters: sortType != null ? {'sort_type': sortType} : null);
     final res = await _client.dio.getUri(url);
-    return res.data['data'];
+    return ReadEventIndividualResponseDto.fromJson(res.data['data']);
   });
 
   //TODO: 테스트
   // 이벤트 팀전 결과 조회
-  Future<Map<String, dynamic>> fetchTeamResults(int eventId, {String? sortType}) =>
-      safeDioCall(() async{
-    final url = Uri.parse('/api/v1/events/$eventId/team-results/')
-        .replace(queryParameters: sortType != null ? {'sort_type': sortType} : null);
-    final res = await _client.dio.getUri(url);
-    return res.data['data'];
-  });
+  // Future<Map<String, dynamic>> fetchTeamResults(int eventId, {String? sortType}) =>
+  //     safeDioCall(() async{
+  //   final url = Uri.parse('/api/v1/events/$eventId/team-results/')
+  //       .replace(queryParameters: sortType != null ? {'sort_type': sortType} : null);
+  //   final res = await _client.dio.getUri(url);
+  //   return res.data['data'];
+  // });
 
   //TODO: 테스트
   // 이벤트 스코어카드 결과 조회 메서드
-  Future<Map<String, dynamic>> fetchScoreData(int eventId) =>
+  Future<List<ReadParticipantScoresResponseDto>> fetchScoreCardResult(int eventId) =>
       safeDioCall(() async{
     final res = await _client.dio.get('/api/v1/events/$eventId/scores/');
-    return res.data['data'];
+    final list = (res.data['data'] as List?) ?? [];
+    return list.map((j) => ReadParticipantScoresResponseDto.fromJson(j)).toList();
   });
 
   // API 테스트 완료
@@ -85,19 +87,15 @@ class EventRemoteDs {
   });
 
   // POST
-  Future<PostEventResponseDto> postEvent({
+  Future<CreateEventResponseDto> postEvent({
     required int clubId,
     required CreateEventRequestDto event,
-    required List<CreateParticipantRequestDto> participants,
   }) => safeDioCall(() async {
-      final body = {
-        ...event.toJson(),
-        'participants': participants.map((p) => p.toJson()).toList(),
-      };
-      final res = await _client.dio.post('/api/v1/events/', queryParameters: {
-        'club_id': clubId,
-      }, data: body);
-      return PostEventResponseDto.fromJson(res.data['data']);
+      final res = await _client.dio.post(
+          '/api/v1/events/',
+          queryParameters: {'club_id': clubId},
+          data: event.toJson());
+      return CreateEventResponseDto.fromJson(res.data['data']);
     });
 
   // PUT

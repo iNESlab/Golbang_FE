@@ -2,11 +2,11 @@
 // 홀 정보
 
 class HoleScore {
-  final int? holeNumber;
+  final int holeNumber;
   final int? score;
 
   HoleScore({
-    this.holeNumber,
+    required this.holeNumber,
     this.score,
   });
 }

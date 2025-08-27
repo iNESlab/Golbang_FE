@@ -1,7 +1,7 @@
 //TODO: 노션 API 명세서랑 달라서 체크해야함
 
 // 참가자 리스트 조회시 사용되는 Dto
-import 'package:golbang/features/event/domain/enum/event.dart';
+import 'package:golbang/features/event/domain/enum/event_enum.dart';
 
 class ClubMemberProfileDto {
   // clubMember 정보
@@ -30,7 +30,7 @@ class ClubMemberProfileDto {
       memberId: json['user']['id'], // TODO: 스프링에서 member로 그리고, id가 아닌 member_id로 응답해야함
       email: json['email'],
       name: json['user']['name'],
-      profileImage: json['profile_image'],
+      profileImage: json['profile_image']??'',
     );
   }
 }
@@ -65,13 +65,13 @@ class ParticipantSummaryResponseDto {
       participantId: json['participant_id'],
       clubMemberProfileDto: ClubMemberProfileDto.fromJson(json['member']), //TODO: member => clubMember로 수정해야함
       statusType: json['status_type'],
-      teamType: TeamConfig.values.firstWhere((e) => e.value == json['team_type']),
-      holeNumber: json['hole_number'],
+      teamType: TeamConfigX.fromString(json['team_type'] as String),
+      holeNumber: json['hole_number'] ?? 99,
       groupType: json['group_type'],
-      sumScore: json['sum_score'],
+      sumScore: json['sum_score'] ?? 99,
+      handicapScore: json['handicap_score'] ?? 99,
       rank: json['rank'],
-      handicapRank: json['handicap_rank'],
-      handicapScore: json['handicap_score'],
+      handicapRank: json['handicap_rank']
     );
   }
 

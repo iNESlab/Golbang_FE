@@ -1,45 +1,43 @@
 // 구: scorecard
 
-import 'package:golbang/features/event/data/models/golf_club/responses/hole_score_response_dto.dart';
-import 'package:golbang/features/event/domain/enum/event.dart';
+import 'package:golbang/features/event/data/models/participant/responses/hole_score_response_dto.dart';
+import 'package:golbang/features/event/domain/enum/event_enum.dart';
 
 class ReadParticipantRecordResponseDto {
   final int participantId;
-  final String userName;
-  final String groupType;
+  final String memberName;
+  final int groupType;
   final TeamConfig teamType;
   final bool isGroupWin;
   final bool isGroupWinHandicap;
-  final int? sumScore; // nullable로 변경
+  final int sumScore; // nullable로 변경
   final int handicapScore;
 
-  final List<HoleScoreResponseDto>? scores;
+  final List<HoleScoreResponseDto> holeScores;
 
   ReadParticipantRecordResponseDto({
     required this.participantId,
-    required this.userName,
+    required this.memberName,
     required this.teamType,
     required this.groupType,
     required this.isGroupWin,
     required this.isGroupWinHandicap,
-    this.sumScore, // nullable이기 때문에 required 제거
+    required this.sumScore, // nullable이기 때문에 required 제거
     required this.handicapScore,
-    this.scores
+    required this.holeScores
   });
 
   factory ReadParticipantRecordResponseDto.fromJson(Map<String, dynamic> json) {
     return ReadParticipantRecordResponseDto(
-      participantId: json['participant_id'] ?? 0,
-      userName: json['user_name'] ?? 'unknown',
-      teamType: json['team_type'] ?? 'NONE',
-      // nullable이므로 기본값 없이 처리
-      groupType: json['group_type'] ?? 0,
+      participantId: json['participant_id'],
+      memberName: json['user_name'] ?? 'unknown',
+      teamType: TeamConfigX.fromString(json['team_type'] as String),
+      groupType: json['group_type'],
       isGroupWin: json['is_group_win'] ?? false,
       isGroupWinHandicap: json['is_group_win_handicap'] ?? false,
-      sumScore: json['sum_score'],
-      // nullable이므로 기본값 없이 처리
-      handicapScore: json['handicap_score'] ?? 0,
-      scores: (json['scores'] as List<dynamic>?)
+      sumScore: json['sum_score'] ?? 99,
+      handicapScore: json['handicap_score'] ?? 99,
+      holeScores: (json['scores'] as List<dynamic>?)
           ?.map((scoreJson) => HoleScoreResponseDto.fromJson(scoreJson))
           .toList() ?? [],
     );

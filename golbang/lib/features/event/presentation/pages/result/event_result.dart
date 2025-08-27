@@ -12,7 +12,7 @@ import 'package:golbang/pages/event/widgets/ranking_list.dart';
 
 import '../../../features/event/domain/entities/participant.dart';
 import '../../../models/profile/get_event_result_participants_ranks.dart';
-import '../../../features/event/data/models/course_detail_response_dto.dart';
+import '../../../features/event/data/models/golf_course_detail_response_dto.dart';
 import '../../../repoisitory/secure_storage.dart';
 
 class EventResultPage extends ConsumerStatefulWidget {

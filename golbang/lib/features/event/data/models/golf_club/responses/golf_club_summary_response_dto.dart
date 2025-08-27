@@ -1,4 +1,4 @@
-import 'course_summary_response_dto.dart';
+import 'golf_course_summary_response_dto.dart';
 
 
 class GolfClubSummaryResponseDto {
@@ -7,7 +7,7 @@ class GolfClubSummaryResponseDto {
   final String address;
   final double longitude;
   final double latitude;
-  final List<CourseSummaryResponseDto> courseSummaryResponseDtos;
+  final List<GolfCourseSummaryResponseDto> golfCourseSummaryResponseDtos;
 
   GolfClubSummaryResponseDto({
     required this.golfClubId,
@@ -15,7 +15,7 @@ class GolfClubSummaryResponseDto {
     required this.address,
     required this.longitude,
     required this.latitude,
-    required this.courseSummaryResponseDtos
+    required this.golfCourseSummaryResponseDtos
   });
 
   factory GolfClubSummaryResponseDto.fromJson(Map<String, dynamic> json) {
@@ -25,8 +25,8 @@ class GolfClubSummaryResponseDto {
       address: json['address'] ?? 'Unknown',
       longitude: (json['longitude'] as num).toDouble(), // ✅ `num` 타입을 `double`로 변환
       latitude: (json['latitude'] as num).toDouble(),
-      courseSummaryResponseDtos: (json['courses'] as List?)
-          ?.map((course) => CourseSummaryResponseDto.fromJson(course))
+      golfCourseSummaryResponseDtos: (json['courses'] as List?)
+          ?.map((course) => GolfCourseSummaryResponseDto.fromJson(course))
           .toList() ?? [],
     );
   }

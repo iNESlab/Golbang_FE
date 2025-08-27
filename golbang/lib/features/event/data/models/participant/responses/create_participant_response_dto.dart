@@ -1,4 +1,4 @@
-import '../../../../domain/enum/event.dart';
+import '../../../../domain/enum/event_enum.dart';
 
 class UpdateParticipantResponseDto {
   final int participantId;
@@ -25,7 +25,7 @@ class UpdateParticipantResponseDto {
       participantId: json['participant_id'],
       memberId: json['member_id'],
       eventId: json['event_id'],
-      teamType: TeamConfig.values.firstWhere((e) => e.value == json['team_type']),
+      teamType: TeamConfigX.fromString(json['team_type'] as String),
       groupType: json['group_type'],
       statusType: json['status_type']
     );

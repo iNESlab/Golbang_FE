@@ -1,5 +1,5 @@
 
-import '../../../../domain/enum/event.dart';
+import '../../../../domain/enum/event_enum.dart';
 
 class UpdateParticipantRequestDto {
   final int memberId;

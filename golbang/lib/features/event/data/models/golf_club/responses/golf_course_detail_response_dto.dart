@@ -1,25 +1,25 @@
-class CourseDetailResponseDto {
+class GolfCourseDetailResponseDto {
   final int golfCourseId;
   final String golfCourseName;
   final int holes;
   final int par;
-  final List<TeeResponseDto> tees;
+  final List<TeeResponseDto> teeDtos;
 
-  CourseDetailResponseDto({
+  GolfCourseDetailResponseDto({
     required this.golfCourseId,
     required this.golfCourseName,
     required this.holes,
     required this.par,
-    required this.tees,
+    required this.teeDtos,
   });
 
-  factory CourseDetailResponseDto.fromJson(Map<String, dynamic> json) {
-    return CourseDetailResponseDto(
+  factory GolfCourseDetailResponseDto.fromJson(Map<String, dynamic> json) {
+    return GolfCourseDetailResponseDto(
       golfCourseId: json['golf_course_id'] ?? -1,
       golfCourseName: json['golf_course_name'] ?? 'Unknown',
       holes: json['holes'],
       par: json['par'],
-      tees: (json['tees'] != null && json['tees'] is List) // null 체크 및 타입 확인
+      teeDtos: (json['tees'] != null && json['tees'] is List) // null 체크 및 타입 확인
           ? (json['tees'] as List)
           .map((tee) => TeeResponseDto.fromJson(tee))
           .toList()

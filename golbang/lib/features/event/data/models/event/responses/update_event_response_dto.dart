@@ -1,11 +1,11 @@
 import 'package:golbang/features/event/domain/enum/event_enum.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-class CreateEventResponseDto {
+class UpdateEventResponseDto {
   final int eventId;
   final String eventTitle;
   final LatLng location;
-  final String site;
+  final String site; //TODO: 명세서에서는 location이랑 역할이 바뀜 확인해야함
   final int golfClubId;
   final int golfCourseId;
   final DateTime startDateTime;
@@ -15,7 +15,7 @@ class CreateEventResponseDto {
   // final List<ParticipantProfileDto> participantProfileDto;
   // final DateTime alertDateTime;
 
-  CreateEventResponseDto({
+  UpdateEventResponseDto({
     required this.eventId,
     required this.eventTitle,
     required this.location,
@@ -28,7 +28,7 @@ class CreateEventResponseDto {
     required this.gameMode
   });
 
-  factory CreateEventResponseDto.fromJson(Map<String, dynamic> json){
+  factory UpdateEventResponseDto.fromJson(Map<String, dynamic> json){
     final locationStr = json['location'] as String;
     final cleaned = locationStr
         .replaceAll('LatLng(', '')
@@ -38,7 +38,7 @@ class CreateEventResponseDto {
     final latitude = double.parse(cleaned[0].trim());
     final longitude = double.parse(cleaned[1].trim());
 
-    return CreateEventResponseDto(
+    return UpdateEventResponseDto(
       eventId: json['event_id'], //TODO: club_member_id로 서버에서 수정해야함
       eventTitle: json['event_title'], //TODO: is_current_user_admin => is_club_admin으로 서버 수정해야함
       location: LatLng(latitude, longitude), // TODO: 스프링에서 member로 그리고, id가 아닌 member_id로 응답해야함
@@ -48,7 +48,7 @@ class CreateEventResponseDto {
       startDateTime: DateTime.parse(json['start_date_time']).toLocal(),
       endDateTime: DateTime.parse(json['end_date_time']).toLocal(),
       repeatType: json['repeat_type'],
-      gameMode: json['game_mode'],
+      gameMode: GameModeX.fromString(json['game_mode'] as String),
     );
   }
 }

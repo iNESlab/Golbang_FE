@@ -1,6 +1,8 @@
 import 'package:golbang/features/event/data/models/golf_club/responses/golf_club_detail_response_dto.dart';
 import 'package:golbang/features/event/data/models/participant/responses/participant_summary_response_dto.dart';
 
+import '../../../../domain/enum/event_enum.dart';
+
 class ClubProfileDto{
   final int clubId;
   final String clubName;
@@ -33,7 +35,7 @@ class ReadEventDetailResponseDto {
   final DateTime startDateTime; // ㅇ
   final DateTime endDateTime; // ㅇ
   final String repeatType; // ㅇ
-  final String gameMode; // ㅇ
+  final GameMode gameMode; // ㅇ
   // final String alertDateTime; // ㅇ
   final int participantsCount; // ㅇ
   final int partyCount; // ㅇ
@@ -74,10 +76,10 @@ class ReadEventDetailResponseDto {
       eventTitle: json['event_title'],
       location: json['location'],
       site: json['site'],
-      startDateTime: json['start_date_time'],
-      endDateTime: json['end_date_time'],
+      startDateTime: DateTime.parse(json['start_date_time']).toLocal(),
+      endDateTime: DateTime.parse(json['end_date_time']).toLocal(),
       repeatType: json['repeat_type'],
-      gameMode: json['game_mode'],
+      gameMode: GameMode.values.firstWhere((g) => g.value == json['game_mode']),
       participantsCount: json['participants_count'],
       partyCount: json['party_count'],
       acceptCount: json['accept_count'],

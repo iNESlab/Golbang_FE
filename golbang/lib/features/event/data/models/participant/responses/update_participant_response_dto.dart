@@ -1,4 +1,4 @@
-import '../../../../domain/enum/event.dart';
+import '../../../../domain/enum/event_enum.dart';
 
 class CreateParticipantResponseDto {
   final int participantId;
