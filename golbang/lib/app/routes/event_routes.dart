@@ -4,11 +4,11 @@ import 'package:golbang/features/event/presentation/pages/event_create2.dart';
 import 'package:golbang/features/event/presentation/pages/event_update2.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
-import '../../models/enum/event.dart';
+import '../../models/enum/event_enum.dart';
 import '../../models/event.dart';
 import '../../features/event/domain/entities/participant.dart';
 import '../../models/profile/member_profile.dart';
-import '../../features/event/data/models/course_detail_response_dto.dart';
+import '../../features/event/data/models/golf_course_detail_response_dto.dart';
 import '../../features/event/data/models/golf_club/golf_club_summary_response_dto.dart';
 import '../../pages/event/detail/event_detail_page.dart';
 import '../../features/event/presentation/pages/event_create1.dart';

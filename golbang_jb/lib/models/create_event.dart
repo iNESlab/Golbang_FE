@@ -1,4 +1,4 @@
-// event.dart
+// event_enum.dart
 import 'package:golbang/models/event.dart';
 
 class CreateEvent {

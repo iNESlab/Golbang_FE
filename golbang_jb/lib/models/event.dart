@@ -1,4 +1,4 @@
-// event.dart
+// event_enum.dart
 
 import 'dart:developer';
 import 'package:golbang/models/participant.dart';

@@ -12,13 +12,6 @@ import '../../pages/signup/terms_agreement_page.dart';
 final List<GoRoute> authRoutes = [
 
   GoRoute(
-      path: '/app',
-      builder: (context, state) {
-        final extra = state.extra as Map<String, dynamic>?;
-        return TokenCheck(message: extra?['message'],);
-      } // 로그인 여부 체크 후 리디렉션 처리
-  ),
-  GoRoute(
     path: '/app/signup',
     builder: (context, state) => const SignUpPage(),
     routes: [

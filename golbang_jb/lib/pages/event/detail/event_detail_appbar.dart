@@ -1,6 +1,6 @@
 import 'dart:developer';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -25,7 +25,7 @@ PreferredSizeWidget buildEventDetailAppBar(
     DateTime currentTime,
     List<dynamic> participants,
     ) {
-  late EventService _eventService;
+  late EventService eventService;
   final screenWidth = MediaQuery.of(context).size.width;
   final orientation = MediaQuery.of(context).orientation;
   final double iconSize = screenWidth * (orientation == Orientation.portrait ? 0.06 : 0.04);
@@ -45,38 +45,29 @@ PreferredSizeWidget buildEventDetailAppBar(
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('성공적으로 삭제되었습니다')),
       );
-      context.pushReplacement('/app/events');
-    } else if(success == 403) {
+      context.go('/app/events?refresh=${DateTime.now().millisecondsSinceEpoch}');
+    }  else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('관리자가 아닙니다. 관리자만 삭제할 수 있습니다.')),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('이벤트 삭제에 실패했습니다. 모임 관리자만 삭제할 수 있습니다.')),
+        const SnackBar(content: Text('이벤트 삭제에 실패했습니다.')),
       );
     }
   }
 
-  void endEvent() async {
-    _eventService = EventService(ref.read(secureStorageProvider));
-    CreateEvent updatedEvent = CreateEvent.fromEvent(event, DateTime.now());
-    List<CreateParticipant> updatedParticipants = CreateParticipant.fromParticipants(event.participants);
-
-    bool success = await _eventService.updateEvent(
-      event: updatedEvent,
-      participants: updatedParticipants,
-    );
-
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('시합이 종료되었습니다.')),
-      );
-      context.pushReplacement('/app/events/${event.eventId}/result');
-
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('이벤트 수정에 실패했습니다. 관리자만 수정할 수 있습니다. ')),
-      );
+  void endEvent(int eventId) async {
+    eventService = EventService(ref.read(secureStorageProvider));
+    try{
+      await eventService.endEvent(eventId);
+      context.pushReplacement('/app/events/$eventId/result');
+    } catch (e) {
+      log('Error fetching event details: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -138,13 +129,16 @@ PreferredSizeWidget buildEventDetailAppBar(
         },
       ),
       PopupMenuButton<String>(
-        onSelected: (String value) {
+        onSelected: (String value) async {
           switch (value) {
             case 'share':
               _shareEvent(event);
               break;
             case 'end':
-              endEvent();
+            // 재확인 모달
+              final ok = await _confirmEndEvent(context);
+              if (ok) endEvent(event.eventId);
+              break;
             case 'edit':
               editEvent();
               break;
@@ -188,6 +182,29 @@ void _shareEvent(Event event) {
         '장소: ${event.site}\n\n'
         // '자세히 보기: $eventLink',
   );
+}
+
+// 1) 공통 확인 다이얼로그 helper
+Future<bool> _confirmEndEvent(BuildContext context) async {
+  final result = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => AlertDialog(
+      title: const Text('시합 종료'),
+      content: const Text('정말로 시합을 종료하시겠습니까?\n이 작업은 되돌릴 수 없습니다.'),
+      actions: [
+        TextButton(
+          onPressed: () => context.pop(false),
+          child: const Text('취소'),
+        ),
+        TextButton(
+          onPressed: () => context.pop(true),
+          child: const Text('종료'),
+        ),
+      ],
+    ),
+  );
+  return result ?? false;
 }
 
 Future<void> exportAndSendEmail(

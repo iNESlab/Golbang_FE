@@ -165,6 +165,20 @@ class EventService {
   }
 
   // API 테스트 완료
+  // 이벤트 종료 메서드
+  Future<bool?> endEvent(int eventId) async {
+    return await safeDioCall<bool>(() async {
+      // API URL 설정
+      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/');
+
+      // API 요청
+      await privateClient.dio.patchUri(url);
+      // JSON 데이터를 Event 객체로 변환
+      return true;
+    });
+  }
+
+  // API 테스트 완료
   // 이벤트 삭제 메서드
   Future<bool> deleteEvent(int eventId) async {
     try {
