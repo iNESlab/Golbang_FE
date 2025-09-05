@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/features/event/data/models/request/create_event_request_dto.dart';
 import 'package:golbang/features/event/data/models/create_participant_request_dto.dart';
 
-import '../../../models/event.dart';
+import '../../../models/event_enum.dart';
 import '../../../provider/event/event_state_notifier_provider.dart';
 import '../../../provider/event/game_in_progress_provider.dart';
 import '../../../repoisitory/secure_storage.dart';

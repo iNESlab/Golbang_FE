@@ -3,7 +3,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../models/event.dart';
+import '../../../models/event_enum.dart';
 import 'event_detail_appbar.dart';
 import 'event_detail_body.dart';
 import 'event_detail_bottom.dart';

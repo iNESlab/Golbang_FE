@@ -1,7 +1,7 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:golbang/models/enum/event.dart';
+import 'package:golbang/models/enum/event_enum.dart';
 import '../../../features/event/data/models/create_participant_request_dto.dart';
 import '../../../widgets/common/circular_default_person_icon.dart'; // CreateParticipant 모델 임포트
 

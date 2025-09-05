@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../models/event.dart';
+import '../../../models/event_enum.dart';
 import '../../../provider/event/game_in_progress_provider.dart';
 import 'package:go_router/go_router.dart';
 

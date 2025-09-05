@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import '../../../../models/event.dart';
+import '../../../../models/event_enum.dart';
 import '../diagonal_text_painter.dart';
 
 class CourseInfoCard extends StatelessWidget {

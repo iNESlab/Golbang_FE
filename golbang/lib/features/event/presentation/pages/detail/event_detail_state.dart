@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:golbang/models/event.dart';
-import 'package:golbang/features/event/data/datasources/event_service.dart';
 import 'package:golbang/repoisitory/secure_storage.dart';
 
 import '../../../utils/reponsive_utils.dart';

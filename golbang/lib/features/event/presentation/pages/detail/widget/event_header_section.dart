@@ -1,6 +1,6 @@
 // lib/pages/event/detail/event_header_section.dart
 import 'package:flutter/material.dart';
-import '../../../../models/event.dart';
+import '../../../../models/event_enum.dart';
 
 class EventHeaderSection extends StatelessWidget {
   final Event event;

@@ -11,10 +11,10 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../../../../models/club.dart';
 import '../../data/models/request/create_event_request_dto.dart';
 import '../../data/models/create_participant_request_dto.dart';
-import '../../../../models/enum/event.dart';
+import '../../../../models/enum/event_enum.dart';
 import '../../domain/entities/participant.dart';
 import '../../data/models/golf_club/golf_club_summary_response_dto.dart';
-import '../../data/models/course_detail_response_dto.dart';
+import '../../data/models/golf_course_detail_response_dto.dart';
 import '../../../../repoisitory/secure_storage.dart';
 import '../../data/datasources/event_service.dart';
 

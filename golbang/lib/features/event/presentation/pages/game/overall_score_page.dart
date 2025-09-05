@@ -9,7 +9,7 @@ import 'package:golbang/utils/reponsive_utils.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-import '../../models/event.dart';
+import '../../models/event_enum.dart';
 import '../../repoisitory/secure_storage.dart';
 import '../../widgets/common/circular_default_person_icon.dart';
 

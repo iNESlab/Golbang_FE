@@ -10,10 +10,10 @@ import 'package:go_router/go_router.dart';
 import '../../../../models/club.dart';
 import '../../data/models/request/create_event_request_dto.dart';
 import '../../data/models/create_participant_request_dto.dart';
-import '../../../../models/enum/event.dart';
+import '../../../../models/enum/event_enum.dart';
 import '../../../../models/profile/member_profile.dart';
 import '../../data/models/golf_club/golf_club_summary_response_dto.dart';
-import '../../data/models/course_detail_response_dto.dart';
+import '../../data/models/golf_course_detail_response_dto.dart';
 import '../../../../provider/event/event_state_notifier_provider.dart';
 
 class EventsCreate2 extends ConsumerStatefulWidget {

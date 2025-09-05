@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../repoisitory/secure_storage.dart';
-import '../../../features/event/data/models/course_detail_response_dto.dart';
+import '../../../features/event/data/models/golf_course_detail_response_dto.dart';
 import 'package:golbang/services/club_service.dart';
 
 class CourseSelectionDialog extends ConsumerStatefulWidget {
