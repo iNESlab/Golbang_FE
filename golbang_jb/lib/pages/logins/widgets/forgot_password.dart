@@ -75,18 +75,17 @@ class _ForgotPasswordDialogState extends ConsumerState<ForgotPasswordDialog> {
       final userService = ref.read(userServiceProvider);
 
       if (email.isNotEmpty) {
-        var response = await userService.resetPassword(email: email);
-
-        if (response.statusCode == 200) {
+          await userService.resetPassword(email: email);
           messenger.showSnackBar(
-            SnackBar(content: Text('$email로 전송되었습니다')),
+            SnackBar(content: Text('$email 로 전송되었습니다')),
           );
           context.pop();
-        }
       }
     } catch (e) {
+      // safeDioCall에서 throw한 메시지를 그대로 SnackBar로
+      context.pop();
       messenger.showSnackBar(
-        SnackBar(content: Text('$e'), backgroundColor: Colors.red),
+        SnackBar(content: Text(e.toString()), backgroundColor: Colors.red),
       );
     }
   }

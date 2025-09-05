@@ -10,6 +10,7 @@ import '../global/PublicClient.dart';
 import '../models/profile/get_all_user_profile.dart';
 import '../models/user_account.dart';
 import '../repoisitory/secure_storage.dart';
+import '../utils/safe_dio_call.dart';
 
 class UserService {
   final SecureStorage storage;
@@ -249,19 +250,15 @@ class UserService {
   }
 
   // API 테스트 완료
-  Future<Response<dynamic>> resetPassword({required String email})async{
-    var uri = Uri.parse("/api/v1/users/info/password/forget/");
-    // body
-    Map data = {
-      'email': email,
-    };
+  Future<Response<dynamic>?> resetPassword({required String email}) {
+    return safeDioCall(() async {
+      var uri = Uri.parse("/api/v1/users/info/password/forget/");
+      Map data = {'email': email};
 
-    var body = json.encode(data);
-    var response = await publicClient.dio.postUri(uri, data: body);
+      var response = await publicClient.dio.postUri(uri, data: data);
 
-    log("${response.data['data']}");
-
-    return response;
+      return response;
+    });
   }
 
   Future<Response<dynamic>> changePassword({required String newPassword})async{
