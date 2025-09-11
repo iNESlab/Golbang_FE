@@ -1,5 +1,4 @@
 # Miscellaneous
-golbang_jb/build/
 *.class
 *.log
 *.pyc
@@ -13,6 +12,7 @@ migrate_working_dir/
 
 # key file
 golbang_jb/assets/config/.env
+golbang/assets/config/.env
 
 # IntelliJ related
 *.iml
@@ -29,11 +29,13 @@ golbang_jb/assets/config/.env
 **/doc/api/
 **/ios/Flutter/.last_build_id
 golbang_jb/.dart_tool/
+golbang/.dart_tool/
+
 .flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/
+**/build/*
 
 # Symbolication related
 app.*.symbols

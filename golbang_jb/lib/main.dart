@@ -15,8 +15,12 @@ import 'package:golbang/app/notification_handler.dart';
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>(); // 👈 추가
 
-// 메인 Isolate에서 받을 포트
-final ReceivePort _dlPort = ReceivePort();
+/// ✅ 다운로더 백그라운드 콜백 (반드시 top-level + entry-point)
+@pragma('vm:entry-point')
+void downloadCallback(String id, int status, int progress) {
+  // 여기서는 print/log 정도만 — UI 접근/플러그인 호출 금지
+  // debugPrint('BG DOWNLOAD => id=$id, status=$status, progress=$progress');
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,6 +30,9 @@ void main() async {
     debug: kDebugMode, // 디버그 모드에서 로그 보려면 true
     // ignoreSsl: false, // (옵션) 필요한 경우만
   );
+
+  // ✅ 백그라운드 콜백 등록 (이게 없으면 iOS에서 크래시)
+  FlutterDownloader.registerCallback(downloadCallback);
 
   await initializeApp(); // ✅ 앱 초기화
 

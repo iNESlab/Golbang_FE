@@ -31,7 +31,7 @@ class SignupComplete extends StatelessWidget {
             ),
             const SizedBox(height: 40),
             ElevatedButton(
-              onPressed: () => context.pushReplacement('/app/login'),
+              onPressed: () => context.go('/app/login'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.green,
                 minimumSize: const Size(200, 50),

@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:golbang/models/club.dart';
 import 'package:golbang/pages/event/event_create2.dart';
@@ -19,102 +20,141 @@ import '../../pages/game/overall_score_page.dart';
 import '../../pages/game/score_card_page.dart';
 
 final List<GoRoute> eventRoutes = [
-
+  // /app/events/new-step1
   GoRoute(
-      path: '/app/events/new-step1',
-      builder: (context, state) {
-        final extra = state.extra as Map<String, dynamic>?;
-
-        return EventsCreate1(startDay: extra?['startDay'] as DateTime);
-      }
-    ),
-  GoRoute(
-      path: '/app/events/new-step2',
-      builder: (context, state) {
-        final extra = state.extra as Map<String, dynamic>?;
-
-        return EventsCreate2(
-            title: extra?['title'] as String,
-            selectedClub: extra?['selectedClub'] as Club,
-            selectedLocation: extra?['selectedLocation'] as LatLng,
-            selectedGolfClub: extra?['selectedGolfClub'] as GolfClubResponseDTO,
-            selectedCourse: extra?['selectedCourse'] as CourseResponseDTO,
-            startDate: extra?['startDate'] as DateTime,
-            endDate: extra?['endDate'] as DateTime,
-            selectedParticipants: extra?['selectedParticipants'] as List<ClubMemberProfile>,
-            selectedGameMode: extra?['selectedGameMode'] as GameMode
-        );
-      }
-  ),
-  GoRoute(
-    path: '/app/events/:eventId',
-    builder: (context, state) {
-      final eventId = int.tryParse(state.pathParameters['eventId']!);
+    path: '/app/events/new-step1',
+    pageBuilder: (context, state) {
       final extra = state.extra as Map<String, dynamic>?;
-      final event = extra?['event'] as Event?;
-
-      return EventDetailPage(
-        eventId: eventId,
-        event: event,
-        from: extra?['from'],
+      return NoTransitionPage(
+        key: state.pageKey,
+        child: EventsCreate1(
+          startDay: extra?['startDay'] as DateTime?,
+        ),
       );
     },
-      // eventId 하위 경로
+  ),
+
+  // /app/events/new-step2
+  GoRoute(
+    path: '/app/events/new-step2',
+    pageBuilder: (context, state) {
+      final extra = state.extra as Map<String, dynamic>?;
+      return NoTransitionPage(
+        key: state.pageKey,
+        child: EventsCreate2(
+          title: extra?['title'] as String,
+          selectedClub: extra?['selectedClub'] as Club?,
+          selectedLocation: extra?['selectedLocation'] as LatLng?,
+          selectedGolfClub: extra?['selectedGolfClub'] as GolfClubResponseDTO,
+          selectedCourse: extra?['selectedCourse'] as CourseResponseDTO,
+          startDate: extra?['startDate'] as DateTime,
+          endDate: extra?['endDate'] as DateTime,
+          selectedParticipants: extra?['selectedParticipants'] as List<ClubMemberProfile>,
+          selectedGameMode: extra?['selectedGameMode'] as GameMode,
+        ),
+      );
+    },
+  ),
+
+  // /app/events/:eventId
+  GoRoute(
+    path: '/app/events/:eventId',
+    pageBuilder: (context, state) {
+      final eventId = int.tryParse(state.pathParameters['eventId'] ?? '');
+      final extra = state.extra as Map<String, dynamic>?;
+      final event = extra?['event'] as Event?;
+      return NoTransitionPage(
+        key: state.pageKey,
+        child: EventDetailPage(
+          eventId: eventId,
+          event: event,
+          from: extra?['from'],
+        ),
+      );
+    },
+
+    // 하위 경로
     routes: [
+      // /app/events/:eventId/game
       GoRoute(
-          path: 'game',
-          builder: (context, state) {
-            final extra = state.extra as Map<String, dynamic>?;
-            return ScoreCardPage(event: extra?['event'] as Event);
-          },
-          routes: [
-            GoRoute(
-              path: 'scores',
-              builder: (context, state) {
-                final extra = state.extra as Map<String, dynamic>?;
-                return OverallScorePage(event: extra?['event'] as Event);
-              },
-            ),
-          ]
+        path: 'game',
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final event = extra?['event'] as Event;
+          return NoTransitionPage(
+            key: state.pageKey,
+            child: ScoreCardPage(event: event),
+          );
+        },
+        routes: [
+          // /app/events/:eventId/game/scores
+          GoRoute(
+            path: 'scores',
+            pageBuilder: (context, state) {
+              final extra = state.extra as Map<String, dynamic>?;
+              final event = extra?['event'] as Event;
+              return NoTransitionPage(
+                key: state.pageKey,
+                child: OverallScorePage(event: event),
+              );
+            },
+          ),
+        ],
       ),
+
+      // /app/events/:eventId/result
       GoRoute(
         path: 'result',
-        builder: (context, state) {
-          final eventId = int.tryParse(state.pathParameters['eventId']!);
+        pageBuilder: (context, state) {
+          final eventId = int.parse(state.pathParameters['eventId']!);
           final extra = state.extra as Map<String, dynamic>?;
-          bool? isFull = extra?['isFull'];
-          if (isFull == true) {
-            return EventResultFullScoreCard(eventId: eventId!);
-          }
-          return EventResultPage(eventId: eventId!);
-        },
-      ),
-      GoRoute(
-        path: 'edit-step1',
-        builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>?;
-          return EventsUpdate1(event: extra?['event'] as Event);
-        },
-      ),
-      GoRoute(
-        path: 'edit-step2',
-        builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>?;
-          return EventsUpdate2(
-            eventId: extra?['eventId'] as int,
-            title: extra?['title'] as String,
-            selectedClub: extra?['selectedClub'] as Club,
-            selectedLocation:extra?['selectedLocation'] as LatLng,
-            selectedGolfClub: extra?['selectedGolfClub'] as GolfClubResponseDTO,
-            selectedCourse: extra?['selectedCourse'] as CourseResponseDTO,
-            startDate: extra?['startDate'] as DateTime,
-            endDate: extra?['endDate'] as DateTime,
-            selectedParticipants: extra?['selectedParticipants'] as List<ClubMemberProfile>,
-            existingParticipants: extra?['existingParticipants']as List<Participant>,
-            selectedGameMode: extra?['selectedGameMode'] as GameMode,
+          final isFull = (extra?['isFull'] as bool?) ?? false;
+
+          return NoTransitionPage(
+            key: state.pageKey,
+            child: isFull
+                ? EventResultFullScoreCard(eventId: eventId)
+                : EventResultPage(eventId: eventId),
           );
         },
       ),
-    ]
+
+      // /app/events/:eventId/edit-step1
+      GoRoute(
+        path: 'edit-step1',
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          final event = extra?['event'] as Event;
+          return NoTransitionPage(
+            key: state.pageKey,
+            child: EventsUpdate1(event: event),
+          );
+        },
+      ),
+
+      // /app/events/:eventId/edit-step2
+      GoRoute(
+        path: 'edit-step2',
+        pageBuilder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return NoTransitionPage(
+            key: state.pageKey,
+            child: EventsUpdate2(
+              eventId: extra?['eventId'] as int,
+              title: extra?['title'] as String,
+              selectedClub: extra?['selectedClub'] as Club?,
+              selectedLocation: extra?['selectedLocation'] as LatLng,
+              selectedGolfClub: extra?['selectedGolfClub'] as GolfClubResponseDTO,
+              selectedCourse: extra?['selectedCourse'] as CourseResponseDTO,
+              startDate: extra?['startDate'] as DateTime,
+              endDate: extra?['endDate'] as DateTime,
+              selectedParticipants: extra?['selectedParticipants'] as List<ClubMemberProfile>,
+              existingParticipants: extra?['existingParticipants'] as List<Participant>,
+              selectedGameMode: extra?['selectedGameMode'] as GameMode,
+            ),
+          );
+        },
+      ),
+    ],
   ),
 ];

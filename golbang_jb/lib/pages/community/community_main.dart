@@ -35,52 +35,52 @@ class _CommunityMainState extends ConsumerState<CommunityMain> {
 
 
   final List<Map<String, dynamic>> dummyPosts = [
-    {
-      'author': '윤성문',
-      // 'profileImage': 'assets/images/sample_profile.png',
-      'time': '2024년 7월 31일 오후 1시',
-      'content': '오늘은 정말 즐거운 시간이었어요!',
-      'image': null,
-      'likes': 2,
-      'comments': [],
-    },
-    {
-      'author': '윤성문',
-      // 'profileImage': 'assets/images/sample_profile.png',
-      'time': '2024년 7월 31일 오후 1시',
-      'content': '오늘은 정말 즐거운 시간이었어요!',
-      'image': null,
-      'likes': 2,
-      'comments': [],
-    },
-    {
-      'author': '고중범',
-      // 'profileImage': 'assets/images/sample_profile.png',
-      'time': '2024년 7월 31일 오후 1시',
-      'content': '오늘은 정말 즐거운 시간이었어요!',
-      'image': null,
-      'likes': 2,
-      'comments': [],
-    },
-
-    {
-      'author': '홍길동',
-      // 'profileImage': 'assets/images/sample_profile.png',
-      'time': '2024년 7월 31일 오후 1시',
-      'content': '오늘은 정말 즐거운 시간이었어요!',
-      'image': null,
-      'likes': 2,
-      'comments': [],
-    },
-    {
-      'author': '김영희',
-      // 'profileImage': 'assets/images/sample_profile.png',
-      'time': '2024년 7월 30일 오후 4시',
-      'content': '다음 모임은 언제인가요?',
-      'image': null,
-      'likes': 5,
-      'comments': [],
-    },
+  //   {
+  //     'author': '윤성문',
+  //     // 'profileImage': 'assets/images/sample_profile.png',
+  //     'time': '2024년 7월 31일 오후 1시',
+  //     'content': '오늘은 정말 즐거운 시간이었어요!',
+  //     'image': null,
+  //     'likes': 2,
+  //     'comments': [],
+  //   },
+  //   {
+  //     'author': '윤성문',
+  //     // 'profileImage': 'assets/images/sample_profile.png',
+  //     'time': '2024년 7월 31일 오후 1시',
+  //     'content': '오늘은 정말 즐거운 시간이었어요!',
+  //     'image': null,
+  //     'likes': 2,
+  //     'comments': [],
+  //   },
+  //   {
+  //     'author': '고중범',
+  //     // 'profileImage': 'assets/images/sample_profile.png',
+  //     'time': '2024년 7월 31일 오후 1시',
+  //     'content': '오늘은 정말 즐거운 시간이었어요!',
+  //     'image': null,
+  //     'likes': 2,
+  //     'comments': [],
+  //   },
+  //
+  //   {
+  //     'author': '홍길동',
+  //     // 'profileImage': 'assets/images/sample_profile.png',
+  //     'time': '2024년 7월 31일 오후 1시',
+  //     'content': '오늘은 정말 즐거운 시간이었어요!',
+  //     'image': null,
+  //     'likes': 2,
+  //     'comments': [],
+  //   },
+  //   {
+  //     'author': '김영희',
+  //     // 'profileImage': 'assets/images/sample_profile.png',
+  //     'time': '2024년 7월 30일 오후 4시',
+  //     'content': '다음 모임은 언제인가요?',
+  //     'image': null,
+  //     'likes': 5,
+  //     'comments': [],
+  //   },
   ];
 
 
@@ -190,18 +190,18 @@ class _CommunityMainState extends ConsumerState<CommunityMain> {
                               Text('멤버 • ${members.length}명', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                             ],
                           ),
-                          TextButton(
-                            onPressed: () => context.push('/app/clubs/${_club!.id}/new-post'),
-                            style: TextButton.styleFrom(
-                              backgroundColor: Colors.green,
-                              foregroundColor: Colors.white,
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text('글쓰기'),
-                          ),
+                          // TextButton(
+                          //   onPressed: () => context.push('/app/clubs/${_club!.id}/new-post'),
+                          //   style: TextButton.styleFrom(
+                          //     backgroundColor: Colors.green,
+                          //     foregroundColor: Colors.white,
+                          //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          //     shape: RoundedRectangleBorder(
+                          //       borderRadius: BorderRadius.circular(12),
+                          //     ),
+                          //   ),
+                          //   child: const Text('글쓰기'),
+                          // ),
                         ],
                       ),
                     ),

@@ -8,16 +8,6 @@ class LoginTitle extends StatelessWidget {
     return const Column(
       crossAxisAlignment: CrossAxisAlignment.start, // 모든 요소를 왼쪽 정렬
       children: [
-        Text(
-          '로그인',
-          style: TextStyle(
-            fontSize: 30,
-            fontWeight: FontWeight.bold,
-            color: Colors.black87,
-          ),
-          textAlign: TextAlign.center,
-        ),
-        SizedBox(height: 40), // 로고와 텍스트 간격
         Row(
           children: [
             CircleAvatar(

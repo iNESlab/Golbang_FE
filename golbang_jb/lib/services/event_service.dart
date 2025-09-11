@@ -155,17 +155,27 @@ class EventService {
 
       if (response.statusCode == 200) {
         return true;
-      } else if (response.statusCode == 403) {
-        log("관리자가 아닙니다. 관리자만 수정할 수 있습니다.");
-        return false;
-      } else {
-        log("Failed to update event: ${response.data}");
-        return false;
       }
+      return false;
+
     } catch (e) {
       log('Error occurred while updating event: $e');
       return false;
     }
+  }
+
+  // API 테스트 완료
+  // 이벤트 종료 메서드
+  Future<bool?> endEvent(int eventId) async {
+    return await safeDioCall<bool>(() async {
+      // API URL 설정
+      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/');
+
+      // API 요청
+      await privateClient.dio.patchUri(url);
+      // JSON 데이터를 Event 객체로 변환
+      return true;
+    });
   }
 
   // API 테스트 완료

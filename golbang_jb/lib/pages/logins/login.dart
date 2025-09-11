@@ -106,6 +106,7 @@ class LoginPage extends ConsumerStatefulWidget {
 }
 
 class _LoginPageState extends ConsumerState<LoginPage> {
+  bool _snackConsumed = false;
 
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
@@ -118,6 +119,27 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     super.initState();
     _checkSavedCredentials(); // 로그인 정보 체크
 
+  }
+
+  @override
+  void didUpdateWidget(covariant LoginPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.message != widget.message) {
+      // message가 바뀐 경우에만 다시 평가
+      _snackConsumed = false;
+      _maybeShowSnackOnce(widget.message);
+    }
+  }
+
+  void _maybeShowSnackOnce(String? msg) {
+    if (_snackConsumed || msg == null) return;
+    _snackConsumed = true; // 스케줄 전에 먼저 true로!
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(msg), backgroundColor: Colors.redAccent),
+      );
+    });
   }
 
   Future<void> _checkSavedCredentials() async {
@@ -134,20 +156,6 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
-    // 전달된 메시지를 읽음
-    final String? message = widget.message;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (message != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(message),
-            duration: const Duration(seconds: 3),
-            backgroundColor: Colors.redAccent,
-          ),
-        );
-      }
-    });
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -181,11 +189,24 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     ),
                   ),
-                const SizedBox(height: 48),
-                SignUpLink(parentContext: context) ,
               ],
             ),
           ),
+        ),
+      ),
+      // ✅ 하단 고정
+      bottomNavigationBar: SafeArea(
+        top: false,
+        bottom: true,
+        child: Padding(
+          // 키보드가 올라오면 여백을 자동 확장
+          padding: EdgeInsets.only(
+            left: 16, right: 16, top: 8,
+            bottom: MediaQuery.of(context).viewInsets.bottom > 0
+                ? MediaQuery.of(context).viewInsets.bottom
+                : 16,
+          ),
+          child: SignUpLink(parentContext: context),
         ),
       ),
     );

@@ -1,13 +1,17 @@
 import 'dart:developer';
+
 import 'package:flutter/material.dart';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:golbang/models/create_event.dart';
+import 'package:golbang/models/create_participant.dart';
 
 import '../../../models/event.dart';
 import '../../../provider/event/event_state_notifier_provider.dart';
 import '../../../provider/event/game_in_progress_provider.dart';
+import '../../../repoisitory/secure_storage.dart';
+import '../../../services/event_service.dart';
 import '../../../widgets/sections/show_email_recipient_dialog.dart';
 import '../../../utils/email.dart';
 import '../../../utils/excelFile.dart';
@@ -21,6 +25,7 @@ PreferredSizeWidget buildEventDetailAppBar(
     DateTime currentTime,
     List<dynamic> participants,
     ) {
+  late EventService eventService;
   final screenWidth = MediaQuery.of(context).size.width;
   final orientation = MediaQuery.of(context).orientation;
   final double iconSize = screenWidth * (orientation == Orientation.portrait ? 0.06 : 0.04);
@@ -40,15 +45,29 @@ PreferredSizeWidget buildEventDetailAppBar(
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('성공적으로 삭제되었습니다')),
       );
-      context.pushReplacement('/app/events');
-    } else if(success == 403) {
+      context.go('/app/events?refresh=${DateTime.now().millisecondsSinceEpoch}');
+    }  else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('관리자가 아닙니다. 관리자만 삭제할 수 있습니다.')),
+        const SnackBar(content: Text('이벤트 삭제에 실패했습니다.')),
       );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('이벤트 삭제에 실패했습니다. 모임 관리자만 삭제할 수 있습니다.')),
-      );
+    }
+  }
+
+  void endEvent(int eventId) async {
+    eventService = EventService(ref.read(secureStorageProvider));
+    try{
+      await eventService.endEvent(eventId);
+      context.pushReplacement('/app/events/$eventId/result');
+    } catch (e) {
+      log('Error fetching event details: $e');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -110,10 +129,15 @@ PreferredSizeWidget buildEventDetailAppBar(
         },
       ),
       PopupMenuButton<String>(
-        onSelected: (String value) {
+        onSelected: (String value) async {
           switch (value) {
             case 'share':
               _shareEvent(event);
+              break;
+            case 'end':
+            // 재확인 모달
+              final ok = await _confirmEndEvent(context);
+              if (ok) endEvent(event.eventId);
               break;
             case 'edit':
               editEvent();
@@ -139,6 +163,10 @@ PreferredSizeWidget buildEventDetailAppBar(
             value: 'share',
             child: Text('공유'),
           ),
+          const PopupMenuItem<String>(
+            value: 'end',
+            child: Text('시합 종료'),
+          ),
         ],
       ),
     ],
@@ -146,14 +174,37 @@ PreferredSizeWidget buildEventDetailAppBar(
 }
 
 void _shareEvent(Event event) {
-  final String eventLink = "${dotenv.env['API_HOST']}/app/events/${event.eventId}";
+  // final String eventLink = "${dotenv.env['API_HOST']}/app/events/${event.eventId}";
   Share.share(
     '이벤트를 확인해보세요!\n\n'
         '제목: ${event.eventTitle}\n'
         '날짜: ${event.startDateTime.toIso8601String().split('T').first}\n'
         '장소: ${event.site}\n\n'
-        '자세히 보기: $eventLink',
+        // '자세히 보기: $eventLink',
   );
+}
+
+// 1) 공통 확인 다이얼로그 helper
+Future<bool> _confirmEndEvent(BuildContext context) async {
+  final result = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (context) => AlertDialog(
+      title: const Text('시합 종료'),
+      content: const Text('정말로 시합을 종료하시겠습니까?\n이 작업은 되돌릴 수 없습니다.'),
+      actions: [
+        TextButton(
+          onPressed: () => context.pop(false),
+          child: const Text('취소'),
+        ),
+        TextButton(
+          onPressed: () => context.pop(true),
+          child: const Text('종료'),
+        ),
+      ],
+    ),
+  );
+  return result ?? false;
 }
 
 Future<void> exportAndSendEmail(

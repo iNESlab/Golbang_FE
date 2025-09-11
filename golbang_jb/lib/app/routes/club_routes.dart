@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:golbang/pages/community/community_main.dart';
 
@@ -10,71 +11,99 @@ import '../../pages/community/member_settings_page.dart';
 import '../../pages/community/post/post_create_page.dart';
 
 final List<GoRoute> clubRoutes = [
+  // /app/clubs/new
   GoRoute(
-      path: '/app/clubs/new',
-      builder: (context, state) {
-        return const ClubCreatePage();
-      }
+    path: '/app/clubs/new',
+    pageBuilder: (context, state) {
+      return NoTransitionPage(
+        key: state.pageKey,
+        child: const ClubCreatePage(),
+      );
+    },
   ),
+
+  // /app/clubs/:clubId
   GoRoute(
     path: '/app/clubs/:clubId',
-    builder: (context, state) {
-      final clubId = int.tryParse(state.pathParameters['clubId']!);
+    pageBuilder: (context, state) {
+      final clubId = int.tryParse(state.pathParameters['clubId'] ?? '');
       final extra = state.extra as Map<String, dynamic>?;
-
-      return CommunityMain(
-        clubId: clubId,
-        from: extra?['from'],
+      return NoTransitionPage(
+        key: state.pageKey,
+        child: CommunityMain(
+          clubId: clubId,
+          from: extra?['from'],
+        ),
       );
     },
     routes: [
+      // /app/clubs/:clubId/new-post
       GoRoute(
         path: 'new-post',
-        builder: (context, state) {
+        pageBuilder: (context, state) {
           final clubId = int.parse(state.pathParameters['clubId']!);
-          return PostWritePage(
-              clubId: clubId
+          return NoTransitionPage(
+            key: state.pageKey,
+            child: PostWritePage(
+              clubId: clubId,
+            ),
           );
         },
       ),
+
+      // /app/clubs/:clubId/setting
       GoRoute(
         path: 'setting',
-        builder: (context, state) {
-          final extra = state.extra as Map<String, dynamic>?;
+        pageBuilder: (context, state) {
           final clubId = int.parse(state.pathParameters['clubId']!);
-          String role = extra?['role'] as String;
+          final extra = state.extra as Map<String, dynamic>?;
+          final role = (extra?['role'] as String?) ?? '';
 
+          Widget child;
           if (role == 'admin') {
-            return AdminSettingsPage(
-              clubId: clubId,
-            );
+            child = AdminSettingsPage(clubId: clubId);
           } else if (role == 'member') {
-            return MemberSettingsPage(
-              clubId: clubId,
-            );
+            child = MemberSettingsPage(clubId: clubId);
+          } else {
+            child = const ClubMainPage(); // fallback
           }
-          return const ClubMainPage();
+
+          return NoTransitionPage(
+            key: state.pageKey,
+            child: KeyedSubtree( child: child),
+          );
         },
         routes: [
+          // /app/clubs/:clubId/setting/edit
           GoRoute(
             path: 'edit',
-            builder: (context, state) {
-              return const ClubEditPage();
-            },
-          ),
-          GoRoute(
-            path: 'members',
-            builder: (context, state) {
-              final clubId = int.tryParse(state.pathParameters['clubId']!);
-              final extra = state.extra as Map<String, dynamic>?;
-              return MemberListPage(
-                clubId: clubId!,
-                isAdmin: extra?['isAdmin'] as bool,
+            pageBuilder: (context, state) {
+              return NoTransitionPage(
+                key: state.pageKey,
+                child: const ClubEditPage(),
               );
             },
           ),
-        ]
+
+          // /app/clubs/:clubId/setting/members
+          GoRoute(
+            path: 'members',
+            pageBuilder: (context, state) {
+              final clubId = int.parse(state.pathParameters['clubId']!);
+              final extra = state.extra as Map<String, dynamic>?;
+              final isAdmin = (extra?['isAdmin'] as bool?) ?? false;
+
+              return NoTransitionPage(
+                key: state.pageKey,
+                child: MemberListPage(
+                  clubId: clubId,
+                  isAdmin: isAdmin,
+                ),
+              );
+            },
+          ),
+        ],
       ),
-    ]
+    ],
   ),
 ];

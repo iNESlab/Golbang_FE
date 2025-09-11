@@ -83,7 +83,9 @@ class _HomeContentState extends ConsumerState<HomePage> {
     double bookmarkSectionHeight = orientation == Orientation.landscape ? screenHeight * 0.15 : screenHeight * 0.15;
 
     return Scaffold(
-      body: FutureBuilder(
+      body: SafeArea(
+        bottom: true,
+        child: FutureBuilder(
           future: _dataFuture,
           builder: (context, AsyncSnapshot<List<dynamic>> snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -150,6 +152,7 @@ class _HomeContentState extends ConsumerState<HomePage> {
           }
 
       ),
+    ),
     );
   }
 }

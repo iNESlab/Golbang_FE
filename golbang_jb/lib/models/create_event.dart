@@ -1,4 +1,6 @@
-// event.dart
+// event_enum.dart
+import 'package:golbang/models/event.dart';
+
 class CreateEvent {
   final int? eventId;
   final String? memberGroup;
@@ -25,6 +27,22 @@ class CreateEvent {
     this.gameMode,
     this.alertDateTime,
   });
+
+  factory CreateEvent.fromEvent(Event event, DateTime endDate) {
+    return CreateEvent(
+      eventId: event.eventId,
+      memberGroup: event.memberGroup.toString(),
+      eventTitle: event.eventTitle,
+      location: event.location,
+      golfClubId: event.golfClubId,
+      golfCourseId: event.golfCourse?.golfCourseId,
+      startDateTime: event.startDateTime,
+      endDateTime: endDate,
+      repeatType: event.repeatType,
+      gameMode: event.gameMode,
+      alertDateTime: event.alertDateTime,
+    );
+  }
 
   factory CreateEvent.fromJson(Map<String, dynamic> json) {
 

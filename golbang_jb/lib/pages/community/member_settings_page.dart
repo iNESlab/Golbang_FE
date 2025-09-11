@@ -71,7 +71,7 @@ class MemberSettingsPage extends ConsumerWidget {
                 context.pop(); // 다이얼로그 닫기
                 try {
                   await clubService.leaveClub(clubId); // 모임 나가기 API 호출
-                  context.pushReplacement('/app/clubs');
+                  context.go('/app/clubs?refresh=${DateTime.now().millisecondsSinceEpoch}');
 
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('모임에서 나왔습니다.')),
