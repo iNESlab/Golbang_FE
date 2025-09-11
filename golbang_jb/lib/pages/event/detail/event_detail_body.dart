@@ -65,7 +65,8 @@ class EventDetailBody extends StatelessWidget {
             screenWidth: screenWidth,
           ),
           const SizedBox(height: 10),
-          Text('참여 인원: ${participants.length}명', style: TextStyle(fontSize: fontSizeLarge)),
+          Text('인원 수: ${participants.length}명, 참석자 수: ${event.acceptCount}명', style: TextStyle(fontSize: fontSizeLarge)),
+          Text('참석률: ${participants.length > 0 ? (event.acceptCount / participants.length * 100).toStringAsFixed(1) : 0}%', style: TextStyle(fontSize: fontSizeLarge)),
           const SizedBox(height: 10),
           Row(
             children: [

@@ -367,7 +367,8 @@ class EventPageState extends ConsumerState<EventPage> {
                           SizedBox(height: height * 0.005),
                           Text('시작 시간: ${event.startDateTime.hour}:${event.startDateTime.minute.toString().padLeft(2, '0')}',
                           style: TextStyle(fontSize: calenderFontSize)),
-                          Text('인원수: 참석 ${event.participants.length}명', style: TextStyle(fontSize: calenderFontSize)),
+                          Text('인원 수: ${event.participants.length}명, 참석자 수: ${event.acceptCount}명', style: TextStyle(fontSize: calenderFontSize)),
+                          Text('참석률: ${event.participants.length > 0 ? (event.acceptCount / event.participants.length * 100).toStringAsFixed(1) : 0}%', style: TextStyle(fontSize: calenderFontSize)),
                           Text('장소: ${_getGolfClubName(event)}', style: TextStyle(fontSize: calenderFontSize)),
                           Row(
                             children: [
