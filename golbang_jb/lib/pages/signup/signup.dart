@@ -118,7 +118,7 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
         );
 
         if (response.statusCode == 201) {
-          ctx.push('/signup/step-2', extra: {'userId': response.data['data']['user_id'] });
+          ctx.push('/app/signup/step-2', extra: {'userId': response.data['data']['user_id'] });
         } else {
           var error = response.data['data']?['message'] ?? '알 수 없는 오류가 발생했습니다.';
 
