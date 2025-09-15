@@ -30,9 +30,31 @@ final List<GoRoute> authRoutes = [
         },
       ),
       GoRoute(
+        path: 'additional-info',
+        builder: (context, state) {
+          final email = state.uri.queryParameters['email'];
+          final displayName = state.uri.queryParameters['displayName'];
+          final isSocialLogin = state.uri.queryParameters['isSocialLogin'] == 'true';
+          
+          return AdditionalInfoPage(
+            email: email,
+            displayName: displayName,
+            isSocialLogin: isSocialLogin,
+          );
+        },
+      ),
+      GoRoute(
         path: 'terms',
         builder: (context, state) {
-          return const TermsAgreementPage();
+          final email = state.uri.queryParameters['email'];
+          final displayName = state.uri.queryParameters['displayName'];
+          final isSocialLogin = state.uri.queryParameters['isSocialLogin'] == 'true';
+          
+          return TermsAgreementPage(
+            email: email,
+            displayName: displayName,
+            isSocialLogin: isSocialLogin,
+          );
         },
         routes: [
           GoRoute(

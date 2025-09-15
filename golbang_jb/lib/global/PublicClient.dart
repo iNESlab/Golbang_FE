@@ -1,13 +1,14 @@
 import 'dart:developer';
 import 'package:dio/dio.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'dart:io';
 
 class PublicClient {
   late final Dio _dio;
 
   PublicClient()
       : _dio = Dio(BaseOptions(
-    baseUrl: dotenv.env['API_HOST']!, // 예: https://api.example.com
+    baseUrl: dotenv.env['API_HOST']!,
     connectTimeout: const Duration(seconds: 10),
     receiveTimeout: const Duration(seconds: 10),
   )){

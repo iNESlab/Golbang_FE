@@ -1,11 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:golbang/pages/signup/widgets/welcome_header_widget.dart';
+import 'package:golbang/pages/signup/additional_info.dart';
 
 // 약관 동의 메인 페이지
 
 class TermsAgreementPage extends StatefulWidget {
-  const TermsAgreementPage({super.key});
+  final String? email;
+  final String? displayName;
+  final bool isSocialLogin;
+
+  const TermsAgreementPage({
+    super.key,
+    this.email,
+    this.displayName,
+    this.isSocialLogin = false,
+  });
 
   @override
   _TermsAgreementPageState createState() => _TermsAgreementPageState();
@@ -37,7 +47,13 @@ class _TermsAgreementPageState extends State<TermsAgreementPage> {
 
   void _onSubmit() {
     if (terms['[필수] 이용약관 동의']! && terms['[필수] 개인정보 수집 및 이용 동의']!) {
-      context.push('/app/signup');
+      if (widget.isSocialLogin) {
+        // 소셜 로그인 사용자는 AdditionalInfoPage로 바로 이동 (아이디/비밀번호 입력 건너뛰기)
+        context.push('/app/signup/additional-info?email=${widget.email}&displayName=${widget.displayName}&isSocialLogin=true');
+      } else {
+        // 일반 회원가입 사용자는 아이디/비밀번호 입력 페이지로 이동
+        context.push('/app/signup');
+      }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('필수 약관에 동의해주세요.')),
@@ -77,6 +93,19 @@ class _TermsAgreementPageState extends State<TermsAgreementPage> {
                         mainAxisSize: MainAxisSize.min, // 내용 높이에 맞게 축소
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
+                          // 소셜 로그인 사용자 환영 메시지
+                          if (widget.isSocialLogin) ...[
+                            const Text(
+                              '🏌️‍♂️ 골방에 오신 것을 환영합니다!',
+                              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              '${widget.displayName ?? '사용자'}님, 약관에 동의해주세요',
+                              style: const TextStyle(fontSize: 16, color: Colors.grey),
+                            ),
+                            const SizedBox(height: 24),
+                          ],
                           // 웰컴 헤더 (상단 패딩 최소화)
                           const WelcomeHeader(topPadding: 0.0),
                           // 약관 전체동의

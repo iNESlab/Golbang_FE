@@ -46,10 +46,25 @@ class _TokenCheckState extends ConsumerState<TokenCheck> {
       return;
     }
 
-    final savedEmail = await storage.readLoginId();
-    final savedPassword = await storage.readPassword();
+    // 안전하게 LOGIN_ID와 PASSWORD 확인
+    log('🔍 [TokenCheck] SecureStorage에서 로그인 정보 읽기 중...');
 
-    if (savedEmail.isEmpty || savedPassword.isEmpty) {
+    String? savedEmail;
+    String? savedPassword;
+
+    try {
+      savedEmail = await storage.readLoginId();
+    } catch (e) {
+      savedEmail = null;
+    }
+
+    try {
+      savedPassword = await storage.readPassword();
+    } catch (e) {
+      savedPassword = null;
+    }
+
+    if (savedEmail == null || savedPassword == null || savedEmail.isEmpty || savedPassword.isEmpty) {
       setState(() {
         isLoading = false;
         isTokenExpired = true;
@@ -57,7 +72,15 @@ class _TokenCheckState extends ConsumerState<TokenCheck> {
       return;
     }
 
+    // 소셜 로그인 사용자인지 확인
+    if (savedPassword == 'social_login') {
+      setState(() => isTokenExpired = false);
+      isLoading = false;
+      return;
+    }
+
     try {
+      log('🔍 [TokenCheck] 일반 로그인 사용자 - authService.login() 호출 중...');
       final fcmToken = await FirebaseMessaging.instance.getToken();
       final response = await authService.login(
         username: savedEmail,
@@ -77,7 +100,6 @@ class _TokenCheckState extends ConsumerState<TokenCheck> {
       setState(() => isTokenExpired = true);
     } finally {
       setState(() => isLoading = false);
-
     }
 
   }
@@ -144,13 +166,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
   Future<void> _checkSavedCredentials() async {
     final storage = ref.read(secureStorageProvider);
-    _savedEmail = await storage.readLoginId();
 
-    if (_savedEmail.isNotEmpty) {
-      setState(() {
-        _emailController.text = _savedEmail;
-        _showBiometricButton = true;
-      });
+    try {
+      _savedEmail = await storage.readLoginId();
+
+      if (_savedEmail.isNotEmpty) {
+        setState(() {
+          _emailController.text = _savedEmail;
+          _showBiometricButton = true;
+        });
+      }
+    } catch (e) {
+      log('[LoginPage] LOGIN_ID 읽기 실패: $e');
+      _savedEmail = '';
     }
   }
 
@@ -189,6 +217,10 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     ),
                   ),
+                const SizedBox(height: 32),
+                const SignInDivider(),
+                const SizedBox(height: 16),
+                const SocialLoginButtons(),
               ],
             ),
           ),
@@ -310,6 +342,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       );
 
       var accessToken = response.data['data']['access_token'];
+      log(accessToken);
 
       final storage = ref.watch(secureStorageProvider);
       await storage.saveLoginId(email);
