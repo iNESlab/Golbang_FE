@@ -62,8 +62,7 @@ class _OverallScorePageState extends ConsumerState<OverallScorePage> {
     SecureStorage secureStorage = ref.read(secureStorageProvider);
     final accessToken = await secureStorage.readAccessToken();
     _channel = IOWebSocketChannel.connect(
-      Uri.parse('${dotenv
-          .env['WS_HOST']}/participants/$_myParticipantId/event/stroke'),
+      Uri.parse('${dotenv.env['WS_HOST']}/ws/participants/$_myParticipantId/event/stroke'),
       headers: {
         'Authorization': 'Bearer $accessToken', // 토큰을 헤더에 포함
       }, // 실제 WebSocket 서버 주소로 변경
