@@ -145,7 +145,7 @@ class EventPageState extends ConsumerState<EventPage> {
 
   void _navigateToGameStartPage(Event event) async {
     context.push(
-        '/events/${event.eventId}/game',
+        '/app/events/${event.eventId}/game',
         extra: {'event': event}
     );
   }
@@ -399,48 +399,52 @@ class EventPageState extends ConsumerState<EventPage> {
                             decoration: const BoxDecoration(
                               border: Border(top: BorderSide(color: Colors.grey)),
                             ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            child: Column(
                               children: [
-                                TextButton(
-                                  onPressed: () {
-                                    _navigateToEventDetail(event);
-                                  },
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: Colors.green,
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: height * 0.005, // 반응형 상하 패딩
-                                      horizontal: width * 0.02, // 반응형 좌우 패딩
+                                // 기존 버튼들
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    TextButton(
+                                      onPressed: () {
+                                        _navigateToEventDetail(event);
+                                      },
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: Colors.green,
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: height * 0.005, // 반응형 상하 패딩
+                                          horizontal: width * 0.02, // 반응형 좌우 패딩
+                                        ),
+                                        minimumSize: Size(width * 0.2, height * 0.04), // 최소 크기 설정
+                                      ),
+                                      child: Text(
+                                        '세부 정보 보기',
+                                        style: TextStyle(color: Colors.black, fontSize: calenderTitleFontSize),
+                                      ),
                                     ),
-                                    minimumSize: Size(width * 0.2, height * 0.04), // 최소 크기 설정
-                                  ),
-                                  child: Text(
-                                    '세부 정보 보기',
-                                    style: TextStyle(color: Colors.black, fontSize: calenderTitleFontSize),
-                                  ),
+                                    TextButton(
+                                      onPressed: () => _handleButtonPress(event, statusType),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: Colors.black,
+                                        padding: EdgeInsets.symmetric(
+                                          vertical: height * 0.005, // 반응형 상하 패딩
+                                          horizontal: width * 0.02, // 반응형 좌우 패딩
+                                        ),
+                                        minimumSize: Size(width * 0.2, height * 0.04), // 최소 크기 설정
+                                      ),
+                                      child: Text(
+                                        _getButtonText(event),
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: calenderTitleFontSize,
+                                          color: currentTime.isBefore(event.startDateTime)
+                                              ? Colors.grey // 비활성화된 텍스트 색상
+                                              : Colors.black, // 활성화된 텍스트 색상
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                TextButton(
-                                  onPressed: () => _handleButtonPress(event, statusType),
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: Colors.black,
-                                    padding: EdgeInsets.symmetric(
-                                      vertical: height * 0.005, // 반응형 상하 패딩
-                                      horizontal: width * 0.02, // 반응형 좌우 패딩
-                                    ),
-                                    minimumSize: Size(width * 0.2, height * 0.04), // 최소 크기 설정
-                                  ),
-                                  child: Text(
-                                    _getButtonText(event),
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: calenderTitleFontSize,
-                                      color: currentTime.isBefore(event.startDateTime)
-                                          ? Colors.grey // 비활성화된 텍스트 색상
-                                          : Colors.black, // 활성화된 텍스트 색상
-                                    ),
-                                  ),
-                                ),
-
                               ],
                             ),
                           ),
@@ -494,6 +498,7 @@ class EventPageState extends ConsumerState<EventPage> {
   void _navigateToEventDetail(Event event) async {
     await context.push('/app/events/${event.eventId}', extra: {'event': event});
   }
+
 
   Color _getStatusColor(String statusType) {
     switch (statusType) {
