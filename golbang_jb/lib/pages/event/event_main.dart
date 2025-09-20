@@ -145,7 +145,7 @@ class EventPageState extends ConsumerState<EventPage> {
 
   void _navigateToGameStartPage(Event event) async {
     context.push(
-        '/events/${event.eventId}/game',
+        '/app/events/${event.eventId}/game',
         extra: {'event': event}
     );
   }
