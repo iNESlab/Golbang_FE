@@ -4,7 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/club.dart';
 import '../../models/member.dart';
+import '../../models/event.dart';
+import '../../models/profile/club_profile.dart';
 import '../../provider/club/club_state_provider.dart';
+import '../../global/PrivateClient.dart';
+// 🚫 라디오 기능 비활성화 - 안드로이드에서 사용하지 않음
+// import '../../providers/global_radio_provider.dart';
 
 class CommunityMain extends ConsumerStatefulWidget {
   final int? clubId;
@@ -104,6 +109,119 @@ class _CommunityMainState extends ConsumerState<CommunityMain> {
     }
   }
 
+  // 🚫 라디오 기능 비활성화 - 안드로이드에서 사용하지 않음
+  /*
+  // 🎵 RTMP 라디오 토글 메서드
+  void _toggleRadio() async {
+    try {
+      final radioState = ref.read(globalRadioProvider);
+      final radioNotifier = ref.read(globalRadioProvider.notifier);
+      final clubName = _club?.name ?? '클럽';
+      final clubId = _club?.id;
+
+      if (clubId == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('❌ 클럽 정보를 찾을 수 없습니다'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        return;
+      }
+
+      if (radioState.isConnected && radioState.currentClubId == clubId) {
+        // 현재 클럽의 라디오 정지
+        await radioNotifier.stopRadio();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('📻 RTMP 라디오를 정지했습니다'),
+            backgroundColor: Colors.orange,
+            duration: Duration(seconds: 2),
+          ),
+        );
+      } else {
+        // RTMP 라디오 시작
+        final success = await radioNotifier.startRadio(
+          clubId,
+          '$clubName 라디오',
+        );
+
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('📻 RTMP 라디오를 시작했습니다'),
+              backgroundColor: Colors.green,
+              duration: Duration(seconds: 2),
+            ),
+          );
+        } else {
+          // 에러 메시지는 globalRadioProvider에서 제공
+          final errorMsg = radioState.errorMessage ?? '라디오 시작에 실패했습니다';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('❌ $errorMsg'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+
+    } catch (e) {
+      log('RTMP 라디오 토글 오류: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('❌ 라디오 오류: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+  */
+
+  // 🔧 추가: 통합 클럽 채팅방으로 이동
+  void _goToClubChat() {
+    // 클럽 채팅방은 club_${clubId} 형식으로 생성
+    final chatRoomId = 'club_${_club!.id}';
+
+    // Club을 ClubProfile로 변환
+    final clubProfile = ClubProfile(
+      clubId: _club!.id,
+      name: _club!.name,
+      image: _club!.image,
+    );
+
+    // 임시 이벤트 객체 생성 (채팅방 ID만 필요)
+    final tempEvent = Event(
+      eventId: _club!.id,
+      memberGroup: 0, // 기본값
+      eventTitle: '${_club!.name} 채팅방',
+      site: '클럽 채팅방',
+      startDateTime: DateTime.now(),
+      endDateTime: DateTime.now().add(const Duration(hours: 1)),
+      repeatType: 'NONE',
+      gameMode: 'SP',
+      alertDateTime: '',
+      participantsCount: _club!.members.length,
+      partyCount: 0,
+      acceptCount: _club!.members.length,
+      denyCount: 0,
+      pendingCount: 0,
+      myParticipantId: 0,
+      participants: [],
+      club: clubProfile,
+    );
+
+    context.push('/app/events/${_club!.id}/chat', extra: {
+      'event': tempEvent,
+      'chatRoomType': 'club',
+      'chatRoomId': chatRoomId,
+    });
+  }
+
+
   @override
   Widget build(BuildContext context) {
     if (_club == null) {
@@ -179,29 +297,90 @@ class _CommunityMainState extends ConsumerState<CommunityMain> {
                     Container(
                       color: Colors.white,
                       padding: const EdgeInsets.all(16),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      child: Column(
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(adminText, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                              const SizedBox(height: 8),
-                              Text('멤버 • ${members.length}명', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(adminText, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                  const SizedBox(height: 8),
+                                  Text('멤버 • ${_club?.members.length ?? 0}명', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+                                ],
+                              ),
+                              TextButton(
+                                onPressed: null, // 비활성화
+                                style: TextButton.styleFrom(
+                                  backgroundColor: Colors.grey.shade400,
+                                  foregroundColor: Colors.white,
+                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                child: const Text('글쓰기'),
+                              ),
                             ],
                           ),
-                          // TextButton(
-                          //   onPressed: () => context.push('/app/clubs/${_club!.id}/new-post'),
-                          //   style: TextButton.styleFrom(
-                          //     backgroundColor: Colors.green,
-                          //     foregroundColor: Colors.white,
-                          //     padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          //     shape: RoundedRectangleBorder(
-                          //       borderRadius: BorderRadius.circular(12),
-                          //     ),
-                          //   ),
-                          //   child: const Text('글쓰기'),
-                          // ),
+                          const SizedBox(height: 12),
+                          // 🔧 채팅방 + 라디오 버튼들
+                          Row(
+                            children: [
+                              // 채팅방 버튼
+                              Expanded(
+                                flex: 2,
+                                child: ElevatedButton.icon(
+                                  onPressed: () => _goToClubChat(),
+                                  icon: const Icon(Icons.chat, color: Colors.white, size: 20),
+                                  label: const Text(
+                                    '채팅방',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.blue,
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              // 라디오 버튼 (비활성화)
+                              Expanded(
+                                flex: 1,
+                                child: ElevatedButton.icon(
+                                  onPressed: null, // 비활성화
+                                  icon: const Icon(
+                                    Icons.radio_outlined,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                  label: const Text(
+                                    'Live',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 14,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.grey, // 비활성화된 색상
+                                    padding: const EdgeInsets.symmetric(vertical: 16),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:golbang/provider/participant/participant_service_provider.dart';
 
@@ -31,7 +33,7 @@ class ParticipantStateNotifier extends StateNotifier<ParticipantState> {
         );
       }
     } catch (e) {
-      print('참여자 상태 업데이트 실패: $e');
+      log('참여자 상태 업데이트 실패: $e');
     }
   }
 }
