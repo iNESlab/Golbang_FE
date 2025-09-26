@@ -123,6 +123,27 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
               padding: const EdgeInsets.all(10),
               child: Column(
                 children: [
+
+                  SizedBox(
+                    height: 50,
+                    child: TextField(
+                      readOnly: true, // 클릭만 가능하도록
+                      decoration: InputDecoration(
+                        hintText: '모임 검색',
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
+                      onTap: () {
+                        context.push('/app/clubs/search');
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+
                   Row(
                     children: [
                       const Text(
@@ -147,28 +168,9 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 10),
-                  SizedBox(
-                    height: 50,
-                    child: TextField(
-                      readOnly: true, // 클릭만 가능하도록
-                      decoration: InputDecoration(
-                        hintText: '모임 검색',
-                        prefixIcon: const Icon(Icons.search),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                      ),
-                      onTap: () {
-                        context.push('/app/clubs/search');
-                      },
-                    ),
-                  ),
                 ],
               ),
             ),
-            const SizedBox(height: 10),
             // 그룹 리스트
             Expanded(
               child: Container(
