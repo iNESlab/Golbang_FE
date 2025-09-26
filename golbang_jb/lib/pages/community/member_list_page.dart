@@ -2,15 +2,13 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:golbang/models/profile/get_all_user_profile.dart';
 import 'package:golbang/models/profile/member_profile.dart';
-import '../../../models/profile/get_all_user_profile.dart';
 import '../../../repoisitory/secure_storage.dart';
 import '../../../services/club_member_service.dart';
-import '../../provider/club/club_state_provider.dart';
 import '../../services/club_service.dart';
 import '../../widgets/common/circular_default_person_icon.dart';
 import '../../widgets/sections/community_member_dialog.dart';
-
 class MemberListPage extends ConsumerStatefulWidget {
   final int clubId;
   final bool isAdmin;
@@ -26,329 +24,235 @@ class MemberListPage extends ConsumerStatefulWidget {
 }
 
 class _MemberListPageState extends ConsumerState<MemberListPage> {
-  List<GetAllUserProfile> newMemberUsers = [];
-  List<GetAllUserProfile> selectedMemberUsers = [];
-  List<ClubMemberProfile> oldMembers = [];
-  late ClubMemberService _clubMemberService;
+  List<ClubMemberProfile> activeMembers = [];
+  List<ClubMemberProfile> pendingMembers = [];
+  List<GetAllUserProfile> oldMemberUsers = [];
   bool isLoading = true;
+  bool isDeleteMode = false;
+  late ClubMemberService _clubMemberService;
+  late ClubService _clubService;
 
   @override
   void initState() {
     super.initState();
     _clubMemberService = ClubMemberService(ref.read(secureStorageProvider));
+    _clubService = ClubService(ref.read(secureStorageProvider));
     _fetchMembers();
   }
 
   Future<void> _fetchMembers() async {
     try {
-      List<ClubMemberProfile> fetchedMembers = await _clubMemberService
-          .getClubMemberProfileList(clubId: widget.clubId);
-
+      final fetched = await _clubMemberService.getClubMemberProfileList(clubId: widget.clubId);
       setState(() {
-        oldMembers = fetchedMembers;
-        selectedMemberUsers = oldMembers
-            .map((m) => GetAllUserProfile(
-          accountId: m.accountId,
-          name: m.name,
-          profileImage: m.profileImage,
-        ))
-            .toList();
+        oldMemberUsers = fetched.map((m)=>m.toUserProfile()).toList();
+        activeMembers = fetched.where((m) => m.statusType == 'active').toList();
+        pendingMembers = fetched.where((m) => m.statusType == 'pending').toList();
         isLoading = false;
       });
     } catch (e) {
       log("Error fetching members: $e");
-      setState(() {
-        isLoading = false;
-      });
+      setState(() => isLoading = false);
     }
-  }
-
-  void _showMemberDialog() {
-    showDialog<List<GetAllUserProfile>>(
-      context: context,
-      builder: (BuildContext context) {
-        return UserDialog(
-          selectedUsers: selectedMemberUsers,
-          newSelectedUsers: newMemberUsers,
-          isAdminMode: false,
-        );
-      },
-    ).then((result) {
-      if (result != null) {
-        setState(() {
-          selectedMemberUsers = oldMembers
-              .map((m) => GetAllUserProfile(
-            accountId: m.accountId,
-            name: m.name,
-            profileImage: m.profileImage,
-          )).toList();
-          log('result: ${result.length}');
-          newMemberUsers =
-              result.where((e) => !oldMembers.any((old) => old.accountId == e.accountId)).toList();
-          log('newMemberUsers: $newMemberUsers');
-        });
-      }
-    });
-  }
-  /// 멤버 추방 다이얼로그
-  void _showKickDialog(ClubMemberProfile member) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("멤버 추방"),
-          content: Text("${member.name}님을 추방하시겠습니까?"),
-          actions: [
-            TextButton(
-              onPressed: () => context.pop(),
-              child: const Text("취소"),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                await _kickMember(member);
-                context.pop();
-              },
-              child: const Text("추방"),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  // 멤버 추방 함수
-  Future<void> _kickMember(ClubMemberProfile member) async {
-    final clubService = ClubService(ref.read(secureStorageProvider));
-    await clubService.removeMember(widget.clubId, member.memberId);
-    ref.read(clubStateProvider.notifier).removeMemberFromSelectedClub(member.memberId);
-
-    setState(() {
-      oldMembers.removeWhere((m) => m.memberId == member.memberId);
-      selectedMemberUsers.removeWhere((e) => e.accountId == member.accountId);
-    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return WillPopScope(
-      onWillPop: () async {
-        if (newMemberUsers.isNotEmpty) {
-          final shouldExit = await _confirmInviteOnExit();
-          return shouldExit; // 다이얼로그 결과에 따라 페이지 이동 여부 결정
-        }
-        return true; // 새 멤버가 없으면 바로 이전 페이지로
-      },
+    return DefaultTabController(
+      length: widget.isAdmin ? 2 : 0,
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('멤버 조회'),
-          centerTitle: true,
-          actions: [
-            if (widget.isAdmin)
-            IconButton(
-              icon: const Icon(Icons.person_add),
-              onPressed: _showMemberDialog,
-            ),
-          ],
+          title: const Text("멤버 관리"),
+          bottom: widget.isAdmin ? TabBar(
+            tabs: [
+              const Tab(text: "활동 멤버"),
+              if (widget.isAdmin) const Tab(text: "가입 대기 멤버"),
+            ],
+          ): null,
         ),
         body: isLoading
             ? const Center(child: CircularProgressIndicator())
-            : ListView(
+            : TabBarView(
           children: [
-            if (oldMembers.isNotEmpty) ...[
-              Padding(
-                padding: const EdgeInsets.all(10.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start, // 여러 줄 고려
-                  children: [
-                    const Text(
-                      "기존 멤버",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    if (widget.isAdmin)
-                      const Expanded(
-                        child: Text(
-                          "멤버를 눌러 추방할 수 있습니다",
-                          textAlign: TextAlign.end,
-                          overflow: TextOverflow.ellipsis,
-                          maxLines: 2, // 길 경우 두 줄까지 허용
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-              ),
-              // 실제 멤버 리스트 타일들
-              ...oldMembers.map((member) => _buildMemberTile(member)),
-            ],
-
-            if (newMemberUsers.isNotEmpty) ...[
-              const Padding(
-                padding: EdgeInsets.all(10.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      "새로운 멤버",
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.green,
-                      ),
-                    ),
-                    Expanded(
-                      child: Text(
-                        "뒤로 가기를 누르면 완료됩니다",
-                        textAlign: TextAlign.end,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-
-
-
-              ...newMemberUsers.map((member) => _buildNewMemberTile(member)),
-            ],
-            if (newMemberUsers.isEmpty && oldMembers.isEmpty)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(20.0),
-                  child: Text("멤버가 없습니다.",
-                      style: TextStyle(fontSize: 16, color: Colors.grey)),
-                ),
-              ),
+            _buildActiveList(),
+            if (widget.isAdmin) _buildPendingList(),
           ],
         ),
         floatingActionButton: widget.isAdmin
             ? FloatingActionButton(
-          onPressed: _showMemberDialog,
+          onPressed: _showInviteDialog,
           child: const Icon(Icons.person_add),
         )
-            : null, // 어드민이 아닐 경우 버튼 숨김
+            : null,
       ),
     );
   }
 
-  /// 뒤로 나갈 때 초대 여부 확인하는 다이얼로그
-  Future<bool> _confirmInviteOnExit() async {
-    return await showDialog<bool>(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text("멤버 초대"),
-          content: Text("${newMemberUsers.length}명을 초대하시겠습니까?"),
-          actions: [
-            TextButton(
-              onPressed: () => context.pop(),
-              child: const Text("취소"),
-            ),
-            ElevatedButton(
-              onPressed: () async {
-                await _inviteMembers();
-                context.go('/app/clubs/:clubId?refresh=${DateTime.now().millisecondsSinceEpoch}');
-              },
-              child: const Text("초대"),
-            ),
-          ],
-        );
-      },
-    ) ?? true; // 다이얼로그가 강제로 닫히면 기본적으로 나가기 허용
+  Widget _buildActiveList() {
+    if (activeMembers.isEmpty) {
+      return const Center(child: Text("활동 멤버가 없습니다."));
+    }
+    return ListView(
+      children: activeMembers.map((m) => _buildActiveTile(m)).toList(),
+    );
   }
 
-  /// 초대 실행 함수
-  Future<void> _inviteMembers() async {
-    final clubService = ClubService(ref.read(secureStorageProvider));
-    final newMembers = await clubService.inviteMembers(widget.clubId, newMemberUsers);
-    ref.read(clubStateProvider.notifier).updateSelectedClubMembers(newMembers);
-    log('newMembers number: ${newMembers.length}');
-
-    setState(() {
-      oldMembers.addAll(newMembers.map((m) => ClubMemberProfile(
-        memberId: m.memberId, // 임시 처리
-        name: m.name,
-        role: "member",
-        userId: m.userId,
-        profileImage: m.profileImage,
-        accountId: m.accountId,
-      )));
-      selectedMemberUsers.addAll(newMemberUsers);
-      newMemberUsers.clear();
-    });
+  Widget _buildPendingList() {
+    if (pendingMembers.isEmpty) {
+      return const Center(child: Text("가입 대기 멤버가 없습니다."));
+    }
+    return ListView(
+      children: pendingMembers.map((m) => _buildPendingTile(m)).toList(),
+    );
   }
 
-  Widget _buildMemberTile(ClubMemberProfile member) {
-    final bool isAdminMember = member.role == "admin"; // 어드민 여부 체크
 
-    return InkWell(
-      onLongPress: () {
-        if (widget.isAdmin && !isAdminMember) {
-          _showKickDialog(member); // 일반 멤버만 추방 가능
-        }
-      },
+  Widget _buildActiveTile(ClubMemberProfile member) {
+    final isAdminMember = member.role == "admin";
+
+    return Card(
+      color: Colors.transparent,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+      ),
       child: ListTile(
-        leading: Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: isAdminMember ? Colors.green : Colors.transparent, // 어드민이면 초록 테두리
-              width: 3,
-            ),
-          ),
-          child: CircleAvatar(
-            backgroundColor: Colors.transparent,
-            child: (member.profileImage.startsWith('https'))
-                ? ClipOval(
-              child: Image.network(
-                member.profileImage,
-                fit: BoxFit.cover,
-                width: 60,
-                height: 60,
-                errorBuilder: (context, error, stackTrace) {
-                  return const CircularIcon();
-                },
-              ),
-            )
-                : const CircularIcon(),
-          ),
+        leading: CircleAvatar(
+          radius: 25,
+          backgroundColor: Colors.grey[200],
+          backgroundImage: (member.profileImage.isNotEmpty &&
+              member.profileImage.startsWith('http'))
+              ? NetworkImage(member.profileImage)
+              : null,
+          child: (member.profileImage.isEmpty ||
+              !member.profileImage.startsWith('http'))
+              ? const CircularIcon()
+              : null,
         ),
         title: Text(member.name),
-        subtitle: member.role == 'admin' ? const Text('관리자') : null,
+        subtitle: isAdminMember ? const Text("관리자") : null,
+        trailing: !isAdminMember && widget.isAdmin
+            ? IconButton(
+          icon: const Icon(Icons.close, color: Colors.red),
+          onPressed: () {
+            _showKickDialog(member); // ❌ X 버튼 → 모달 호출
+          },
+        )
+            : null,
       ),
     );
   }
 
-
-  Widget _buildNewMemberTile(dynamic member) {
-    return ListTile(
-      leading: CircleAvatar(
-        backgroundColor: Colors.transparent,
-        child: (member.profileImage != null && member.profileImage.startsWith('https'))
-            ? ClipOval(
-          child: Image.network(
-            member.profileImage,
-            fit: BoxFit.cover,
-            width: 60,
-            height: 60,
-            errorBuilder: (context, error, stackTrace) {
-              return const CircularIcon();
-            },
-          ),
-        )
-            : const CircularIcon(),
+// 👉 Pending 멤버 타일
+  Widget _buildPendingTile(ClubMemberProfile member) {
+    return Card(
+      color: Colors.transparent,
+      elevation: 0,
+      child: ListTile(
+        leading: CircleAvatar(
+          radius: 25,
+          backgroundColor: Colors.grey[200],
+          backgroundImage: (member.profileImage.isNotEmpty &&
+              member.profileImage.startsWith('http'))
+              ? NetworkImage(member.profileImage)
+              : null,
+          child: (member.profileImage.isEmpty ||
+              !member.profileImage.startsWith('http'))
+              ? const CircularIcon()
+              : null,
+        ),
+        title: Text(member.name),
+        subtitle: const Text("가입 대기중"),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.check, color: Colors.green),
+              onPressed: () async {
+                try {
+                  await _clubService.acceptMember(widget.clubId, member.memberId);
+                  setState(() {
+                    pendingMembers.removeWhere((m) => m.memberId == member.memberId);
+                    activeMembers.add(member.copyWith(statusType: 'active'));
+                  });
+                } catch(e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('$e'),
+                        backgroundColor: Colors.red,
+                      ));
+                }
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.close, color: Colors.red),
+              onPressed: () async {
+                try {
+                  await _clubService.removeMember(widget.clubId, member.memberId);
+                  setState(() {
+                    pendingMembers.removeWhere((m) => m.memberId == member.memberId);
+                  });
+                } catch(e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('$e'),
+                        backgroundColor: Colors.red,
+                      ));
+                }
+              },
+            ),
+          ],
+        ),
       ),
-      title: Text(member.name),
     );
+  }
+
+  /// 멤버 추방 다이얼로그
+  void _showKickDialog(ClubMemberProfile member) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("멤버 추방"),
+        content: Text("${member.name}님을 추방하시겠습니까?"),
+        actions: [
+          TextButton(
+            onPressed: () => context.pop(),
+            child: const Text("취소"),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              await _clubService.removeMember(widget.clubId, member.memberId);
+              setState(() {
+                activeMembers.removeWhere((m) => m.memberId == member.memberId);
+              });
+              context.pop();
+            },
+            child: const Text("추방"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 멤버 초대 다이얼로그
+  void _showInviteDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return UserDialog(
+          selectedUsers: oldMemberUsers, // 이미 선택된 유저
+          newSelectedUsers: const [], // 새로 초대한 유저
+          isAdminMode: false,
+        );
+      },
+    ).then((result) async {
+      if (result != null && result.isNotEmpty) {
+        final newMemberUsers =
+            result.where((e) => !oldMemberUsers.any((old) => old.accountId == e.accountId)).toList();
+        final newMembers = await _clubService.inviteMembers(widget.clubId, newMemberUsers);
+        setState(() {
+          activeMembers.addAll(newMembers.map((m) => m.toProfile().copyWith(statusType: 'active')));
+        });
+      }
+    });
   }
 }

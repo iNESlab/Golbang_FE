@@ -58,7 +58,7 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
     _startDateController = TextEditingController(text: formattedDate);
     
     _clubService = ClubService(ref.read(secureStorageProvider));
-    _fetchClubs();
+    _fetchMyClubs();
     _setupListeners();
   }
 
@@ -94,9 +94,9 @@ class _EventsCreate1State extends ConsumerState<EventsCreate1> {
     });
   }
 
-  Future<void> _fetchClubs() async {
+  Future<void> _fetchMyClubs() async {
     try {
-      List<Club> clubs = await _clubService.getClubList(isAdmin: true);
+      List<Club> clubs = await _clubService.getMyClubList(isAdmin: true);
       setState(() {
         _clubs = clubs;
       });

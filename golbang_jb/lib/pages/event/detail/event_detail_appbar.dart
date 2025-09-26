@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:golbang/models/create_event.dart';
-import 'package:golbang/models/create_participant.dart';
 
 import '../../../models/event.dart';
 import '../../../provider/event/event_state_notifier_provider.dart';
@@ -24,12 +22,14 @@ PreferredSizeWidget buildEventDetailAppBar(
     Event event,
     DateTime currentTime,
     List<dynamic> participants,
+    void Function(DateTime) onEndEvent, // ✅ 콜백 추가
     ) {
   late EventService eventService;
   final screenWidth = MediaQuery.of(context).size.width;
   final orientation = MediaQuery.of(context).orientation;
   final double iconSize = screenWidth * (orientation == Orientation.portrait ? 0.06 : 0.04);
   final double fontSize = screenWidth * (orientation == Orientation.portrait ? 0.05 : 0.035);
+  final bool isEnd = event.endDateTime.isBefore(currentTime);
 
 
   void editEvent() {
@@ -57,7 +57,8 @@ PreferredSizeWidget buildEventDetailAppBar(
     eventService = EventService(ref.read(secureStorageProvider));
     try{
       await eventService.endEvent(eventId);
-      context.pushReplacement('/app/events/$eventId/result');
+      final now = DateTime.now();
+      onEndEvent(now); // ✅ state는 detail page에서 갱신
     } catch (e) {
       log('Error fetching event details: $e');
       if (context.mounted) {
@@ -163,10 +164,11 @@ PreferredSizeWidget buildEventDetailAppBar(
             value: 'share',
             child: Text('공유'),
           ),
-          const PopupMenuItem<String>(
-            value: 'end',
-            child: Text('시합 종료'),
-          ),
+          if (!isEnd)
+            const PopupMenuItem<String>(
+              value: 'end',
+              child: Text('시합 종료'),
+            ),
         ],
       ),
     ],

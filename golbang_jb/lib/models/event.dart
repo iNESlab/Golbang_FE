@@ -149,4 +149,53 @@ class Event {
     return gameModeDisplayNames[gameMode] ?? '알 수 없음';
   }
 
+  Event copyWith({
+    ClubProfile? club,
+    int? eventId,
+    int? memberGroup,
+    String? eventTitle,
+    String? location,
+    String? site,
+    int? golfClubId,
+    int? golfCourseId,
+    DateTime? startDateTime,
+    DateTime? endDateTime,
+    String? repeatType,
+    String? gameMode,
+    String? alertDateTime,
+    int? participantsCount,
+    int? partyCount,
+    int? acceptCount,
+    int? denyCount,
+    int? pendingCount,
+    int? myParticipantId,
+    List<Participant>? participants,
+    GolfClubResponseDTO? golfClub,
+    CourseResponseDTO? golfCourse,
+  }) {
+    return Event(
+      club: club ?? this.club,
+      eventId: eventId ?? this.eventId,
+      memberGroup: memberGroup ?? this.memberGroup,
+      eventTitle: eventTitle ?? this.eventTitle,
+      location: location ?? this.location,
+      site: site ?? this.site,
+      golfClubId: golfClubId ?? this.golfClubId,
+      golfCourseId: golfCourseId ?? this.golfCourseId,
+      startDateTime: startDateTime ?? this.startDateTime,
+      endDateTime: endDateTime ?? this.endDateTime,
+      repeatType: repeatType ?? this.repeatType,
+      gameMode: gameMode ?? this.gameMode,
+      alertDateTime: alertDateTime ?? this.alertDateTime,
+      participantsCount: participantsCount ?? this.participantsCount,
+      partyCount: partyCount ?? this.partyCount,
+      acceptCount: acceptCount ?? this.acceptCount,
+      denyCount: denyCount ?? this.denyCount,
+      pendingCount: pendingCount ?? this.pendingCount,
+      myParticipantId: myParticipantId ?? this.myParticipantId,
+      participants: participants ?? this.participants,
+      golfClub: golfClub ?? this.golfClub,
+      golfCourse: golfCourse ?? this.golfCourse,
+    );
+  }
 }

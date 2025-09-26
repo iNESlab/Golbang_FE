@@ -40,16 +40,6 @@ class EventDetailBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String golfClubName = "";
-    if (event.golfClub == null ||
-        event.golfClub?.golfClubName == null ||
-        event.golfClub!.golfClubName.isEmpty ||
-        event.golfClub!.golfClubName == "unknown_site") {
-      golfClubName = event.site;
-    } else {
-      golfClubName = event.golfClub!.golfClubName;
-    }
-
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
@@ -66,7 +56,7 @@ class EventDetailBody extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text('인원 수: ${participants.length}명, 참석자 수: ${event.acceptCount}명', style: TextStyle(fontSize: fontSizeLarge)),
-          Text('참석률: ${participants.length > 0 ? (event.acceptCount / participants.length * 100).toStringAsFixed(1) : 0}%', style: TextStyle(fontSize: fontSizeLarge)),
+          Text('참석률: ${participants.isNotEmpty ? (event.acceptCount / participants.length * 100).toStringAsFixed(1) : 0}%', style: TextStyle(fontSize: fontSizeLarge)),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -94,12 +84,11 @@ class EventDetailBody extends StatelessWidget {
             const SizedBox(height: 16),
             CourseInfoCard(
               selectedLocation: selectedLocation,
-              golfClubName: golfClubName,
+              golfClubName: event.golfClub!.golfClubName,
               event: event,
               fontSizeLarge: fontSizeLarge,
               fontSizeMedium: fontSizeMedium,
             ),
-
           ],
         ],
       ),

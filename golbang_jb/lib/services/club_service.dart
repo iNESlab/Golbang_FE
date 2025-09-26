@@ -37,7 +37,7 @@ class ClubService {
   }
 
   // API 테스트 완료
-  Future<List<Club>> getClubList({bool isAdmin=false}) async {
+  Future<List<Club>> getMyClubList({bool isAdmin=false}) async {
 
     // API URI 설정
     var uri = "/api/v1/clubs/";
@@ -58,6 +58,29 @@ class ClubService {
       throw Exception('Failed to load user profiles');
     }
   }
+
+  // API 테스트 완료
+  Future<List<Club>?> searchClubList(String query) async {
+    return await safeDioCall<List<Club>>(() async {
+      // API URI 설정
+      var uri = "/api/v1/clubs/search/?club_name=$query";
+      // API 요청
+      var response = await privateClient.dio.get(uri);
+
+      var data = response.data['data'];
+      return (data as List).map((json) => Club.fromJson(json)).toList();
+      });
+    }
+
+  Future<void> applyClub(int clubId) async {
+    return await safeDioCall<void>(() async {
+      // API URI 설정
+      var uri = "/api/v1/clubs/$clubId/apply/";
+      // API 요청
+      await privateClient.dio.post(uri);
+    });
+  }
+
   // API 테스트 완료
   // 모임 삭제 함수 추가
   Future<void> deleteClub(int clubId) async {
@@ -120,15 +143,18 @@ class ClubService {
 
   // API 테스트 완료
   Future<void> removeMember(int clubId, int memberId) async {
-    try {
+    return await safeDioCall(() async {
       var uri = "/api/v1/clubs/admin/$clubId/members/$memberId/";
 
       await privateClient.dio.delete(uri);
+    });
+  }
 
-      log('Successfully removed member: $memberId from club: $clubId');
-    } catch (e) {
-      log('Error removing member: $e');
-    }
+  Future<void> acceptMember(int clubId, int memberId) async {
+    return await safeDioCall(() async {
+        var uri = "/api/v1/clubs/admin/$clubId/members/$memberId/status/";
+        await privateClient.dio.patch(uri);
+    });
   }
 
   // API 테스트 완료

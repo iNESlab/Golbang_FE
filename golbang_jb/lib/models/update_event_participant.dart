@@ -92,6 +92,7 @@ class UpdateEventParticipant {
         email: '',
         name: name,
         role: role,
+        statusType: statusType,
         profileImage: profileImage,
         accountId: id,
         userId: ''

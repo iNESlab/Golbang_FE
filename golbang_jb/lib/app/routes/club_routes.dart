@@ -4,6 +4,7 @@ import 'package:golbang/pages/community/community_main.dart';
 import '../../pages/club/club_create_page.dart';
 import '../../pages/club/club_edit_page.dart';
 import '../../pages/club/club_main.dart';
+import '../../pages/club/club_search_page.dart';
 import '../../pages/community/admin_settings_page.dart';
 import '../../pages/community/member_list_page.dart';
 import '../../pages/community/member_settings_page.dart';
@@ -16,6 +17,19 @@ final List<GoRoute> clubRoutes = [
         return const ClubCreatePage();
       }
   ),
+
+  // /app/clubs/search
+  GoRoute(
+    path: '/app/clubs/search',
+    pageBuilder: (context, state) {
+      return NoTransitionPage(
+        key: state.pageKey,
+        child: const ClubSearchPage(),
+      );
+    },
+  ),
+
+  // /app/clubs/:clubId
   GoRoute(
       path: '/app/clubs/:clubId',
       builder: (context, state) {

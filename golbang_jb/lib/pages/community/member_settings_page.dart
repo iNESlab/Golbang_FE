@@ -35,7 +35,7 @@ class MemberSettingsPage extends ConsumerWidget {
             SettingsButton(
               text: '멤버 조회',
               onPressed: () {
-                context.push('/app/clubs/$clubId/members', extra: {'isAdmin': false});
+                context.push('/app/clubs/$clubId/setting/members', extra: {'isAdmin': false});
               },
             ),
             SettingsButton(

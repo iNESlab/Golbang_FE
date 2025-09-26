@@ -102,62 +102,65 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
       appBar: AppBar(
         title: const Text('내 정보'),
       ),
-      body: ListView(
-        children: [
-          const SizedBox(height: 10),
-          Center(
-            child: Stack(
-              children: [
-                CircleAvatar(
-                  radius: 50,
-                  backgroundColor: Colors.grey[300],
-                  backgroundImage: _imageFile != null
-                      ? FileImage(File(_imageFile!.path))
-                      : (_userAccount.profileImage != null &&
-                      _userAccount.profileImage!.isNotEmpty
-                      ? NetworkImage(_userAccount.profileImage!) as ImageProvider
-                      : null),
-                  child: (_imageFile == null &&
-                      (_userAccount.profileImage == null ||
-                          _userAccount.profileImage!.isEmpty))
-                      ? const Icon(Icons.person, size: 50, color: Colors.white)
-                      : null,
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 5),
-          Center(
-            child: TextButton(
-              onPressed: _showProfileImageOptions, // 수정된 팝업 메뉴 함수 호출
-              child: const Text(
-                '프로필 이미지 변경',
-                style: TextStyle(color: Colors.blue),
+      body: SafeArea(
+        bottom: true,
+        child: ListView(
+          children: [
+            const SizedBox(height: 10),
+            Center(
+              child: Stack(
+                children: [
+                  CircleAvatar(
+                    radius: 50,
+                    backgroundColor: Colors.grey[300],
+                    backgroundImage: _imageFile != null
+                        ? FileImage(File(_imageFile!.path))
+                        : (_userAccount.profileImage != null &&
+                        _userAccount.profileImage!.isNotEmpty
+                        ? NetworkImage(_userAccount.profileImage!) as ImageProvider
+                        : null),
+                    child: (_imageFile == null &&
+                        (_userAccount.profileImage == null ||
+                            _userAccount.profileImage!.isEmpty))
+                        ? const Icon(Icons.person, size: 50, color: Colors.white)
+                        : null,
+                  ),
+                ],
               ),
             ),
-          ),
-          const SizedBox(height: 10),
-          _buildEditableListTile('아이디', _userAccount.userId, false),
-          _buildEditableListTile('이름', _userAccount.name, true),
-          _buildEditableListTile('이메일', _userAccount.email, true),
-          _buildEditableListTile('연락처', _userAccount.phoneNumber, true),
-          _buildEditableListTile('핸디캡', _userAccount.handicap.toString(), true, isNumeric: true),
-          _buildEditableListTile('집 주소', _userAccount.address, true),
-          _buildEditableListTile(
-              '생일',
-              _userAccount.dateOfBirth != null
-                  ? '${_userAccount.dateOfBirth!.year}년 ${_userAccount.dateOfBirth!.month}월 ${_userAccount.dateOfBirth!.day}일'
-                  : '입력되지 않음',
-              true),
-          _buildEditableListTile('학번', _userAccount.studentId ?? '입력되지 않음', true),
-          const Padding(
-            padding: EdgeInsets.all(16.0),
-            child: Text(
-              '* 대학 동문회 모임을 위해 필요한 경우 입력 바랍니다',
-              style: TextStyle(color: Colors.red),
+            const SizedBox(height: 5),
+            Center(
+              child: TextButton(
+                onPressed: _showProfileImageOptions, // 수정된 팝업 메뉴 함수 호출
+                child: const Text(
+                  '프로필 이미지 변경',
+                  style: TextStyle(color: Colors.blue),
+                ),
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 10),
+            _buildEditableListTile('아이디', _userAccount.userId, false),
+            _buildEditableListTile('이름', _userAccount.name, true),
+            _buildEditableListTile('이메일', _userAccount.email, true),
+            _buildEditableListTile('연락처', _userAccount.phoneNumber, true),
+            _buildEditableListTile('핸디캡', _userAccount.handicap.toString(), true, isNumeric: true),
+            _buildEditableListTile('집 주소', _userAccount.address, true),
+            _buildEditableListTile(
+                '생일',
+                _userAccount.dateOfBirth != null
+                    ? '${_userAccount.dateOfBirth!.year}년 ${_userAccount.dateOfBirth!.month}월 ${_userAccount.dateOfBirth!.day}일'
+                    : '입력되지 않음',
+                true),
+            _buildEditableListTile('학번', _userAccount.studentId ?? '입력되지 않음', true),
+            const Padding(
+              padding: EdgeInsets.all(16.0),
+              child: Text(
+                '* 대학 동문회 모임을 위해 필요한 경우 입력 바랍니다',
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+       ),
       ),
     );
   }
@@ -265,72 +268,74 @@ class _UserInfoPageState extends ConsumerState<UserInfoPage> {
       context: context,
       isScrollControlled: true, // 화면에 꽉 차도록 설정
       builder: (context) {
-        return StatefulBuilder(
-          builder: (BuildContext context, StateSetter setState) {
-            return Container(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
-              decoration: const BoxDecoration(
-                color: Color(0xFFF6F6F6),
-                borderRadius: BorderRadius.vertical(top: Radius.circular(40)), // 상단 모서리 둥글게
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Center(
-                    child: Container(
-                      height: 200, // 높이를 200으로 설정
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF6F6F6), // 내부 배경색 (NumberPicker 영역)
-                        borderRadius: BorderRadius.circular(15), // 모서리를 둥글게 설정
+        return  SafeArea(
+            child: StatefulBuilder(
+            builder: (BuildContext context, StateSetter setState) {
+              return Container(
+                padding: EdgeInsets.only(
+                  bottom: MediaQuery.of(context).viewInsets.bottom,
+                ),
+                decoration: const BoxDecoration(
+                  color: Color(0xFFF6F6F6),
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(40)), // 상단 모서리 둥글게
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Center(
+                      child: Container(
+                        height: 200, // 높이를 200으로 설정
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF6F6F6), // 내부 배경색 (NumberPicker 영역)
+                          borderRadius: BorderRadius.circular(15), // 모서리를 둥글게 설정
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 24), // 좌우 패딩 추가
+                        child: NumberPicker(
+                          value: selectedValue,
+                          minValue: -50,
+                          maxValue: 100,
+                          onChanged: (value) {
+                            setState(() {
+                              selectedValue = value;
+                            });
+                          },
+                          selectedTextStyle: const TextStyle(
+                            color: Colors.green, // 숫자 색상 2DC653
+                            fontSize: 27,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          textStyle: const TextStyle(
+                            color: Colors.black45, // 비선택 숫자 색상
+                            fontSize: 18,
+                          ),
+                        ),
                       ),
-                      padding: const EdgeInsets.symmetric(horizontal: 24), // 좌우 패딩 추가
-                      child: NumberPicker(
-                        value: selectedValue,
-                        minValue: 0,
-                        maxValue: 100,
-                        onChanged: (value) {
-                          setState(() {
-                            selectedValue = value;
-                          });
+                    ),
+                    const SizedBox(height: 15),
+                    Center(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          // 선택된 값을 저장
+                          _updateUserInfo(field: field, value: selectedValue.toString());
+                          context.pop();
                         },
-                        selectedTextStyle: const TextStyle(
-                          color: Colors.green, // 숫자 색상 2DC653
-                          fontSize: 27,
-                          fontWeight: FontWeight.bold,
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.green, // 버튼 배경 색상 2DC653
+                          minimumSize: Size(MediaQuery.of(context).size.width - 40, 50), // 버튼 너비와 높이를 조정
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(15), // 버튼 모서리를 둥글게
+                          ),
                         ),
-                        textStyle: const TextStyle(
-                          color: Colors.black45, // 비선택 숫자 색상
-                          fontSize: 18,
-                        ),
+                        child: const Text('저장', style: TextStyle(fontSize: 18)), // 폰트 크기를 20으로 설정
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 15),
-                  Center(
-                    child: ElevatedButton(
-                      onPressed: () {
-                        // 선택된 값을 저장
-                        _updateUserInfo(field: field, value: selectedValue.toString());
-                        context.pop();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: Colors.green, // 버튼 배경 색상 2DC653
-                        minimumSize: Size(MediaQuery.of(context).size.width - 40, 50), // 버튼 너비와 높이를 조정
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(15), // 버튼 모서리를 둥글게
-                        ),
-                      ),
-                      child: const Text('저장', style: TextStyle(fontSize: 18)), // 폰트 크기를 20으로 설정
-                    ),
-                  ),
-                  SizedBox(height: 10, child: Container(color: const Color(0xFFF6F6F6))), // 버튼 아래에 공간을 추가하여 배경색이 보이도록 함
-                ],
-              ),
-            );
-          },
+                    SizedBox(height: 10, child: Container(color: const Color(0xFFF6F6F6))), // 버튼 아래에 공간을 추가하여 배경색이 보이도록 함
+                  ],
+                ),
+              );
+            },
+         )
         );
       },
     );

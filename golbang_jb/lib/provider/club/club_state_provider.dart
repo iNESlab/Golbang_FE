@@ -21,7 +21,7 @@ class ClubStateNotifier extends StateNotifier<ClubState> {
   // 클럽 리스트를 불러와 상태로 설정
   Future<void> fetchClubs() async {
     try {
-      final clubs = await _clubService.getClubList();
+      final clubs = await _clubService.getMyClubList();
       log('club[0] length: ${clubs[0].members.length}');
       // selectedClub 초기화
       state = state.copyWith(
