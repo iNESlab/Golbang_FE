@@ -18,8 +18,8 @@ class CommunityMain extends ConsumerStatefulWidget {
 class _CommunityMainState extends ConsumerState<CommunityMain> {
   // ✅ 여기에 getter들 선언
   Club? get _club => ref.watch(clubStateProvider.select((s) => s.selectedClub));
-  List<Member> get members => _club?.members.where((m) => m.role != 'admin').toList() ?? [];
-  List<Member> get admins => _club?.members.where((m) => m.role == 'admin').toList() ?? [];
+  List<Member> get members => _club?.members.where((m) => m.role != 'admin' && m.statusType == 'active').toList() ?? [];
+  List<Member> get admins => _club?.members.where((m) => m.role == 'admin' && m.statusType == 'active').toList() ?? [];
 
   @override
   void didChangeDependencies() {

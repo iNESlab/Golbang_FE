@@ -143,15 +143,18 @@ class ClubService {
 
   // API 테스트 완료
   Future<void> removeMember(int clubId, int memberId) async {
-    try {
+    return await safeDioCall(() async {
       var uri = "/api/v1/clubs/admin/$clubId/members/$memberId/";
 
       await privateClient.dio.delete(uri);
+    });
+  }
 
-      log('Successfully removed member: $memberId from club: $clubId');
-    } catch (e) {
-      log('Error removing member: $e');
-    }
+  Future<void> acceptMember(int clubId, int memberId) async {
+    return await safeDioCall(() async {
+        var uri = "/api/v1/clubs/admin/$clubId/members/$memberId/status/";
+        await privateClient.dio.patch(uri);
+    });
   }
 
   // API 테스트 완료

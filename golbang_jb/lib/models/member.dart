@@ -1,3 +1,5 @@
+import 'package:golbang/models/profile/member_profile.dart';
+
 class Member {
   final int memberId;
   final String email;
@@ -44,5 +46,17 @@ class Member {
         // 'profile_image': profileImage,
         'description': description,
     };
+  }
+
+  ClubMemberProfile toProfile(){
+    return ClubMemberProfile(
+        memberId: memberId,
+        profileImage: profileImage,
+        userId: userId,
+        name: name,
+        role: role,
+        statusType: statusType,
+        accountId: accountId
+    );
   }
 }
