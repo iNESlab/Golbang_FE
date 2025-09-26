@@ -151,22 +151,17 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
                   SizedBox(
                     height: 50,
                     child: TextField(
+                      readOnly: true, // 클릭만 가능하도록
                       decoration: InputDecoration(
-                        hintText: '내 모임 검색',
+                        hintText: '모임 검색',
                         prefixIcon: const Icon(Icons.search),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                         contentPadding: const EdgeInsets.symmetric(vertical: 10),
                       ),
-                      onChanged: (value) {
-                        setState(() {
-                          filteredGroups = allGroups
-                              .where((group) => group.name
-                              .toLowerCase()
-                              .contains(value.toLowerCase()))
-                              .toList();
-                        });
+                      onTap: () {
+                        context.push('/app/clubs/search');
                       },
                     ),
                   ),
