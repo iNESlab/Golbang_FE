@@ -51,7 +51,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
     super.initState();
     _site = widget.event.site;
     _clubService = ClubService(ref.read(secureStorageProvider));
-    _fetchClubs();
+    _fetchMyClubs();
     _setupInitialValues(); // 전달받은 이벤트 데이터를 초기화하는 메서드
     _setupListeners();
   }
@@ -137,9 +137,9 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
     });
   }
 
-  Future<void> _fetchClubs() async {
+  Future<void> _fetchMyClubs() async {
     try {
-      List<Club> clubs = await _clubService.getClubList();
+      List<Club> clubs = await _clubService.getMyClubList();
       log('clubs: $clubs');
       setState(() {
         _clubs = clubs;

@@ -31,7 +31,7 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
     super.initState();
     final storage = ref.read(secureStorageProvider);
     groupService = GroupService(storage);
-    _fetchGroups(); // 그룹 데이터를 초기화 시 가져옴
+    _fetchMyGroups(); // 그룹 데이터를 초기화 시 가져옴
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await ref.read(clubStateProvider.notifier).fetchClubs();
@@ -39,7 +39,7 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
   }
 
   // Fetch groups once
-  Future<void> _fetchGroups() async {
+  Future<void> _fetchMyGroups() async {
     try {
       List<Club> groups = await groupService.getUserGroups(); // 백엔드에서 그룹 데이터 가져옴
       setState(() {
@@ -136,7 +136,7 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
                       TextButton.icon(
                         onPressed: () {
                           context.push('/app/clubs/new').then((_) {
-                            _fetchGroups(); // 모임 생성 후 새로고침
+                            _fetchMyGroups(); // 모임 생성 후 새로고침
                           });
                         },
                         icon: const Icon(Icons.add_circle, color: Colors.green),

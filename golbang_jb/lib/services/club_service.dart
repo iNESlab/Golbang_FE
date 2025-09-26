@@ -37,7 +37,7 @@ class ClubService {
   }
 
   // API 테스트 완료
-  Future<List<Club>> getClubList({bool isAdmin=false}) async {
+  Future<List<Club>> getMyClubList({bool isAdmin=false}) async {
 
     // API URI 설정
     var uri = "/api/v1/clubs/";
