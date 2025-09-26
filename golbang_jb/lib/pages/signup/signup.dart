@@ -120,13 +120,23 @@ class _SignUpPageState extends ConsumerState<SignUpPage> {
         if (response.statusCode == 201) {
           ctx.push('/app/signup/step-2', extra: {'userId': response.data['data']['user_id'] });
         } else {
-          var error = response.data['data']?['message'] ?? '알 수 없는 오류가 발생했습니다.';
-
-          ScaffoldMessenger.of(ctx).showSnackBar(
-            SnackBar(
-              content: Text('\n회원가입에 실패했습니다. 다시 시도해 주세요. $error'),
-            ),
-          );
+          // 중복 이메일 에러 처리
+          if (response.statusCode == 400 && response.data['errors']?['email'] != null) {
+            ScaffoldMessenger.of(ctx).showSnackBar(
+              SnackBar(
+                content: Text('이미 가입된 이메일입니다.\n구글 로그인을 사용해주세요.'),
+                backgroundColor: Colors.orange,
+                duration: const Duration(seconds: 4),
+              ),
+            );
+          } else {
+            var error = response.data['data']?['message'] ?? '알 수 없는 오류가 발생했습니다.';
+            ScaffoldMessenger.of(ctx).showSnackBar(
+              SnackBar(
+                content: Text('회원가입에 실패했습니다. 다시 시도해 주세요.\n$error'),
+              ),
+            );
+          }
         }
       } catch (e) {
         log('Error: $e');

@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../utils/reponsive_utils.dart';
+// 🚫 라디오 기능 비활성화 - 안드로이드에서 사용하지 않음
+// import '../widgets/global_radio_player.dart';
 
 
 class MainScaffold extends StatelessWidget {
@@ -42,6 +44,15 @@ class MainScaffold extends StatelessWidget {
         ],
       ),
       body: child,
+      // 🚫 라디오 기능 비활성화 - 안드로이드에서 사용하지 않음
+      /*
+      body: Column(
+        children: [
+          Expanded(child: child),
+          const GlobalRadioPlayer(), // 글로벌 라디오 플레이어 추가
+        ],
+      ),
+      */
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: currentIndex,
         onTap: (index) {
