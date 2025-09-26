@@ -58,16 +58,16 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: widget.isAdmin ? 2 : 1,
+      length: widget.isAdmin ? 2 : 0,
       child: Scaffold(
         appBar: AppBar(
           title: const Text("멤버 관리"),
-          bottom: TabBar(
+          bottom: widget.isAdmin ? TabBar(
             tabs: [
               const Tab(text: "활동 멤버"),
               if (widget.isAdmin) const Tab(text: "가입 대기 멤버"),
             ],
-          ),
+          ): null,
         ),
         body: isLoading
             ? const Center(child: CircularProgressIndicator())
@@ -145,6 +145,8 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
 // 👉 Pending 멤버 타일
   Widget _buildPendingTile(ClubMemberProfile member) {
     return Card(
+      color: Colors.transparent,
+      elevation: 0,
       child: ListTile(
         leading: CircleAvatar(
           radius: 25,
@@ -166,20 +168,36 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
             IconButton(
               icon: const Icon(Icons.check, color: Colors.green),
               onPressed: () async {
-                await _clubService.acceptMember(widget.clubId, member.memberId);
-                setState(() {
-                  pendingMembers.removeWhere((m) => m.memberId == member.memberId);
-                  activeMembers.add(member.copyWith(statusType: 'active'));
-                });
+                try {
+                  await _clubService.acceptMember(widget.clubId, member.memberId);
+                  setState(() {
+                    pendingMembers.removeWhere((m) => m.memberId == member.memberId);
+                    activeMembers.add(member.copyWith(statusType: 'active'));
+                  });
+                } catch(e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('$e'),
+                        backgroundColor: Colors.red,
+                      ));
+                }
               },
             ),
             IconButton(
               icon: const Icon(Icons.close, color: Colors.red),
               onPressed: () async {
-                await _clubService.removeMember(widget.clubId, member.memberId);
-                setState(() {
-                  pendingMembers.removeWhere((m) => m.memberId == member.memberId);
-                });
+                try {
+                  await _clubService.removeMember(widget.clubId, member.memberId);
+                  setState(() {
+                    pendingMembers.removeWhere((m) => m.memberId == member.memberId);
+                  });
+                } catch(e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('$e'),
+                        backgroundColor: Colors.red,
+                      ));
+                }
               },
             ),
           ],
