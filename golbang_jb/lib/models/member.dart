@@ -1,8 +1,11 @@
+import 'package:golbang/models/profile/member_profile.dart';
+
 class Member {
   final int memberId;
   final String email;
   final String name;
   final String role;
+  final String statusType;
   final String profileImage; // profileImage
   final String? description;
   final int accountId;
@@ -13,6 +16,7 @@ class Member {
     required this.email,
     required this.name,
     required this.role,
+    required this.statusType,
     required this.profileImage,
     this.description,
     required this.accountId,
@@ -25,6 +29,7 @@ class Member {
         email: json['user']['email'] ?? '',
       name: json['user']['name'] ?? '',
       role: json['role'] ?? '',
+      statusType: json['status_type'],
       profileImage: json['user']['profile_image'] ?? '', // profile_image 추가
       description: json['description'],
       accountId: json['user']['id'],
@@ -41,5 +46,17 @@ class Member {
         // 'profile_image': profileImage,
         'description': description,
     };
+  }
+
+  ClubMemberProfile toProfile(){
+    return ClubMemberProfile(
+        memberId: memberId,
+        profileImage: profileImage,
+        userId: userId,
+        name: name,
+        role: role,
+        statusType: statusType,
+        accountId: accountId
+    );
   }
 }

@@ -50,7 +50,7 @@ class EventHeaderSection extends StatelessWidget {
                 '${startDateTime.toIso8601String().split('T').first} • ${startDateTime.hour}:${startDateTime.minute.toString().padLeft(2, '0')} ~ ${endDateTime.hour}:${endDateTime.minute.toString().padLeft(2, '0')}${startDateTime.toIso8601String().split('T').first != endDateTime.toIso8601String().split('T').first ? ' (${endDateTime.toIso8601String().split('T').first})' : ''}',
                 style: TextStyle(fontSize: fontSizeMedium, overflow: TextOverflow.ellipsis),
               ),
-              Text('장소: ${event.site}', style: TextStyle(fontSize: fontSizeMedium)),
+              Text('장소: ${event.golfClub!.golfClubName}', style: TextStyle(fontSize: fontSizeMedium)),
               Text('게임모드: ${event.displayGameMode}', style: TextStyle(fontSize: fontSizeMedium)),
             ],
           ),

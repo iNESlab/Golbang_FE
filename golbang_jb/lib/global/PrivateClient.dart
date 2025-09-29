@@ -65,6 +65,25 @@ class PrivateClient {
     ));
   }
 
+  Future<int?> getAccountId() async {
+    try {
+      final accessToken = await _storage.read(key: 'ACCESS_TOKEN');
+      if (accessToken == null) return null;
+
+      // JWT payload 디코딩
+      final payload = json.decode(
+        utf8.decode(
+          base64Url.decode(base64Url.normalize(accessToken.split('.')[1])),
+        ),
+      );
+
+      return payload['user_id']; // ⚠️ 여기 key는 백엔드 JWT payload 구조에 맞게 수정
+    } catch (e) {
+      log("Error decoding userId from token: $e");
+      return null;
+    }
+  }
+
   Future<bool> isAccessTokenExpired() async {
     try {
       final accessToken = await _storage.read(key: 'ACCESS_TOKEN');
