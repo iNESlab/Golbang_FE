@@ -86,6 +86,13 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             },
           ),
           SettingsTile(
+            title: '강제 로그아웃',
+            textColor: Colors.red,
+            onTap: () async {
+              await _forceLogout(context, storage);
+            },
+          ),
+          SettingsTile(
             title: '회원탈퇴',
             textColor: Colors.red,
             onTap: () async {
@@ -120,6 +127,88 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           backgroundColor: Colors.red,
         ),
       );
+    }
+  }
+
+  // 강제 로그아웃 처리 (로컬 데이터만 삭제)
+  Future<void> _forceLogout(BuildContext context, SecureStorage storage) async {
+    // 재확인 다이얼로그 띄우기
+    final shouldForceLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        return Dialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+          backgroundColor: Colors.white,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  '강제 로그아웃',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  '강제 로그아웃을 하시겠습니까?\n\n서버에 로그아웃 요청을 보내지 않고\n로컬 데이터만 삭제됩니다.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(false),
+                      child: const Text('취소'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('강제 로그아웃'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+
+    if (shouldForceLogout == true) {
+      try {
+        // 로컬 저장소의 모든 인증 관련 데이터 삭제
+        await storage.storage.delete(key: 'ACCESS_TOKEN');
+        await storage.storage.delete(key: 'REFRESH_TOKEN');
+        await storage.storage.delete(key: 'LOGIN_ID');
+        await storage.storage.delete(key: 'PASSWORD');
+        await storage.storage.delete(key: 'GOOGLE_ID_TOKEN');
+        
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('강제 로그아웃이 완료되었습니다.'),
+              backgroundColor: Colors.green,
+            ),
+          );
+          
+          // 로그인 화면으로 이동
+          context.go('/app', extra: {'message': '강제 로그아웃 처리되었습니다.'});
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('강제 로그아웃 중 오류가 발생했습니다: $e'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 
@@ -194,6 +283,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       }
     }
   }
+
 
 }
 
