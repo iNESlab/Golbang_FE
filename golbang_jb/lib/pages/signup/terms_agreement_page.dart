@@ -9,12 +9,16 @@ class TermsAgreementPage extends StatefulWidget {
   final String? email;
   final String? displayName;
   final bool isSocialLogin;
+  final String? provider;
+  final String? tempUserId;  // 🔧 추가: 임시 사용자 ID
 
   const TermsAgreementPage({
     super.key,
     this.email,
     this.displayName,
     this.isSocialLogin = false,
+    this.provider,
+    this.tempUserId,
   });
 
   @override
@@ -49,7 +53,20 @@ class _TermsAgreementPageState extends State<TermsAgreementPage> {
     if (terms['[필수] 이용약관 동의']! && terms['[필수] 개인정보 수집 및 이용 동의']!) {
       if (widget.isSocialLogin) {
         // 소셜 로그인 사용자는 AdditionalInfoPage로 바로 이동 (아이디/비밀번호 입력 건너뛰기)
-        context.push('/app/signup/additional-info?email=${widget.email}&displayName=${widget.displayName}&isSocialLogin=true');
+        String queryParams = 'isSocialLogin=true';
+        if (widget.email != null && widget.email!.isNotEmpty) {
+          queryParams += '&email=${widget.email}';
+        }
+        if (widget.displayName != null && widget.displayName!.isNotEmpty) {
+          queryParams += '&displayName=${widget.displayName}';
+        }
+        if (widget.provider != null) {
+          queryParams += '&provider=${widget.provider}';
+        }
+        if (widget.tempUserId != null && widget.tempUserId!.isNotEmpty) {
+          queryParams += '&tempUserId=${widget.tempUserId}';
+        }
+        context.push('/app/signup/additional-info?$queryParams');
       } else {
         // 일반 회원가입 사용자는 아이디/비밀번호 입력 페이지로 이동
         context.push('/app/signup');
