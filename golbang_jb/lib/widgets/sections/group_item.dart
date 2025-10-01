@@ -4,12 +4,14 @@ class GroupItem extends StatelessWidget {
   final String image;
   final String label;
   final bool isAdmin;
+  final String? userStatus; // 🔧 추가: 사용자 상태 (invited, applied, active 등)
 
   const GroupItem({
     super.key,
     required this.image,
     required this.label,
     required this.isAdmin,
+    this.userStatus, // 🔧 추가: 사용자 상태 파라미터
   });
 
   @override
@@ -61,7 +63,7 @@ class GroupItem extends StatelessWidget {
             overflow: TextOverflow.ellipsis, // 긴 텍스트 생략 표시
           ),
         ),
-        // 관리자인 경우 "관리자" 텍스트와 아이콘 표시
+        // 🔧 수정: 사용자 상태에 따른 표시
         if (isAdmin)
           Padding(
             padding: const EdgeInsets.only(top: 4),
@@ -80,8 +82,71 @@ class GroupItem extends StatelessWidget {
                 ),
               ],
             ),
+          )
+        else if (userStatus != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: _buildStatusIndicator(),
           ),
       ],
     );
+  }
+
+  // 🔧 추가: 상태에 따른 인디케이터 빌드
+  Widget _buildStatusIndicator() {
+    switch (userStatus) {
+      case 'invited':
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.mail, color: Colors.orange[700], size: 16),
+            const SizedBox(width: 4),
+            Text(
+              '초대됨',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.orange[700],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        );
+      case 'applied':
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.pending, color: Colors.blue[700], size: 16),
+            const SizedBox(width: 4),
+            Text(
+              '신청함',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.blue[700],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        );
+      case 'active':
+        return const SizedBox.shrink(); // 가입됨은 기본 상태이므로 표시하지 않음
+      case 'rejected':
+        return Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.cancel, color: Colors.red[700], size: 16),
+            const SizedBox(width: 4),
+            Text(
+              '거절됨',
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.red[700],
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        );
+      default:
+        return const SizedBox.shrink(); // 상태가 없으면 아무것도 표시하지 않음
+    }
   }
 }

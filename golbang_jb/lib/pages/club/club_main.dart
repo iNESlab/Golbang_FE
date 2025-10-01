@@ -8,6 +8,7 @@ import 'package:golbang/models/club.dart';
 import 'package:golbang/widgets/sections/group_item.dart';
 import '../../provider/club/club_state_provider.dart';
 import '../../repoisitory/secure_storage.dart';
+import '../profile/profile_screen.dart'; // 🔧 추가: userAccountProvider import
 
 class ClubMainPage extends ConsumerStatefulWidget {
   const ClubMainPage({super.key});
@@ -31,20 +32,22 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
     super.initState();
     final storage = ref.read(secureStorageProvider);
     groupService = GroupService(storage);
-    _fetchMyGroups(); // 그룹 데이터를 초기화 시 가져옴
-
+    
+    // 🔧 수정: clubStateProvider를 사용하여 클럽 데이터 가져오기
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await ref.read(clubStateProvider.notifier).fetchClubs();
+      _fetchMyGroups(); // 그룹 데이터를 초기화 시 가져옴
     });
   }
 
   // Fetch groups once
   Future<void> _fetchMyGroups() async {
     try {
-      List<Club> groups = await groupService.getUserGroups(); // 백엔드에서 그룹 데이터 가져옴
+      // 🔧 수정: clubStateProvider에서 클럽 데이터 가져오기
+      final clubs = ref.read(clubStateProvider).clubList;
       setState(() {
-        allGroups = groups; // 그룹 데이터를 전체 리스트에 설정
-        filteredGroups = groups; // 초기에는 모든 그룹 표시
+        allGroups = clubs; // 그룹 데이터를 전체 리스트에 설정
+        filteredGroups = clubs; // 초기에는 모든 그룹 표시
         isLoading = false;
       });
     } catch (e) {
@@ -53,6 +56,14 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
         isLoading = false;
       });
     }
+  }
+
+  // 🔧 추가: 사용자의 클럽 상태를 가져오는 메서드
+  String? _getUserStatus(Club club) {
+    final userAccount = ref.watch(userAccountProvider);
+    if (userAccount == null) return null;
+    
+    return club.getCurrentUserStatus(userAccount.id);
   }
 
   // 그룹 데이터를 페이지로 나누는 함수 (필터링된 그룹 사용)
@@ -97,6 +108,7 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
                     image: club.image,
                     label: club.name,
                     isAdmin: club.isAdmin,
+                    userStatus: _getUserStatus(club), // 🔧 추가: 사용자 상태 전달
                   ),
                 ),
               );
@@ -113,6 +125,12 @@ class _GroupMainPageState extends ConsumerState<ClubMainPage> {
 
   @override
   Widget build(BuildContext context) {
+    // 🔧 추가: clubStateProvider 변경사항 감지
+    ref.listen(clubStateProvider, (previous, next) {
+      if (previous?.clubList != next.clubList) {
+        _fetchMyGroups();
+      }
+    });
     
     return Scaffold(
       body: SafeArea(
