@@ -6,20 +6,35 @@ import '../../models/event.dart';
 import '../../utils/reponsive_utils.dart';
 import '../../services/stomp_chat_service.dart';
 import '../../global/PrivateClient.dart';
+import '../../services/chat/image_service.dart';
+import '../../services/chat/notification_service.dart';
+import '../../services/chat/block_service.dart';
+import '../../services/chat_service.dart';
+import '../../app/current_route_service.dart';
+import 'widgets/message_list.dart';
+import 'widgets/reactions.dart';
+import 'widgets/bottom_sheet_item.dart';
+import 'widgets/report_dialog.dart';
+import 'widgets/block_dialog.dart';
 import 'dart:convert'; // Added for jsonDecode
 import 'dart:developer'; // Added for log function
-import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Added for FlutterSecureStorage
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../provider/club/club_state_provider.dart';
 import 'dart:convert' show base64Url, utf8; // Added for JWT decoding
 import 'package:flutter/services.dart'; // Added for Clipboard
+import 'package:image_picker/image_picker.dart'; // Added for image picker
+import 'dart:io'; // Added for File
+import 'package:dio/dio.dart'; // Added for FormData and MultipartFile
+import 'package:http_parser/http_parser.dart'; // Added for MediaType
 
 
 class ClubChatPage extends ConsumerStatefulWidget {
-  final Event event;
+  final int clubId;
   final ChatRoom? chatRoom;
 
   const ClubChatPage({
     super.key,
-    required this.event,
+    required this.clubId,
     this.chatRoom,
   });
 
@@ -27,11 +42,229 @@ class ClubChatPage extends ConsumerStatefulWidget {
   ConsumerState<ClubChatPage> createState() => _ClubChatPageState();
 }
 
-class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProviderStateMixin {
+class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProviderStateMixin, WidgetsBindingObserver {
   final TextEditingController _messageController = TextEditingController();
   final ScrollController _scrollController = ScrollController();
   List<ChatMessage> _messages = [];
   bool _isLoading = false;
+
+  // 🔧 추가: 메시지별 업로드 상태 추적
+  Set<String> _uploadingMessages = {}; // 업로드 중인 메시지 ID들
+
+  // 🔧 서비스 인스턴스들
+  late final ImageService _imageService;
+  late final NotificationService _notificationService;
+  late final BlockService _blockService;
+
+  // 🔧 추가: 이미지 업로드 관련 변수 (서비스로 이동 예정)
+  XFile? _selectedImage;
+
+  // 🔧 추가: 알림 설정 관련 변수
+  bool _isNotificationEnabled = true;
+  late final ChatService _chatService;
+
+  // 🔧 수정: 이미지 선택 (ImageService 사용)
+  Future<void> _pickImage(ImageSource source) async {
+    await _imageService.pickImage(
+      source,
+      onImageSelected: (XFile? image) {
+      if (image != null) {
+        setState(() {
+          _selectedImage = image;
+        });
+        // 선택된 이미지를 미리보기 화면에 표시
+        _showImagePreviewDialog();
+      }
+      },
+      maxWidth: 1920,
+      maxHeight: 1080,
+      imageQuality: 85,
+    );
+  }
+
+  // 🔧 수정: 이미지 미리보기 후 전송 방식으로 변경
+  Future<void> _sendImageMessage() async {
+    if (_selectedImage == null) return;
+
+    // 임시 메시지 ID 생성
+    final tempMessageId = DateTime.now().millisecondsSinceEpoch.toString();
+
+    try {
+      // 1. 업로드 상태로 설정
+      setState(() {
+        _uploadingMessages.add(tempMessageId);
+      });
+
+      // 2. 임시 메시지 생성 (업로드 중 표시용)
+      final tempImageMessage = ChatMessage(
+        messageId: tempMessageId,
+        chatRoomId: widget.clubId.toString(),
+        senderId: _currentUserId,
+        senderName: _currentUserName,
+        content: '{"type":"image","status":"uploading","filename":"${_selectedImage!.name}"}',
+        messageType: 'IMAGE',
+        timestamp: DateTime.now(),
+        isRead: false,
+      );
+
+      // UI에 임시 메시지 추가
+      _messages.add(tempImageMessage);
+      _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+      setState(() {});
+      _scrollToBottom(animated: true);
+
+      // 3. S3에 이미지 업로드 (ImageService 사용)
+      final uploadResult = await _imageService.uploadImageToServer(_selectedImage!);
+      if (uploadResult == null) {
+        // 업로드 실패 시 임시 메시지 제거
+        setState(() {
+          _messages.removeWhere((m) => m.messageId == tempMessageId);
+          _uploadingMessages.remove(tempMessageId);
+        });
+        return;
+      }
+
+      // 4. 업로드 성공 시 최종 메시지 데이터 생성
+      final imageData = {
+        'type': 'image',
+        'image_url': uploadResult['image_url'],
+        'thumbnail_url': uploadResult['thumbnail_url'],
+        'filename': uploadResult['filename'],
+        'size': uploadResult['size'],
+        'content_type': uploadResult['content_type']
+      };
+
+      // 임시 메시지를 실제 데이터로 업데이트
+      final messageIndex = _messages.indexWhere((m) => m.messageId == tempMessageId);
+      if (messageIndex != -1) {
+        _messages[messageIndex] = ChatMessage(
+          messageId: tempMessageId, // 실제 메시지가 올 때까지 임시 ID 사용
+          chatRoomId: widget.clubId.toString(),
+          senderId: _currentUserId,
+          senderName: _currentUserName,
+          content: jsonEncode(imageData),
+          messageType: 'IMAGE',
+          timestamp: DateTime.now(),
+          isRead: false,
+        );
+        setState(() {});
+      }
+
+      // 서버로 전송 (일반 chat_message로)
+      if (_isConnected) {
+        _stompService.sendMessage(jsonEncode({
+          'type': 'chat_message',
+          'content': jsonEncode(imageData),
+          'message_type': 'IMAGE',
+        }));
+      }
+
+      // 업로드 상태 제거
+      setState(() {
+        _uploadingMessages.remove(tempMessageId);
+        _selectedImage = null;
+      });
+
+    } catch (e) {
+      log('❌ 이미지 메시지 전송 실패: $e');
+
+      // 실패 시 임시 메시지 제거
+      setState(() {
+        _messages.removeWhere((m) => m.messageId == tempMessageId);
+        _uploadingMessages.remove(tempMessageId);
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('이미지 전송에 실패했습니다: $e'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  // 🔧 추가: 서버에 이미지 업로드
+  Future<Map<String, dynamic>?> _uploadImageToServer(XFile imageFile) async {
+    try {
+      final privateClient = PrivateClient();
+
+      // MultipartFile 생성
+      final bytes = await imageFile.readAsBytes();
+      final multipartFile = MultipartFile.fromBytes(
+        bytes,
+        filename: imageFile.name,
+        contentType: MediaType.parse(imageFile.mimeType ?? 'image/jpeg'),
+      );
+
+      final formData = FormData.fromMap({
+        'image': multipartFile,
+      });
+
+      final response = await privateClient.dio.post(
+        '/api/v1/chat/upload-image/',
+        data: formData,
+        options: Options(
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        ),
+      );
+
+      if (response.statusCode == 201) {
+        final data = response.data;
+        if (data['success'] == true) {
+          log('✅ 이미지 업로드 성공: ${data['image_url']}');
+          return {
+            'image_url': data['image_url'],
+            'thumbnail_url': data['thumbnail_url'],
+            'filename': data['filename'],
+            'size': data['size'],
+            'content_type': data['content_type']
+          };
+        }
+      }
+
+      log('❌ 이미지 업로드 실패: ${response.statusCode}');
+      return null;
+
+    } catch (e) {
+      log('❌ 이미지 업로드 오류: $e');
+      return null;
+    }
+  }
+
+  // 🔧 추가: 이미지 선택 다이얼로그 표시 (ImageService 사용)
+  void _showImagePickerDialog() {
+    _imageService.showImagePickerDialog(
+      context: context,
+      onSourceSelected: (ImageSource source) {
+        _pickImage(source);
+      },
+    );
+  }
+
+  // 🔧 추가: 이미지 미리보기 다이얼로그 (ImageService 사용)
+  void _showImagePreviewDialog() {
+    if (_selectedImage == null) return;
+
+    _imageService.showImagePreviewDialog(
+      context: context,
+      imageFile: _selectedImage!,
+      onSend: () async {
+        await _sendImageMessage();
+      },
+      onCancel: () {
+                        setState(() {
+          _selectedImage = null;
+        });
+      },
+      screenHeight: screenHeight,
+      getFontSizeMedium: () => fontSizeMedium,
+      getFontSizeSmall: () => fontSizeSmall,
+    );
+  }
+
   
   // STOMP WebSocket 서비스
   late StompChatService _stompService;
@@ -51,9 +284,7 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
   // 🔧 추가: 고도화 기능을 위한 상태
   bool _isAdmin = false;  // 관리자 여부
   
-  // 🔧 추가: 차단된 사용자 관리
-  Set<String> _blockedUsers = {};
-  Set<String> _showBlockedMessages = {};  // 차단된 메시지 중 보여줄 메시지 ID들
+  // 🔧 차단된 사용자 관리 (BlockService로 이동 예정)
   Map<String, int> _messageReadCounts = {};  // 메시지별 읽은 사람 수
   Map<String, Map<String, int>> _messageReactions = {};  // 메시지별 반응 수
   
@@ -77,15 +308,30 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
   @override
   void initState() {
     super.initState();
+
+    // 🔧 서비스 초기화
+    _imageService = ImageService();
+    _notificationService = NotificationService();
+    _blockService = BlockService();
+    _chatService = ChatService(PrivateClient());
+
     _stompService = StompChatService();
     
+    // 🔧 추가: 현재 라우트 업데이트 (채팅방 진입)
+    final chatRoute = '/app/clubs/${widget.clubId}/chat';
+    CurrentRouteService.updateRoute(chatRoute);
+    log('🔧 채팅방 진입 - 라우트 업데이트: $chatRoute');
+    log('🔧 현재 라우트 확인: ${CurrentRouteService.currentRoute}');
+    log('🔧 현재 채팅방 ID: ${CurrentRouteService.currentChatRoomId}');
+    log('🔧 현재 채팅방 타입: ${CurrentRouteService.currentChatRoomType}');
+    
     // 🔧 추가: Club에서 관리자 정보 설정
-    _isAdmin = widget.event.club?.isAdmin ?? false;
+    _isAdmin = false; // TODO: 실제 관리자 여부 확인 필요
     log('🔧 initState에서 _isAdmin 설정: $_isAdmin');
     
-    // 🔧 추가: 차단된 사용자 목록 로드
+  // 🔧 추가: 차단된 사용자 목록 로드 (BlockService 사용)
     log('🔧 initState에서 차단된 사용자 목록 로드 시작');
-    _loadBlockedUsers();
+  _blockService.loadBlockedUsers();
     
     // 🔧 추가: 고정된 메시지 애니메이션 컨트롤러 초기화
     _pinnedMessageAnimationController = AnimationController(
@@ -99,8 +345,16 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
       parent: _pinnedMessageAnimationController,
       curve: Curves.easeInOut,
     ));
-    
-    
+
+    // 🔧 추가: 로컬 알림 초기화 (NotificationService 사용)
+    _initializeNotifications();
+
+    // 🔧 추가: 알림 설정 상태 로드
+    _loadNotificationStatus();
+
+    // 🔧 추가: 앱 라이프사이클 옵저버 등록
+    WidgetsBinding.instance.addObserver(this);
+
     // 🔧 추가: 스크롤 컨트롤러 초기화
     
     // 🔧 추가: 메시지 스트림 구독
@@ -120,8 +374,8 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
       _connectToStomp();
       // 🔧 추가: 채팅방 진입 시 모든 메시지 읽음 상태 업데이트
       _markAllMessagesAsRead();
-      // 🔧 추가: 클럽 멤버 수 로드
-      _loadClubMemberCount();
+      // 🔧 추가: 클럽 정보 로드
+      _loadClubInfo();
       // 🔧 추가: 고정된 메시지 로드
       _loadPinnedMessages();
     });
@@ -176,7 +430,7 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
       
       // Django 서버에 연결 시도 (사용자 정보 포함) - 모임 채팅방으로 연결
       final connected = await _stompService.connect(
-        'club_${widget.event.club?.clubId}',
+        'club_${widget.clubId}',
         userId: userId,
         userEmail: userEmail,
       );
@@ -238,178 +492,67 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
   }
   
   // 메시지 수신 처리
-  // ❗️ 이 함수를 완전히 교체했습니다.
   void _onMessageReceived(ChatMessage message, {bool isFromStomp = false}) {
-    // 사용자 정보 메시지는 기존처럼 처리
+    // 메시지 타입별로 처리 분리
     if (message.messageType == 'USER_INFO') {
-      log('📨 USER_INFO 메시지 수신: ${message.content}');
-      try {
-        final userInfo = jsonDecode(message.content);
-        log('📨 파싱된 사용자 정보: $userInfo');
-        _onUserInfoReceived(userInfo);
-        return;
-      } catch (e) {
-        log('❌ 사용자 정보 파싱 실패: $e');
-        return;
-      }
+      _handleUserInfoMessage(message);
+      return;
     }
-    
+
     // 🔧 추가: 새로운 메시지 타입들 처리
     if (message.messageType == 'MESSAGE_HISTORY_BATCH' || message.messageType == 'message_history') {
-      try {
-        final data = jsonDecode(message.content);
-        final messagesData = data['messages'] as List;
-        final historyMessages = messagesData.map((msgData) {
-          // 🔧 추가: 관리자 메시지 처리
-          String content = msgData['content'];
-          String messageType = msgData['message_type'];
-          
-          // TEXT 타입이지만 특수 메시지인 경우 처리
-          if (messageType == 'TEXT' && content.startsWith('{"type":"')) {
-            try {
-              final specialData = jsonDecode(content);
-              if (specialData['type'] == 'admin_message') {
-                content = specialData['content'];
-                messageType = 'ADMIN';
-                // 관리자 이름도 업데이트
-                if (specialData['sender_name'] != null) {
-                  msgData['sender'] = specialData['sender_name'];
-                }
-                log('👑 히스토리에서 관리자 메시지 변환: $content (${msgData['sender']})');
-              }
-            } catch (e) {
-              log('❌ 특수 메시지 파싱 실패: $e');
-            }
-          }
-          
-          return ChatMessage(
-            messageId: msgData['id'],
-            chatRoomId: 'current_room',
-            senderId: msgData['sender_id'],
-            senderName: msgData['sender'],
-            content: content,
-            messageType: messageType,
-            timestamp: DateTime.parse(msgData['created_at']),
-            isRead: false,
-          );
-        }).whereType<ChatMessage>().toList();
-        _onMessageHistoryReceived(historyMessages);
-        
-        // 🔧 추가: 히스토리 로드 후 차단된 사용자 메시지 확인
-        _checkBlockedMessagesAfterHistoryLoad();
-        return;
-      } catch (e) {
-        log('❌ 히스토리 배치 파싱 실패: $e');
-        return;
-      }
+      _handleHistoryBatchMessage(message);
+      return;
     }
-    
-    // 🔧 추가: admin_message 타입 직접 처리 (STOMP 서비스에서 처리되지 않는 경우)
+
+    // 🔧 추가: admin_message 타입 직접 처리
     if (message.content.startsWith('{"type":"admin_message"')) {
-      try {
-        final data = jsonDecode(message.content);
-        if (data['type'] == 'admin_message') {
-          log('👑 직접 관리자 메시지 처리: ${data['content']}');
-          _onAdminMessageReceived(ChatMessage(
-            messageId: DateTime.now().millisecondsSinceEpoch.toString(),
-            chatRoomId: 'current_room',
-            senderId: data['sender_id'] ?? 'admin',
-            senderName: data['sender_name'] ?? data['sender'] ?? '관리자',
-            content: data['content'],
-            messageType: 'ADMIN',
-            timestamp: DateTime.now(),
-            isRead: false,
-          ));
-          return;
-        }
-      } catch (e) {
-        log('❌ 관리자 메시지 파싱 실패: $e');
-      }
+      _handleDirectAdminMessage(message);
+      return;
     }
-    
-    
+
+
     if (message.messageType == 'ADMIN') {
       _onAdminMessageReceived(message);
       return;
     }
-    
-    
+
+
     if (message.messageType == 'MESSAGE_READ_UPDATE') {
       _onReadUpdateReceived(message);
       return;
     }
-    
+
     if (message.messageType == 'MESSAGE_REACTION_UPDATE') {
       _onReactionUpdateReceived(message);
       return;
     }
-    
+
     // 🔧 추가: SYSTEM 메시지 처리
     if (message.messageType == 'SYSTEM') {
-      log('🔧 시스템 메시지 수신: ${message.content}');
-      _messages.add(message);
-      _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-      setState(() {}); // 🔧 최적화: setState() 최소화
-      _scrollToBottom();
+      _handleSystemMessage(message);
       return;
     }
 
-    // 🔧 추가: 차단된 사용자 메시지 확인
-    if (_blockedUsers.contains(message.senderId)) {
+    // 🔧 추가: 차단된 사용자 메시지 확인 (BlockService 사용)
+    if (_blockService.isUserBlocked(message.senderId)) {
       log('🚫 차단된 사용자의 실시간 메시지 수신: ${message.senderName} (${message.senderId})');
     }
 
     // --- 핵심 로직 시작 ---
-
-    // 1. 내가 보낸 메시지가 서버로부터 돌아온 경우 (Echo 처리)
-    log('🔍 내가 보낸 메시지가 서버로부터 돌아온 경우: ${message.senderId} == ${_currentUserId}');
-    log('🔍 타입 비교: ${message.senderId.runtimeType} vs ${_currentUserId.runtimeType}');
-    log('🔍 문자열 비교: "${message.senderId.toString()}" == "${_currentUserId}"');
-    log('🔍 비교 결과: ${message.senderId.toString() == _currentUserId}');
-    if (isFromStomp && message.senderId.toString() == _currentUserId) {
-      // messageId가 UUID 형식이 아닌 임시 메시지를 찾는다. (보통 timestamp로 되어 있음)
-      final index = _messages.lastIndexWhere((m) =>
-          m.senderId.toString() == _currentUserId && m.messageId.length < 36);
-
-      if (index != -1) {
-        // 임시 메시지를 서버가 보내준 진짜 메시지로 교체!
-        log('🔄 에코 메시지 수신! 임시 메시지를 서버 버전으로 교체합니다: ${message.content}');
-        _messages[index] = message;
-      } else {
-        // 교체할 임시 메시지가 없으면, 중복 확인 후 추가 (Fallback)
-        final isDuplicate = _messages.any((m) => m.messageId == message.messageId);
-        if (!isDuplicate) {
-          log('⚠️ 임시 메시지를 못찾았지만 중복이 아니므로 추가: ${message.content}');
-          _messages.add(message);
-        }
-      }
-    } else {
-      // 2. 다른 사람이 보낸 메시지 또는 히스토리 메시지
-      // messageId를 기준으로 중복 여부를 확인한다.
-      final isDuplicate = _messages.any((m) => m.messageId == message.messageId);
-      if (!isDuplicate) {
-        log('✅ 새 메시지 추가: ${message.content}');
-        _messages.add(message);
-      } else {
-        log('🚫 중복 메시지(ID: ${message.messageId})는 무시합니다.');
-      }
-    }
-
-    // 3. 모든 처리 후, 항상 최신순으로 정렬
-    _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
-    
-    // 🔧 추가: 메시지 읽음 상태 업데이트 (내가 보낸 메시지가 아닌 경우)
-    if (message.senderId.toString() != _currentUserId && message.messageType != 'USER_INFO' && message.messageType != 'MESSAGE_HISTORY_BATCH') {
-      _markMessageAsRead(message.messageId);
-    }
-    
+    _handleMessageCoreLogic(message, isFromStomp);
     // --- 핵심 로직 끝 ---
     setState(() {}); // 🔧 최적화: setState() 최소화
 
-    // 스크롤을 맨 아래로 이동
-    _scrollToBottom();
+    // 스크롤을 맨 아래로 이동 (새 메시지가 추가될 때는 애니메이션 없이 바로 이동)
+    _scrollToBottom(animated: false);
+
+    // 🔧 비활성화: WebSocket 로컬 알림 (FCM 알림으로 대체)
+    // if (isFromStomp && message.senderId.toString() != _currentUserId) {
+    //   _showChatNotification(message);
+    // }
   }
-  
+
   // 🔧 추가: 메시지 히스토리 배치 처리
   void _onMessageHistoryReceived(List<ChatMessage> messages) {
     log('📚 메시지 히스토리 배치 처리: ${messages.length}개 메시지');
@@ -468,6 +611,207 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
     
     // 스크롤을 맨 아래로 이동
     _scrollToBottom();
+  }
+
+  // 🔧 추가: USER_INFO 메시지 처리
+  void _handleUserInfoMessage(ChatMessage message) {
+      log('📨 USER_INFO 메시지 수신: ${message.content}');
+      try {
+        final userInfo = jsonDecode(message.content);
+        log('📨 파싱된 사용자 정보: $userInfo');
+        _onUserInfoReceived(userInfo);
+      } catch (e) {
+        log('❌ 사용자 정보 파싱 실패: $e');
+      }
+    }
+    
+  // 🔧 추가: MESSAGE_HISTORY_BATCH 메시지 처리
+  void _handleHistoryBatchMessage(ChatMessage message) {
+      try {
+        final data = jsonDecode(message.content);
+        final messagesData = data['messages'] as List;
+        final historyMessages = messagesData.map((msgData) {
+          // 🔧 추가: 관리자 메시지 처리
+          String content = msgData['content'];
+          String messageType = msgData['message_type'];
+          
+          // TEXT 타입이지만 특수 메시지인 경우 처리
+          if (messageType == 'TEXT' && content.startsWith('{"type":"')) {
+            try {
+              final specialData = jsonDecode(content);
+              if (specialData['type'] == 'admin_message') {
+                content = specialData['content'];
+                messageType = 'ADMIN';
+                // 관리자 이름도 업데이트
+                if (specialData['sender_name'] != null) {
+                  msgData['sender'] = specialData['sender_name'];
+                }
+                log('👑 히스토리에서 관리자 메시지 변환: $content (${msgData['sender']})');
+              } else if (specialData['type'] == 'image_message') {
+                // 🔧 추가: 히스토리에서 이미지 메시지 처리
+                final imageData = specialData['data'];
+                content = jsonEncode(imageData); // image 데이터만 추출
+                messageType = 'IMAGE';
+                log('🖼️ 히스토리에서 이미지 메시지 변환: ${imageData['filename']}');
+              } else if (specialData['type'] == 'chat_message') {
+                // 🔧 추가: 히스토리에서 중첩된 chat_message 처리
+                final innerContent = specialData['content'];
+                if (innerContent != null) {
+                  try {
+                    final innerData = jsonDecode(innerContent);
+                    if (innerData['type'] == 'image') {
+                      content = innerContent; // 이미지 데이터 그대로 사용
+                      messageType = 'IMAGE';
+                      log('🖼️ 히스토리에서 중첩 이미지 메시지 변환: ${innerData['filename']}');
+                    }
+                  } catch (e) {
+                    log('❌ 중첩 JSON 파싱 실패: $e');
+                  }
+                }
+              }
+            } catch (e) {
+              log('❌ 특수 메시지 파싱 실패: $e');
+            }
+          }
+          
+          return ChatMessage(
+            messageId: msgData['id'],
+            chatRoomId: 'current_room',
+            senderId: msgData['sender_id'],
+            senderUniqueId: msgData['sender_unique_id']?.toString(),
+            senderName: msgData['sender_name'] ?? msgData['sender'],
+            senderProfileImage: msgData['sender_profile_image'],
+            content: content,
+            messageType: messageType,
+            timestamp: DateTime.parse(msgData['created_at']),
+            isRead: false,
+          );
+        }).whereType<ChatMessage>().toList();
+        _onMessageHistoryReceived(historyMessages);
+        
+        // 🔧 추가: 히스토리 로드 후 차단된 사용자 메시지 확인
+        _checkBlockedMessagesAfterHistoryLoad();
+      } catch (e) {
+        log('❌ 히스토리 배치 파싱 실패: $e');
+    }
+  }
+
+  // 🔧 추가: 메시지 핵심 로직 처리 (에코/일반 메시지)
+  void _handleMessageCoreLogic(ChatMessage message, bool isFromStomp) {
+    // 1. 내가 보낸 메시지가 서버로부터 돌아온 경우 (Echo 처리)
+    log('🔍 내가 보낸 메시지가 서버로부터 돌아온 경우: ${message.senderId} == ${_currentUserId}');
+    log('🔍 타입 비교: ${message.senderId.runtimeType} vs ${_currentUserId.runtimeType}');
+    log('🔍 문자열 비교: "${message.senderId.toString()}" == "${_currentUserId}"');
+    log('🔍 비교 결과: ${message.senderId.toString() == _currentUserId}');
+    if (isFromStomp && message.senderId.toString() == _currentUserId) {
+      // 🔧 수정: 업로드 중인 메시지를 우선 찾고, 없으면 기존 로직 사용
+      int index = -1;
+
+      // 1. 업로드 중인 메시지 우선 찾기
+      if (_uploadingMessages.isNotEmpty) {
+        index = _messages.lastIndexWhere((m) =>
+            _uploadingMessages.contains(m.messageId) && m.senderId.toString() == _currentUserId);
+      }
+
+      // 2. 업로드 중인 메시지가 없으면 기존 로직 (임시 메시지 찾기)
+      if (index == -1) {
+        index = _messages.lastIndexWhere((m) =>
+            m.senderId.toString() == _currentUserId && m.messageId.length < 36);
+      }
+
+      if (index != -1) {
+        // 🔧 수정: 에코 메시지도 중첩 JSON 언래핑 처리
+        ChatMessage finalMessage = message;
+        if (message.content.startsWith('{"type":"chat_message"')) {
+          try {
+            final wrapperData = jsonDecode(message.content);
+            if (wrapperData['type'] == 'chat_message') {
+              finalMessage = ChatMessage(
+                messageId: message.messageId,
+                chatRoomId: message.chatRoomId,
+                senderId: message.senderId,
+                senderUniqueId: message.senderUniqueId,
+                senderName: message.senderName,
+                senderProfileImage: message.senderProfileImage, // 🔧 추가: 프로필 이미지 보존
+                content: wrapperData['content'],
+                messageType: wrapperData['message_type'] ?? message.messageType,
+                timestamp: message.timestamp,
+                isRead: message.isRead,
+                isPinned: message.isPinned,
+              );
+              log('🔄 에코 메시지 중첩 JSON 언래핑: ${finalMessage.messageType}');
+            }
+          } catch (e) {
+            log('❌ 에코 메시지 중첩 JSON 언래핑 실패: $e');
+          }
+        }
+
+        // 임시 메시지를 서버가 보내준 진짜 메시지로 교체!
+        log('🔄 에코 메시지 수신! 임시 메시지를 서버 버전으로 교체합니다: ${finalMessage.content}');
+        _messages[index] = finalMessage;
+
+        // 🔧 추가: 업로드 상태 제거
+        if (_uploadingMessages.contains(_messages[index].messageId)) {
+          _uploadingMessages.remove(_messages[index].messageId);
+        }
+      } else {
+        // 교체할 임시 메시지가 없으면, 중복 확인 후 추가 (Fallback)
+        final isDuplicate = _messages.any((m) => m.messageId == message.messageId);
+        if (!isDuplicate) {
+          log('⚠️ 임시 메시지를 못찾았지만 중복이 아니므로 추가: ${message.content}');
+          _messages.add(message);
+        }
+      }
+    } else {
+      // 2. 다른 사람이 보낸 메시지 또는 히스토리 메시지
+      // messageId를 기준으로 중복 여부를 확인한다.
+      final isDuplicate = _messages.any((m) => m.messageId == message.messageId);
+      if (!isDuplicate) {
+        log('✅ 새 메시지 추가: ${message.content}');
+        _messages.add(message);
+      } else {
+        log('🚫 중복 메시지(ID: ${message.messageId})는 무시합니다.');
+      }
+    }
+
+    // 3. 모든 처리 후, 항상 최신순으로 정렬
+    _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    
+    // 🔧 추가: 메시지 읽음 상태 업데이트 (내가 보낸 메시지가 아닌 경우)
+    if (message.senderId.toString() != _currentUserId && message.messageType != 'USER_INFO' && message.messageType != 'MESSAGE_HISTORY_BATCH') {
+      _markMessageAsRead(message.messageId);
+    }
+  }
+
+  // 🔧 추가: SYSTEM 메시지 처리
+  void _handleSystemMessage(ChatMessage message) {
+    log('🔧 시스템 메시지 수신: ${message.content}');
+    _messages.add(message);
+    _messages.sort((a, b) => a.timestamp.compareTo(b.timestamp));
+    setState(() {}); // 🔧 최적화: setState() 최소화
+    _scrollToBottom();
+  }
+
+  // 🔧 추가: 직접 수신된 admin_message 처리
+  void _handleDirectAdminMessage(ChatMessage message) {
+          try {
+            final data = jsonDecode(message.content);
+            if (data['type'] == 'admin_message') {
+        log('👑 직접 관리자 메시지 처리: ${data['content']}');
+        _onAdminMessageReceived(ChatMessage(
+          messageId: DateTime.now().millisecondsSinceEpoch.toString(),
+          chatRoomId: 'current_room',
+          senderId: data['sender_id'] ?? 'admin',
+          senderName: data['sender_name'] ?? data['sender'] ?? '관리자',
+                content: data['content'],
+                messageType: 'ADMIN',
+          timestamp: DateTime.now(),
+          isRead: false,
+        ));
+            }
+          } catch (e) {
+      log('❌ 관리자 메시지 파싱 실패: $e');
+    }
   }
   
   // 🔧 추가: 백엔드에서 받은 사용자 정보 처리
@@ -582,7 +926,7 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
 
     final message = ChatMessage(
       messageId: tempMessageId, // 임시 ID 사용
-      chatRoomId: widget.event.eventId.toString(),
+      chatRoomId: widget.clubId.toString(),
       senderId: _currentUserId,
       senderName: _currentUserName,
       content: _messageController.text.trim(),
@@ -603,19 +947,14 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
     // 3. 실제 서버로 메시지 전송
     if (_isConnected) {
       log('📤 STOMP로 메시지 전송: ${message.content}');
+      log('🔔 FCM 알림 전송 예상: 서버에서 다른 사용자들에게 알림 전송');
       _stompService.sendMessage(message.content);
+    } else {
+      log('❌ STOMP 연결 없음 - 메시지 전송 불가');
     }
 
-    // 스크롤 로직 (기존과 동일)
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          _scrollController.position.maxScrollExtent,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
-      }
-    });
+    // 스크롤 로직 개선 (부드럽지만 빠른 애니메이션)
+    _scrollToBottom(animated: true);
   }
 
   // 🔧 추가: 관리자 메시지 전송
@@ -734,20 +1073,145 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
 
   @override
   void dispose() {
+    // 🔧 수정: dispose 전에 모든 메시지 읽음 처리 API 호출
+    _markAllMessagesAsReadSync();
+    
+    // 🔧 추가: 채팅방 나가기 - 라우트 초기화
+    log('🔧 채팅방 나가기 전 현재 상태:');
+    log('🔧 현재 라우트: ${CurrentRouteService.currentRoute}');
+    log('🔧 현재 채팅방 ID: ${CurrentRouteService.currentChatRoomId}');
+    log('🔧 현재 채팅방 타입: ${CurrentRouteService.currentChatRoomType}');
+    CurrentRouteService.updateRoute(null);
+    log('🔧 채팅방 나가기 - 라우트 초기화 완료');
+    
     // 안전한 순서로 정리
     _messageController.dispose();
     _scrollController.dispose();
     _pinnedMessageAnimationController.dispose();
-    
+
+    // 🔧 추가: 앱 라이프사이클 옵저버 제거
+    WidgetsBinding.instance.removeObserver(this);
+
     // 서비스들을 안전하게 정리
     try {
       _stompService.dispose();
     } catch (e) {
       log('StompService dispose 오류: $e');
     }
-    
-    
+
     super.dispose();
+  }
+
+  // 🔧 추가: 채팅방 나갈 때 모든 메시지 읽음 처리 (동기적)
+  void _markAllMessagesAsReadSync() {
+    try {
+      log('🔄 채팅방 나가기: 모든 메시지 읽음 처리');
+      
+      // mounted 체크
+      if (!mounted) {
+        log('⚠️ 위젯이 이미 dispose됨: 읽음 처리 스킵');
+        return;
+      }
+      
+      // 동기적으로 API 호출 (fire-and-forget)
+      _markAllMessagesAsRead().catchError((e) {
+        log('❌ 읽음 처리 API 호출 실패: $e');
+      });
+      
+      log('✅ 채팅방 나가기: 읽음 처리 API 호출 완료');
+      
+    } catch (e) {
+      log('❌ 읽음 처리 실패: $e');
+    }
+  }
+  
+  // 🔧 추가: 채팅방 나갈 때 unread count 업데이트 (동기적)
+  void _updateUnreadCountOnExitSync() {
+    try {
+      log('🔄 채팅방 나가기: unread count 동기적 업데이트');
+      
+      // mounted 체크
+      if (!mounted) {
+        log('⚠️ 위젯이 이미 dispose됨: unread count 업데이트 스킵');
+        return;
+      }
+      
+      // 동기적으로 clubStateProvider만 업데이트 (API 호출 없이)
+      ref.read(clubStateProvider.notifier).fetchClubs();
+      log('✅ 채팅방 나가기: unread count 동기적 업데이트 완료');
+      
+    } catch (e) {
+      log('❌ unread count 동기적 업데이트 실패: $e');
+    }
+  }
+  
+  // 🔧 추가: 채팅방 나갈 때 unread count 업데이트 (비동기적 - 기존)
+  void _updateUnreadCountOnExit() {
+    try {
+      log('🔄 채팅방 나가기: unread count 즉시 업데이트');
+      
+      // 🔧 수정: mounted 체크 후 즉시 unread count 업데이트
+      if (mounted) {
+        _refreshUnreadCountImmediately();
+      } else {
+        log('⚠️ 위젯이 이미 dispose됨: unread count 업데이트 스킵');
+      }
+      
+    } catch (e) {
+      log('❌ unread count 업데이트 실패: $e');
+    }
+  }
+  
+  // 🔧 추가: 즉시 unread count 업데이트하는 메서드
+  Future<void> _refreshUnreadCountImmediately() async {
+    try {
+      // mounted 체크 추가
+      if (!mounted) {
+        log('⚠️ 위젯이 이미 dispose됨: unread count 업데이트 스킵');
+        return;
+      }
+      
+      // 1. 먼저 모든 메시지를 읽음 처리
+      await _markAllMessagesAsRead();
+      
+      // mounted 체크 추가
+      if (!mounted) {
+        log('⚠️ 위젯이 이미 dispose됨: clubStateProvider 업데이트 스킵');
+        return;
+      }
+      
+      // 2. 그 다음 clubStateProvider를 통해 unread count 업데이트
+      await ref.read(clubStateProvider.notifier).fetchClubs();
+      log('✅ 채팅방 나가기: unread count 즉시 업데이트 완료');
+    } catch (e) {
+      log('❌ 즉시 unread count 업데이트 실패: $e');
+    }
+  }
+
+  // 🔧 추가: 앱 라이프사이클 콜백
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+
+    switch (state) {
+      case AppLifecycleState.resumed:
+        // 앱이 포그라운드로 돌아옴
+        _notificationService.setForegroundState(true);
+        log('📱 앱 포그라운드 상태로 변경');
+        break;
+      case AppLifecycleState.paused:
+      case AppLifecycleState.inactive:
+      case AppLifecycleState.detached:
+        // 앱이 백그라운드로 감
+        _notificationService.setForegroundState(false);
+        log('📱 앱 백그라운드 상태로 변경');
+        break;
+      case AppLifecycleState.hidden:
+        // iOS 17+ 에서 추가됨
+        _notificationService.setForegroundState(false);
+        log('📱 앱 숨김 상태로 변경');
+        break;
+    }
   }
 
   @override
@@ -758,14 +1222,34 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
     fontSizeLarge = ResponsiveUtils.getLargeFontSize(screenWidth, orientation);
     fontSizeMedium = ResponsiveUtils.getMediumFontSize(screenWidth, orientation);
     fontSizeSmall = ResponsiveUtils.getSmallFontSize(screenWidth, orientation);
+    
+    // 🔧 추가: build 메서드에서도 라우트 업데이트 (MainScaffold 덮어쓰기 방지)
+    final chatRoute = '/app/clubs/${widget.clubId}/chat';
+    CurrentRouteService.updateRoute(chatRoute);
 
-    return Scaffold(
+    return PopScope(
+      canPop: true,
+      onPopInvoked: (didPop) async {
+        log('🔍 PopScope onPopInvoked: didPop=$didPop');
+        if (didPop) {
+          log('🔄 뒤로가기 시작: 모든 메시지 읽음 처리 API 호출');
+          // 뒤로가기 시 모든 메시지 읽음 처리
+          await _markAllMessagesAsRead();
+          log('🔄 뒤로가기: 모든 메시지 읽음 처리 완료');
+          
+          // 🔧 추가: clubStateProvider 업데이트
+          log('🔄 뒤로가기: clubStateProvider 업데이트 시작');
+          await ref.read(clubStateProvider.notifier).fetchClubs();
+          log('🔄 뒤로가기: clubStateProvider 업데이트 완료');
+        }
+      },
+      child: Scaffold(
       appBar: AppBar(
         title: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
-              '${widget.event.club?.name ?? '클럽'}',
+              _clubName,
               style: TextStyle(fontSize: fontSizeMedium, fontWeight: FontWeight.bold),
             ),
             Text(
@@ -783,6 +1267,15 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
         foregroundColor: Colors.white,
         elevation: 0,
         actions: [
+          // 🔧 단순화: 알림 아이콘만
+          IconButton(
+            icon: Icon(
+              _isNotificationEnabled ? Icons.notifications : Icons.notifications_off,
+              color: _isNotificationEnabled ? Colors.white : Colors.white70,
+            ),
+            onPressed: _toggleNotification,
+            tooltip: _isNotificationEnabled ? '알림 끄기' : '알림 켜기',
+          ),
           IconButton(
             icon: const Icon(Icons.more_vert),
             onPressed: _showBottomSheetMenu,
@@ -867,7 +1360,7 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
                       color: Colors.white,
                     ),
                     child: Text(
-                      _pinnedMessage!.content,
+                      _getPinnedMessageDisplayText(_pinnedMessage!),
                       style: TextStyle(
                         fontSize: fontSizeMedium,
                         color: Colors.grey.shade800,
@@ -908,6 +1401,19 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
               ),
               child: Row(
                 children: [
+                  // 🔧 추가: 이미지 업로드 버튼
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      icon: const Icon(Icons.image, color: Colors.grey),
+                      onPressed: _showImagePickerDialog,
+                      tooltip: '이미지 첨부',
+                    ),
+                  ),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: TextField(
                       controller: _messageController,
@@ -950,7 +1456,7 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
           ),
         ],
       ),
-    );
+      )    );
   }
 
   Widget _buildEmptyState() {
@@ -984,351 +1490,124 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
     );
   }
 
-  Widget _buildMessageBubble(ChatMessage message, bool isMyMessage, {bool isBlocked = false, bool isShowingBlocked = false}) {
-    // 🔧 추가: 차단된 메시지 처리
-    if (isBlocked && !isShowingBlocked) {
-      return _buildBlockedMessagePlaceholder(message);
-    }
-    
-    // 🔧 추가: 메시지 타입별 스타일 결정
-    bool isAdmin = message.messageType == 'ADMIN';
-    bool isAnnouncement = message.messageType == 'ANNOUNCEMENT';
-    bool isSystem = message.messageType == 'SYSTEM';
-    
-    // 🔧 추가: 차단된 메시지가 보이는 상태일 때 특별한 스타일 적용
-    bool showBlockedIndicator = isBlocked && isShowingBlocked;
-    
-    // 🔧 추가: 관리자 메시지 content 파싱
-    String displayContent = message.content;
-    if (isAdmin && message.content.startsWith('{') && message.content.endsWith('}')) {
-      try {
-        final jsonContent = jsonDecode(message.content);
-        if (jsonContent is Map && jsonContent.containsKey('content')) {
-          displayContent = jsonContent['content'].toString();
-          log('🔍 메시지 빌드에서 관리자 메시지 파싱: $displayContent');
-        }
-      } catch (e) {
-        log('⚠️ 메시지 빌드에서 JSON 파싱 실패: $e');
-      }
-    }
-    
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        mainAxisAlignment: isMyMessage ? MainAxisAlignment.end : MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          if (!isMyMessage && (!isBlocked || _showBlockedMessages.contains(message.messageId))) ...[
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: isAdmin 
-                  ? Colors.orange.shade300
-                  : isAnnouncement 
-                      ? Colors.blue.shade300
-                      : Colors.grey.shade300,
-              child: Text(
-                message.senderName.isNotEmpty ? message.senderName[0] : '?',
-                style: TextStyle(fontSize: fontSizeSmall),
+  
+  
+  // 🔧 추가: 반응 표시 위젯 (Reactions 위젯으로 분리)
+  Widget _buildReactions(String messageId) {
+    final reactions = _messageReactions[messageId] ?? {};
+    return Reactions(
+      reactions: reactions,
+      messageId: messageId,
+      onAddReaction: (messageId, reaction) => _addReaction(messageId, reaction),
+    );
+  }
+
+  // 🔧 수정: 이미지 확대 및 메뉴 화면으로 이동
+  void _showImagePreview(String data, String filename, {bool isUrl = false}) {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => Scaffold(
+          backgroundColor: Colors.black,
+          appBar: AppBar(
+            backgroundColor: Colors.black,
+            foregroundColor: Colors.white,
+            title: Text(filename, style: const TextStyle(fontSize: 16)),
+            actions: [
+              // 저장 버튼
+              IconButton(
+                icon: const Icon(Icons.download),
+                onPressed: () async {
+                  try {
+                    // TODO: 이미지 저장 기능 구현
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('이미지 저장 기능은 곧 추가됩니다')),
+                    );
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('저장 실패: $e')),
+                    );
+                  }
+                },
               ),
-            ),
-            const SizedBox(width: 8),
-          ],
-          
-          Flexible(
-            child: GestureDetector(
-              onLongPress: () {
-                log('🟢 onLongPress fired (isAdmin=$_isAdmin) for message ${message.messageId}');
-                if (isBlocked && isShowingBlocked) {
-                  // 차단된 메시지가 보이는 상태에서는 차단 해제 다이얼로그
-                  _showUnblockDialog(message);
-                } else {
-                  // 일반 메시지 메뉴
-                  _showMessageMenu(message);
-                }
-              },
-              child: Container(
-                constraints: BoxConstraints(
-                  maxWidth: screenWidth * 0.7,
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                decoration: BoxDecoration(
-                  color: showBlockedIndicator
-                      ? Colors.red.shade50
-                      : isSystem
-                          ? Colors.orange.shade100
-                          : isAdmin
-                              ? Colors.orange.shade100
-                              : isAnnouncement
-                                  ? Colors.blue.shade100
-                                  : isMyMessage
-                                      ? Colors.green
-                                      : Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(18),
-                  border: showBlockedIndicator
-                      ? Border.all(color: Colors.red.shade300, width: 2)
-                      : isAdmin 
-                          ? Border.all(color: Colors.orange, width: 2)
-                          : isAnnouncement
-                              ? Border.all(color: Colors.blue, width: 2)
-                              : message.isPinned
-                                  ? Border.all(color: Colors.amber, width: 2)
-                                  : null,
-                ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 🔧 추가: 차단된 메시지 표시
-                  if (showBlockedIndicator)
-                    Container(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: Row(
-                        children: [
-                          Icon(Icons.block, size: 12, color: Colors.red.shade600),
-                          const SizedBox(width: 4),
-                          Text(
-                            '차단된 사용자의 메시지',
-                            style: TextStyle(
-                              fontSize: fontSizeSmall - 2,
-                              color: Colors.red.shade600,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const Spacer(),
-                          GestureDetector(
-                            onTap: () {
-                              setState(() {
-                                _showBlockedMessages.remove(message.messageId);
-                              });
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                color: Colors.red.shade400,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                '숨기기',
-                                style: TextStyle(
-                                  fontSize: fontSizeSmall - 3,
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  // 🔧 추가: 발신자 정보 (관리자/공지 표시) - 차단된 사용자는 숨김 (보기 모드에서는 표시)
-                  if (!isMyMessage && !isSystem && (!isBlocked || _showBlockedMessages.contains(message.messageId)))
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: Row(
-                        children: [
-                          if (isAdmin) 
-                            Icon(Icons.admin_panel_settings, size: 16, color: Colors.orange.shade800),
-                          if (isAnnouncement) 
-                            Icon(Icons.announcement, size: 16, color: Colors.blue.shade800),
-                          if (isAdmin || isAnnouncement) const SizedBox(width: 4),
-                          Text(
-                            message.senderName,
-                            style: TextStyle(
-                              fontSize: fontSizeSmall,
-                              fontWeight: FontWeight.bold,
-                              color: isAdmin 
-                                  ? Colors.orange.shade800
-                                  : isAnnouncement
-                                      ? Colors.blue.shade800
-                                      : Colors.grey.shade700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  
-                  // 메시지 내용
-                  Row(
-                    children: [
-                      Expanded(
-                        child: isBlocked && !_showBlockedMessages.contains(message.messageId)
-                          ? GestureDetector(
-                              onTap: () => _toggleBlockedMessage(message),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey.shade50,
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(color: Colors.grey.shade400, width: 1),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.shade200,
-                                      blurRadius: 2,
-                                      offset: const Offset(0, 1),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.block,
-                                      size: 18,
-                                      color: Colors.grey.shade500,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        '차단된 사용자의 메시지입니다',
-                                        style: TextStyle(
-                                          fontSize: fontSizeSmall,
-                                          color: Colors.grey.shade600,
-                                          fontStyle: FontStyle.italic,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                      decoration: BoxDecoration(
-                                        color: Colors.blue.shade50,
-                                        borderRadius: BorderRadius.circular(6),
-                                        border: Border.all(color: Colors.blue.shade200),
-                                      ),
-                                      child: Text(
-                                        '탭하여 보기',
-                                        style: TextStyle(
-                                          fontSize: fontSizeSmall - 2,
-                                          color: Colors.blue.shade700,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            )
-                          : Text(
-                              displayContent,
-                              style: TextStyle(
-                                fontSize: fontSizeMedium,
-                                color: isSystem
-                                    ? Colors.orange.shade800
-                                    : isAdmin
-                                        ? Colors.orange.shade800
-                                        : isAnnouncement
-                                            ? Colors.blue.shade800
-                                            : isMyMessage
-                                                ? Colors.white
-                                                : Colors.black87,
-                              ),
-                            ),
-                      ),
-                      if (message.isPinned) ...[
-                        const SizedBox(width: 8),
-                        Icon(
-                          Icons.push_pin,
-                          size: 16,
-                          color: Colors.amber.shade700,
-                        ),
-                      ],
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 4),
-                  
-                  // 🔧 추가: 시간과 읽음 표시
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _formatTime(message.timestamp),
-                        style: TextStyle(
-                          fontSize: fontSizeSmall,
-                          color: isSystem
-                              ? Colors.orange.shade600
-                              : isAdmin
-                                  ? Colors.orange.shade600
-                                  : isAnnouncement
-                                      ? Colors.blue.shade600
-                                      : isMyMessage
-                                          ? Colors.white70
-                                          : Colors.grey.shade600,
-                        ),
-                      ),
-                      
-                      // 🔧 추가: 읽은 사람 수 표시
-                      if (_messageReadCounts.containsKey(message.messageId))
-                        Row(
+              // 공유 버튼
+              IconButton(
+                icon: const Icon(Icons.share),
+                onPressed: () {
+                  // TODO: 이미지 공유 기능 구현
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('공유 기능은 곧 추가됩니다')),
+                  );
+                },
+              ),
+            ],
+          ),
+          body: Center(
+            child: isUrl
+                ? InteractiveViewer(
+                    child: Image.network(
+                      data,
+                      fit: BoxFit.contain,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return const CircularProgressIndicator();
+                      },
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              Icons.done_all,
-                              size: 14,
-                              color: isMyMessage ? Colors.white70 : Colors.grey.shade600,
-                            ),
-                            const SizedBox(width: 2),
+                            Icon(Icons.broken_image, color: Colors.white, size: 64),
+                            SizedBox(height: 16),
                             Text(
-                              '${_messageReadCounts[message.messageId]}',
-                              style: TextStyle(
-                                fontSize: 10,
-                                color: isMyMessage ? Colors.white70 : Colors.grey.shade600,
-                              ),
+                              '이미지를 불러올 수 없습니다',
+                              style: TextStyle(color: Colors.white),
                             ),
                           ],
-                        ),
-                    ],
+                        );
+                      },
+                    ),
+                  )
+                : InteractiveViewer(
+                    child: Image.memory(
+                      base64Decode(data),
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, error, stackTrace) {
+                        return const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.broken_image, color: Colors.white, size: 64),
+                            SizedBox(height: 16),
+                            Text(
+                              '이미지를 불러올 수 없습니다',
+                              style: TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        );
+                      },
+                    ),
                   ),
-                  
-                  // 🔧 추가: 반응 표시
-                  if (_messageReactions.containsKey(message.messageId))
-                    _buildReactions(message.messageId),
-                ],
-              ),
-            ),
-            ),
           ),
-          
-          if (isMyMessage) ...[
-            const SizedBox(width: 8),
-            CircleAvatar(
-              radius: 16,
-              backgroundColor: Colors.grey.shade300,
-              child: Text(
-                '나',
-                style: TextStyle(fontSize: fontSizeSmall),
-              ),
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }
-  
-  // 🔧 추가: 반응 표시 위젯
-  Widget _buildReactions(String messageId) {
-    final reactions = _messageReactions[messageId] ?? {};
-    if (reactions.isEmpty) return const SizedBox.shrink();
-    
-    return Padding(
-      padding: const EdgeInsets.only(top: 4),
-      child: Wrap(
-        spacing: 4,
-        children: reactions.entries.map((entry) {
-          return GestureDetector(
-            onTap: () => _addReaction(messageId, entry.key),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                '${entry.key} ${entry.value}',
-                style: TextStyle(fontSize: 10),
-              ),
-            ),
-          );
-        }).toList(),
-      ),
+
+  // 🔧 추가: 로컬 알림 초기화 (NotificationService 사용)
+  Future<void> _initializeNotifications() async {
+    await _notificationService.initializeNotifications();
+  }
+
+  // 🔧 추가: 채팅 알림 표시 (NotificationService 사용)
+  Future<void> _showChatNotification(ChatMessage message) async {
+    await _notificationService.showChatNotification(
+      messageId: message.messageId,
+      senderName: message.senderName,
+      content: message.content,
+      senderId: message.senderId,
+      currentUserId: _currentUserId,
+      messageType: message.messageType ?? '',
+      chatRoomId: widget.clubId.toString(),
+      clubId: widget.clubId.toString(),
+      chatRoomType: 'CLUB',
     );
   }
 
@@ -1397,16 +1676,16 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
               },
             ),
             
-            // 🔧 추가: 개발/테스트용 전체 차단 해제
-            _buildBottomSheetItem(
-              icon: Icons.delete_forever,
-              title: '모든 차단 해제 (개발용)',
-              color: Colors.red,
-              onTap: () {
-                Navigator.pop(context);
-                _clearAllBlockedUsers();
-              },
-            ),
+            // // 🔧 추가: 개발/테스트용 전체 차단 해제
+            // _buildBottomSheetItem(
+            //   icon: Icons.delete_forever,
+            //   title: '모든 차단 해제 (개발용)',
+            //   color: Colors.red,
+            //   onTap: () {
+            //     Navigator.pop(context);
+            //     _clearAllBlockedUsers();
+            //   },
+            // ),
             
             const SizedBox(height: 10),
           ],
@@ -1422,17 +1701,12 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
     required Color color,
     required VoidCallback onTap,
   }) {
-    return ListTile(
-      leading: Icon(icon, color: color, size: 24),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontSize: fontSizeMedium,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
+    return BottomSheetItem(
+      icon: icon,
+      title: title,
+      color: color,
+      fontSizeMedium: fontSizeMedium,
       onTap: onTap,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
     );
   }
 
@@ -1445,11 +1719,7 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('이벤트: ${widget.event.eventTitle}', style: TextStyle(fontSize: fontSizeMedium)),
-            const SizedBox(height: 8),
-            Text('참가자 수: ${widget.event.participants.length}명', style: TextStyle(fontSize: fontSizeMedium)),
-            const SizedBox(height: 8),
-            Text('시작 시간: ${_formatTime(widget.event.startDateTime)}', style: TextStyle(fontSize: fontSizeMedium)),
+            Text('클럽 ID: ${widget.clubId}', style: TextStyle(fontSize: fontSizeMedium)),
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(12),
@@ -1491,8 +1761,9 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
   }
   
   
-  // 🔧 추가: 클럽 멤버 수 가져오기
+  // 🔧 추가: 클럽 정보
   int _clubMemberCount = 0;
+  String _clubName = '클럽';
   
   // 🔧 추가: 고정된 메시지 펼침 상태
   bool _isPinnedMessageExpanded = false;
@@ -1611,14 +1882,7 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(color: Colors.grey.shade200),
                         ),
-                        child: Text(
-                          _pinnedMessage!.content,
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.black87,
-                            height: 1.5,
-                          ),
-                        ),
+                        child: _buildPinnedMessageContent(_pinnedMessage!),
                       ),
                     ],
                   ),
@@ -1631,11 +1895,11 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
     );
   }
   
-  Future<void> _loadClubMemberCount() async {
+  Future<void> _loadClubInfo() async {
     try {
-      if (widget.event.club?.clubId != null) {
+      if (widget.clubId != null) {
         final privateClient = PrivateClient();
-        final response = await privateClient.get('/api/v1/clubs/${widget.event.club!.clubId}/');
+        final response = await privateClient.get('/api/v1/clubs/${widget.clubId}/');
         
         log('🔍 클럽 API 응답: ${response.statusCode}');
         log('🔍 클럽 API 데이터: ${response.data}');
@@ -1644,6 +1908,16 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
           final responseData = response.data;
           if (responseData is Map && responseData.containsKey('data')) {
             final data = responseData['data'];
+            
+            // 클럽 이름 로딩
+            if (data is Map && data.containsKey('name')) {
+              setState(() {
+                _clubName = data['name'] ?? '클럽';
+              });
+              log('✅ 클럽 이름 로딩 성공: $_clubName');
+            }
+            
+            // 멤버 수 로딩
             if (data is Map && data.containsKey('members_count')) {
               setState(() {
                 _clubMemberCount = data['members_count'] ?? 0;
@@ -1659,23 +1933,24 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
               log('❌ 멤버 수 필드를 찾을 수 없음');
               log('❌ 사용 가능한 필드: ${data.keys.toList()}');
               setState(() {
-                _clubMemberCount = widget.event.participants.length;
+                _clubMemberCount = 0;
               });
             }
           } else {
             log('❌ API 응답에 data 필드가 없음');
             log('❌ 응답 구조: ${responseData.keys.toList()}');
             setState(() {
-              _clubMemberCount = widget.event.participants.length;
+              _clubMemberCount = 0;
             });
           }
         }
       }
     } catch (e) {
-      log('❌ 클럽 멤버 수 로딩 오류: $e');
+      log('❌ 클럽 정보 로딩 오류: $e');
       // 오류 시 기본값 사용
       setState(() {
-        _clubMemberCount = widget.event.participants.length;
+        _clubMemberCount = 0;
+        _clubName = '클럽';
       });
     }
   }
@@ -1694,19 +1969,18 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
         log('🔍 chatRoomId (from widget.chatRoom): $chatRoomId');
       } else {
         // chatRoom이 없으면 클럽 ID로 실제 채팅방 ID 조회
-        if (widget.event.club?.clubId != null) {
+        if (widget.clubId != null) {
           try {
             final privateClient = PrivateClient();
-            final clubResponse = await privateClient.get('/api/v1/clubs/${widget.event.club!.clubId}/');
+            final clubResponse = await privateClient.get('/api/v1/clubs/${widget.clubId}/');
             if (clubResponse.statusCode == 200) {
               final clubData = clubResponse.data;
               if (clubData is Map && clubData.containsKey('data')) {
                 final clubInfo = clubData['data'];
                 // 클럽 ID를 그대로 사용 (백엔드에서 클럽 ID로 채팅방을 찾음)
-                chatRoomId = widget.event.club!.clubId.toString();
+                chatRoomId = widget.clubId.toString();
                 log('🔍 chatRoomId (from club ID): $chatRoomId');
-                log('🔍 widget.event.club: ${widget.event.club}');
-                log('🔍 widget.event.club!.clubId: ${widget.event.club!.clubId}');
+                log('🔍 widget.clubId: ${widget.clubId}');
               }
             }
           } catch (e) {
@@ -1829,14 +2103,18 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
   }
 
   // 🔧 추가: 스크롤을 맨 아래로 이동 (reverse: true이므로 0이 맨 아래)
-  void _scrollToBottom() {
+  void _scrollToBottom({bool animated = true}) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
-        _scrollController.animateTo(
-          0.0, // reverse: true일 때 0이 맨 아래
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOut,
-        );
+        if (animated) {
+          _scrollController.animateTo(
+            0.0, // reverse: true일 때 0이 맨 아래
+            duration: const Duration(milliseconds: 150), // 더 빠른 애니메이션
+            curve: Curves.linear, // 선형 커브로 더 자연스러움
+          );
+        } else {
+          _scrollController.jumpTo(0.0); // 애니메이션 없이 즉시 이동
+        }
       }
     });
   }
@@ -1893,9 +2171,18 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
                     _showReportDialog(message);
                   },
                 ),
-                 // 🔧 추가: 이미 차단된 사용자가 아닌 경우에만 차단 옵션 표시
-                 if (!_blockedUsers.contains(message.senderId)) ...[
+                 // 🔧 수정: 차단된 사용자인 경우 차단 해제 옵션 표시
                    const Divider(),
+                 if (_blockService.blockedUsers.contains(message.senderId)) ...[
+                   ListTile(
+                     leading: const Icon(Icons.block, color: Colors.green),
+                     title: const Text('사용자 차단 해제'),
+                     onTap: () {
+                       Navigator.pop(context);
+                       _showUnblockDialog(message);
+                     },
+                   ),
+                 ] else ...[
                    ListTile(
                      leading: const Icon(Icons.block, color: Colors.orange),
                      title: const Text('사용자 차단'),
@@ -2003,35 +2290,115 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
     }
   }
 
+  // 🔧 추가: 고정된 메시지 표시 텍스트 생성
+  String _getPinnedMessageDisplayText(ChatMessage message) {
+    try {
+      // JSON 파싱 시도 (이미지 메시지인 경우)
+      final messageData = jsonDecode(message.content);
+      if (messageData['type'] == 'image') {
+        return "사진이 고정되었습니다";
+      }
+    } catch (e) {
+      // JSON이 아닌 경우 일반 텍스트로 처리
+    }
+    
+    // 일반 텍스트 메시지인 경우
+    return message.content;
+  }
+
+  // 🔧 추가: 고정된 메시지 내용 위젯 생성
+  Widget _buildPinnedMessageContent(ChatMessage message) {
+    try {
+      // JSON 파싱 시도 (이미지 메시지인 경우)
+      final messageData = jsonDecode(message.content);
+      if (messageData['type'] == 'image') {
+        final imageUrl = messageData['image_url'] as String?;
+        final thumbnailUrl = messageData['thumbnail_url'] as String?;
+        final displayUrl = thumbnailUrl ?? imageUrl;
+        
+        if (displayUrl != null) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "사진이 고정되었습니다",
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(height: 12),
+              GestureDetector(
+                onTap: () {
+                  // 이미지 미리보기
+                  _showImagePreview(displayUrl, messageData['filename'] ?? 'image.jpg');
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: Image.network(
+                    displayUrl,
+                    width: double.infinity,
+                    height: 200,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Container(
+                        height: 200,
+                        color: Colors.grey.shade200,
+                        child: Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.image, size: 48, color: Colors.grey.shade400),
+                              SizedBox(height: 8),
+                              Text(
+                                '이미지를 불러올 수 없습니다',
+                                style: TextStyle(color: Colors.grey.shade600),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ),
+            ],
+          );
+        }
+      }
+    } catch (e) {
+      // JSON이 아닌 경우 일반 텍스트로 처리
+    }
+    
+    // 일반 텍스트 메시지인 경우
+    return Text(
+      message.content,
+      style: TextStyle(
+        fontSize: 16,
+        color: Colors.black87,
+        height: 1.5,
+      ),
+    );
+  }
+
   // 🔧 추가: 모든 메시지 읽음 상태 업데이트
   Future<void> _markAllMessagesAsRead() async {
     try {
+      log('🔍 _markAllMessagesAsRead 시작: chat_room_id=${widget.clubId}');
       final privateClient = PrivateClient();
       final response = await privateClient.dio.post(
         '/api/v1/chat/mark-all-read/',
         data: {
-          'chat_room_id': widget.event.eventId.toString(),
+          'chat_room_id': widget.clubId.toString(),
         },
       );
       
+      log('🔍 _markAllMessagesAsRead 응답: statusCode=${response.statusCode}');
       if (response.statusCode == 200) {
         log('✅ 모든 메시지 읽음 상태 업데이트 완료');
-        // 모든 메시지를 읽음 상태로 표시
-        setState(() {
-          for (int i = 0; i < _messages.length; i++) {
-            _messages[i] = ChatMessage(
-              messageId: _messages[i].messageId,
-              chatRoomId: _messages[i].chatRoomId,
-              senderId: _messages[i].senderId,
-              senderName: _messages[i].senderName,
-              senderProfileImage: _messages[i].senderProfileImage,
-              messageType: _messages[i].messageType,
-              content: _messages[i].content,
-              timestamp: _messages[i].timestamp,
-              isRead: true, // 읽음 상태로 업데이트
-            );
-          }
-        });
+        // 🔧 수정: setState 제거 - API 호출만 하고 UI 업데이트는 하지 않음
+        // dispose 시점에서는 UI 업데이트가 불필요하고 오류를 발생시킴
       } else {
         log('❌ 모든 메시지 읽음 상태 업데이트 실패: ${response.statusCode}');
       }
@@ -2043,8 +2410,8 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
   // 이벤트가 진행 중인지 확인하는 메서드
   bool _isEventInProgress() {
     final now = DateTime.now();
-    final startTime = widget.event.startDateTime;
-    final endTime = widget.event.endDateTime;
+    final startTime = DateTime.now(); // TODO: 실제 시작 시간 로드
+    final endTime = DateTime.now().add(const Duration(hours: 1)); // TODO: 실제 종료 시간 로드
     
     // 이벤트 시작 30분 전부터 종료 시간까지를 진행 중으로 간주
     final broadcastStartTime = startTime.subtract(Duration(minutes: 30));
@@ -2065,110 +2432,29 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
     );
   }
 
-  // 🔧 추가: 신고 다이얼로그
+  // 🔧 추가: 신고 다이얼로그 (ReportDialog 위젯 사용)
   void _showReportDialog(ChatMessage message) {
-    final reportReasons = [
-      '스팸 또는 광고',
-      '욕설 또는 비하',
-      '부적절한 내용',
-      '개인정보 유출',
-      '기타',
-    ];
-
-    String? selectedReason;
-    final TextEditingController detailController = TextEditingController();
-
-    showDialog(
+    showReportDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text('신고하기', style: TextStyle(fontSize: fontSizeLarge)),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('신고 대상: ${message.senderName}', 
-                     style: TextStyle(fontSize: fontSizeMedium, fontWeight: FontWeight.bold)),
-                const SizedBox(height: 16),
-                Text('신고 사유를 선택해주세요:', 
-                     style: TextStyle(fontSize: fontSizeMedium)),
-                const SizedBox(height: 8),
-                ...reportReasons.map((reason) => RadioListTile<String>(
-                  title: Text(reason, style: TextStyle(fontSize: fontSizeSmall)),
-                  value: reason,
-                  groupValue: selectedReason,
-                  onChanged: (value) => setState(() => selectedReason = value),
-                )),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: detailController,
-                  decoration: InputDecoration(
-                    labelText: '상세 내용 (선택사항)',
-                    border: OutlineInputBorder(),
-                    hintText: '신고 사유를 자세히 설명해주세요',
-                  ),
-                  maxLines: 3,
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('취소', style: TextStyle(fontSize: fontSizeMedium)),
-            ),
-            ElevatedButton(
-              onPressed: selectedReason != null ? () {
-                Navigator.of(context).pop();
-                _submitReport(message, selectedReason!, detailController.text);
-              } : null,
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: Text('신고하기', style: TextStyle(fontSize: fontSizeMedium, color: Colors.white)),
-            ),
-          ],
-        ),
-      ),
+      userName: message.senderName,
+      fontSizeLarge: fontSizeLarge,
+      fontSizeMedium: fontSizeMedium,
+      fontSizeSmall: fontSizeSmall,
+      onSubmit: (String reason, String detail) {
+        _submitReport(message, reason, detail);
+      },
     );
   }
 
-  // 🔧 추가: 신고 제출
+  // 🔧 추가: 신고 제출 (BlockService 사용)
   Future<void> _submitReport(ChatMessage message, String reason, String detail) async {
-    try {
-      final privateClient = PrivateClient();
-      
-      // 신고 유형 매핑
-      String reportType = 'OTHER';
-      switch (reason) {
-        case '스팸 또는 광고':
-          reportType = 'SPAM';
-          break;
-        case '욕설 또는 비하':
-          reportType = 'ABUSE';
-          break;
-        case '부적절한 내용':
-          reportType = 'INAPPROPRIATE';
-          break;
-        case '개인정보 유출':
-          reportType = 'PRIVACY';
-          break;
-        case '기타':
-          reportType = 'OTHER';
-          break;
-      }
-      
-      // 백엔드 API로 신고 제출
-      final response = await privateClient.post(
-        '/api/v1/chat/report-message/',
-        data: {
-          'message_id': message.messageId,
-          'report_type': reportType,
-          'reason': reason,
-          'detail': detail,
-        },
-      );
-      
-      if (response.statusCode == 201) {
+    final success = await _blockService.submitReport(
+      messageId: message.messageId,
+      reason: reason,
+      detail: detail,
+    );
+
+    if (success) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('신고가 접수되었습니다. 검토 후 조치하겠습니다.'),
@@ -2177,123 +2463,44 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
           ),
         );
       } else {
-        throw Exception('신고 제출 실패');
-      }
-    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('신고 접수 중 오류가 발생했습니다: $e'),
+        const SnackBar(
+          content: Text('신고 접수 중 오류가 발생했습니다'),
           backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
+          duration: Duration(seconds: 3),
         ),
       );
     }
   }
 
-  // 🔧 추가: 사용자 차단 다이얼로그
+  // 🔧 추가: 사용자 차단 다이얼로그 (BlockDialog 위젯 사용)
   void _showBlockUserDialog(ChatMessage message) {
-    showDialog(
+    showBlockDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('사용자 차단', style: TextStyle(fontSize: fontSizeLarge)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('${message.senderName}님을 차단하시겠습니까?', 
-                 style: TextStyle(fontSize: fontSizeMedium)),
-            const SizedBox(height: 8),
-            Text('차단된 사용자의 메시지는 더 이상 보이지 않습니다.', 
-                 style: TextStyle(fontSize: fontSizeSmall, color: Colors.grey[600])),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('취소', style: TextStyle(fontSize: fontSizeMedium)),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _blockUser(message);
-            },
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.orange),
-            child: Text('차단하기', style: TextStyle(fontSize: fontSizeMedium, color: Colors.white)),
-          ),
-        ],
-      ),
+      userName: message.senderName,
+      fontSizeLarge: fontSizeLarge,
+      fontSizeMedium: fontSizeMedium,
+      fontSizeSmall: fontSizeSmall,
+      onBlock: () => _blockUser(message),
     );
   }
 
-  // 🔧 추가: 차단된 메시지 플레이스홀더
-  Widget _buildBlockedMessagePlaceholder(ChatMessage message) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          Flexible(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.grey.shade300, width: 1),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.block, size: 16, color: Colors.grey.shade600),
-                  const SizedBox(width: 8),
-                  Text(
-                    '차단된 메시지입니다',
-                    style: TextStyle(
-                      fontSize: fontSizeSmall,
-                      color: Colors.grey.shade600,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  GestureDetector(
-                    onTap: () {
-                      setState(() {
-                        _showBlockedMessages.add(message.messageId);
-                      });
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade400,
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        '보기',
-                        style: TextStyle(
-                          fontSize: fontSizeSmall - 2,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
+  // 🔧 추가: 차단된 메시지 토글 (BlockService 사용)
+  void _toggleBlockedMessage(ChatMessage message) {
+    _blockService.toggleBlockedMessage(message.messageId);
+    setState(() {});
   }
 
-  // 🔧 추가: 히스토리 로드 후 차단된 메시지 확인
+
+  // 🔧 추가: 히스토리 로드 후 차단된 메시지 확인 (BlockService 사용)
   void _checkBlockedMessagesAfterHistoryLoad() {
-    if (_blockedUsers.isEmpty) return;
+    if (_blockService.blockedUsers.isEmpty) return;
     
     log('🔧 히스토리 로드 후 차단된 메시지 확인 시작...');
     bool hasBlockedMessages = false;
     
     for (var message in _messages) {
-      if (_blockedUsers.contains(message.senderId)) {
+      if (_blockService.isUserBlocked(message.senderId)) {
         log('🚫 차단된 사용자의 메시지 발견: ${message.senderName} (${message.senderId}) - ${message.content.substring(0, 20)}...');
         hasBlockedMessages = true;
       }
@@ -2305,26 +2512,13 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
     }
   }
 
-  // 🔧 추가: 서버와 로컬 모든 차단 해제 (개발/테스트용)
+  // 🔧 추가: 서버와 로컬 모든 차단 해제 (개발/테스트용) (BlockService 사용)
   Future<void> _clearAllBlockedUsers() async {
-    try {
-      final privateClient = PrivateClient();
-      log('🗑️ 서버의 모든 차단 해제 시작...');
-      
-      // 서버에서 모든 차단 해제
-      final response = await privateClient.delete('/api/v1/chat/clear-blocked-users/');
-      
-      if (response.statusCode == 200) {
-        log('✅ 서버에서 모든 차단 해제 완료: ${response.data['message']}');
-        
-        // 로컬 저장소도 초기화
-        final storage = FlutterSecureStorage();
-        await storage.delete(key: 'blocked_users');
-        log('🗑️ 로컬 저장소도 초기화 완료');
-        
+    final success = await _blockService.clearAllBlockedUsers();
+
+    if (success) {
         setState(() {
-          _blockedUsers.clear();
-          _showBlockedMessages.clear();
+        // BlockService에서 이미 cleared되었으므로 UI만 업데이트
         });
         
         ScaffoldMessenger.of(context).showSnackBar(
@@ -2335,13 +2529,9 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
           ),
         );
       } else {
-        throw Exception('서버에서 차단 해제 실패');
-      }
-    } catch (e) {
-      log('❌ 전체 차단 해제 실패: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('차단 해제 중 오류가 발생했습니다: $e'),
+          content: Text('차단 해제 중 오류가 발생했습니다'),
           backgroundColor: Colors.red,
           duration: const Duration(seconds: 3),
         ),
@@ -2349,137 +2539,21 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
     }
   }
 
-  // 🔧 추가: 차단된 사용자 로컬 저장소만 초기화 (개발/테스트용)
-  Future<void> _clearBlockedUsersStorage() async {
-    try {
-      final storage = FlutterSecureStorage();
-      await storage.delete(key: 'blocked_users');
-      log('🗑️ 차단된 사용자 로컬 저장소 초기화 완료');
-      
-      setState(() {
-        _blockedUsers.clear();
-        _showBlockedMessages.clear();
-      });
-    } catch (e) {
-      log('❌ 차단된 사용자 저장소 초기화 실패: $e');
-    }
-  }
 
-  // 🔧 추가: 서버에서 차단된 사용자 목록 동기화
-  Future<void> _syncBlockedUsersFromServer() async {
-    try {
-      final privateClient = PrivateClient();
-      log('🔄 서버에서 차단된 사용자 목록 동기화 시작...');
-      
-      final response = await privateClient.get('/api/v1/chat/blocked-users/');
-      
-      if (response.statusCode == 200) {
-        final data = response.data;
-        final blockedUsersData = data['blocked_users'] as List;
-        
-        // 서버에서 가져온 차단된 사용자 ID 목록
-        final serverBlockedUsers = blockedUsersData
-            .map((user) => user['user_id'].toString())
-            .toSet();
-        
-        log('🔄 서버에서 가져온 차단된 사용자: $serverBlockedUsers');
-        
-        // 로컬 저장소에 저장
-        final storage = FlutterSecureStorage();
-        await storage.write(key: 'blocked_users', value: jsonEncode(serverBlockedUsers.toList()));
-        
-        setState(() {
-          _blockedUsers = serverBlockedUsers;
-        });
-        
-        log('✅ 서버와 로컬 차단 목록 동기화 완료');
-        
-        // 메시지가 이미 로드된 경우 차단된 메시지 확인
-        if (_messages.isNotEmpty) {
-          log('🔧 동기화 후 차단된 메시지 확인...');
-          _checkBlockedMessagesAfterHistoryLoad();
-        }
-      } else {
-        log('⚠️ 서버 동기화 실패, 로컬 저장소에서 로드');
-        await _loadBlockedUsersFromLocal();
-      }
-    } catch (e) {
-      log('❌ 서버 동기화 실패: $e, 로컬 저장소에서 로드');
-      await _loadBlockedUsersFromLocal();
-    }
-  }
 
-  // 🔧 추가: 로컬 저장소에서 차단된 사용자 목록 로드
-  Future<void> _loadBlockedUsersFromLocal() async {
-    try {
-      final storage = FlutterSecureStorage();
-      final blockedUsers = await storage.read(key: 'blocked_users') ?? '[]';
-      final List<dynamic> blockedList = jsonDecode(blockedUsers);
-      
-      setState(() {
-        _blockedUsers = Set<String>.from(blockedList);
-      });
-      
-      log('🔧 로컬에서 차단된 사용자 목록 로드: $_blockedUsers');
-      
-      // 메시지가 이미 로드된 경우 차단된 메시지 확인
-      if (_messages.isNotEmpty) {
-        log('🔧 현재 메시지 중 차단된 사용자 메시지 확인...');
-        _checkBlockedMessagesAfterHistoryLoad();
-      }
-      
-    } catch (e) {
-      log('❌ 로컬 차단된 사용자 목록 로드 실패: $e');
-    }
-  }
 
-  // 🔧 추가: 차단된 사용자 목록 로드 (서버 동기화 우선)
-  Future<void> _loadBlockedUsers() async {
-    await _syncBlockedUsersFromServer();
-  }
 
-  // 🔧 추가: 사용자 차단
+  // 🔧 추가: 사용자 차단 (BlockService 사용)
   Future<void> _blockUser(ChatMessage message) async {
-    try {
-      // 🔧 추가: 이미 차단된 사용자인지 확인
-      if (_blockedUsers.contains(message.senderId)) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${message.senderName}님은 이미 차단된 사용자입니다.'),
-            backgroundColor: Colors.orange,
-            duration: const Duration(seconds: 2),
-          ),
-        );
-        return;
-      }
-      
-      final privateClient = PrivateClient();
-      
-      // 백엔드 API로 사용자 차단
-      final response = await privateClient.post(
-        '/api/v1/chat/block-user/',
-        data: {
-          'blocked_user_id': message.senderId,
-          'reason': '사용자 요청에 의한 차단',
-        },
-      );
-      
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        // 차단된 사용자 ID를 로컬에 저장
-        final storage = FlutterSecureStorage();
-        final blockedUsers = await storage.read(key: 'blocked_users') ?? '[]';
-        final List<dynamic> blockedList = jsonDecode(blockedUsers);
-        
-        if (!blockedList.contains(message.senderId)) {
-          blockedList.add(message.senderId);
-          await storage.write(key: 'blocked_users', value: jsonEncode(blockedList));
-        }
-        
-        // UI 새로고침 및 차단된 사용자 목록 업데이트
+    final success = await _blockService.blockUser(
+      blockedUserId: message.senderId,
+      reason: '사용자 요청에 의한 차단',
+    );
+
+    if (success) {
+      // UI 새로고침 및 차단된 메시지를 보기 모드에서 제거
         setState(() {
-          _blockedUsers.add(message.senderId);
-          // 차단된 메시지를 보기 모드에서 제거 (즉시 숨김 처리)
-          _showBlockedMessages.removeWhere((messageId) {
+        _blockService.showBlockedMessages.removeWhere((messageId) {
             final msg = _messages.firstWhere((m) => m.messageId == messageId, orElse: () => message);
             return msg.senderId == message.senderId;
           });
@@ -2492,9 +2566,7 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
             duration: const Duration(seconds: 3),
           ),
         );
-        } else if (response.statusCode == 500 && response.data != null && 
-                   response.data.toString().contains('Duplicate entry')) {
-          // 🔧 추가: 이미 차단된 사용자 에러 처리 (서버에서 중복 에러)
+    } else {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('${message.senderName}님은 이미 차단된 사용자입니다.'),
@@ -2502,103 +2574,30 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
               duration: const Duration(seconds: 2),
             ),
           );
-          
-          // 로컬 상태도 업데이트 (서버와 동기화)
-          setState(() {
-            _blockedUsers.add(message.senderId);
-            _showBlockedMessages.removeWhere((messageId) {
-              final msg = _messages.firstWhere((m) => m.messageId == messageId, orElse: () => message);
-              return msg.senderId == message.senderId;
-            });
-          });
-          
-          // 로컬 저장소에도 추가
-          final storage = FlutterSecureStorage();
-          final blockedUsers = await storage.read(key: 'blocked_users') ?? '[]';
-          final List<dynamic> blockedList = jsonDecode(blockedUsers);
-          if (!blockedList.contains(message.senderId)) {
-            blockedList.add(message.senderId);
-            await storage.write(key: 'blocked_users', value: jsonEncode(blockedList));
-          }
-        } else {
-          throw Exception('차단 요청 실패: ${response.statusCode}');
-        }
-    } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('차단 처리 중 오류가 발생했습니다: $e'),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
-      );
     }
   }
 
-  // 🔧 추가: 차단된 사용자 확인
-  Future<bool> _isUserBlocked(String userId) async {
-    try {
-      final storage = FlutterSecureStorage();
-      final blockedUsers = await storage.read(key: 'blocked_users') ?? '[]';
-      final List<dynamic> blockedList = jsonDecode(blockedUsers);
-      return blockedList.contains(userId);
-    } catch (e) {
-      return false;
-    }
-  }
 
-  // 🔧 추가: 차단된 사용자 메시지 필터링 (차단된 메시지는 표시하되 내용을 숨김)
-  Future<List<ChatMessage>> _getFilteredMessages() async {
-    // 차단된 사용자의 메시지도 표시하되, 내용을 숨기기 위해 모든 메시지를 반환
-    return _messages;
-  }
 
-  // 🔧 최적화: 메시지 리스트 빌더 (FutureBuilder 제거로 성능 향상)
+  // 🔧 최적화: 메시지 리스트 빌더 (MessageList 위젯으로 분리)
   Widget _buildMessageList() {
-    // 🔧 추가: 모든 메시지 표시 (차단된 메시지는 다르게 렌더링)
-    final visibleMessages = _messages;
-    
-    return ListView.builder(
-      key: ValueKey(visibleMessages.length), // 🔧 추가: 보이는 메시지 개수 변경 시에만 리빌드
-      controller: _scrollController,
-      reverse: true, // 🔧 추가: 맨 아래에서 시작
-      padding: const EdgeInsets.all(16),
-      itemCount: visibleMessages.length,
-      itemBuilder: (context, index) {
-        final message = visibleMessages[visibleMessages.length - 1 - index];
-        // 🔧 수정: 실제 사용자 ID로 비교 (문자열 비교)
-        // log('🎨 UI 메시지 비교: senderId="${message.senderId}" (${message.senderId.runtimeType}) vs currentUserId="$_currentUserId" (${_currentUserId.runtimeType})');
-        // 🔧 추가: 관리자 메시지는 항상 왼쪽에 표시 (내가 보낸 것이라도)
-        final isMyMessage = message.messageType == 'ADMIN' ? false : message.senderId.toString() == _currentUserId;
-        // log('🎨 UI 비교 결과: $isMyMessage (관리자 메시지: ${message.messageType == 'ADMIN'})');
-        
-        final isBlocked = _blockedUsers.contains(message.senderId);
-        final isShowingBlocked = _showBlockedMessages.contains(message.messageId);
-        
-        // 🔧 추가: 차단된 메시지 디버그 로그
-        if (isBlocked) {
-          log('🚫 UI 렌더링: 차단된 메시지 - ${message.senderName} (${message.senderId}), 보기모드: $isShowingBlocked');
-        }
-        
-        return _buildMessageBubble(message, isMyMessage, isBlocked: isBlocked, isShowingBlocked: isShowingBlocked);
-      },
+    return MessageList(
+      messages: _messages,
+      currentUserId: _currentUserId,
+      blockService: _blockService,
+      uploadingMessages: _uploadingMessages,
+      scrollController: _scrollController,
+      screenWidth: screenWidth,
+      fontSizeMedium: fontSizeMedium,
+      fontSizeSmall: fontSizeSmall,
+      onToggleBlockedMessage: _toggleBlockedMessage,
+      onShowUnblockDialog: _showUnblockDialog,
+      onImagePreview: _showImagePreview,
+      onLongPress: _showMessageMenu,
     );
   }
 
-  // 🔧 추가: 메시지가 차단된 사용자의 것인지 확인
-  Future<bool> _isMessageFromBlockedUser(ChatMessage message) async {
-    return await _isUserBlocked(message.senderId);
-  }
 
-  // 🔧 추가: 차단된 메시지 토글 (탭으로 원본 메시지 보기/숨기기)
-  void _toggleBlockedMessage(ChatMessage message) {
-    setState(() {
-      if (_showBlockedMessages.contains(message.messageId)) {
-        _showBlockedMessages.remove(message.messageId);
-      } else {
-        _showBlockedMessages.add(message.messageId);
-      }
-    });
-  }
 
   // 🔧 추가: 차단 해제 다이얼로그
   void _showUnblockDialog(ChatMessage message) {
@@ -2635,38 +2634,14 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
     );
   }
 
-  // 🔧 추가: 사용자 차단 해제
+  // 🔧 추가: 사용자 차단 해제 (BlockService 사용)
   Future<void> _unblockUser(ChatMessage message) async {
-    try {
-      log('🔓 차단 해제 시작: ${message.senderName} (${message.senderId})');
-      
-      final privateClient = PrivateClient();
-      
-      // 백엔드 API로 사용자 차단 해제
-      log('🔓 차단 해제 API 호출 중...');
-      final response = await privateClient.post(
-        '/api/v1/chat/unblock-user/',
-        data: {
-          'blocked_user_id': message.senderId,
-        },
-      );
-      
-      log('🔓 차단 해제 응답: ${response.statusCode}');
-      log('🔓 차단 해제 응답 데이터: ${response.data}');
-      
-      if (response.statusCode == 200) {
-        // 로컬 저장소에서 차단된 사용자 제거
-        final storage = FlutterSecureStorage();
-        final blockedUsers = await storage.read(key: 'blocked_users') ?? '[]';
-        final List<dynamic> blockedList = jsonDecode(blockedUsers);
-        blockedList.remove(message.senderId);
-        await storage.write(key: 'blocked_users', value: jsonEncode(blockedList));
-        
-        // UI 새로고침 및 차단된 사용자 목록 업데이트
+    final success = await _blockService.unblockUser(message.senderId);
+
+    if (success) {
+      // UI 새로고침 및 해당 사용자의 메시지를 보기 모드에서 제거
         setState(() {
-          _blockedUsers.remove(message.senderId);
-          // 해당 사용자의 모든 메시지를 보기 모드에서 제거
-          _showBlockedMessages.removeWhere((messageId) {
+        _blockService.showBlockedMessages.removeWhere((messageId) {
             final msg = _messages.firstWhere((m) => m.messageId == messageId, orElse: () => message);
             return msg.senderId == message.senderId;
           });
@@ -2680,14 +2655,65 @@ class _ClubChatPageState extends ConsumerState<ClubChatPage> with TickerProvider
           ),
         );
       } else {
-        throw Exception('차단 해제 요청 실패');
-      }
-    } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('차단 해제 중 오류가 발생했습니다: $e'),
+          content: Text('차단 해제 중 오류가 발생했습니다'),
           backgroundColor: Colors.red,
           duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  // 🔧 추가: 알림 설정 상태 로드
+  Future<void> _loadNotificationStatus() async {
+    try {
+      // 클럽 ID로 직접 알림 설정 조회
+      final clubId = widget.clubId;
+      final isEnabled = await _chatService.getChatRoomNotificationStatus(clubId.toString());
+      
+      if (mounted) {
+        setState(() {
+          _isNotificationEnabled = isEnabled;
+        });
+        log('🔔 알림 설정 로드: $_isNotificationEnabled (clubId: $clubId)');
+      }
+    } catch (e) {
+      log('❌ 알림 설정 로드 실패: $e');
+    }
+  }
+
+  // 🔧 추가: 알림 설정 토글
+  Future<void> _toggleNotification() async {
+    try {
+      // 클럽 ID로 직접 알림 설정 토글
+      final clubId = widget.clubId;
+      final newStatus = await _chatService.toggleChatRoomNotification(clubId.toString());
+      
+      if (mounted) {
+        setState(() {
+          _isNotificationEnabled = newStatus;
+        });
+        
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              _isNotificationEnabled ? '🔔 알림이 켜졌습니다' : '🔕 알림이 꺼졌습니다'
+            ),
+            backgroundColor: _isNotificationEnabled ? Colors.green : Colors.orange,
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        
+        log('🔔 알림 설정 변경: $_isNotificationEnabled (clubId: $clubId)');
+      }
+    } catch (e) {
+      log('❌ 알림 설정 변경 실패: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('알림 설정 변경 중 오류가 발생했습니다'),
+          backgroundColor: Colors.red,
+          duration: const Duration(seconds: 2),
         ),
       );
     }
