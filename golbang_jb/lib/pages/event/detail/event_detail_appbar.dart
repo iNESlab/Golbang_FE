@@ -37,18 +37,19 @@ PreferredSizeWidget buildEventDetailAppBar(
   }
 
   void deleteEvent() async {
+    try{
+      await ref.read(eventStateNotifierProvider.notifier).deleteEvent(event.eventId);
 
-    final success = await ref.read(eventStateNotifierProvider.notifier).deleteEvent(event.eventId);
-
-    if (success) {
-      // 이벤트 삭제 후 목록 새로고침
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('성공적으로 삭제되었습니다')),
       );
       context.go('/app/events?refresh=${DateTime.now().millisecondsSinceEpoch}');
-    }  else {
+    }  catch(e) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('이벤트 삭제에 실패했습니다.')),
+        SnackBar(
+          content: Text('$e'),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }

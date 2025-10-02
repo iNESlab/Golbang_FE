@@ -61,6 +61,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
   bool hasDuplicateParticipants = false;
   bool areGroupsEmpty = true;
   late EventService _eventService;
+  bool _isLoading = false; // 🔧 추가: 로딩 상태
 
   @override
   void initState() {
@@ -252,44 +253,52 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
   }
 
   Future<void> _onCompletePressed() async {
-    final eventData = CreateEvent(
-      eventId: widget.eventId,
-      eventTitle: widget.title,
-      location: widget.selectedLocation.toString() ?? "Unknown Location",
-      golfClubId: widget.selectedGolfClub.golfClubId,
-      golfCourseId: widget.selectedCourse.golfCourseId,
-      startDateTime: widget.startDate,
-      endDateTime: widget.endDate,
-      repeatType: "NONE",
-      gameMode: gameMode.value,
-      alertDateTime: "",
-    );
-    for (var participant in _finalParticipants) {
-      if (participant.groupType==0) {
-        participant.groupType = 1;
-        participant.teamType = isTeam
-            ? TeamConfig.TEAM_A
-            : TeamConfig.NONE;
+    setState(() => _isLoading = true); // 🔧 추가: 로딩 시작
+    
+    try {
+      final eventData = CreateEvent(
+        eventId: widget.eventId,
+        eventTitle: widget.title,
+        location: widget.selectedLocation.toString() ?? "Unknown Location",
+        golfClubId: widget.selectedGolfClub.golfClubId,
+        golfCourseId: widget.selectedCourse.golfCourseId,
+        startDateTime: widget.startDate,
+        endDateTime: widget.endDate,
+        repeatType: "NONE",
+        gameMode: gameMode.value,
+        alertDateTime: "",
+      );
+      for (var participant in _finalParticipants) {
+        if (participant.groupType==0) {
+          participant.groupType = 1;
+          participant.teamType = isTeam
+              ? TeamConfig.TEAM_A
+              : TeamConfig.NONE;
+        }
       }
-    }
 
-    bool success = await _eventService.updateEvent(
-      event: eventData,
-      participants: _finalParticipants,
-    );
-
-    if(!mounted) return;
-
-    if (success) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('이벤트가 성공적으로 수정되었습니다.')),
+      await _eventService.updateEvent(
+        event: eventData,
+        participants: _finalParticipants,
       );
+
+      if(!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이벤트가 성공적으로 수정되었습니다.')));
       context.go('/app/events/${widget.eventId}?refresh=${DateTime.now().millisecondsSinceEpoch}');
-
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('이벤트 수정에 실패했습니다. 관리자만 수정할 수 있습니다. ')),
-      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text('$e'),
+              backgroundColor: Colors.red
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false); // 🔧 추가: 로딩 종료
+      }
     }
   }
 
@@ -307,17 +316,33 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
         title: const Text('이벤트 수정'),
         actions: [
           TextButton(
-            onPressed: (hasDuplicateParticipants)
+            onPressed: (hasDuplicateParticipants || _isLoading)
                 ? null
-                : _onCompletePressed,
-            child: Text(
-              '완료',
-              style: TextStyle(
-                color: (hasDuplicateParticipants)
-                    ? Colors.grey
-                    : Colors.teal,
-              ),
-            ),
+                : _onCompletePressed, // 🔧 추가: 로딩 중 버튼 비활성화
+            child: _isLoading
+                ? const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Text('수정 중...'),
+                    ],
+                  )
+                : Text(
+                    '완료',
+                    style: TextStyle(
+                      color: (hasDuplicateParticipants)
+                          ? Colors.grey
+                          : Colors.teal,
+                    ),
+                  ),
           ),
         ],
         backgroundColor: Colors.white,
