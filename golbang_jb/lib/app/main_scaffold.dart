@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../utils/reponsive_utils.dart';
+import 'current_route_service.dart';
 // 🚫 라디오 기능 비활성화 - 안드로이드에서 사용하지 않음
 // import '../widgets/global_radio_player.dart';
 
@@ -16,6 +17,12 @@ class MainScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
     final int currentIndex = _getIndex(location);
+    
+    // 🔧 수정: 채팅방이 아닌 경우에만 라우트 업데이트
+    // 채팅방 페이지에서는 ClubChatPage에서 직접 라우트를 관리
+    if (!location.contains('/chat')) {
+      CurrentRouteService.updateRoute(location);
+    }
 
     double screenWidth = MediaQuery.of(context).size.width;
     Orientation orientation = MediaQuery.of(context).orientation;

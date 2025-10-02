@@ -5,6 +5,7 @@ import '../../pages/club/club_create_page.dart';
 import '../../pages/club/club_edit_page.dart';
 import '../../pages/club/club_main.dart';
 import '../../pages/club/club_search_page.dart';
+import '../../pages/chat/club_chat_page.dart';
 import '../../pages/community/admin_settings_page.dart';
 import '../../pages/community/member_list_page.dart';
 import '../../pages/community/member_settings_page.dart';
@@ -56,7 +57,7 @@ final List<GoRoute> clubRoutes = [
             builder: (context, state) {
               final extra = state.extra as Map<String, dynamic>?;
               final clubId = int.parse(state.pathParameters['clubId']!);
-              String role = extra?['role'] as String;
+              String role = extra?['role'] as String? ?? 'member'; // 🔧 수정: null일 경우 기본값 'member'
 
               if (role == 'admin') {
                 return AdminSettingsPage(
@@ -84,10 +85,23 @@ final List<GoRoute> clubRoutes = [
                   return MemberListPage(
                     clubId: clubId!,
                     isAdmin: extra?['isAdmin'] as bool,
+                    initialTabIndex: extra?['initialTabIndex'] as int? ?? 0, // 🔧 추가: 초기 탭 인덱스
                   );
                 },
               ),
             ]
+        ),
+        // 클럽 채팅방 라우트 추가
+        GoRoute(
+          path: 'chat',
+          builder: (context, state) {
+            final clubId = int.tryParse(state.pathParameters['clubId']!);
+            if (clubId == null) {
+              throw Exception('Invalid club ID');
+            }
+            
+            return ClubChatPage(clubId: clubId);
+          },
         ),
       ]
   ),

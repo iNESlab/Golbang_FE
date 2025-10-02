@@ -157,6 +157,49 @@ class ClubService {
     });
   }
 
+  // 🔧 추가: 초대 취소 API
+  Future<void> cancelInvitation(int clubId, int userId) async {
+    return await safeDioCall(() async {
+      var uri = "/api/v1/clubs/$clubId/cancel-invitation/";
+      await privateClient.dio.post(uri, data: {'user_id': userId});
+    });
+  }
+
+  // 🔧 추가: 가입 신청 승인 API
+  Future<void> approveApplication(int clubId, int userId) async {
+    return await safeDioCall(() async {
+      var uri = "/api/v1/clubs/$clubId/approve-application/";
+      await privateClient.dio.post(uri, data: {'user_id': userId});
+    });
+  }
+
+  // 🔧 추가: 가입 신청 거절 API
+  Future<void> rejectApplication(int clubId, int userId) async {
+    return await safeDioCall(() async {
+      var uri = "/api/v1/clubs/$clubId/reject-application/";
+      await privateClient.dio.post(uri, data: {'user_id': userId});
+    });
+  }
+
+  // 🔧 추가: 멤버 상태 변경 API
+  Future<void> changeMemberStatus(int clubId, int userId, String statusType) async {
+    return await safeDioCall(() async {
+      var uri = "/api/v1/clubs/$clubId/change-status/";
+      await privateClient.dio.post(uri, data: {
+        'user_id': userId,
+        'status_type': statusType,
+      });
+    });
+  }
+
+  // 🔧 추가: 초대 수락/거절 API (사용자용)
+  Future<void> respondInvitation(int clubId, String response) async {
+    return await safeDioCall(() async {
+      var uri = "/api/v1/clubs/$clubId/respond-invitation/";
+      await privateClient.dio.post(uri, data: {'response': response});
+    });
+  }
+
   // API 테스트 완료
   Future<bool> updateClubWithAdmins({
     required int clubId,
@@ -258,6 +301,27 @@ class ClubService {
     } catch (e) {
       log('Error occurred while fetching golf courses: $e');
       return [];
+    }
+  }
+
+  // 🔧 추가: 신청 취소 API
+  Future<void> cancelApplication(int clubId) async {
+    try {
+      log('신청 취소 시작 - clubId: $clubId');
+      final response = await privateClient.dio.post('/api/v1/clubs/$clubId/cancel-application/');
+      
+      log('신청 취소 응답 상태: ${response.statusCode}');
+      log('신청 취소 응답 데이터: ${response.data}');
+
+      if (response.statusCode == 200) {
+        log('신청 취소 성공');
+      } else {
+        log('신청 취소 실패: ${response.statusCode}');
+        throw Exception('신청 취소 실패: ${response.data['message'] ?? '알 수 없는 오류'}');
+      }
+    } catch (e) {
+      log('Error occurred while canceling application: $e');
+      rethrow;
     }
   }
 

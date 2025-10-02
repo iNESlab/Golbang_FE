@@ -36,6 +36,7 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
 
   final ImagePicker _picker = ImagePicker();
   bool _isInitialized = true;
+  bool _isLoading = false; // 🔧 추가: 로딩 상태
 
 
   Future<void> _pickImage() async {
@@ -76,29 +77,44 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
     String groupDescription = _groupDescriptionController.text;
 
     if (groupName.isNotEmpty) {
-      final clubService = ClubService(ref.read(secureStorageProvider));
-      bool success = await clubService.updateClubWithAdmins(
-        clubId: _club!.id,
-        name: groupName,
-        description: groupDescription,
-        adminIds: selectedAdmins.map((e) => e.memberId).toList(),
-        imageFile: _imageFile != null ? File(_imageFile!.path) : null,
-      );
-      if (!mounted) return;
-      if (success) {
-        //TODO: 상태 저장해야함
-        // ref.read(clubStateProvider.notifier).selectClub(club);
-        context.go('/app/clubs/${_club!.id}?refresh=${DateTime.now().millisecondsSinceEpoch}');
-        // 실제로 라우터에서 처리 안해도 새로고침 됨
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('성공적으로 수정하였습니다.')),
+      setState(() => _isLoading = true); // 🔧 추가: 로딩 시작
+      
+      try {
+        final clubService = ClubService(ref.read(secureStorageProvider));
+        bool success = await clubService.updateClubWithAdmins(
+          clubId: _club!.id,
+          name: groupName,
+          description: groupDescription,
+          adminIds: selectedAdmins.map((e) => e.memberId).toList(),
+          imageFile: _imageFile != null ? File(_imageFile!.path) : null,
         );
+        
+        if (!mounted) return;
+        
+        if (success) {
+          //TODO: 상태 저장해야함
+          // ref.read(clubStateProvider.notifier).selectClub(club);
+          context.go('/app/clubs/${_club!.id}?refresh=${DateTime.now().millisecondsSinceEpoch}');
+          // 실제로 라우터에서 처리 안해도 새로고침 됨
 
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('모임을 수정하는 데 실패했습니다. 나중에 다시 시도해주세요.')),
-        );
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('성공적으로 수정하였습니다.')),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('모임을 수정하는 데 실패했습니다. 나중에 다시 시도해주세요.')),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('오류가 발생했습니다: $e')),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false); // 🔧 추가: 로딩 종료
+        }
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -200,13 +216,29 @@ class _ClubEditPageState extends ConsumerState<ClubEditPage> {
               const SizedBox(height: 20),
               Center(
                 child: ElevatedButton(
-                  onPressed: _onComplete,
+                  onPressed: _isLoading ? null : _onComplete, // 🔧 추가: 로딩 중 버튼 비활성화
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.teal,
                     foregroundColor: Colors.white,
                     minimumSize: const Size(double.infinity, 50),
                   ),
-                  child: const Text('완료'),
+                  child: _isLoading 
+                    ? const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Text('수정 중...'),
+                        ],
+                      )
+                    : const Text('완료'),
                 ),
               ),
             ],

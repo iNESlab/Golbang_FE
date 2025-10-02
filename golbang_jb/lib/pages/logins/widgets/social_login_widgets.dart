@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:golbang/pages/signup/terms_agreement_page.dart';
 import 'package:golbang/pages/logins/widgets/forgot_password.dart';
 import 'package:golbang/services/google_auth_service.dart';
+import 'package:golbang/services/apple_auth_service.dart';
 import 'package:golbang/pages/home/splash_screen.dart';
 import 'package:golbang/pages/signup/additional_info.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -11,6 +12,7 @@ import 'dart:developer';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart'; // 🔧 추가: GoRouter import
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_messaging/firebase_messaging.dart'; // 🔧 추가: FCM 토큰용
 
 class SignInDivider extends StatelessWidget {
   const SignInDivider({super.key});
@@ -79,10 +81,10 @@ class SocialLoginButtons extends StatelessWidget {
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Image.asset(
-                      'assets/images/google.webp',
-                      width: 20,
-                      height: 20,
+                    const Icon(
+                      Icons.g_mobiledata,
+                      color: Colors.blue,
+                      size: 20,
                     ),
                     const SizedBox(width: 12),
                     const Text(
@@ -100,55 +102,54 @@ class SocialLoginButtons extends StatelessWidget {
             ),
           ),
         ),
-        // 🚫 애플 로그인 비활성화 - 구글 로그인만 사용
-        // const SizedBox(height: 16),
-        // // Apple Sign-In Button (공식 가이드라인 준수)
-        // Container(
-        //   width: double.infinity,
-        //   height: 48,
-        //   decoration: BoxDecoration(
-        //     color: Colors.black,
-        //     borderRadius: BorderRadius.circular(8),
-        //     boxShadow: [
-        //       BoxShadow(
-        //         color: Colors.black.withOpacity(0.2),
-        //         blurRadius: 4,
-        //         offset: const Offset(0, 2),
-        //       ),
-        //     ],
-        //   ),
-        //   child: Material(
-        //     color: Colors.transparent,
-        //     child: InkWell(
-        //       borderRadius: BorderRadius.circular(8),
-        //       onTap: () => _handleAppleSignIn(context),
-        //       child: Padding(
-        //         padding: const EdgeInsets.symmetric(horizontal: 16),
-        //         child: Row(
-        //           mainAxisAlignment: MainAxisAlignment.center,
-        //           children: [
-        //             Image.asset(
-        //               'assets/images/apple.webp',
-        //               width: 20,
-        //               height: 20,
-        //               color: Colors.white,
-        //             ),
-        //             const SizedBox(width: 12),
-        //             const Text(
-        //               'Sign in with Apple',
-        //               style: TextStyle(
-        //                 color: Colors.white,
-        //                 fontSize: 16,
-        //                 fontWeight: FontWeight.w500,
-        //                 fontFamily: 'SF Pro Display',
-        //               ),
-        //             ),
-        //           ],
-        //         ),
-        //       ),
-        //     ),
-        //   ),
-        // ),
+        // 🍎 애플 로그인 활성화
+        const SizedBox(height: 16),
+        // Apple Sign-In Button (공식 가이드라인 준수)
+        Container(
+          width: double.infinity,
+          height: 48,
+          decoration: BoxDecoration(
+            color: Colors.black,
+            borderRadius: BorderRadius.circular(8),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.2),
+                blurRadius: 4,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap: () => _handleAppleSignIn(context),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.apple,
+                      color: Colors.white,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Sign in with Apple',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'SF Pro Display',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -157,22 +158,12 @@ class SocialLoginButtons extends StatelessWidget {
     try {
       final googleAuthService = GoogleAuthService();
       
-      // 소셜 로그인 성공 후 화면 전환을 위한 콜백 설정
-      googleAuthService.onSocialLoginSuccess = (String email, String displayName) {
+      // 새 사용자 로그인 성공 시 약관 동의 페이지로 이동
+      googleAuthService.onSocialLoginSuccess = (String email, String displayName, String tempUserId) {
         if (context.mounted) {
-          // 🔧 수정: 기존 사용자와 새 사용자 구분
-          final storage = const FlutterSecureStorage();
-          storage.read(key: 'ACCESS_TOKEN').then((token) {
-            if (token != null) {
-              // JWT 토큰이 있으면 기존 사용자 → 메인 화면으로 바로 이동
-              log('✅ 기존 사용자: 메인 화면으로 바로 이동');
-              context.go('/app/splash');
-            } else {
-              // JWT 토큰이 없으면 새로운 사용자 → 약관 동의 페이지로 이동
-              log('🆕 새로운 사용자: 약관 동의 페이지로 이동');
-              context.push('/app/signup/terms?email=$email&displayName=$displayName&isSocialLogin=true');
-            }
-          });
+          log('🆕 새로운 사용자: 약관 동의 페이지로 이동');
+          log('🔍 구글 사용자 정보: email=$email, displayName=$displayName, tempUserId=$tempUserId');
+          context.push('/app/signup/terms?email=$email&displayName=$displayName&isSocialLogin=true&provider=google&tempUserId=$tempUserId');
         }
       };
       
@@ -183,10 +174,22 @@ class SocialLoginButtons extends StatelessWidget {
         }
       };
       
+      // 기존 사용자 로그인 성공 시 메인 화면으로 이동
+      googleAuthService.onExistingUserLogin = (String email, String displayName) {
+        if (context.mounted) {
+          log('✅ 기존 사용자: 메인 화면으로 바로 이동');
+          context.go('/app/splash');
+        }
+      };
+      
+      // Google 로그인 실행
       final result = await googleAuthService.signInWithGoogle();
       
       if (result != null) {
-        // 로그인 성공 시 처리
+        log('🔍 구글 로그인 결과: $result');
+        
+        // 콜백에서 이미 처리되므로 여기서는 추가 처리하지 않음
+        // 단, 로그인 성공 메시지만 표시
         if (context.mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('구글 로그인 성공!')),
@@ -219,6 +222,15 @@ class SocialLoginButtons extends StatelessWidget {
         return;
       }
       
+      // 🔧 추가: FCM 토큰 가져오기
+      String? fcmToken;
+      try {
+        fcmToken = await FirebaseMessaging.instance.getToken();
+        log('🔔 계정 통합용 FCM 토큰 획득: ${fcmToken?.substring(0, 20)}...');
+      } catch (e) {
+        log('❌ 계정 통합용 FCM 토큰 획득 실패: $e');
+      }
+      
       log('🔍 계정 통합 시작: $email');
       log('🔑 ID 토큰 확인: ${idToken.substring(0, 20)}...');
       
@@ -232,6 +244,7 @@ class SocialLoginButtons extends StatelessWidget {
           'email': email,
           'id_token': idToken,
           'display_name': displayName,
+          'fcm_token': fcmToken ?? '', // 🔧 추가: FCM 토큰 전송
         }),
       );
       
@@ -249,37 +262,138 @@ class SocialLoginButtons extends StatelessWidget {
         await storage.delete(key: 'GOOGLE_ID_TOKEN');
         log('🗑️ 계정 통합 완료 후 Google ID 토큰 제거');
         
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('계정 통합이 완료되었습니다! 이제 Google 로그인으로 접근할 수 있습니다.')),
-        );
-        
-        // 🔧 수정: GoRouter 사용으로 Navigator API 충돌 방지
-        // 메인 화면으로 이동
-        context.go('/app/splash');
+        // 🔧 수정: context.mounted 체크 추가
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('계정 통합이 완료되었습니다! 이제 Google 로그인으로 접근할 수 있습니다.')),
+          );
+          
+          // 메인 화면으로 이동
+          context.go('/app/splash');
+        }
       } else {
         throw Exception('계정 통합 실패: ${response.statusCode}');
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('계정 통합 중 오류가 발생했습니다: $e')),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('계정 통합 중 오류가 발생했습니다: $e')),
+        );
+      }
     }
   }
   
   Future<void> _handleAppleSignIn(BuildContext context) async {
     try {
-      // TODO: Apple Sign-In 구현
-      // Apple Sign-In은 iOS 13+에서만 지원되므로 플랫폼 체크 필요
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Apple 로그인은 준비 중입니다.'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      // 애플 로그인 가용성 확인
+      final isAvailable = await AppleAuthService.isAvailable();
+      if (!isAvailable) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Apple 로그인을 사용할 수 없습니다. (iOS 13+ 필요)'),
+              backgroundColor: Colors.orange,
+            ),
+          );
+        }
+        return;
+      }
+
+      // 애플 로그인 실행
+      final result = await AppleAuthService.signInWithApple();
+      
+      if (result != null && result['success'] == true) {
+        final loginType = result['login_type'];
+        log('🔍 애플 로그인 결과: loginType=$loginType, result=$result');
+        
+        if (loginType == 'existing') {
+          // 기존 사용자 로그인 - 메인 화면으로 바로 이동
+          if (context.mounted) {
+            log('✅ 기존 사용자: 메인 화면으로 바로 이동');
+            context.go('/app/splash');
+          }
+          
+        } else if (loginType == 'integration') {
+          // 계정 통합 필요
+          if (context.mounted) {
+            final email = result['data']['existing_user_id'] ?? '';
+            final displayName = result['data']['existing_user_name'] ?? '';
+            log('🔍 애플 계정 통합 필요: email=$email, displayName=$displayName');
+            
+            _showAccountIntegrationDialog(context, email, displayName, result['data']);
+          }
+          
+        } else if (loginType == 'new' || loginType == 'new_user') {
+          // 신규 사용자 - 약관 동의 페이지로 이동
+          if (context.mounted) {
+            log('🆕 새로운 사용자: 약관 동의 페이지로 이동');
+            
+            // 애플 로그인에서는 이메일과 이름이 없을 수 있음
+            final email = result['user']?['email'] ?? '';
+            final displayName = result['user']?['user_name'] ?? '';
+            final tempUserId = result['data']?['temp_user_id'] ?? '';
+            
+            log('🔍 애플 로그인 전체 응답: $result');
+            log('🔍 애플 사용자 정보: email=$email, displayName=$displayName, tempUserId=$tempUserId');
+            
+            // 이메일이나 이름이 없으면 빈 문자열로 전달하여 사용자가 직접 입력하도록 함
+            String queryParams = 'isSocialLogin=true&provider=apple';
+            if (email.isNotEmpty) {
+              queryParams += '&email=$email';
+            }
+            if (displayName.isNotEmpty) {
+              queryParams += '&displayName=$displayName';
+            }
+            if (tempUserId.isNotEmpty) {
+              queryParams += '&tempUserId=$tempUserId';
+            }
+            
+            log('🔍 최종 쿼리 파라미터: $queryParams');
+            context.push('/app/signup/terms?$queryParams');
+          }
+          
+        } else if (loginType == 'integration') {
+          // 계정 통합 필요
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('계정 통합이 필요합니다: ${result['message']}'),
+                backgroundColor: Colors.orange,
+              ),
+            );
+            // TODO: 계정 통합 다이얼로그 표시
+          }
+        } else {
+          // 알 수 없는 login_type
+          log('❌ 알 수 없는 login_type: $loginType');
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('알 수 없는 로그인 타입: $loginType'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        }
+        
+      } else {
+        // 로그인 실패
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('애플 로그인 실패: ${result?['message'] ?? '알 수 없는 오류'}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Apple 로그인 실패: $e')),
+          SnackBar(
+            content: Text('Apple 로그인 오류: $e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -300,7 +414,7 @@ class SocialLoginButtons extends StatelessWidget {
               const SizedBox(height: 8),
               Text('기존 계정: ${existingUserData['existing_user_name']}'),
               Text('로그인 방식: ${existingUserData['login_type']}'),
-              if (existingUserData['provider'] != null)
+              if (existingUserData['provider'] != null && existingUserData['provider'] != 'none')
                 Text('제공자: ${existingUserData['provider']}'),
               const SizedBox(height: 16),
               const Text('이 계정을 Google 계정과 통합하시겠습니까?'),

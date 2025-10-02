@@ -9,6 +9,7 @@ class ChatRoom {
   final int participantCount;
   final List<String> participantIds;
   final bool isActive;
+  final int unreadCount; // 🔧 추가: 읽지 않은 메시지 개수
 
   ChatRoom({
     required this.chatRoomId,
@@ -21,6 +22,7 @@ class ChatRoom {
     required this.participantCount,
     required this.participantIds,
     required this.isActive,
+    this.unreadCount = 0, // 🔧 추가: 기본값 0
   });
 
   factory ChatRoom.fromJson(Map<String, dynamic> json) {
@@ -37,6 +39,7 @@ class ChatRoom {
       participantCount: json['participantCount'] ?? 0,
       participantIds: List<String>.from(json['participantIds'] ?? []),
       isActive: json['isActive'] ?? true,
+      unreadCount: json['unreadCount'] ?? 0, // 🔧 추가: 읽지 않은 메시지 개수 파싱
     );
   }
 
@@ -52,6 +55,7 @@ class ChatRoom {
       'participantCount': participantCount,
       'participantIds': participantIds,
       'isActive': isActive,
+      'unreadCount': unreadCount, // 🔧 추가: 읽지 않은 메시지 개수 포함
     };
   }
 }
@@ -60,6 +64,7 @@ class ChatMessage {
   final String messageId;
   final String chatRoomId;
   final String senderId;
+  final String? senderUniqueId; // 🔧 추가: 에코 메시지 방지용 고유 ID
   final String senderName;
   final String? senderProfileImage;
   final String messageType; // 'TEXT', 'IMAGE', 'SYSTEM'
@@ -72,6 +77,7 @@ class ChatMessage {
     required this.messageId,
     required this.chatRoomId,
     required this.senderId,
+    this.senderUniqueId, // 🔧 추가
     required this.senderName,
     this.senderProfileImage,
     required this.messageType,
@@ -86,6 +92,7 @@ class ChatMessage {
       messageId: json['messageId'] ?? '',
       chatRoomId: json['chatRoomId'] ?? '',
       senderId: json['senderId'] ?? '',
+      senderUniqueId: json['sender_unique_id']?.toString(), // 🔧 추가: 고유 ID 파싱
       senderName: json['senderName'] ?? '',
       senderProfileImage: json['senderProfileImage'],
       messageType: json['messageType'] ?? 'TEXT',
@@ -101,6 +108,7 @@ class ChatMessage {
       'messageId': messageId,
       'chatRoomId': chatRoomId,
       'senderId': senderId,
+      'sender_unique_id': senderUniqueId, // 🔧 추가: 고유 ID 포함
       'senderName': senderName,
       'senderProfileImage': senderProfileImage,
       'messageType': messageType,

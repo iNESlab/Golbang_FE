@@ -161,8 +161,9 @@ final List<GoRoute> eventRoutes = [
         path: 'chat',
         builder: (context, state) {
           final extra = state.extra as Map<String, dynamic>?;
+          final event = extra?['event'] as Event;
           return ClubChatPage(
-            event: extra?['event'] as Event,
+            clubId: event.club?.clubId ?? 0,
             chatRoom: extra?['chatRoom'],
           );
         },

@@ -8,6 +8,7 @@ import 'dart:ui' as ui;
 import 'package:timeago/timeago.dart' as timeago;
 import '../../services/notification_service.dart';
 import '../../repoisitory/secure_storage.dart';
+import '../../global/PrivateClient.dart';
 
 class NotificationHistoryPage extends ConsumerStatefulWidget {
   const NotificationHistoryPage({super.key});
@@ -69,19 +70,57 @@ class NotificationHistoryPageState extends ConsumerState<NotificationHistoryPage
     }
   }
 
-  void _navigateToDetailPage(Map<String, dynamic> notification) {
+  void _navigateToDetailPage(Map<String, dynamic> notification) async {
     final eventId = notification['eventId'];
     final clubId = notification['groupId']; //TODO: clubId로 수정해야함
-    log('clubId: $clubId');
+    final notificationType = notification['notification_type']?.toString();
+    log('clubId: $clubId, notificationType: $notificationType');
 
-    if (eventId != null) {
-      context.push('/app/events/$eventId', extra: {'from': 'history'});
-    } else if (clubId != null) {
-      context.push('/app/clubs/$clubId', extra: {'from': 'history'});
+    // 로그인 상태 확인
+    final dioClient = PrivateClient();
+    final isLoggedIn = !(await dioClient.isAccessTokenExpired());
+
+    if (isLoggedIn && mounted) {
+      // 클럽 초대 알림인 경우
+      if (notificationType == 'club_invitation' && clubId != null) {
+        log('✅ 클럽 초대 알림 - 커뮤니티 메인으로 이동: /app/clubs/$clubId');
+        context.go('/app/clubs/$clubId', extra: {'from': 'history'});
+      }
+      // 클럽 신청 알림인 경우 (관리자에게) - 멤버 관리 페이지의 초대신청 대기 탭으로 직접 이동
+      else if (notificationType == 'club_application' && clubId != null) {
+        log('✅ 클럽 신청 알림 - 멤버 관리 페이지의 초대신청 대기 탭으로 이동: /app/clubs/$clubId/setting/members');
+        context.go('/app/clubs/$clubId/setting/members', extra: {
+          'isAdmin': true,
+          'initialTabIndex': 1, // 🔧 추가: 초대신청 대기 탭 (인덱스 1)
+          'from': 'history',
+        });
+      }
+      // 채팅 메시지 알림인 경우 채팅방으로 직접 이동
+      else if (notificationType == 'chat_message') {
+        final chatRoomType = notification['chat_room_type']?.toString();
+        if (chatRoomType == 'CLUB' && clubId != null) {
+          log('✅ 클럽 채팅방으로 이동: /app/clubs/$clubId/chat');
+          context.go('/app/clubs/$clubId/chat', extra: {'from': 'history'});
+        } else if (chatRoomType == 'EVENT' && eventId != null) {
+          log('✅ 이벤트 채팅방으로 이동: /app/events/$eventId/chat');
+          context.go('/app/events/$eventId/chat', extra: {'from': 'history'});
+        } else {
+          log('❌ 채팅방 정보 부족 - 홈으로 이동');
+          context.go('/app/home');
+        }
+      } else if (eventId != null) {
+        log('✅ 이벤트 상세로 이동: /app/events/$eventId');
+        context.go('/app/events/$eventId', extra: {'from': 'history'});
+      } else if (clubId != null) {
+        log('✅ 클럽 상세로 이동: /app/clubs/$clubId');
+        context.go('/app/clubs/$clubId', extra: {'from': 'history'});
+      } else {
+        log('❌ 알 수 없는 알림 - 홈으로 이동');
+        context.go('/app/home');
+      }
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('상세 정보를 확인할 수 없습니다.')),
-      );
+      log('❌ 로그인되지 않음 - 로그인 페이지로 이동');
+      context.go('/app');
     }
   }
 

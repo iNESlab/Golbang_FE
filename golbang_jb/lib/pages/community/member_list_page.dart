@@ -12,11 +12,13 @@ import '../../widgets/sections/community_member_dialog.dart';
 class MemberListPage extends ConsumerStatefulWidget {
   final int clubId;
   final bool isAdmin;
+  final int initialTabIndex; // 🔧 추가: 초기 탭 인덱스
 
   const MemberListPage({
     super.key,
     required this.clubId,
     required this.isAdmin,
+    this.initialTabIndex = 0, // 🔧 기본값: 첫 번째 탭
   });
 
   @override
@@ -46,7 +48,7 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
       setState(() {
         oldMemberUsers = fetched.map((m)=>m.toUserProfile()).toList();
         activeMembers = fetched.where((m) => m.statusType == 'active').toList();
-        pendingMembers = fetched.where((m) => m.statusType == 'pending').toList();
+        pendingMembers = fetched.where((m) => m.statusType == 'invited' || m.statusType == 'applied').toList();
         isLoading = false;
       });
     } catch (e) {
@@ -59,13 +61,14 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
   Widget build(BuildContext context) {
     return DefaultTabController(
       length: widget.isAdmin ? 2 : 0,
+      initialIndex: widget.initialTabIndex, // 🔧 추가: 초기 탭 설정
       child: Scaffold(
         appBar: AppBar(
           title: const Text("멤버 관리"),
           bottom: widget.isAdmin ? TabBar(
             tabs: [
               const Tab(text: "활동 멤버"),
-              if (widget.isAdmin) const Tab(text: "가입 대기 멤버"),
+              if (widget.isAdmin) const Tab(text: "초대/신청 대기"),
             ],
           ): null,
         ),
@@ -161,45 +164,85 @@ class _MemberListPageState extends ConsumerState<MemberListPage> {
               : null,
         ),
         title: Text(member.name),
-        subtitle: const Text("가입 대기중"),
+        subtitle: Text(member.statusType == 'invited' ? "초대됨" : "가입 신청"),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            IconButton(
-              icon: const Icon(Icons.check, color: Colors.green),
-              onPressed: () async {
-                try {
-                  await _clubService.acceptMember(widget.clubId, member.memberId);
-                  setState(() {
-                    pendingMembers.removeWhere((m) => m.memberId == member.memberId);
-                    activeMembers.add(member.copyWith(statusType: 'active'));
-                  });
-                } catch(e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
+            if (member.statusType == 'applied') ...[
+              // 가입 신청자: 승인/거절 버튼
+              IconButton(
+                icon: const Icon(Icons.check, color: Colors.green),
+                onPressed: () async {
+                  try {
+                    await _clubService.approveApplication(widget.clubId, member.accountId);
+                    setState(() {
+                      pendingMembers.removeWhere((m) => m.memberId == member.memberId);
+                      activeMembers.add(member.copyWith(statusType: 'active'));
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('$e'),
-                        backgroundColor: Colors.red,
-                      ));
-                }
-              },
-            ),
-            IconButton(
-              icon: const Icon(Icons.close, color: Colors.red),
-              onPressed: () async {
-                try {
-                  await _clubService.removeMember(widget.clubId, member.memberId);
-                  setState(() {
-                    pendingMembers.removeWhere((m) => m.memberId == member.memberId);
-                  });
-                } catch(e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
+                        content: Text('${member.name}님의 가입을 승인했습니다'),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                  } catch(e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('가입 승인 실패: $e'),
+                          backgroundColor: Colors.red,
+                        ));
+                  }
+                },
+              ),
+              IconButton(
+                icon: const Icon(Icons.close, color: Colors.red),
+                onPressed: () async {
+                  try {
+                    await _clubService.rejectApplication(widget.clubId, member.accountId);
+                    setState(() {
+                      pendingMembers.removeWhere((m) => m.memberId == member.memberId);
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
-                        content: Text('$e'),
+                        content: Text('${member.name}님의 가입을 거절했습니다'),
                         backgroundColor: Colors.red,
-                      ));
-                }
-              },
-            ),
+                      ),
+                    );
+                  } catch(e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('가입 거절 실패: $e'),
+                          backgroundColor: Colors.red,
+                        ));
+                  }
+                },
+              ),
+            ] else if (member.statusType == 'invited') ...[
+              // 초대된 사용자: 취소 버튼
+              IconButton(
+                icon: const Icon(Icons.cancel, color: Colors.orange),
+                onPressed: () async {
+                  try {
+                    await _clubService.cancelInvitation(widget.clubId, member.accountId);
+                    setState(() {
+                      pendingMembers.removeWhere((m) => m.memberId == member.memberId);
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('${member.name}님의 초대를 취소했습니다'),
+                        backgroundColor: Colors.orange,
+                      ),
+                    );
+                  } catch(e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('초대 취소 실패: $e'),
+                          backgroundColor: Colors.red,
+                        ));
+                  }
+                },
+              ),
+            ],
           ],
         ),
       ),
