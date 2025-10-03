@@ -70,7 +70,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
   void _setupInitialValues() {
     // 전달받은 이벤트 데이터를 각 컨트롤러와 변수에 초기화
     _titleController.text = widget.event.eventTitle;
-    _locationController.text = widget.event.site ?? '';
+    _locationController.text = widget.event.golfClub?.golfClubName ?? 'unknown_site';
     _startDateController.text = widget.event.startDateTime.toLocal().toIso8601String().split('T').first;
     _startTimeController.text = widget.event.startDateTime.toLocal().toIso8601String().split('T').last;
     _selectedLocation = _parseLocation(widget.event.location);
@@ -162,6 +162,7 @@ class _EventsUpdate1State extends ConsumerState<EventsUpdate1> {
       builder: (context) => LocationSearchDialog(
         locationController: _locationController,
         onLocationSelected: (GolfClubResponseDTO site) {
+          log('site: $site');
           setState(() {
             _selectedGolfClub = site;
             _site = site.golfClubName;
