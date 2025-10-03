@@ -79,14 +79,21 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
 
   void _initializeParticipants() {
     _finalParticipants = widget.selectedParticipants.map((participant) {
+      String? statusType;
       Participant? existingParticipant = widget.existingParticipants.firstWhereOrNull(
             (existing) => existing.member!.memberId == participant.memberId,
       );
 
+      if(existingParticipant != null) {
+        statusType = existingParticipant.statusType;
+      }
+
+
       var p = CreateParticipant(
         memberId: participant.memberId,
         name: participant.name,
-        profileImage: participant.profileImage ?? '',
+        profileImage: participant.profileImage,
+        statusType: statusType ?? 'PENDING',
         teamType: existingParticipant==null ? TeamConfig.NONE
             : existingParticipant.teamType == "NONE" ? TeamConfig.NONE
             : existingParticipant.teamType == "A" ? TeamConfig.TEAM_A
@@ -111,6 +118,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
           memberId: participant.member!.memberId,
           name: participant.member!.name,
           profileImage: participant.member!.profileImage ?? '',
+          statusType: participant.statusType,
           teamType: participant.teamType == "NONE" ? TeamConfig.NONE
               : participant.teamType == "A" ? TeamConfig.TEAM_A
               : TeamConfig.TEAM_B,
