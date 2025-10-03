@@ -5,6 +5,7 @@ import 'dart:developer';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'dart:io';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 class GoogleAuthService {
   final FlutterSecureStorage _storage = const FlutterSecureStorage();
@@ -15,8 +16,11 @@ class GoogleAuthService {
   static const String _androidClientId = '1032223675274-3moln20qdn5umb2cqj8qaps5t0jbgq42.apps.googleusercontent.com';
   static const String _iosClientId = '1032223675274-rrr118a333crcgnm2d6fbtkm16a0ee3r.apps.googleusercontent.com';
   
-  // 소셜 로그인 성공 후 화면 전환을 위한 콜백
-  Function(String email, String displayName)? onSocialLoginSuccess;
+  // 소셜 로그인 성공 후 화면 전환을 위한 콜백 (새 사용자)
+  Function(String email, String displayName, String tempUserId)? onSocialLoginSuccess;
+  
+  // 기존 사용자 로그인 성공 후 화면 전환을 위한 콜백
+  Function(String email, String displayName)? onExistingUserLogin;
   
   // 기존 사용자 통합 옵션을 위한 콜백
   Function(String email, String displayName, Map<String, dynamic> existingUserData)? onExistingUserFound;
@@ -182,6 +186,15 @@ class GoogleAuthService {
     try {
       log('🌐 백엔드로 ID 토큰 전송 중...');
       
+      // 🔧 추가: FCM 토큰 가져오기
+      String? fcmToken;
+      try {
+        fcmToken = await FirebaseMessaging.instance.getToken();
+        log('🔔 FCM 토큰 획득: ${fcmToken?.substring(0, 20)}...');
+      } catch (e) {
+        log('❌ FCM 토큰 획득 실패: $e');
+      }
+      
       final response = await http.post(
         Uri.parse(_backendUrl),
         headers: {
@@ -191,63 +204,94 @@ class GoogleAuthService {
           'id_token': idToken,
           'email': email,
           'display_name': displayName ?? 'Unknown',
+          'fcm_token': fcmToken ?? '', // 🔧 추가: FCM 토큰 전송
         }),
       );
 
-      // 200(OK)과 201(Created) 모두 성공으로 처리
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = jsonDecode(response.body);
-        log('✅ 백엔드 응답 성공: ${response.statusCode}');
+      final data = jsonDecode(response.body);
+      log('✅ 백엔드 응답 성공: ${response.statusCode}');
+      log('🔍 구글 로그인 전체 응답: $data');
+      
+      if (response.statusCode == 200) {
+        // 200: 기존 사용자 응답 - 통합 필요 여부 확인
+        log('✅ 기존 사용자 응답');
+        
+        // 계정 통합이 필요한지 확인
+        if (data['data']?['needs_integration'] == true) {
+          log('🔍 계정 통합 필요');
+          if (onExistingUserFound != null) {
+            onExistingUserFound!(email, displayName ?? 'Unknown', data['data']);
+          }
+          return data;
+        } else {
+          // 이미 통합된 계정이면 바로 로그인
+          log('✅ 기존 사용자 로그인 성공');
           
-          // 🔧 수정: 통합 상태에 따른 처리
-          if (data['data']?['user_exists'] == true && data['data']?['needs_integration'] == true) {
-            // 기존 사용자이지만 통합이 필요한 경우 통합 옵션 제공
-            log('🔍 기존 사용자 발견 (통합 필요): ${data['data']['existing_user_name']}');
-            if (onExistingUserFound != null) {
-              onExistingUserFound!(email, displayName ?? 'Unknown', data['data']);
-            }
-            return data;
-          } else if (data['data']?['user_exists'] == true && data['data']?['needs_integration'] != true) {
-            // 기존 사용자이고 이미 통합된 경우 바로 로그인 성공
-            log('✅ 기존 사용자 (이미 통합됨): 바로 로그인 성공');
-            
-            // JWT 토큰 저장
-            if (data['data']['access_token'] != null) {
-              await _storage.write(key: 'ACCESS_TOKEN', value: data['data']['access_token']);
-              if (data['data']['refresh_token'] != null) {
-                await _storage.write(key: 'REFRESH_TOKEN', value: data['data']['refresh_token']);
-              }
-              await _storage.write(key: 'LOGIN_ID', value: email);
-              await _storage.write(key: 'PASSWORD', value: 'social_login');
-            }
-            
-            if (onSocialLoginSuccess != null) {
-              onSocialLoginSuccess!(email, displayName ?? 'Unknown');
-            }
-            return data;
-          } else if (data['data']?['user_exists'] == false && data['data']?['access_token'] != null) {
-            // 새로운 사용자인 경우 JWT 토큰 저장 및 화면 전환
-            log('✅ 새 사용자: 약관 동의 페이지로 이동');
+          // JWT 토큰 저장
+          if (data['data']?['access_token'] != null) {
             await _storage.write(key: 'ACCESS_TOKEN', value: data['data']['access_token']);
-            
             if (data['data']['refresh_token'] != null) {
               await _storage.write(key: 'REFRESH_TOKEN', value: data['data']['refresh_token']);
             }
-            
             await _storage.write(key: 'LOGIN_ID', value: email);
             await _storage.write(key: 'PASSWORD', value: 'social_login');
-            
-            if (onSocialLoginSuccess != null) {
-              onSocialLoginSuccess!(email, displayName ?? 'Unknown');
-            }
-            return data;
-          } else {
-            log('❌ access_token이 응답에 없습니다');
           }
+          
+          if (onExistingUserLogin != null) {
+            onExistingUserLogin!(email, displayName ?? 'Unknown');
+          }
+          return data;
+        }
         
+      } else if (response.statusCode == 201) {
+        // 201: 새 사용자 생성 성공
+        log('✅ 새 사용자 생성 성공');
+        
+        // JWT 토큰 저장
+        if (data['data']?['access_token'] != null) {
+          await _storage.write(key: 'ACCESS_TOKEN', value: data['data']['access_token']);
+          if (data['data']['refresh_token'] != null) {
+            await _storage.write(key: 'REFRESH_TOKEN', value: data['data']['refresh_token']);
+          }
+          await _storage.write(key: 'LOGIN_ID', value: email);
+          await _storage.write(key: 'PASSWORD', value:'social_login');
+        }
+        
+        if (onSocialLoginSuccess != null) {
+          onSocialLoginSuccess!(email, displayName ?? 'Unknown', '');
+        }
         return data;
+        
+      } else if (response.statusCode == 226) {
+        // 226: 추가 정보 입력 필요 (신규 사용자)
+        if (data['data']?['requires_additional_info'] == true) {
+          log('🔍 신규 사용자 - 추가 정보 입력 필요');
+          final tempUserId = data['data']['temp_user_id'] ?? '';
+          log('🔍 구글 tempUserId 추출: $tempUserId');
+          if (onSocialLoginSuccess != null) {
+            onSocialLoginSuccess!(email, displayName ?? 'Unknown', tempUserId);
+          }
+          
+          // 🔧 추가: user 정보도 포함하여 반환
+          return {
+            ...data,
+            'status': 226,  // 🔧 추가: status 필드 명시
+            'user': {
+              'email': email,
+              'user_name': displayName ?? 'Unknown',
+            },
+          };
+        } else {
+          // 226: 계정 통합 필요
+          log('🔍 계정 통합 필요');
+          if (onExistingUserFound != null) {
+            onExistingUserFound!(email, displayName ?? 'Unknown', data['data']);
+          }
+          return data;
+        }
+        
       } else {
-        log('❌ 백엔드 에러: ${response.statusCode}');
+        log('❌ 예상치 못한 상태 코드: ${response.statusCode}');
         throw Exception('Backend error: ${response.statusCode}');
       }
     } catch (e) {

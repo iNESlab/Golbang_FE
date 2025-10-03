@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +15,7 @@ import 'package:golbang/services/group_service.dart';
 import 'package:golbang/services/user_service.dart';
 import 'package:golbang/services/statistics_service.dart';
 import '../../repoisitory/secure_storage.dart';
+import '../../provider/club/club_state_provider.dart';
 
 
 class HomePage extends ConsumerStatefulWidget {
@@ -23,7 +25,7 @@ class HomePage extends ConsumerStatefulWidget {
   ConsumerState<HomePage> createState() => _HomeContentState();
 }
 
-class _HomeContentState extends ConsumerState<HomePage> {
+class _HomeContentState extends ConsumerState<HomePage> with WidgetsBindingObserver {
   // Fetching services
   late final UserService userService;
   late final GroupService groupService;
@@ -33,6 +35,9 @@ class _HomeContentState extends ConsumerState<HomePage> {
   late String date;
   late Future<List<dynamic>> _dataFuture;
   late List<Event> _events;
+  
+  // 🔧 추가: 타이머 기반 새로고침
+  Timer? _refreshTimer;
 
   Future<List<dynamic>> _loadData() {
     return Future.wait([
@@ -56,6 +61,31 @@ class _HomeContentState extends ConsumerState<HomePage> {
       _dataFuture = _loadData();
     });
   }
+  
+  // 🔧 추가: unread count만 업데이트하는 메서드 (화면 새로고침 없음)
+  Future<void> _refreshUnreadCountOnly() async {
+    try {
+      // clubStateProvider만 업데이트하여 unread count 새로고침
+      await ref.read(clubStateProvider.notifier).fetchClubs();
+      log('✅ unread count 업데이트 완료');
+    } catch (e) {
+      log('❌ unread count 업데이트 실패: $e');
+    }
+  }
+  
+  // 🔧 추가: 즉시 unread count 업데이트하는 메서드 (동기적)
+  void _refreshUnreadCountImmediately() {
+    try {
+      log('🔄 홈 화면 포커스: unread count 즉시 업데이트 시작');
+      
+      // 동기적으로 clubStateProvider 업데이트
+      ref.read(clubStateProvider.notifier).fetchClubs();
+      log('✅ 홈 화면 포커스: unread count 즉시 업데이트 완료');
+      
+    } catch (e) {
+      log('❌ 즉시 unread count 업데이트 실패: $e');
+    }
+  }
 
   @override
   void initState() {
@@ -71,6 +101,46 @@ class _HomeContentState extends ConsumerState<HomePage> {
     date = '${focusedDay.year}-${focusedDay.month.toString().padLeft(2, '0')}-01';
 
     _dataFuture = _loadData();
+    
+    // 🔧 추가: 라이프사이클 옵저버 등록
+    WidgetsBinding.instance.addObserver(this);
+    
+    // 🔧 추가: 15초마다 unread count 새로고침 (화면 새로고침 없음)
+    _refreshTimer = Timer.periodic(Duration(seconds: 15), (timer) {
+      if (mounted) {
+        log('🔄 타이머 기반 unread count 업데이트');
+        _refreshUnreadCountOnly();
+      }
+    });
+  }
+  
+  @override
+  void dispose() {
+    // 🔧 추가: 타이머 정리
+    _refreshTimer?.cancel();
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    log('🔍 HomePage didChangeDependencies 호출됨');
+    // 🔧 수정: 화면이 다시 포커스될 때 unread count 즉시 업데이트
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      log('🔍 HomePage addPostFrameCallback 실행: _refreshUnreadCountImmediately 호출');
+      _refreshUnreadCountImmediately(); // 즉시 unread count 업데이트
+    });
+  }
+  
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    // 🔧 추가: 앱이 다시 활성화될 때 unread count만 업데이트
+    if (state == AppLifecycleState.resumed) {
+      log('🔄 앱 활성화: unread count 업데이트');
+      _refreshUnreadCountOnly();
+    }
   }
 
 
@@ -144,7 +214,7 @@ class _HomeContentState extends ConsumerState<HomePage> {
                   height: screenHeight * 0.18,
                   child: SectionWithScroll(
                     title: '내 모임 ${clubs.length}',
-                    child: GroupsSection(clubs: clubs),
+                    child: GroupsSection(), // 🔧 수정: clubs props 제거, clubStateProvider 사용
                   ),
                 ),
               ],

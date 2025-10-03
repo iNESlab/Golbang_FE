@@ -35,11 +35,15 @@ final List<GoRoute> authRoutes = [
           final email = state.uri.queryParameters['email'];
           final displayName = state.uri.queryParameters['displayName'];
           final isSocialLogin = state.uri.queryParameters['isSocialLogin'] == 'true';
+          final provider = state.uri.queryParameters['provider'];
+          final tempUserId = state.uri.queryParameters['tempUserId'];
           
           return AdditionalInfoPage(
             email: email,
             displayName: displayName,
             isSocialLogin: isSocialLogin,
+            provider: provider,
+            tempUserId: tempUserId,
           );
         },
       ),
@@ -49,11 +53,15 @@ final List<GoRoute> authRoutes = [
           final email = state.uri.queryParameters['email'];
           final displayName = state.uri.queryParameters['displayName'];
           final isSocialLogin = state.uri.queryParameters['isSocialLogin'] == 'true';
+          final provider = state.uri.queryParameters['provider'];
+          final tempUserId = state.uri.queryParameters['tempUserId'];
           
           return TermsAgreementPage(
             email: email,
             displayName: displayName,
             isSocialLogin: isSocialLogin,
+            provider: provider,
+            tempUserId: tempUserId,
           );
         },
         routes: [

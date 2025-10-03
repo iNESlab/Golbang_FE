@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/chat_room.dart';
 import '../../services/chat_service.dart';
-import '../../repoisitory/secure_storage.dart';
+import '../../global/PrivateClient.dart';
 
 // 채팅방 상태를 관리하는 provider
 class ChatRoomNotifier extends StateNotifier<AsyncValue<ChatRoom?>> {
@@ -39,8 +39,7 @@ class ChatRoomNotifier extends StateNotifier<AsyncValue<ChatRoom?>> {
 
 // 채팅방 provider
 final chatRoomProvider = StateNotifierProvider<ChatRoomNotifier, AsyncValue<ChatRoom?>>((ref) {
-  final storage = ref.watch(secureStorageProvider);
-  final chatService = ChatService(storage);
+  final chatService = ChatService(PrivateClient());
   return ChatRoomNotifier(chatService);
 });
 
@@ -107,8 +106,7 @@ class ChatMessagesNotifier extends StateNotifier<AsyncValue<List<ChatMessage>>> 
 
 // 채팅 메시지 provider
 final chatMessagesProvider = StateNotifierProvider.family<ChatMessagesNotifier, AsyncValue<List<ChatMessage>>, String>((ref, chatRoomId) {
-  final storage = ref.watch(secureStorageProvider);
-  final chatService = ChatService(storage);
+  final chatService = ChatService(PrivateClient());
   return ChatMessagesNotifier(chatService, chatRoomId);
 });
 
@@ -138,7 +136,6 @@ class ChatParticipantsNotifier extends StateNotifier<AsyncValue<List<String>>> {
 
 // 채팅방 참가자 provider
 final chatParticipantsProvider = StateNotifierProvider.family<ChatParticipantsNotifier, AsyncValue<List<String>>, String>((ref, chatRoomId) {
-  final storage = ref.watch(secureStorageProvider);
-  final chatService = ChatService(storage);
+  final chatService = ChatService(PrivateClient());
   return ChatParticipantsNotifier(chatService, chatRoomId);
 });

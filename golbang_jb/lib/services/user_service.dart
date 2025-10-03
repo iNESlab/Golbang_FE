@@ -291,4 +291,60 @@ class UserService {
   //
   //   var response = await dioClient.dio.patch(uri, data: {'password': newPassword});
   // }
+
+  // 🔧 추가: 사용자 ID 중복 확인
+  Future<Map<String, dynamic>> checkUserIdAvailability(String userId) async {
+    try {
+      final response = await publicClient.dio.post(
+        '/api/v1/users/check-user-id/',
+        data: {'user_id': userId},
+      );
+      
+      if (response.statusCode == 200) {
+        return response.data['data'] ?? {};
+      } else {
+        throw Exception('사용자 ID 확인 실패');
+      }
+    } catch (e) {
+      log('사용자 ID 중복 확인 오류: $e');
+      rethrow;
+    }
+  }
+
+  // 🔧 추가: 소셜 로그인 회원가입 완료
+  Future<Map<String, dynamic>> completeSocialRegistration({
+    required String tempUserId,
+    required String userId,
+    String? studentId,
+    String? name, // 🔧 추가: 닉네임 파라미터
+  }) async {
+    try {
+      final response = await publicClient.dio.post(
+        '/api/v1/users/complete-social-registration/',
+        data: {
+          'temp_user_id': tempUserId,
+          'user_id': userId,
+          'student_id': studentId,
+          if (name != null) 'name': name, // 🔧 추가: 닉네임 전송
+        },
+      );
+      
+      // 🔧 디버깅: 응답 상태 코드와 데이터 확인
+      log('🔍 API 응답 상태 코드: ${response.statusCode}');
+      log('🔍 API 응답 데이터: ${response.data}');
+      
+      // 🔧 수정: 200과 201 모두 성공으로 처리
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        // 🔧 수정: data 필드가 없으면 전체 응답 반환
+        final result = response.data['data'] ?? response.data;
+        log('🔍 반환할 데이터: $result');
+        return result;
+      } else {
+        throw Exception('회원가입 완료 실패 - 상태 코드: ${response.statusCode}');
+      }
+    } catch (e) {
+      log('소셜 로그인 회원가입 완료 오류: $e');
+      rethrow;
+    }
+  }
 }

@@ -98,6 +98,23 @@ class PrivateClient {
   }
 
   Dio get dio => _dio;
+
+  // HTTP 메서드들 추가
+  Future<Response> get(String path, {Map<String, dynamic>? queryParameters, Options? options}) async {
+    return await _dio.get(path, queryParameters: queryParameters, options: options);
+  }
+
+  Future<Response> post(String path, {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) async {
+    return await _dio.post(path, data: data, queryParameters: queryParameters, options: options);
+  }
+
+  Future<Response> put(String path, {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) async {
+    return await _dio.put(path, data: data, queryParameters: queryParameters, options: options);
+  }
+
+  Future<Response> delete(String path, {dynamic data, Map<String, dynamic>? queryParameters, Options? options}) async {
+    return await _dio.delete(path, data: data, queryParameters: queryParameters, options: options);
+  }
 }
 
 // Future<void> uploadFile(String filePath) async {

@@ -304,18 +304,38 @@ class StompChatService {
     try {
       log('📥 원본 메시지 수신: $message');
       final data = jsonDecode(message);
-      log('📊 파싱된 메시지: $data');
-      
+      log('📊 파싱된 메시지 타입: ${data['type']}');
+
       if (data['type'] == 'chat_message') {
-        log('💬 채팅 메시지 처리: ${data['message']['content']}');
-        
+        String content = data['message']['content'];
+        String messageType = data['message']['message_type'] ?? 'TEXT';
+
+        log('💬 chat_message 처리: message_type=$messageType, content=${content?.substring(0, min(100, content.length))}...');
+
+        // 🔧 수정: 백엔드에서 중첩 JSON으로 보내는 경우 내부 데이터 사용
+        if (content != null && content.startsWith('{"type":"chat_message"')) {
+          try {
+            final wrapperData = jsonDecode(content);
+            if (wrapperData['type'] == 'chat_message') {
+              // 내부의 실제 데이터 사용
+              content = wrapperData['content'];
+              messageType = wrapperData['message_type'] ?? 'TEXT';
+              log('🔄 중첩 chat_message 언래핑: message_type=$messageType');
+            }
+          } catch (e) {
+            log('❌ 중첩 chat_message 파싱 실패: $e');
+          }
+        }
+
         final chatMessage = ChatMessage(
           messageId: data['message']['id'],
           chatRoomId: 'current_room',
           senderId: data['message']['sender_id'] ?? data['message']['sender'],
-          senderName: data['message']['sender'],
-          content: data['message']['content'],
-          messageType: data['message']['message_type'],
+          senderUniqueId: data['message']['sender_unique_id']?.toString(),
+          senderName: data['message']['sender_name'] ?? data['message']['sender'],
+          senderProfileImage: data['message']['sender_profile_image'], // 🔧 추가: 프로필 이미지
+          content: content,
+          messageType: messageType,
           timestamp: DateTime.parse(data['message']['created_at']),
           isRead: false,
           isPinned: data['message']['is_pinned'] ?? false,
@@ -332,7 +352,9 @@ class StompChatService {
           messageId: messageData['id'] ?? _generateUuid(),
           chatRoomId: 'current_room',
           senderId: messageData['sender_id'] ?? 'admin',
-          senderName: messageData['sender'] ?? '관리자',
+          senderUniqueId: messageData['sender_unique_id']?.toString(),
+          senderName: messageData['sender_name'] ?? messageData['sender'] ?? '관리자',
+          senderProfileImage: messageData['sender_profile_image'], // 🔧 추가: 프로필 이미지
           content: messageData['content'] ?? '관리자 메시지',
           messageType: 'ADMIN',
           timestamp: messageData['created_at'] != null 
@@ -351,7 +373,9 @@ class StompChatService {
           messageId: messageData['id'] ?? _generateUuid(),
           chatRoomId: 'current_room',
           senderId: messageData['sender_id'] ?? 'admin',
-          senderName: messageData['sender'] ?? '관리자',
+          senderUniqueId: messageData['sender_unique_id']?.toString(),
+          senderName: messageData['sender_name'] ?? messageData['sender'] ?? '관리자',
+          senderProfileImage: messageData['sender_profile_image'], // 🔧 추가: 프로필 이미지
           content: messageData['content'] ?? '공지사항',
           messageType: 'ANNOUNCEMENT',
           timestamp: messageData['created_at'] != null 
@@ -371,12 +395,14 @@ class StompChatService {
           for (final messageData in data['messages']) {
             try {
               final chatMessage = ChatMessage(
-                messageId: messageData['id'],
+                messageId: messageData['id'] ?? '',
                 chatRoomId: 'current_room',
-                senderId: messageData['sender_id'] ?? messageData['sender'],
-                senderName: messageData['sender'],
-                content: messageData['content'],
-                messageType: messageData['message_type'],
+                senderId: messageData['sender_id'] ?? messageData['sender'] ?? '',
+                senderUniqueId: messageData['sender_unique_id']?.toString(),
+                senderName: messageData['sender_name'] ?? messageData['sender'] ?? '',
+                senderProfileImage: messageData['sender_profile_image'],
+                content: messageData['content'] ?? '',
+                messageType: messageData['message_type'] ?? 'TEXT',
                 timestamp: DateTime.parse(messageData['created_at']),
                 isRead: false,
                 isPinned: messageData['is_pinned'] ?? false,
@@ -384,6 +410,7 @@ class StompChatService {
               historyMessages.add(chatMessage);
             } catch (e) {
               log('❌ 히스토리 메시지 파싱 실패: $e');
+              log('❌ 문제 메시지 데이터: $messageData');
             }
           }
         }
@@ -399,7 +426,9 @@ class StompChatService {
             'messages': historyMessages.map((m) => {
               'id': m.messageId,
               'sender_id': m.senderId,
-              'sender': m.senderName,
+              'sender_unique_id': m.senderUniqueId,
+              'sender_name': m.senderName,
+              'sender_profile_image': m.senderProfileImage,
               'content': m.content,
               'message_type': m.messageType,
               'created_at': m.timestamp.toIso8601String(),
@@ -422,7 +451,9 @@ class StompChatService {
                 messageId: messageData['id'],
                 chatRoomId: 'current_room',
                 senderId: messageData['sender_id'] ?? messageData['sender'],
-                senderName: messageData['sender'],
+                senderUniqueId: messageData['sender_unique_id']?.toString(),
+                senderName: messageData['sender_name'] ?? messageData['sender'],
+                senderProfileImage: messageData['sender_profile_image'], // 🔧 추가: 프로필 이미지
                 content: messageData['content'],
                 messageType: messageData['message_type'],
                 timestamp: DateTime.parse(messageData['created_at']),

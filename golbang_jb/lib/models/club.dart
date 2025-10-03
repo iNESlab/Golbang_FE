@@ -9,6 +9,7 @@ class Club {
   final List<Member> members;
   final DateTime createdAt;
   final bool isAdmin;
+  final int unreadCount; // 🔧 추가: 읽지 않은 메시지 개수
 
   Club({
     required this.id,
@@ -18,6 +19,7 @@ class Club {
     required this.members,
     required this.createdAt,
     required this.isAdmin, // 필수 필드로 설정
+    this.unreadCount = 0, // 🔧 추가: 기본값 0
   });
 
   factory Club.fromJson(Map<String, dynamic> json) {
@@ -33,6 +35,7 @@ class Club {
           .toList(),
       createdAt: DateTime.parse(json['created_at']),
       isAdmin: json['is_admin'] ?? false, // isAdmin 필드를 JSON에서 가져옴
+      unreadCount: json['unread_count'] ?? 0, // 🔧 추가: 읽지 않은 메시지 개수 파싱
     );
   }
 
@@ -43,6 +46,7 @@ class Club {
     bool? isAdmin,
     List<Member>? members,
     DateTime? createdAt,
+    int? unreadCount, // 🔧 추가: unreadCount 파라미터
   }) {
     return Club(
       id: id ?? this.id,
@@ -51,6 +55,7 @@ class Club {
       isAdmin: isAdmin ?? this.isAdmin,
       members: members ?? this.members,
       createdAt: createdAt ?? this.createdAt,
+      unreadCount: unreadCount ?? this.unreadCount, // 🔧 추가: unreadCount 복사
     );
   }
 
@@ -60,5 +65,32 @@ class Club {
         .where((member) => member.role == 'admin')
         .map((admin) => admin.name)
         .toList();
+  }
+
+  // 🔧 추가: 현재 사용자의 클럽 상태를 반환하는 메서드
+  String? getCurrentUserStatus(int currentUserId) {
+    try {
+      final currentUserMember = members.firstWhere(
+        (member) => member.accountId == currentUserId,
+      );
+      return currentUserMember.statusType;
+    } catch (e) {
+      return null; // 사용자가 멤버가 아닌 경우
+    }
+  }
+
+  // 🔧 추가: 현재 사용자가 클럽에 속해있는지 확인
+  bool isUserMember(int currentUserId) {
+    return members.any((member) => member.accountId == currentUserId);
+  }
+
+  // 🔧 추가: 가입 신청 대기 중인 멤버가 있는지 확인 (관리자용)
+  bool get hasPendingApplications {
+    return members.any((member) => member.statusType == 'applied');
+  }
+
+  // 🔧 추가: 가입 신청 대기 중인 멤버 수 (관리자용)
+  int get pendingApplicationsCount {
+    return members.where((member) => member.statusType == 'applied').length;
   }
 }

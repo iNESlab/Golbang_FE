@@ -29,6 +29,7 @@ class _ClubCreatePageState extends ConsumerState<ClubCreatePage> {
   final TextEditingController _groupNameController = TextEditingController();
   final TextEditingController _groupDescriptionController = TextEditingController();
   XFile? _imageFile;
+  bool _isLoading = false; // 🔧 추가: 로딩 상태
 
   final ImagePicker _picker = ImagePicker();
 
@@ -77,26 +78,38 @@ class _ClubCreatePageState extends ConsumerState<ClubCreatePage> {
     String groupDescription = _groupDescriptionController.text; // 빈 문자열 허용
 
     if (groupName.isNotEmpty) {
-      final groupService = GroupService(ref.read(secureStorageProvider));
-      bool success = await groupService.saveGroup(
-        name: groupName,
-        description: groupDescription, // 입력하지 않으면 빈 문자열
-        members: selectedUsers,
-        admins: selectedAdminUsers,
-        imageFile: _imageFile != null ? File(_imageFile!.path) : null,
-        currentUserId: userId,
-      );
+      setState(() => _isLoading = true); // 🔧 추가: 로딩 시작
+      
+      try {
+        final groupService = GroupService(ref.read(secureStorageProvider));
+        bool success = await groupService.saveGroup(
+          name: groupName,
+          description: groupDescription, // 입력하지 않으면 빈 문자열
+          members: selectedUsers,
+          admins: selectedAdminUsers,
+          imageFile: _imageFile != null ? File(_imageFile!.path) : null,
+          currentUserId: userId,
+        );
 
-      if (success) {
+        if (success) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('성공적으로 생성 완료하였습니다.')),
+          );
+          ref.read(clubStateProvider.notifier).fetchClubs(); // 클럽 리스트 다시 불러오기
+          context.pop(); // 성공 시 페이지 닫기
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('그룹을 생성하는 데 실패했습니다. 나중에 다시 시도해주세요.')),
+          );
+        }
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('성공적으로 생성 완료하였습니다.')),
+          SnackBar(content: Text('오류가 발생했습니다: $e')),
         );
-        ref.read(clubStateProvider.notifier).fetchClubs(); // 클럽 리스트 다시 불러오기
-        context.pop(); // 성공 시 페이지 닫기
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('그룹을 생성하는 데 실패했습니다. 나중에 다시 시도해주세요.')),
-        );
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false); // 🔧 추가: 로딩 종료
+        }
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -213,13 +226,29 @@ class _ClubCreatePageState extends ConsumerState<ClubCreatePage> {
               const SizedBox(height: 20),
               Center(
                 child: ElevatedButton(
-                  onPressed: _onComplete,
+                  onPressed: _isLoading ? null : _onComplete, // 🔧 추가: 로딩 중 버튼 비활성화
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.teal,
                     foregroundColor: Colors.white,
                     minimumSize: const Size(double.infinity, 50),
                   ),
-                  child: const Text('완료'),
+                  child: _isLoading 
+                    ? const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                            ),
+                          ),
+                          SizedBox(width: 10),
+                          Text('생성 중...'),
+                        ],
+                      )
+                    : const Text('완료'),
                 ),
               ),
             ],

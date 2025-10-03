@@ -5,6 +5,7 @@ import 'package:golbang/app/routes/club_routes.dart';
 import 'package:golbang/app/routes/etc_routes.dart';
 import 'package:golbang/app/routes/event_routes.dart';
 import 'package:golbang/app/routes/user_routes.dart';
+import 'package:golbang/app/current_route_service.dart';
 
 import '../main.dart';
 import '../pages/club/club_main.dart';
@@ -13,6 +14,7 @@ import '../pages/home/home_page.dart';
 import '../pages/logins/login.dart';
 import '../pages/profile/profile_screen.dart';
 import 'main_scaffold.dart';
+
 final GoRouter appRouter = GoRouter(
   initialLocation: '/app', // '/app'이면 매칭이 없어 404 날 수 있어요. 홈으로 시작 권장
   navigatorKey: navigatorKey,

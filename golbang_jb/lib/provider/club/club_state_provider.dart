@@ -22,12 +22,23 @@ class ClubStateNotifier extends StateNotifier<ClubState> {
   Future<void> fetchClubs() async {
     try {
       final clubs = await _clubService.getMyClubList();
-      log('club[0] length: ${clubs[0].members.length}');
+      
+      // 🔧 수정: 빈 배열 체크 추가
+      if (clubs.isNotEmpty) {
+        log('club[0] length: ${clubs[0].members.length}');
+        log('🔍 fetchClubs: club[0].unreadCount=${clubs[0].unreadCount}');
+        log('🔍 fetchClubs: club[0].name=${clubs[0].name}');
+      } else {
+        log('🔍 fetchClubs: 클럽 목록이 비어있음');
+      }
+      
       // selectedClub 초기화
       state = state.copyWith(
         clubList: clubs,
         selectedClub: null,
       );
+      
+      log('🔍 fetchClubs: state 업데이트 완료, clubList.length=${state.clubList.length}');
     } catch (e) {
       log('클럽 목록 불러오기 실패: $e');
     }

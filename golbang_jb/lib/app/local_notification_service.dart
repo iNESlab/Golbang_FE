@@ -54,14 +54,30 @@ class LocalNotificationService {
 
   /// Foreground 상태에서 푸시 메시지를 로컬 알림으로 보여줌
   static void show(RemoteMessage message) {
+    log('🔔 로컬 알림 표시 시작');
     final notification = message.notification;
     final android = message.notification?.android;
 
-    if (notification != null && android != null) {
+    // 🔧 추가: 사진 메시지 처리
+    String? displayBody = notification?.body;
+    final messageType = message.data['type'];
+    final msgType = message.data['msgType']; // 🔧 수정: FCM에서 전송하는 키 사용
+    final senderName = message.data['sender_name'];
+    
+    // 사진 메시지인 경우 로그 출력
+    if (messageType == 'chat_message' && msgType == 'IMAGE') {
+      log('📱 사진 메시지 감지됨: $displayBody');
+    }
+
+    log('📱 알림 정보: ${notification?.title} - $displayBody');
+    log('📱 Android 정보: ${android != null ? "있음" : "없음"}');
+
+    if (notification != null) {
+      log('✅ 알림 표시 진행 (Android 정보 무시)');
       _plugin.show(
         notification.hashCode,
         notification.title,
-        notification.body,
+        displayBody ?? notification.body,
         NotificationDetails(
           android: AndroidNotificationDetails(
             _channel.id,
@@ -69,7 +85,7 @@ class LocalNotificationService {
             channelDescription: _channel.description,
             icon: '@mipmap/ic_launcher',
             styleInformation: BigTextStyleInformation(
-              notification.body ?? '',
+              displayBody ?? notification.body ?? '',
               contentTitle: notification.title,
               summaryText: '알림 도착',
             ),
@@ -77,6 +93,9 @@ class LocalNotificationService {
         ),
         payload: jsonEncode(message.data),
       );
+    } else {
+      log('❌ 알림 표시 실패: notification 정보 없음');
+      log('📱 notification: ${notification != null ? "있음" : "없음"}');
     }
   }
 }
