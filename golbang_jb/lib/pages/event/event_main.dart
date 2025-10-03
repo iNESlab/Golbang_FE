@@ -375,8 +375,7 @@ class EventPageState extends ConsumerState<EventPage> {
                               children: [
                                 // 기존 버튼들
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment
-                                      .spaceBetween,
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     TextButton(
                                       onPressed: () {
@@ -388,34 +387,29 @@ class EventPageState extends ConsumerState<EventPage> {
                                           vertical: height * 0.005, // 반응형 상하 패딩
                                           horizontal: width * 0.02, // 반응형 좌우 패딩
                                         ),
-                                        minimumSize: Size(width * 0.2,
-                                            height * 0.04), // 최소 크기 설정
+                                        minimumSize: Size(width * 0.2, height * 0.04), // 최소 크기 설정
                                       ),
                                       child: Text(
                                         '세부 정보 보기',
-                                        style: TextStyle(color: Colors.black,
-                                            fontSize: calenderTitleFontSize),
+                                        style: TextStyle(color: Colors.black, fontSize: calenderTitleFontSize),
                                       ),
                                     ),
                                     TextButton(
-                                      onPressed: () =>
-                                          _handleButtonPress(event, statusType),
+                                      onPressed: () => _handleButtonPress(event, statusType),
                                       style: TextButton.styleFrom(
                                         foregroundColor: Colors.black,
                                         padding: EdgeInsets.symmetric(
                                           vertical: height * 0.005, // 반응형 상하 패딩
                                           horizontal: width * 0.02, // 반응형 좌우 패딩
                                         ),
-                                        minimumSize: Size(width * 0.2,
-                                            height * 0.04), // 최소 크기 설정
+                                        minimumSize: Size(width * 0.2, height * 0.04), // 최소 크기 설정
                                       ),
                                       child: Text(
                                         _getButtonText(event),
                                         style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: calenderTitleFontSize,
-                                          color: currentTime.isBefore(
-                                              event.startDateTime)
+                                          color: currentTime.isBefore(event.startDateTime)
                                               ? Colors.grey // 비활성화된 텍스트 색상
                                               : Colors.black, // 활성화된 텍스트 색상
                                         ),
@@ -476,6 +470,7 @@ class EventPageState extends ConsumerState<EventPage> {
   void _navigateToEventDetail(Event event) async {
     await context.push('/app/events/${event.eventId}');
   }
+
 
 
   Color _getStatusColor(String statusType) {

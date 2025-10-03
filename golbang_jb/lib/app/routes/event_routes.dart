@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:go_router/go_router.dart';
 import 'package:golbang/models/club.dart';
 import 'package:golbang/pages/event/event_create2.dart';
@@ -18,6 +17,7 @@ import '../../pages/event/result/event_result_full_score_card.dart';
 import '../../pages/event/event_update1.dart';
 import '../../pages/game/overall_score_page.dart';
 import '../../pages/game/score_card_page.dart';
+import '../../pages/chat/club_chat_page.dart';
 
 final List<GoRoute> eventRoutes = [
   // /app/events/new-step1
@@ -150,6 +150,18 @@ final List<GoRoute> eventRoutes = [
               existingParticipants: extra?['existingParticipants'] as List<Participant>,
               selectedGameMode: extra?['selectedGameMode'] as GameMode,
             ),
+          );
+        },
+      ),
+
+      // /app/events/:eventId/chat
+      GoRoute(
+        path: 'chat',
+        builder: (context, state) {
+          final extra = state.extra as Map<String, dynamic>?;
+          return ClubChatPage(
+            event: extra?['event'] as Event,
+            chatRoom: extra?['chatRoom'],
           );
         },
       ),

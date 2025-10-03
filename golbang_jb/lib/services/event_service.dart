@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:golbang/models/create_participant.dart';
 import '../global/PrivateClient.dart';
@@ -143,7 +144,8 @@ class EventService {
   Future<bool?> endEvent(int eventId) async {
     return await safeDioCall<bool>(() async {
       // API URL 설정
-      final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/');
+      final baseUrl = dotenv.env['API_HOST']!;
+      final url = Uri.parse('$baseUrl/api/v1/events/$eventId/');
 
       // API 요청
       await privateClient.dio.patchUri(url);
@@ -238,7 +240,8 @@ class EventService {
   Future<Event?> getEventDetails(int eventId) async {
     return await safeDioCall<Event?>(() async {
         // API URL 설정
-        final url = Uri.parse('${dotenv.env['API_HOST']}/api/v1/events/$eventId/');
+        final baseUrl = dotenv.env['API_HOST']!;
+        final url = Uri.parse('$baseUrl/api/v1/events/$eventId/');
 
         // API 요청
         final response = await privateClient.dio.getUri(url);
