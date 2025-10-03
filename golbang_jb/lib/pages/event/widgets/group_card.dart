@@ -6,12 +6,26 @@ class GroupCard extends StatelessWidget {
   final List<CreateParticipant> members;
   final VoidCallback onAddParticipant;
 
-  const GroupCard({super.key, 
+  const GroupCard({super.key,
     required this.groupName,
     required this.members,
     required this.onAddParticipant,
     required TextStyle buttonTextStyle,
   });
+
+  Color _getStatusColor(String status) {
+    switch (status) {
+      case 'PARTY':
+        return const Color(0xFF4D08BD);
+      case 'ACCEPT':
+        return const Color(0xFF08BDBD);
+      case 'DENY':
+        return const Color(0xFFF21B3F);
+      case 'PENDING':
+      default:
+        return Colors.grey;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,9 +63,14 @@ class GroupCard extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 8),
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: Colors.grey),
+                border: Border.all(color: _getStatusColor(member.statusType!)),
               ),
-              child: Center(child: Text(member.name)),
+              child: Center(child: Text(
+                member.name,
+                style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: _getStatusColor(member.statusType!)),
+              )),
             ),
         ],
       ),

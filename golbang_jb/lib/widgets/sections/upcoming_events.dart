@@ -31,14 +31,22 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
   }
 
   Future<void> _handleStatusChange(String newStatus, int participantId, Event event) async {
-    bool success = await _participantService.updateParticipantStatus(participantId, newStatus);
-    if (success) {
+    try {
+      await _participantService.updateParticipantStatus(
+          participantId, newStatus);
       setState(() {
         final participant = event.participants.firstWhere(
               (p) => p.participantId == participantId,
         );
         participant.statusType = newStatus;
       });
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -114,9 +122,7 @@ class UpcomingEventsState extends ConsumerState<UpcomingEvents> {
 
               return GestureDetector(
                 onTap: () async {
-                  final result = await context.push(
-                    '/app/events/${event.eventId}', extra: {'event': event}
-                  );
+                  final result = await context.push('/app/events/${event.eventId}');
 
                   log('수정 여부: $result');
 

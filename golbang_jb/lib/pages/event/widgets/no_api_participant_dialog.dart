@@ -104,7 +104,7 @@ class _ParticipantSelectionDialogState
                     : const CircularIcon(), // null일 때 동그란 아이콘
               ),
               title: Text(participant.name), // 이름 표시
-              subtitle: Text('ID: ${participant.memberId.toString()}'), // ID 표시
+              subtitle: Text('참석 여부: ${participant.statusType}'), // ID 표시
               value: _isParticipantSelected(participant), // 선택 상태 표시
               onChanged: (bool? selected) {
                 _toggleParticipantSelection(participant); // 선택/해제 처리

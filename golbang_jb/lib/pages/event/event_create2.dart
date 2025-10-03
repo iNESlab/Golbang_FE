@@ -55,6 +55,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
   List<CreateParticipant> _selectedParticipants = [];
   bool hasDuplicateParticipants = false;
   bool areGroupsEmpty = true;
+  bool _isLoading = false; // 🔧 추가: 로딩 상태
 
   @override
   void initState() {
@@ -67,6 +68,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
       return CreateParticipant(
         memberId: participant.memberId,
         name: participant.name,
+        statusType: 'PENDING',
         profileImage: participant.profileImage ?? '',
         teamType: teamConfig,
         groupType: 0, // 0으로 하면, 에러 뜸.
@@ -163,46 +165,56 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
   }
 
   Future<void> _onCompletePressed() async {
-    final event = CreateEvent(
-      eventTitle: widget.title,
-      location: widget.selectedLocation?.toString() ?? "Unknown Location",
-      golfClubId: widget.selectedGolfClub.golfClubId,
-      golfCourseId: widget.selectedCourse.golfCourseId,
-      startDateTime: widget.startDate,
-      endDateTime: widget.endDate,
-      repeatType: "NONE",
-      gameMode: gameMode.value,
-      alertDateTime: "",
-    );
+    setState(() => _isLoading = true); // 🔧 추가: 로딩 시작
+    
+    try {
+      final event = CreateEvent(
+        eventTitle: widget.title,
+        location: widget.selectedLocation?.toString() ?? "Unknown Location",
+        golfClubId: widget.selectedGolfClub.golfClubId,
+        golfCourseId: widget.selectedCourse.golfCourseId,
+        startDateTime: widget.startDate,
+        endDateTime: widget.endDate,
+        repeatType: "NONE",
+        gameMode: gameMode.value,
+        alertDateTime: "",
+      );
 
-    for (var participant in _selectedParticipants) {
-      if (participant.groupType==0) {
-        participant.groupType = 1;
-        participant.teamType = isTeam
-            ? TeamConfig.TEAM_A
-            : TeamConfig.NONE;
+      for (var participant in _selectedParticipants) {
+        if (participant.groupType==0) {
+          participant.groupType = 1;
+          participant.teamType = isTeam
+              ? TeamConfig.TEAM_A
+              : TeamConfig.NONE;
+        }
       }
-    }
 
-    // 이벤트 생성 호출 후 성공 여부에 따른 UI 처리
-    final success = await ref
-        .read(eventStateNotifierProvider.notifier)
-        .createEvent(event, _selectedParticipants, widget.selectedClub!.id.toString());
+      // 이벤트 생성 호출 후 성공 여부에 따른 UI 처리
+      await ref
+          .read(eventStateNotifierProvider.notifier)
+          .createEvent(event, _selectedParticipants, widget.selectedClub!.id.toString());
 
-    if(!mounted) return;
+      if(!mounted) return;
 
-    if (success) {
       // 성공 시 "이벤트 생성에 성공했습니다" 메시지 표시
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('이벤트 생성에 성공했습니다.')),
       );
-      // 페이지 닫기
+        // 페이지 닫기
       context.go('/app/events?refresh=${DateTime.now().millisecondsSinceEpoch}');
-    } else {
-      // 실패 시 SnackBar로 오류 메시지 표시
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('이벤트 생성에 실패했습니다. 나중에 다시 시도해주세요.')),
-      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false); // 🔧 추가: 로딩 종료
+      }
     }
   }
 
@@ -220,17 +232,33 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
         title: const Text('이벤트 생성'),
         actions: [
           TextButton(
-            onPressed: (hasDuplicateParticipants)
+            onPressed: (hasDuplicateParticipants || _isLoading)
                 ? null
-                : _onCompletePressed,
-            child: Text(
-              '완료',
-              style: TextStyle(
-                color: (hasDuplicateParticipants)
-                    ? Colors.grey
-                    : Colors.teal,
-              ),
-            ),
+                : _onCompletePressed, // 🔧 추가: 로딩 중 버튼 비활성화
+            child: _isLoading
+                ? const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.teal),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Text('생성 중...'),
+                    ],
+                  )
+                : Text(
+                    '완료',
+                    style: TextStyle(
+                      color: (hasDuplicateParticipants)
+                          ? Colors.grey
+                          : Colors.teal,
+                    ),
+                  ),
           ),
         ],
         backgroundColor: Colors.white,

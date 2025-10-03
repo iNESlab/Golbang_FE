@@ -4,17 +4,14 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:golbang/repoisitory/secure_storage.dart';
 import 'package:golbang/utils/reponsive_utils.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'dart:collection';
 import '../../models/event.dart';
 import '../../provider/club/club_state_provider.dart';
+import '../../provider/event/event_state_notifier_provider.dart';
 import '../../provider/event/game_in_progress_provider.dart';
-import '../../provider/participant/participant_state_provider.dart';
 import '../../utils/date_utils.dart';
-import 'package:golbang/services/participant_service.dart';
-import 'package:golbang/services/event_service.dart';
 
 class EventPage extends ConsumerStatefulWidget {
   const EventPage({super.key});
@@ -24,11 +21,9 @@ class EventPage extends ConsumerStatefulWidget {
 }
 
 class EventPageState extends ConsumerState<EventPage> {
-  late final ValueNotifier<List<Event>> _selectedEvents;
   DateTime _focusedDay = DateTime.now();
   DateTime? _selectedDay;
   // late EventService _eventService;
-  late ParticipantService _participantService;
   late Timer _timer;
   late DateTime currentTime; // 현재 시간을 저장할 변수
 
@@ -50,7 +45,6 @@ class EventPageState extends ConsumerState<EventPage> {
   void initState() {
     super.initState();
     _selectedDay = _focusedDay;
-    _selectedEvents = ValueNotifier(_getUpcomingEvents());
     currentTime = DateTime.now(); // 초기화 시점의 현재 시간
 
     // 타이머를 통해 1초마다 상태 업데이트
@@ -59,86 +53,21 @@ class EventPageState extends ConsumerState<EventPage> {
         currentTime = DateTime.now();
       });
     });
-    // 앱 시작 시 클럽 데이터를 강제로 로드
-    final clubNotifier = ref.read(clubStateProvider.notifier);
-    clubNotifier.fetchClubs();
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _showMostRecentEvent();
+    // 초기 이벤트 불러오기
+    Future.microtask(() {
+      ref.read(eventStateNotifierProvider.notifier).fetchEvents(
+        date: "${_focusedDay.year}-${_focusedDay.month.toString().padLeft(2, '0')}-01",
+      );
     });
-  }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    final storage = ref.watch(secureStorageProvider);
-    // _eventService = EventService(storage);
-    _participantService = ParticipantService(storage);
-    _loadEventsForMonth();
-
-    // // 여기서 participantStateProvider의 상태를 listen해서, 상태가 변경되면 이벤트 목록을 다시 로드합니다.
-    // ref.listen<ParticipantState>(participantStateProvider, (previous, next) {
-    //   _loadEventsForMonth();
+    // WidgetsBinding.instance.addPostFrameCallback((_) {
+    //   _showTodayEvent();
     // });
-  }
-
-  Future<void> _loadEventsForMonth() async {
-    final storage = ref.watch(secureStorageProvider);
-    final eventService = EventService(storage);
-    String date = '${_focusedDay.year}-${_focusedDay.month.toString().padLeft(2, '0')}-01';
-
-    try {
-      List<Event> events = await eventService.getEventsForMonth(date: date);
-      setState(() {
-        _events.clear(); // 이전 데이터를 초기화
-        for (var event in events) {
-          DateTime eventDate = DateTime(
-            event.startDateTime.year,
-            event.startDateTime.month,
-            event.startDateTime.day,
-          );
-
-          if (_events.containsKey(eventDate)) {
-            _events[eventDate]!.add(event);
-          } else {
-            _events[eventDate] = [event];
-          }
-        }
-        _selectedEvents.value = _getEventsForDay(_selectedDay!); // UI 새로고침
-      });
-    } catch (e) {
-      log("Error loading events: $e");
-    }
-  }
-
-  List<Event> _getEventsForDay(DateTime day) {
-    return _events[day] ?? [];
-  }
-
-  List<Event> _getUpcomingEvents() {
-    return _events.entries
-        .where((entry) => entry.key.isAfter(currentTime) || isSameDay(entry.key, currentTime))
-        .expand((entry) => entry.value)
-        .toList()
-      ..sort((a, b) => a.startDateTime.compareTo(b.startDateTime)); // 가장 빨리 시작하는 순 (오름차순)
-  }
-
-  void _showMostRecentEvent() {
-    if (_events.isEmpty) return;
-
-    DateTime mostRecentDay = _events.keys
-        .where((date) => date.isAfter(currentTime) || isSameDay(date, currentTime))
-        .reduce((a, b) => a.isBefore(b) ? a : b);
-
-    _selectedDay = mostRecentDay;
-    _focusedDay = mostRecentDay;
-    _selectedEvents.value = _getEventsForDay(mostRecentDay);
-    setState(() {});
   }
 
   @override
   void dispose() {
-    _selectedEvents.dispose();
     _timer.cancel(); // 타이머 해제
     super.dispose();
   }
@@ -157,17 +86,33 @@ class EventPageState extends ConsumerState<EventPage> {
   @override
   Widget build(BuildContext context) {
     final clubState = ref.watch(clubStateProvider);
-    final size = MediaQuery.of(context).size;
+    final eventState = ref.watch(eventStateNotifierProvider);
+
+    final size = MediaQuery
+        .of(context)
+        .size;
     final width = size.width;
     final height = size.height;
-    double screenWidth = MediaQuery.of(context).size.width; // 화면 너비
-    double screenHeight = MediaQuery.of(context).size.height; // 화면 높이
-    Orientation orientation = MediaQuery.of(context).orientation;
-    double calenderTitleFontSize = ResponsiveUtils.getCalenderTitleFontSize(screenWidth, orientation);
-    double calenderFontSize = ResponsiveUtils.getCalenderFontSize(screenWidth, orientation);
+    double screenWidth = MediaQuery
+        .of(context)
+        .size
+        .width; // 화면 너비
+    double screenHeight = MediaQuery
+        .of(context)
+        .size
+        .height; // 화면 높이
+    Orientation orientation = MediaQuery
+        .of(context)
+        .orientation;
+    double calenderTitleFontSize = ResponsiveUtils.getCalenderTitleFontSize(
+        screenWidth, orientation);
+    double calenderFontSize = ResponsiveUtils.getCalenderFontSize(
+        screenWidth, orientation);
 
-    double EventMainTtileFontSize = ResponsiveUtils.getEventMainTitleFS(screenWidth, orientation);
-    double ElevationButtonPadding = ResponsiveUtils.getElevationButtonPadding(screenWidth, orientation);
+    double EventMainTtileFontSize = ResponsiveUtils.getEventMainTitleFS(
+        screenWidth, orientation);
+    double ElevationButtonPadding = ResponsiveUtils.getElevationButtonPadding(
+        screenWidth, orientation);
 
     // 현재 시간을 한 번만 가져옴
     return Scaffold(
@@ -180,19 +125,21 @@ class EventPageState extends ConsumerState<EventPage> {
             selectedDayPredicate: (day) {
               return isSameDay(_selectedDay, day);
             },
-            eventLoader: _getEventsForDay,
+            eventLoader: (day) => eventState.eventsByDay[day] ?? [],
             onDaySelected: (selectedDay, focusedDay) {
               if (!isSameDay(_selectedDay, selectedDay)) {
                 setState(() {
                   _selectedDay = selectedDay;
                   _focusedDay = focusedDay;
-                  _selectedEvents.value = _getEventsForDay(selectedDay);
                 });
               }
             },
             onPageChanged: (focusedDay) {
               _focusedDay = focusedDay;
-              _loadEventsForMonth();
+              ref.read(eventStateNotifierProvider.notifier).fetchEvents(
+                date: "${focusedDay.year}-${focusedDay.month.toString().padLeft(
+                    2, '0')}-01",
+              );
             },
             calendarStyle: CalendarStyle(
               defaultTextStyle: TextStyle(fontSize: calenderFontSize),
@@ -200,30 +147,34 @@ class EventPageState extends ConsumerState<EventPage> {
               disabledTextStyle: TextStyle(fontSize: calenderFontSize),
             ),
             calendarBuilders: CalendarBuilders(
-              selectedBuilder: (context, date, events) => Container(
-                margin: EdgeInsets.all(fontSizeXLarge * 0.25),
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: Colors.green,
-                  shape: BoxShape.circle,
-                ),
-                child: Text(
-                  date.day.toString(),
-                  style: TextStyle(color: Colors.white, fontSize: calenderFontSize),
-                ),
-              ),
-              todayBuilder: (context, date, events) => Container(
-                margin: EdgeInsets.all(fontSizeXLarge * 0.25),
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: Colors.grey,
-                  shape: BoxShape.circle,
-                ),
-                child: Text(
-                  date.day.toString(),
-                  style: TextStyle(color: Colors.white, fontSize: calenderFontSize),
-                ),
-              ),
+              selectedBuilder: (context, date, events) =>
+                  Container(
+                    margin: EdgeInsets.all(fontSizeXLarge * 0.25),
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      color: Colors.green,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      date.day.toString(),
+                      style: TextStyle(
+                          color: Colors.white, fontSize: calenderFontSize),
+                    ),
+                  ),
+              todayBuilder: (context, date, events) =>
+                  Container(
+                    margin: EdgeInsets.all(fontSizeXLarge * 0.25),
+                    alignment: Alignment.center,
+                    decoration: const BoxDecoration(
+                      color: Colors.grey,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      date.day.toString(),
+                      style: TextStyle(
+                          color: Colors.white, fontSize: calenderFontSize),
+                    ),
+                  ),
               markerBuilder: (context, date, events) {
                 if (events.isNotEmpty) {
                   final event = events.first;
@@ -266,13 +217,15 @@ class EventPageState extends ConsumerState<EventPage> {
             ),
           ),
           Padding(
-            padding: EdgeInsets.symmetric(vertical: height * 0.005, horizontal: width * 0.04),
+            padding: EdgeInsets.symmetric(
+                vertical: height * 0.005, horizontal: width * 0.04),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
                   '오늘의 일정',
-                  style: TextStyle(fontSize: EventMainTtileFontSize, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: EventMainTtileFontSize,
+                      fontWeight: FontWeight.bold),
                 ),
                 ElevatedButton(
                   onPressed: () {
@@ -280,60 +233,66 @@ class EventPageState extends ConsumerState<EventPage> {
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green,
-                    padding: EdgeInsets.symmetric(horizontal: ElevationButtonPadding, vertical: height * 0.008,),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: ElevationButtonPadding,
+                      vertical: height * 0.008,),
                     minimumSize: Size(width * 0.18, height * 0.012),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(ElevationButtonPadding),
+                      borderRadius: BorderRadius.circular(
+                          ElevationButtonPadding),
                     ),
                   ),
                   child: Text(
                     '일정 추가',
-                    style: TextStyle(color: Colors.white, fontSize: calenderFontSize),
+                    style: TextStyle(
+                        color: Colors.white, fontSize: calenderFontSize),
                   ),
                 ),
               ],
             ),
           ),
           Expanded(
-            child: ValueListenableBuilder<List<Event>>(
-              valueListenable: _selectedEvents,
-              builder: (context, value, _) {
-                if (value.isEmpty) {
-                  // clubState를 이용해 메시지를 조건부로 변경
+            child: Builder(
+              builder: (context) {
+                final selectedEvents = eventState.eventsByDay[_selectedDay] ??
+                    [];
+
+                // clubState를 이용해 메시지를 조건부로 변경
+
+                if (selectedEvents.isEmpty) {
                   final emptyText = clubState.clubList.isEmpty
                       ? "참여 중인 모임이 없어요.\n먼저 모임에 참여하시거나\n새로운 모임을 만들어 주세요."
                       : "일정 추가 버튼을 눌러\n이벤트를 만들어보세요.";
-                  if (value.isEmpty) {
-                    return Center(
-                        child: SingleChildScrollView(
-                          child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.event_note,
-                                  size: width * 0.25,
+                  return Center(
+                      child: SingleChildScrollView(
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.event_note,
+                                size: width * 0.25,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(height: height * 0.02),
+                              Text(
+                                emptyText,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: EventMainTtileFontSize - 4,
                                   color: Colors.grey,
                                 ),
-                                SizedBox(height: height * 0.02),
-                                Text(
-                                  emptyText,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: EventMainTtileFontSize - 4,
-                                    color: Colors.grey,
-                                  ),
-                                )
-                              ]
-                          ),
-                        )
-                    );
-                  }
+                              )
+                            ]
+                        ),
+                      )
+                  );
                 }
+
                 // 이벤트가 있을 경우 기존 ListView.builder로 이벤트 목록을 보여줍니다.
                 return ListView.builder(
-                  itemCount: value.length,
+                  itemCount: selectedEvents.length,
                   itemBuilder: (context, index) {
-                    final event = value[index];
+                    final event = selectedEvents[index];
                     final participant = event.participants.firstWhere(
                           (p) => p.participantId == event.myParticipantId,
                       orElse: () => event.participants[0],
@@ -362,34 +321,46 @@ class EventPageState extends ConsumerState<EventPage> {
                           SizedBox(height: height * 0.005),
                           Text(
                             event.eventTitle,
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: EventMainTtileFontSize),
+                            style: TextStyle(fontWeight: FontWeight.bold,
+                                fontSize: EventMainTtileFontSize),
                           ),
                           SizedBox(height: height * 0.005),
-                          Text('시작 시간: ${event.startDateTime.hour}:${event.startDateTime.minute.toString().padLeft(2, '0')}',
-                          style: TextStyle(fontSize: calenderFontSize)),
-                          Text('인원 수: ${event.participants.length}명, 참석자 수: ${event.acceptCount}명', style: TextStyle(fontSize: calenderFontSize)),
-                          Text('참석률: ${event.participants.length > 0 ? (event.acceptCount / event.participants.length * 100).toStringAsFixed(1) : 0}%', style: TextStyle(fontSize: calenderFontSize)),
-                          Text('장소: ${_getGolfClubName(event)}', style: TextStyle(fontSize: calenderFontSize)),
+                          Text('시작 시간: ${event.startDateTime.hour}:${event
+                              .startDateTime.minute.toString().padLeft(
+                              2, '0')}',
+                              style: TextStyle(fontSize: calenderFontSize)),
+                          Text('인원 수: ${event.participants
+                              .length}명, 참석자 수: ${event.acceptCount}명',
+                              style: TextStyle(fontSize: calenderFontSize)),
+                          Text('참석률: ${event.participants.isNotEmpty ? (event
+                              .acceptCount / event.participants.length * 100)
+                              .toStringAsFixed(1) : 0}%',
+                              style: TextStyle(fontSize: calenderFontSize)),
+                          Text('장소: ${_getGolfClubName(event)}',
+                              style: TextStyle(fontSize: calenderFontSize)),
                           Row(
                             children: [
                               _buildStatusButton(
                                 'ACCEPT', statusType, () async {
-                                  await _handleStatusChange('ACCEPT', participant.participantId, event);
-                                },
+                                await _handleStatusChange(
+                                    'ACCEPT', participant.participantId, event);
+                              },
                                 event.startDateTime, // 이벤트 시작 시간 전달
                               ),
                               SizedBox(width: width * 0.015),
                               _buildStatusButton(
-                                  'PARTY', statusType, () async {
-                                  await _handleStatusChange('PARTY', participant.participantId, event);
-                                },
+                                'PARTY', statusType, () async {
+                                await _handleStatusChange(
+                                    'PARTY', participant.participantId, event);
+                              },
                                 event.startDateTime, // 이벤트 시작 시간 전달
                               ),
                               SizedBox(width: width * 0.015),
                               _buildStatusButton(
                                 'DENY', statusType, () async {
-                                  await _handleStatusChange('DENY', participant.participantId, event);
-                                },
+                                await _handleStatusChange(
+                                    'DENY', participant.participantId, event);
+                              },
                                 event.startDateTime, // 이벤트 시작 시간 전달
                               ),
                             ],
@@ -397,7 +368,8 @@ class EventPageState extends ConsumerState<EventPage> {
                           Container(
                             margin: EdgeInsets.only(top: height * 0.005),
                             decoration: const BoxDecoration(
-                              border: Border(top: BorderSide(color: Colors.grey)),
+                              border: Border(
+                                  top: BorderSide(color: Colors.grey)),
                             ),
                             child: Column(
                               children: [
@@ -455,7 +427,7 @@ class EventPageState extends ConsumerState<EventPage> {
                 );
               },
             ),
-          ),
+          )
         ],
       ),
     );
@@ -496,8 +468,9 @@ class EventPageState extends ConsumerState<EventPage> {
   }
 
   void _navigateToEventDetail(Event event) async {
-    await context.push('/app/events/${event.eventId}', extra: {'event': event});
+    await context.push('/app/events/${event.eventId}');
   }
+
 
 
   Color _getStatusColor(String statusType) {
@@ -569,21 +542,17 @@ class EventPageState extends ConsumerState<EventPage> {
 
   Future<void> _handleStatusChange(String newStatus, int participantId, Event event) async {
     // 상태를 업데이트
-    bool success = await _participantService.updateParticipantStatus(participantId, newStatus);
-    final participantNotifier = ref.read(participantStateProvider.notifier);
-    await participantNotifier.updateParticipantStatus(participantId, newStatus);
-
-    if (success) {
-      setState(() {
-        // 해당 이벤트의 참가자의 상태를 업데이트
-        final participant = event.participants.firstWhere(
-              (p) => p.participantId == participantId,
-        );
-        participant.statusType = newStatus;
-
-        // TODO: 잘 반영이 안 됨. 반영되도록 수정 필요
-        _selectedEvents.value = _getEventsForDay(_selectedDay!);
-      });
+    try {
+      ref.read(eventStateNotifierProvider.notifier).updateParticipantStatus(
+        event.eventId, participantId, newStatus
+      );
+    } catch(e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('$e'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
