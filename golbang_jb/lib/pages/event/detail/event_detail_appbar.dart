@@ -22,7 +22,6 @@ PreferredSizeWidget buildEventDetailAppBar(
     Event event,
     DateTime currentTime,
     List<dynamic> participants,
-    void Function(DateTime) onEndEvent, // ✅ 콜백 추가
     ) {
   late EventService eventService;
   final screenWidth = MediaQuery.of(context).size.width;
@@ -54,14 +53,15 @@ PreferredSizeWidget buildEventDetailAppBar(
     }
   }
 
-  void endEvent(int eventId) async {
-    eventService = EventService(ref.read(secureStorageProvider));
-    try{
-      await eventService.endEvent(eventId);
-      final now = DateTime.now();
-      onEndEvent(now); // ✅ state는 detail page에서 갱신
+  void endEvent(Event event) async {
+    try {
+      await ref.read(eventStateNotifierProvider.notifier).endEvent(event);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('시합이 종료되었습니다')),
+      );
     } catch (e) {
-      log('Error fetching event details: $e');
+      log('Error ending event: $e');
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -139,7 +139,7 @@ PreferredSizeWidget buildEventDetailAppBar(
             case 'end':
             // 재확인 모달
               final ok = await _confirmEndEvent(context);
-              if (ok) endEvent(event.eventId);
+              if (ok) endEvent(event);
               break;
             case 'edit':
               editEvent();
@@ -152,7 +152,7 @@ PreferredSizeWidget buildEventDetailAppBar(
           }
         },
         itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-          if (currentTime.isBefore(event.startDateTime.add(const Duration(minutes: 30))))
+          if (!isEnd && currentTime.isBefore(event.startDateTime.add(const Duration(minutes: 30))))
             const PopupMenuItem<String>(
               value: 'edit',
               child: Text('수정'),

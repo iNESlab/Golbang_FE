@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:golbang/models/event.dart';
 import 'package:golbang/services/event_service.dart';
@@ -13,14 +12,9 @@ import '../../../utils/reponsive_utils.dart';
 
 mixin EventDetailStateMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   Event? event;
-  LatLng? selectedLocation;
-  int? myGroup;
   late Timer timer;
   late DateTime currentTime;
-  late DateTime startDateTime;
-  late DateTime endDateTime;
   late final int myParticipantId;
-  late final String myStatus;
 
   List<dynamic> participants = [];
   Map<String, dynamic>? teamAScores;
@@ -34,35 +28,6 @@ mixin EventDetailStateMixin<T extends ConsumerStatefulWidget> on ConsumerState<T
   late Orientation orientation;
   late double screenWidth;
 
-
-  Future<void> fetchEvent(int eventId) async {
-    final storage = ref.read(secureStorageProvider);
-    final eventService = EventService(storage);
-    try {
-      final fetchedEvent = await eventService.getEventDetails(eventId);
-      if (mounted && fetchedEvent != null) {
-        setState(() {
-          event = fetchedEvent;
-          initializeFields();
-          fetchScores();
-        });
-      } else {
-        if (mounted) context.pop();
-      }
-    } catch (e) {
-      log('Error fetching event details: $e');
-      if (mounted) {
-        context.pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('$e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
   void initializeUI(BuildContext context) {
     screenWidth = MediaQuery.of(context).size.width;
     orientation = MediaQuery.of(context).orientation;
@@ -75,12 +40,7 @@ mixin EventDetailStateMixin<T extends ConsumerStatefulWidget> on ConsumerState<T
 
 
   void initializeFields() {
-    startDateTime = event!.startDateTime;
-    endDateTime = event!.endDateTime;
     myParticipantId = event!.myParticipantId;
-    myStatus = event!.participants.firstWhere((p) => p.participantId == myParticipantId).statusType;
-    selectedLocation = _parseLocation(event!.location);
-    myGroup = event!.memberGroup;
     currentTime = DateTime.now();
   }
 
@@ -106,7 +66,7 @@ mixin EventDetailStateMixin<T extends ConsumerStatefulWidget> on ConsumerState<T
     }
   }
 
-  LatLng? _parseLocation(String? location) {
+  LatLng? parseLocation(String? location) {
     if (location == null) return null;
     try {
       if (location.startsWith('LatLng')) {

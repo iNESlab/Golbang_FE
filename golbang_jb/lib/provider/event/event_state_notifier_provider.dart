@@ -1,5 +1,6 @@
 import 'dart:collection';
 
+import 'package:collection/collection.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -25,6 +26,38 @@ class EventStateNotifierProvider extends StateNotifier<EventState> {
   final ParticipantService _participantService;
 
   EventStateNotifierProvider(this._eventService, this._participantService) : super(EventState());
+
+  Event? getEventFromState(int eventId) {
+    return state.eventsByDay.values.expand((list) => list)
+        .firstWhereOrNull((e) => e.eventId == eventId,);
+  }
+
+  // EventStateNotifier
+  Future<Event> fetchEventDetails(int eventId) async {
+    final event = await _eventService.getEventDetails(eventId) as Event;
+    // state.eventsByDay에 반영 (딥링크 케이스도 포함)
+    final byDay = LinkedHashMap<DateTime, List<Event>>(
+      equals: isSameDay,
+      hashCode: getHashCode,
+    )
+      ..addAll(state.eventsByDay);
+
+    final dayKey = DateTime(event.startDateTime.year, event.startDateTime.month,
+        event.startDateTime.day);
+    final events = byDay[dayKey] ?? [];
+    final idx = events.indexWhere((e) => e.eventId == event.eventId);
+
+    if (idx >= 0) {
+      events[idx] = event; // 갱신
+    } else {
+      events.add(event); // 없으면 추가
+      events.sort((a, b) => a.startDateTime.compareTo(b.startDateTime));
+    }
+
+    byDay[dayKey] = events;
+    state = state.copyWith(eventsByDay: byDay);
+    return event;
+  }
 
   // 이벤트 목록을 불러오는 함수
   Future<void> fetchEvents({String? date, String? statusType}) async {
@@ -96,6 +129,35 @@ class EventStateNotifierProvider extends StateNotifier<EventState> {
         }
       }
     });
+
+    state = state.copyWith(eventsByDay: byDay);
+  }
+
+  Future<void> endEvent(Event event) async {
+    await _eventService.endEvent(event.eventId);
+
+    final byDay = LinkedHashMap<DateTime, List<Event>>(
+      equals: isSameDay,
+      hashCode: getHashCode,
+    )..addAll(state.eventsByDay);
+
+    final startDateTime = event.startDateTime;
+    final dayKey = DateTime(startDateTime.year, startDateTime.month, startDateTime.day);
+    final events = byDay[dayKey];
+
+    if (events != null) {
+      final idx = events.indexWhere((e) => e.eventId == event.eventId);
+      if (idx != -1) {
+        final oldEvent = events[idx];
+        final updatedEvent = oldEvent.copyWith(
+          endDateTime: DateTime.now(), // ✅ 여기서 갱신
+        );
+
+        events[idx] = updatedEvent; // 리스트에 교체
+      } else {
+        throw Exception("eventId ${event.eventId} not found in day $dayKey");
+      }
+    }
 
     state = state.copyWith(eventsByDay: byDay);
   }

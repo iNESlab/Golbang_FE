@@ -474,7 +474,7 @@ class EventPageState extends ConsumerState<EventPage> {
   }
 
   void _navigateToEventDetail(Event event) async {
-    await context.push('/app/events/${event.eventId}', extra: {'event': event});
+    await context.push('/app/events/${event.eventId}');
   }
 
 
