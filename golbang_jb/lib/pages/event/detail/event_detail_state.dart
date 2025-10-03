@@ -13,8 +13,7 @@ import '../../../utils/reponsive_utils.dart';
 mixin EventDetailStateMixin<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   Event? event;
   late Timer timer;
-  late DateTime currentTime;
-  late final int myParticipantId;
+  DateTime currentTime = DateTime.now();
 
   List<dynamic> participants = [];
   Map<String, dynamic>? teamAScores;
@@ -36,12 +35,6 @@ mixin EventDetailStateMixin<T extends ConsumerStatefulWidget> on ConsumerState<T
     fontSizeLarge = ResponsiveUtils.getLargeFontSize(screenWidth, orientation);
     fontSizeMedium = ResponsiveUtils.getMediumFontSize(screenWidth, orientation);
     fontSizeSmall = ResponsiveUtils.getSmallFontSize(screenWidth, orientation);
-  }
-
-
-  void initializeFields() {
-    myParticipantId = event!.myParticipantId;
-    currentTime = DateTime.now();
   }
 
   Future<void> fetchScores() async {

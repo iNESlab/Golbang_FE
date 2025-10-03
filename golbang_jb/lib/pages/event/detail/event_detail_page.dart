@@ -37,7 +37,6 @@ class EventDetailPageState extends ConsumerState<EventDetailPage> with EventDeta
       // 상태에 있으면 바로 사용
       setState(() {
         event = existing;
-        initializeFields();
       });
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await fetchScores(); // 점수는 따로 불러와야 하니까 호출
@@ -46,6 +45,9 @@ class EventDetailPageState extends ConsumerState<EventDetailPage> with EventDeta
       // 상태에 없으면 API 호출 (딥링크 케이스)
       WidgetsBinding.instance.addPostFrameCallback((_) async {
         await  notifier.fetchEventDetails(widget.eventId);
+      });
+      setState(() {
+        isLoading = false;
       });
     }
     // ② 현재 시간 업데이트 타이머 시작
@@ -112,7 +114,7 @@ class EventDetailPageState extends ConsumerState<EventDetailPage> with EventDeta
         top: false, bottom: true, // 하단만 보호
         child: EventDetailBottomBar( // 위젯 안에 ElevatedButton을 넣어야 SafeArea와의 여백이 안생김
           event: event!,
-          myStatus: event!.participants.firstWhere((p) => p.participantId == myParticipantId).statusType,
+          myStatus: event!.participants.firstWhere((p) => p.participantId == event!.myParticipantId).statusType,
           currentTime: currentTime,
           startDateTime: event!.startDateTime,
           endDateTime: event!.endDateTime,
