@@ -1,29 +1,33 @@
+import 'dart:collection';
+import 'package:table_calendar/table_calendar.dart';
+
 import '../../models/event.dart';
+import '../../utils/date_utils.dart'; // isSameDay, getHashCode 정의돼 있는 곳
 
 class EventState {
-  final List<Event> eventList;
+  final LinkedHashMap<DateTime, List<Event>> eventsByDay;
   final Event? selectedEvent;
   final bool isLoading;
-  final String? errorMessage;
 
   EventState({
-    this.eventList = const [],
+    LinkedHashMap<DateTime, List<Event>>? eventsByDay,
     this.selectedEvent,
     this.isLoading = false,
-    this.errorMessage,
-  });
+  }) : eventsByDay = eventsByDay ??
+      LinkedHashMap<DateTime, List<Event>>(
+        equals: isSameDay,
+        hashCode: getHashCode,
+      );
 
   EventState copyWith({
-    List<Event>? eventList,
+    LinkedHashMap<DateTime, List<Event>>? eventsByDay,
     Event? selectedEvent,
     bool? isLoading,
-    String? errorMessage,
   }) {
     return EventState(
-      eventList: eventList ?? this.eventList,
+      eventsByDay: eventsByDay ?? this.eventsByDay,
       selectedEvent: selectedEvent ?? this.selectedEvent,
       isLoading: isLoading ?? this.isLoading,
-      errorMessage: errorMessage ?? this.errorMessage,
     );
   }
 }

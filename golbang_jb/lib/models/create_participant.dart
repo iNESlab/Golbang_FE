@@ -5,6 +5,7 @@ class CreateParticipant {
   final int memberId;
   final String name;
   final String  profileImage;
+  String? statusType;
   TeamConfig teamType;
   int groupType;
 
@@ -12,6 +13,7 @@ class CreateParticipant {
     required this.memberId,
     required this.name,
     required this.profileImage,
+    this.statusType,
     required this.teamType,
     required this.groupType,
   });
@@ -24,21 +26,12 @@ class CreateParticipant {
     };
   }
 
-  factory CreateParticipant.fromJson(Map<String, dynamic> json) {
-    return CreateParticipant(
-      memberId: json['member_id'],
-      name: json['name'],
-      profileImage: json['profile_image'] ?? '',
-      teamType: TeamConfig.values.firstWhere((e) => e.value == json['team_type']),
-      groupType: json['group_type'],
-    );
-  }
-
   factory CreateParticipant.fromParticipant(Participant participant) {
     return CreateParticipant(
       memberId: participant.member!.memberId,
       name: participant.member!.name,
       profileImage: participant.member!.profileImage,
+      statusType: participant.statusType,
       teamType: TeamConfig.values.firstWhere(
             (e) => e.value == participant.teamType,
       ),

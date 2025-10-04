@@ -60,14 +60,12 @@ final List<GoRoute> eventRoutes = [
   GoRoute(
     path: '/app/events/:eventId',
     pageBuilder: (context, state) {
-      final eventId = int.tryParse(state.pathParameters['eventId'] ?? '');
+      final eventId = int.tryParse(state.pathParameters['eventId']!) as int;
       final extra = state.extra as Map<String, dynamic>?;
-      final event = extra?['event'] as Event?;
       return NoTransitionPage(
         key: state.pageKey,
         child: EventDetailPage(
           eventId: eventId,
-          event: event,
           from: extra?['from'],
         ),
       );

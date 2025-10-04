@@ -79,14 +79,21 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
 
   void _initializeParticipants() {
     _finalParticipants = widget.selectedParticipants.map((participant) {
+      String? statusType;
       Participant? existingParticipant = widget.existingParticipants.firstWhereOrNull(
             (existing) => existing.member!.memberId == participant.memberId,
       );
 
+      if(existingParticipant != null) {
+        statusType = existingParticipant.statusType;
+      }
+
+
       var p = CreateParticipant(
         memberId: participant.memberId,
         name: participant.name,
-        profileImage: participant.profileImage ?? '',
+        profileImage: participant.profileImage,
+        statusType: statusType ?? 'PENDING',
         teamType: existingParticipant==null ? TeamConfig.NONE
             : existingParticipant.teamType == "NONE" ? TeamConfig.NONE
             : existingParticipant.teamType == "A" ? TeamConfig.TEAM_A
@@ -111,6 +118,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
           memberId: participant.member!.memberId,
           name: participant.member!.name,
           profileImage: participant.member!.profileImage ?? '',
+          statusType: participant.statusType,
           teamType: participant.teamType == "NONE" ? TeamConfig.NONE
               : participant.teamType == "A" ? TeamConfig.TEAM_A
               : TeamConfig.TEAM_B,
@@ -277,27 +285,22 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
         }
       }
 
-      bool success = await _eventService.updateEvent(
+      await _eventService.updateEvent(
         event: eventData,
         participants: _finalParticipants,
       );
 
       if(!mounted) return;
-
-      if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('이벤트가 성공적으로 수정되었습니다.')),
-        );
-        context.go('/app/events/${widget.eventId}?refresh=${DateTime.now().millisecondsSinceEpoch}');
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('이벤트 수정에 실패했습니다. 관리자만 수정할 수 있습니다. ')),
-        );
-      }
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('이벤트가 성공적으로 수정되었습니다.')));
+      context.go('/app/events/${widget.eventId}?refresh=${DateTime.now().millisecondsSinceEpoch}');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('오류가 발생했습니다: $e')),
+          SnackBar(
+              content: Text('$e'),
+              backgroundColor: Colors.red
+          ),
         );
       }
     } finally {
@@ -496,7 +499,7 @@ class _EventsUpdate2State extends ConsumerState<EventsUpdate2> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('참가자 조를 지정해 주세요.\n미선택시 \'1조\' 혹은 \'A팀 1조\'으로 지정됩니다.'),
+                    const Text('참가자 조를 지정해 주세요.\n미선택시 \'1조\' 혹은 \'A팀 1조\'으로 지정됩니다.\n회색 참가자는 참석 미정을 의미합니다.'),
                     const SizedBox(height: 10),
                     SingleChildScrollView(
                       scrollDirection: Axis.horizontal,

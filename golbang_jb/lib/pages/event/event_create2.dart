@@ -68,6 +68,7 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
       return CreateParticipant(
         memberId: participant.memberId,
         name: participant.name,
+        statusType: 'PENDING',
         profileImage: participant.profileImage ?? '',
         teamType: teamConfig,
         groupType: 0, // 0으로 하면, 에러 뜸.
@@ -189,29 +190,25 @@ class _EventsCreate2State extends ConsumerState<EventsCreate2> {
       }
 
       // 이벤트 생성 호출 후 성공 여부에 따른 UI 처리
-      final success = await ref
+      await ref
           .read(eventStateNotifierProvider.notifier)
           .createEvent(event, _selectedParticipants, widget.selectedClub!.id.toString());
 
       if(!mounted) return;
 
-      if (success) {
-        // 성공 시 "이벤트 생성에 성공했습니다" 메시지 표시
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('이벤트 생성에 성공했습니다.')),
-        );
+      // 성공 시 "이벤트 생성에 성공했습니다" 메시지 표시
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('이벤트 생성에 성공했습니다.')),
+      );
         // 페이지 닫기
-        context.go('/app/events?refresh=${DateTime.now().millisecondsSinceEpoch}');
-      } else {
-        // 실패 시 SnackBar로 오류 메시지 표시
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('이벤트 생성에 실패했습니다. 나중에 다시 시도해주세요.')),
-        );
-      }
+      context.go('/app/events?refresh=${DateTime.now().millisecondsSinceEpoch}');
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('오류가 발생했습니다: $e')),
+          SnackBar(
+            content: Text('$e'),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     } finally {

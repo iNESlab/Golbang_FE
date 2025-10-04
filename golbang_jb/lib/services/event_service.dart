@@ -66,12 +66,12 @@ class EventService {
   }
 
   // API 테스트 완료
-  Future<bool> postEvent({
+  Future<void> postEvent({
     required int clubId,
     required CreateEvent event,
     required List<CreateParticipant> participants,
   }) async {
-    try {
+    return await safeDioCall<void>(() async {
       final url = '/api/v1/events/?club_id=$clubId';
 
       // Event의 JSON과 참가자 리스트의 JSON을 각각 생성
@@ -85,25 +85,16 @@ class EventService {
         'participants': participantsJson, // 참가자 데이터를 추가
       };
       // 병합된 데이터를 JSON으로 변환
-      final response = await privateClient.dio.post(
+      await privateClient.dio.post(
         url,
         data: requestBody, // dio에서 json으로 바꿔주므로 jsonEncode 안써도 됨
       );
-
-      if (response.statusCode == 201) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e){
-        log('Error occurred while fetching events: $e');
-        return false;
-    }
+    });
   }
 
   // API 테스트 완료
   Future<List<Event>> getEventsForMonth({String? date, String? statusType}) async {
-    try {
+    return await safeDioCall<List<Event>>(() async {
       // URL 생성
       String url = '/api/v1/events/';
 
@@ -116,26 +107,18 @@ class EventService {
         },
       );
 
-      if (response.statusCode == 200) {
         final responseList = response.data['data'] as List;
         return responseList.map((json) => Event.fromJson(json)).toList();
-      } else {
-        log('이벤트 목록 조회 실패: ${response.statusCode} - ${response.data}');
-        return [];
-      }
-    } catch (e) {
-      log('Error occurred while fetching events: $e');
-      return [];
-    }
+    }) ?? [];
   }
 
   // API 테스트 완료
   // 이벤트 수정 메서드
-  Future<bool> updateEvent({
+  Future<void> updateEvent({
     required CreateEvent event,
     required List<CreateParticipant> participants,
   }) async {
-    try {
+    return await safeDioCall<void>(() async {
       final url = '/api/v1/events/${event.eventId}/';
 
       // Event의 JSON과 참가자 리스트의 JSON을 각각 생성
@@ -149,20 +132,11 @@ class EventService {
         'participants': participantsJson, // 참가자 데이터를 추가
       };
 
-      final response = await privateClient.dio.put(
+      await privateClient.dio.put(
         url,
         data: requestBody,
       );
-
-      if (response.statusCode == 200) {
-        return true;
-      }
-      return false;
-
-    } catch (e) {
-      log('Error occurred while updating event: $e');
-      return false;
-    }
+    });
   }
 
   // API 테스트 완료
@@ -182,25 +156,11 @@ class EventService {
 
   // API 테스트 완료
   // 이벤트 삭제 메서드
-  Future<bool> deleteEvent(int eventId) async {
-    try {
+  Future<void> deleteEvent(int eventId) async {
+    return await safeDioCall<void>(() async {
       final url = '/api/v1/events/$eventId/';
-
-      final response = await privateClient.dio.delete(url);
-
-      if (response.statusCode == 204) {
-        return true;
-      } else if (response.statusCode == 403) {
-        log("관리자가 아닙니다. 관리자만 삭제할 수 있습니다.");
-        return false;
-      } else {
-        log("Failed to delete event: ${response.data}");
-        return false;
-      }
-    } catch (e) {
-      log('Error occurred while deleting event: $e');
-      return false;
-    }
+      await privateClient.dio.delete(url);
+    });
   }
 
   // 이벤트 개인전 결과 조회
